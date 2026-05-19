@@ -1,0 +1,25 @@
+export const routes = {
+  home: '/',
+  shop: '/shop',
+  chefJackets: '/shop/chef-jackets',
+  aprons: '/shop/aprons',
+  pants: '/shop/pants',
+  customize: '/customize',
+  products: '/products',
+  productDetail: (slug: string) => `/products/${slug}`,
+  restaurants: '/restaurants',
+  sizeGuide: '/size-guide',
+  contact: '/contact',
+  cart: '/cart',
+  checkout: '/checkout',
+  login: '/login',
+  register: '/register',
+  account: '/account',
+  accountOrders: '/account/orders',
+  accountDesigns: '/account/designs',
+  accountAddresses: '/account/addresses',
+  admin: '/admin',
+  shopWithCategory: (category: string) => `/shop?category=${category}`,
+} as const
+
+export type RoutePath = (typeof routes)[keyof typeof routes]

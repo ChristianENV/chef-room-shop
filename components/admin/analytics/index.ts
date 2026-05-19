@@ -1,0 +1,6 @@
+export { FunnelChart } from './funnel-chart'
+export { PopularColorsChart } from './popular-colors-chart'
+export { ProductPerformanceTable } from './product-performance-table'
+export { AbandonmentInsights } from './abandonment-insights'
+export { InsightsPanel } from './insights-panel'
+export { GarmentAreasChart, CustomizationTypesChart } from './garment-areas-chart'

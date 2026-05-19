@@ -1,0 +1,8 @@
+export { HeroSection } from './hero-section'
+export { TrustStrip } from './trust-strip'
+export { CategorySection } from './category-section'
+export { CustomizerTeaser } from './customizer-teaser'
+export { FeaturedProducts } from './featured-products'
+export { HowItWorks } from './how-it-works'
+export { BrandStorySection } from './brand-story-section'
+export { FinalCTA } from './final-cta'

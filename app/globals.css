@@ -1,0 +1,161 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* Chef Room by Bedolla - Premium Brand Design Tokens */
+/* Light Mode Default - Warm, editorial, premium */
+:root {
+  --background: #F8F7F3;
+  --foreground: #121421;
+  --card: #FFFFFF;
+  --card-foreground: #121421;
+  --popover: #FFFFFF;
+  --popover-foreground: #121421;
+  --primary: #2B3280;
+  --primary-foreground: #FFFFFF;
+  --secondary: #EDECEA;
+  --secondary-foreground: #121421;
+  --muted: #EDECEA;
+  --muted-foreground: #6B6F85;
+  --accent: #F0EFE9;
+  --accent-foreground: #2B3280;
+  --destructive: #C62828;
+  --destructive-foreground: #FFFFFF;
+  --border: #DDDBD5;
+  --input: #DDDBD5;
+  --ring: #2B3280;
+  --success: #2E7D32;
+  --success-foreground: #FFFFFF;
+  --warning: #E68A00;
+  --warning-foreground: #FFFFFF;
+  --chart-1: #2B3280;
+  --chart-2: #4A5299;
+  --chart-3: #8B8FA3;
+  --chart-4: #2E7D32;
+  --chart-5: #E65100;
+  --radius: 0.625rem;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #121421;
+  --sidebar-primary: #2B3280;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F0EFE9;
+  --sidebar-accent-foreground: #121421;
+  --sidebar-border: #DDDBD5;
+  --sidebar-ring: #2B3280;
+}
+
+/* Dark Mode - Premium dark navy, never pure black */
+.dark {
+  --background: #0F1129;
+  --foreground: #E8E8EC;
+  --card: #181B36;
+  --card-foreground: #E8E8EC;
+  --popover: #181B36;
+  --popover-foreground: #E8E8EC;
+  --primary: #5A6FDD;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1E2140;
+  --secondary-foreground: #E8E8EC;
+  --muted: #1E2140;
+  --muted-foreground: #8B8FA3;
+  --accent: #262A4E;
+  --accent-foreground: #C4C8F0;
+  --destructive: #EF5350;
+  --destructive-foreground: #FFFFFF;
+  --border: #282C54;
+  --input: #282C54;
+  --ring: #5A6FDD;
+  --success: #66BB6A;
+  --success-foreground: #0F1129;
+  --warning: #FFA726;
+  --warning-foreground: #0F1129;
+  --chart-1: #5A6FDD;
+  --chart-2: #6B7AE0;
+  --chart-3: #8B8FA3;
+  --chart-4: #66BB6A;
+  --chart-5: #FFA726;
+  --sidebar: #0F1129;
+  --sidebar-foreground: #E8E8EC;
+  --sidebar-primary: #5A6FDD;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #1E2140;
+  --sidebar-accent-foreground: #E8E8EC;
+  --sidebar-border: #282C54;
+  --sidebar-ring: #5A6FDD;
+}
+
+@theme inline {
+  --font-sans: 'Outfit', 'Outfit Fallback', system-ui, sans-serif;
+  --font-serif: 'Roboto', 'Roboto Fallback', system-ui, sans-serif;
+  --font-mono: 'Roboto Mono', 'Roboto Mono Fallback', monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Premium underline accent for editorial headings */
+.brand-underline::after {
+  content: '';
+  display: block;
+  width: 3rem;
+  height: 2px;
+  background: var(--primary);
+  margin-top: 1rem;
+}
+
+.brand-underline-center::after {
+  content: '';
+  display: block;
+  width: 3rem;
+  height: 2px;
+  background: var(--primary);
+  margin-top: 1rem;
+  margin-inline: auto;
+}
