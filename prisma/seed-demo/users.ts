@@ -22,7 +22,7 @@ type DemoUserSpec = {
 
 const ADMIN_SPECS: DemoUserSpec[] = [
   {
-    email: 'cnoriega+1@gmail.com',
+    email: 'cnoriegava@gmail.com',
     firstName: 'Christian',
     lastName: 'Noriega',
     phone: '+525512340001',
@@ -30,7 +30,7 @@ const ADMIN_SPECS: DemoUserSpec[] = [
     roles: [RoleSlug.SUPERADMIN],
   },
   {
-    email: 'cnoriega+2@gmail.com',
+    email: 'cnoriegava+1@gmail.com',
     firstName: 'Admin',
     lastName: 'Chef Room',
     phone: '+525512340002',
@@ -38,7 +38,7 @@ const ADMIN_SPECS: DemoUserSpec[] = [
     roles: [RoleSlug.ADMIN],
   },
   {
-    email: 'cnoriega+3@gmail.com',
+    email: 'cnoriegava+2@gmail.com',
     firstName: 'Operaciones',
     lastName: 'Chef Room',
     phone: '+525512340003',
@@ -46,7 +46,7 @@ const ADMIN_SPECS: DemoUserSpec[] = [
     roles: [RoleSlug.ADMIN],
   },
   {
-    email: 'cnoriega+4@gmail.com',
+    email: 'cnoriegava+3@gmail.com',
     firstName: 'Ventas',
     lastName: 'Chef Room',
     phone: '+525512340004',
@@ -54,10 +54,18 @@ const ADMIN_SPECS: DemoUserSpec[] = [
     roles: [RoleSlug.ADMIN],
   },
   {
-    email: 'cnoriega+5@gmail.com',
+    email: 'cnoriegava+4@gmail.com',
     firstName: 'Producción',
     lastName: 'Chef Room',
     phone: '+525512340005',
+    marketingOptIn: false,
+    roles: [RoleSlug.ADMIN],
+  },
+  {
+    email: 'cnoriegava+5@gmail.com',
+    firstName: 'Soporte',
+    lastName: 'Chef Room',
+    phone: '+525512340006',
     marketingOptIn: false,
     roles: [RoleSlug.ADMIN],
   },

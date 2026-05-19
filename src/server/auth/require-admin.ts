@@ -70,7 +70,7 @@ export async function requireAdminSession(): Promise<CurrentUser> {
   const hasAdmin = await userHasAdminAccess(user.id)
 
   if (!hasAdmin) {
-    redirect(`${routes.adminLogin}?error=forbidden`)
+    redirect(`${routes.home}?error=admin_forbidden`)
   }
 
   return user

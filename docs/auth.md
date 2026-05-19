@@ -173,6 +173,25 @@ Assigned automatically via `databaseHooks.user.create.after` in `build-auth.ts`,
 - Do not use GraphQL for login/register — use `/api/auth/*`.
 - `LoginAttempt` remains for custom audit if needed.
 
+## Redirects por rol
+
+Centralizado en `src/server/auth/redirects.ts` (`getPostAuthRedirectPath`, `isSafeInternalRedirect`).
+
+| Rol | Después de login/register | Si visita `/login` o `/register` con sesión |
+|-----|---------------------------|---------------------------------------------|
+| CUSTOMER | `/` (landing) | Redirige a `/` |
+| ADMIN / SUPERADMIN | `/admin/dashboard` | Redirige a `/admin/dashboard` |
+
+Reglas adicionales:
+
+- `/admin/login` con sesión admin → dashboard; con sesión CUSTOMER → `/` (landing con sesión).
+- CUSTOMER que intenta `/admin/*` protegido → `/?error=admin_forbidden` (layout `requireAdminSession`).
+- `callbackUrl` en query: solo paths internos (`/…`); se rechazan `http://`, `https://`, `//`.
+- CUSTOMER nunca se envía a rutas admin por redirect post-auth.
+- Google OAuth: callback por defecto `/` (storefront) o `/admin/dashboard` (admin login); el layout admin sigue validando RBAC.
+
+Server actions: `getPostLoginRedirectAction`, `getCurrentUserRedirectAction`.
+
 ## Guest sessions
 
 See [guest-checkout.md](./guest-checkout.md) for cookie `chefroom_guest`, merge on login/register, and V1 scope.

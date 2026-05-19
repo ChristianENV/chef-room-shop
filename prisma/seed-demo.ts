@@ -46,7 +46,8 @@ async function main() {
   const userCount = await prisma.user.count({
     where: {
       OR: [
-        { email: { contains: 'cnoriega+', mode: 'insensitive' } },
+        { email: { equals: 'cnoriegava@gmail.com', mode: 'insensitive' } },
+        { email: { contains: 'cnoriegava+', mode: 'insensitive' } },
         { email: { endsWith: '@chefroom.test', mode: 'insensitive' } },
       ],
     },

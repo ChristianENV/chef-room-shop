@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { AuthLayout, RegisterForm } from '@/src/features/storefront/auth'
 import { isGoogleAuthConfigured } from '@/src/lib/auth/google-enabled'
+import { redirectIfAuthenticated } from '@/src/server/auth/redirect-if-authenticated'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -9,7 +10,9 @@ export const metadata: Metadata = {
     'Crea tu cuenta en Chef Room para diseñar uniformes de chef personalizados y acceder a ofertas exclusivas.',
 }
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  await redirectIfAuthenticated('storefront-register')
+
   const googleEnabled = isGoogleAuthConfigured()
 
   return (

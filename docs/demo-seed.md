@@ -55,11 +55,12 @@ All accounts use password: **`12345678`** (do not use outside DEV).
 
 | Email | Role | Name |
 |-------|------|------|
-| cnoriega+1@gmail.com | SUPERADMIN | Christian Noriega |
-| cnoriega+2@gmail.com | ADMIN | Admin Chef Room |
-| cnoriega+3@gmail.com | ADMIN | Operaciones Chef Room |
-| cnoriega+4@gmail.com | ADMIN | Ventas Chef Room |
-| cnoriega+5@gmail.com | ADMIN | Producción Chef Room |
+| cnoriegava@gmail.com | SUPERADMIN | Christian Noriega |
+| cnoriegava+1@gmail.com | ADMIN | Admin Chef Room |
+| cnoriegava+2@gmail.com | ADMIN | Operaciones Chef Room |
+| cnoriegava+3@gmail.com | ADMIN | Ventas Chef Room |
+| cnoriegava+4@gmail.com | ADMIN | Producción Chef Room |
+| cnoriegava+5@gmail.com | ADMIN | Soporte Chef Room |
 
 ### Customers (20)
 
@@ -97,7 +98,7 @@ Social rows are **metadata only** for QA listings; login always works with email
 
 With `ALLOW_DEMO_SEED_RESET=true`, only demo-scoped data is deleted:
 
-- Users matching `cnoriega+*@gmail.com` or `@chefroom.test`
+- Users matching `cnoriegava@gmail.com`, `cnoriegava+*@gmail.com`, legacy `cnoriega+*@gmail.com`, or `@chefroom.test`
 - Products with slug prefix `demo-`
 - Orders with prefix `CR-2026-`
 

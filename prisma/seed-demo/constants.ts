@@ -11,6 +11,7 @@ export const PLACEHOLDER_IMAGE_BASE =
   'https://placehold.co/800x1000/e2e0db/2b3280/png'
 
 export const DEMO_USER_EMAIL_PATTERNS = [
-  /^cnoriega\+\d@gmail\.com$/i,
+  /^cnoriegava@gmail\.com$/i,
+  /^cnoriegava\+\d@gmail\.com$/i,
   /^cliente\.demo\+\d+@chefroom\.test$/i,
 ] as const

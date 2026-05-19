@@ -14,11 +14,12 @@ import { routes } from '@/src/config/routes'
 import { authClient, signIn, signOut } from '@/src/lib/auth/auth-client'
 import { getAuthErrorMessage } from '@/src/lib/auth/auth-errors'
 import { loginSchema } from '@/src/lib/auth/auth-schemas'
+import { runPostAuthGuestMerge } from '@/src/lib/auth/post-auth-guest-merge'
 import {
   assertAdminAccessAction,
   ensureCustomerRoleAction,
+  getPostLoginRedirectAction,
 } from '@/src/server/auth/actions'
-import { runPostAuthGuestMerge } from '@/src/lib/auth/post-auth-guest-merge'
 
 type LoginFormVariant = 'storefront' | 'admin'
 
@@ -26,14 +27,12 @@ interface LoginFormProps {
   className?: string
   variant?: LoginFormVariant
   googleEnabled?: boolean
-  defaultCallbackUrl?: string
 }
 
 export function LoginForm({
   className,
   variant = 'storefront',
   googleEnabled = false,
-  defaultCallbackUrl,
 }: LoginFormProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -47,24 +46,17 @@ export function LoginForm({
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [error, setError] = useState<string | null>(() => {
-    if (errorFromQuery === 'forbidden') {
+    if (errorFromQuery === 'forbidden' || errorFromQuery === 'admin_forbidden') {
       return 'No tienes permisos para acceder al dashboard.'
     }
     return null
   })
   const [forgotMessage, setForgotMessage] = useState<string | null>(null)
 
-  const isAdmin = variant === 'admin'
-  const defaultRedirect = isAdmin ? routes.adminDashboard : routes.account
-  const callbackURL =
-    defaultCallbackUrl ?? callbackFromQuery ?? defaultRedirect
-
-  const resolveRedirect = () => {
-    if (callbackURL.startsWith('/')) {
-      return callbackURL
-    }
-    return defaultRedirect
-  }
+  const isAdminVariant = variant === 'admin'
+  const oauthCallbackURL = isAdminVariant
+    ? routes.adminDashboard
+    : routes.home
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,7 +74,7 @@ export function LoginForm({
     const result = await signIn.email({
       email: parsed.data.email.trim().toLowerCase(),
       password: parsed.data.password,
-      callbackURL: resolveRedirect(),
+      callbackURL: oauthCallbackURL,
       rememberMe,
     })
 
@@ -97,10 +89,7 @@ export function LoginForm({
       return
     }
 
-    if (!isAdmin) {
-      await ensureCustomerRoleAction()
-      await runPostAuthGuestMerge()
-    } else {
+    if (isAdminVariant) {
       const adminCheck = await assertAdminAccessAction()
       if (!adminCheck.ok) {
         await signOut()
@@ -108,10 +97,18 @@ export function LoginForm({
         setIsLoading(false)
         return
       }
+    } else {
+      await ensureCustomerRoleAction()
+      await runPostAuthGuestMerge()
     }
 
+    const redirectTo = await getPostLoginRedirectAction({
+      source: isAdminVariant ? 'admin-login' : 'storefront-login',
+      callbackUrl: callbackFromQuery,
+    })
+
     setIsLoading(false)
-    router.push(resolveRedirect())
+    router.push(redirectTo)
     router.refresh()
   }
 
@@ -130,7 +127,7 @@ export function LoginForm({
     try {
       await authClient.signIn.social({
         provider: 'google',
-        callbackURL: resolveRedirect(),
+        callbackURL: oauthCallbackURL,
       })
     } catch (err) {
       setError(
@@ -153,10 +150,10 @@ export function LoginForm({
     <div className={cn('space-y-6', className)}>
       <div className="space-y-2 text-center">
         <h1 className="font-sans text-2xl font-bold text-foreground">
-          {isAdmin ? 'Panel de administraci?n' : 'Bienvenido de vuelta'}
+          {isAdminVariant ? 'Panel de administraci?n' : 'Bienvenido de vuelta'}
         </h1>
         <p className="font-serif text-muted-foreground">
-          {isAdmin
+          {isAdminVariant
             ? 'Inicia sesi?n con tu cuenta de administrador'
             : 'Inicia sesi?n para acceder a tu cuenta'}
         </p>
@@ -322,7 +319,7 @@ export function LoginForm({
         )}
       </Button>
 
-      {!isAdmin && (
+      {!isAdminVariant && (
         <p className="text-center font-serif text-sm text-muted-foreground">
           ?No tienes cuenta?{' '}
           <Link

@@ -2,6 +2,8 @@
 
 import { headers } from 'next/headers'
 
+import { routes } from '@/src/config/routes'
+
 import {
   clearGuestSessionCookie,
   getActiveGuestSessionFromCookies,
@@ -10,6 +12,11 @@ import { mergeGuestSessionIntoUser } from '@/src/server/guest/merge-guest-sessio
 import type { GuestMergeResult } from '@/src/server/guest/guest-merge.types'
 
 import { auth } from './better-auth'
+import { getCurrentUser } from './current-user'
+import {
+  getPostAuthRedirectPath,
+  type PostAuthRedirectSource,
+} from './redirects'
 import { ensureCustomerRole, userHasAdminAccess } from './roles'
 
 type ActionResult =
@@ -84,4 +91,47 @@ export async function mergeCurrentGuestSessionAction(): Promise<GuestMergeResult
   }
 
   return result
+}
+
+/**
+ * Returns redirect target for the current session user, or unauthenticated state.
+ */
+export async function getCurrentUserRedirectAction(): Promise<{
+  authenticated: boolean
+  redirectTo: string | null
+  isAdmin: boolean
+}> {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    return { authenticated: false, redirectTo: null, isAdmin: false }
+  }
+
+  const isAdmin = await userHasAdminAccess(user.id)
+
+  return {
+    authenticated: true,
+    redirectTo: getPostAuthRedirectPath({ roles: user.roles }),
+    isAdmin,
+  }
+}
+
+/**
+ * Resolves where to send the user immediately after sign-in/sign-up (role-aware).
+ */
+export async function getPostLoginRedirectAction(params?: {
+  source?: PostAuthRedirectSource
+  callbackUrl?: string | null
+}): Promise<string> {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    return routes.home
+  }
+
+  return getPostAuthRedirectPath({
+    roles: user.roles,
+    fallback: params?.callbackUrl,
+    source: params?.source ?? 'storefront-login',
+  })
 }

@@ -67,10 +67,12 @@ function isLinkActive(pathname: string, href: string) {
 function AccountMenu({
   isLoggedIn = false,
   userName,
+  isAdmin = false,
   onSignOut,
 }: {
   isLoggedIn?: boolean
   userName?: string
+  isAdmin?: boolean
   onSignOut?: () => void | Promise<void>
 }) {
   return (
@@ -88,6 +90,13 @@ function AccountMenu({
               <p className="font-sans text-sm font-medium">{userName}</p>
             </div>
             <DropdownMenuSeparator />
+            {isAdmin && (
+              <DropdownMenuItem asChild>
+                <Link href={routes.adminDashboard}>Dashboard</Link>
+              </DropdownMenuItem>
+            )}
+            {!isAdmin && (
+              <>
             <DropdownMenuItem asChild>
               <Link href={accountNav.profile.href}>{accountNav.profile.label}</Link>
             </DropdownMenuItem>
@@ -100,6 +109,8 @@ function AccountMenu({
             <DropdownMenuItem asChild>
               <Link href={accountNav.addresses.href}>{accountNav.addresses.label}</Link>
             </DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-destructive"
@@ -141,6 +152,7 @@ export interface PublicHeaderProps {
   cartItemCount?: number
   isLoggedIn?: boolean
   userName?: string
+  isAdmin?: boolean
   onSignOut?: () => void | Promise<void>
 }
 
@@ -148,6 +160,7 @@ export function PublicHeader({
   cartItemCount,
   isLoggedIn = false,
   userName,
+  isAdmin = false,
   onSignOut,
 }: PublicHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -209,6 +222,7 @@ export function PublicHeader({
             <AccountMenu
               isLoggedIn={isLoggedIn}
               userName={userName}
+              isAdmin={isAdmin}
               onSignOut={onSignOut}
             />
 

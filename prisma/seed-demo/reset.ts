@@ -19,6 +19,8 @@ export async function resetDemoData(prisma: PrismaClient): Promise<void> {
   const demoUsers = await prisma.user.findMany({
     where: {
       OR: [
+        { email: { equals: 'cnoriegava@gmail.com', mode: 'insensitive' } },
+        { email: { contains: 'cnoriegava+', mode: 'insensitive' } },
         { email: { contains: 'cnoriega+', mode: 'insensitive' } },
         { email: { endsWith: '@chefroom.test', mode: 'insensitive' } },
       ],
@@ -39,61 +41,59 @@ export async function resetDemoData(prisma: PrismaClient): Promise<void> {
   })
   const demoOrderIds = demoOrders.map((o) => o.id)
 
-  await prisma.$transaction(async (tx) => {
-    if (demoOrderIds.length > 0) {
-      await tx.emailMessage.deleteMany({
-        where: { orderId: { in: demoOrderIds } },
-      })
-      await tx.shipmentEvent.deleteMany({
-        where: { shipment: { orderId: { in: demoOrderIds } } },
-      })
-      await tx.shipment.deleteMany({ where: { orderId: { in: demoOrderIds } } })
-      await tx.paymentAttempt.deleteMany({
-        where: { payment: { orderId: { in: demoOrderIds } } },
-      })
-      await tx.payment.deleteMany({ where: { orderId: { in: demoOrderIds } } })
-      await tx.orderEvent.deleteMany({ where: { orderId: { in: demoOrderIds } } })
-      await tx.orderItem.deleteMany({ where: { orderId: { in: demoOrderIds } } })
-      await tx.order.deleteMany({ where: { id: { in: demoOrderIds } } })
-    }
-
-    await tx.conektaWebhookEvent.deleteMany({
-      where: { eventId: { startsWith: 'demo-conekta-' } },
+  if (demoOrderIds.length > 0) {
+    await prisma.emailMessage.deleteMany({
+      where: { orderId: { in: demoOrderIds } },
     })
+    await prisma.shipmentEvent.deleteMany({
+      where: { shipment: { orderId: { in: demoOrderIds } } },
+    })
+    await prisma.shipment.deleteMany({ where: { orderId: { in: demoOrderIds } } })
+    await prisma.paymentAttempt.deleteMany({
+      where: { payment: { orderId: { in: demoOrderIds } } },
+    })
+    await prisma.payment.deleteMany({ where: { orderId: { in: demoOrderIds } } })
+    await prisma.orderEvent.deleteMany({ where: { orderId: { in: demoOrderIds } } })
+    await prisma.orderItem.deleteMany({ where: { orderId: { in: demoOrderIds } } })
+    await prisma.order.deleteMany({ where: { id: { in: demoOrderIds } } })
+  }
 
-    if (demoUserIds.length > 0) {
-      await tx.cartItem.deleteMany({
-        where: { cart: { userId: { in: demoUserIds } } },
-      })
-      await tx.cart.deleteMany({ where: { userId: { in: demoUserIds } } })
-      await tx.designEvent.deleteMany({
-        where: { design: { userId: { in: demoUserIds } } },
-      })
-      await tx.designAsset.deleteMany({
-        where: { design: { userId: { in: demoUserIds } } },
-      })
-      await tx.design.deleteMany({ where: { userId: { in: demoUserIds } } })
-      await tx.address.deleteMany({ where: { userId: { in: demoUserIds } } })
-      await tx.auditLog.deleteMany({ where: { userId: { in: demoUserIds } } })
-      await tx.session.deleteMany({ where: { userId: { in: demoUserIds } } })
-      await tx.account.deleteMany({ where: { userId: { in: demoUserIds } } })
-      await tx.userRole.deleteMany({ where: { userId: { in: demoUserIds } } })
-      await tx.user.deleteMany({ where: { id: { in: demoUserIds } } })
-    }
-
-    if (demoProductIds.length > 0) {
-      await tx.productCustomizationRule.deleteMany({
-        where: { productId: { in: demoProductIds } },
-      })
-      await tx.productImage.deleteMany({
-        where: { productId: { in: demoProductIds } },
-      })
-      await tx.productVariant.deleteMany({
-        where: { productId: { in: demoProductIds } },
-      })
-      await tx.product.deleteMany({ where: { id: { in: demoProductIds } } })
-    }
+  await prisma.conektaWebhookEvent.deleteMany({
+    where: { eventId: { startsWith: 'demo-conekta-' } },
   })
+
+  if (demoUserIds.length > 0) {
+    await prisma.cartItem.deleteMany({
+      where: { cart: { userId: { in: demoUserIds } } },
+    })
+    await prisma.cart.deleteMany({ where: { userId: { in: demoUserIds } } })
+    await prisma.designEvent.deleteMany({
+      where: { design: { userId: { in: demoUserIds } } },
+    })
+    await prisma.designAsset.deleteMany({
+      where: { design: { userId: { in: demoUserIds } } },
+    })
+    await prisma.design.deleteMany({ where: { userId: { in: demoUserIds } } })
+    await prisma.address.deleteMany({ where: { userId: { in: demoUserIds } } })
+    await prisma.auditLog.deleteMany({ where: { userId: { in: demoUserIds } } })
+    await prisma.session.deleteMany({ where: { userId: { in: demoUserIds } } })
+    await prisma.account.deleteMany({ where: { userId: { in: demoUserIds } } })
+    await prisma.userRole.deleteMany({ where: { userId: { in: demoUserIds } } })
+    await prisma.user.deleteMany({ where: { id: { in: demoUserIds } } })
+  }
+
+  if (demoProductIds.length > 0) {
+    await prisma.productCustomizationRule.deleteMany({
+      where: { productId: { in: demoProductIds } },
+    })
+    await prisma.productImage.deleteMany({
+      where: { productId: { in: demoProductIds } },
+    })
+    await prisma.productVariant.deleteMany({
+      where: { productId: { in: demoProductIds } },
+    })
+    await prisma.product.deleteMany({ where: { id: { in: demoProductIds } } })
+  }
 
   console.log('Demo data reset complete.')
 }

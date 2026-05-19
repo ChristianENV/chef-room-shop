@@ -3,7 +3,7 @@ import { routes } from '@/src/config/routes'
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Mail, Lock, User, Phone, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,7 +15,10 @@ import { cn } from '@/lib/utils'
 import { authClient, signUp } from '@/src/lib/auth/auth-client'
 import { getAuthErrorMessage } from '@/src/lib/auth/auth-errors'
 import { registerSchema } from '@/src/lib/auth/auth-schemas'
-import { ensureCustomerRoleAction } from '@/src/server/auth/actions'
+import {
+  ensureCustomerRoleAction,
+  getPostLoginRedirectAction,
+} from '@/src/server/auth/actions'
 import { runPostAuthGuestMerge } from '@/src/lib/auth/post-auth-guest-merge'
 
 interface RegisterFormData {
@@ -41,7 +44,6 @@ export function RegisterForm({
   googleEnabled = false,
 }: RegisterFormProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [formData, setFormData] = useState<RegisterFormData>({
     firstName: '',
     lastName: '',
@@ -59,14 +61,7 @@ export function RegisterForm({
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  const callbackFromQuery = searchParams.get('callbackUrl')
-  const defaultRedirect = routes.account
-  const callbackURL = callbackFromQuery ?? defaultRedirect
-
-  const resolveRedirect = () => {
-    if (callbackURL.startsWith('/')) return callbackURL
-    return defaultRedirect
-  }
+  const oauthCallbackURL = routes.home
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -100,7 +95,7 @@ export function RegisterForm({
       lastName: parsed.data.lastName,
       phone: parsed.data.phone,
       marketingOptIn: parsed.data.acceptMarketing ?? false,
-      callbackURL: resolveRedirect(),
+      callbackURL: oauthCallbackURL,
     })
 
     if (result.error) {
@@ -117,12 +112,16 @@ export function RegisterForm({
     await ensureCustomerRoleAction()
     await runPostAuthGuestMerge()
 
+    const redirectTo = await getPostLoginRedirectAction({
+      source: 'storefront-register',
+    })
+
     setIsLoading(false)
     setSuccess(true)
 
     setTimeout(() => {
       onSuccess?.()
-      router.push(resolveRedirect())
+      router.push(redirectTo)
       router.refresh()
     }, 1200)
   }
@@ -141,7 +140,7 @@ export function RegisterForm({
     try {
       await authClient.signIn.social({
         provider: 'google',
-        callbackURL: resolveRedirect(),
+        callbackURL: oauthCallbackURL,
       })
     } catch (err) {
       setError(
