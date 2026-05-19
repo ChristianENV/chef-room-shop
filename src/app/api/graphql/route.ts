@@ -1,19 +1,21 @@
-import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-/**
- * GraphQL API route placeholder.
- * Implement schema and handlers when the backend is ready.
- */
-export async function POST() {
-  return NextResponse.json(
-    { errors: [{ message: 'GraphQL endpoint not implemented yet' }] },
-    { status: 501 }
+import { handleRequest as yogaHandleRequest } from '@/src/server/graphql/yoga'
+
+export const runtime = 'nodejs'
+
+type RouteContext = {
+  params: Promise<Record<string, string | string[] | undefined>>
+}
+
+async function handler(
+  request: NextRequest,
+  _routeContext: RouteContext,
+): Promise<Response> {
+  return yogaHandleRequest(
+    request,
+    {} as Parameters<typeof yogaHandleRequest>[1],
   )
 }
 
-export async function GET() {
-  return NextResponse.json(
-    { message: 'Chef Room GraphQL API — use POST for queries' },
-    { status: 200 }
-  )
-}
+export { handler as GET, handler as POST }

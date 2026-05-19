@@ -1,0 +1,883 @@
+// Chef Room — Prisma schema v1 (Neon PostgreSQL)
+// Money fields are stored in centavos (Int). Do not use Float for currency.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum UserStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum RoleSlug {
+  CUSTOMER
+  ADMIN
+  SUPERADMIN
+}
+
+enum AddressType {
+  SHIPPING
+  BILLING
+  BOTH
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum DesignStatus {
+  DRAFT
+  SAVED
+  IN_CART
+  PURCHASED
+  ABANDONED
+  ARCHIVED
+}
+
+enum DesignAssetType {
+  LOGO
+  EMBROIDERY_ARTWORK
+  PREVIEW
+  REFERENCE
+  OTHER
+}
+
+enum DesignEventType {
+  CREATED
+  UPDATED
+  ADDED_TO_CART
+  PURCHASED
+  ABANDONED
+}
+
+enum CartStatus {
+  ACTIVE
+  MERGED
+  CONVERTED
+  ABANDONED
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAYMENT_FAILED
+  PAID
+  IN_PRODUCTION
+  READY_TO_SHIP
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum FulfillmentStatus {
+  UNFULFILLED
+  PROCESSING
+  PARTIALLY_SHIPPED
+  SHIPPED
+  DELIVERED
+  RETURNED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  CANCELLED
+}
+
+enum PaymentProvider {
+  CONEKTA
+  MANUAL
+  OTHER
+}
+
+enum PaymentMethod {
+  CARD
+  OXXO
+  SPEI
+  CASH
+  OTHER
+}
+
+enum ShipmentStatus {
+  PENDING
+  LABEL_CREATED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+  RETURNED
+  CANCELLED
+}
+
+enum EmailStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+  BOUNCED
+}
+
+enum EmailProvider {
+  RESEND
+  SENDGRID
+  OTHER
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  PASSWORD_RESET
+  EMAIL_VERIFIED
+  ORDER_PLACED
+  PAYMENT_RECEIVED
+  WEBHOOK_RECEIVED
+  OTHER
+}
+
+enum OrderEventType {
+  CREATED
+  STATUS_CHANGED
+  PAYMENT_UPDATED
+  FULFILLMENT_UPDATED
+  NOTE_ADDED
+  CUSTOMER_NOTIFIED
+  CANCELLED
+  REFUNDED
+}
+
+// ---------------------------------------------------------------------------
+// Auth / RBAC
+// ---------------------------------------------------------------------------
+
+/// Better Auth core user + Chef Room profile / RBAC.
+model User {
+  id            String     @id @default(uuid()) @db.Uuid
+  name          String
+  email         String     @unique
+  emailVerified Boolean    @default(false)
+  /// Profile image URL (Better Auth `image`; synced from Google, etc.).
+  image         String?
+  status        UserStatus @default(ACTIVE)
+  firstName     String?
+  lastName      String?
+  phone         String?
+  marketingOptIn Boolean   @default(false)
+  lastLoginAt   DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  deletedAt     DateTime?
+
+  roles               UserRole[]
+  sessions            Session[]
+  accounts            Account[]
+  loginAttempts       LoginAttempt[]
+  addresses           Address[]
+  carts               Cart[]
+  designs             Design[]
+  orders              Order[]
+  auditLogs           AuditLog[]
+  mergedGuestSessions GuestSession[] @relation("GuestSessionMergedToUser")
+
+  @@index([status])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        RoleSlug @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model UserRole {
+  userId    String   @db.Uuid
+  roleId    String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  roleId       String   @db.Uuid
+  permissionId String   @db.Uuid
+  createdAt    DateTime @default(now())
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+/// Better Auth session (opaque token stored in DB; HttpOnly cookie on client).
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String   @db.Uuid
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+/// Better Auth linked provider (credential password, Google, etc.).
+model Account {
+  id                    String    @id @default(uuid()) @db.Uuid
+  accountId             String
+  providerId            String
+  userId                String    @db.Uuid
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  /// Hashed password for email/password (`providerId` = credential).
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+/// Better Auth verification (email verify, password reset, OAuth state).
+model Verification {
+  id         String   @id @default(uuid()) @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verifications")
+}
+
+model LoginAttempt {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String
+  ipAddress String?
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  userId String? @db.Uuid
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([email, createdAt])
+  @@index([ipAddress, createdAt])
+  @@map("login_attempts")
+}
+
+/// Anonymous browser/session for guest checkout and design saves before registration.
+model GuestSession {
+  id             String   @id @default(uuid()) @db.Uuid
+  tokenHash      String   @unique
+  expiresAt      DateTime
+  mergedToUserId String?  @db.Uuid
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  mergedToUser User?     @relation("GuestSessionMergedToUser", fields: [mergedToUserId], references: [id], onDelete: SetNull)
+  addresses    Address[]
+  carts        Cart[]
+  designs      Design[]
+  orders       Order[]
+
+  @@index([expiresAt])
+  @@index([mergedToUserId])
+  @@map("guest_sessions")
+}
+
+// ---------------------------------------------------------------------------
+// Customer
+// ---------------------------------------------------------------------------
+
+model Address {
+  id             String      @id @default(uuid()) @db.Uuid
+  userId         String?     @db.Uuid
+  guestSessionId String?     @db.Uuid
+  type           AddressType @default(SHIPPING)
+  label          String?
+  fullName       String
+  line1          String
+  line2          String?
+  city           String
+  state          String
+  postalCode     String
+  country        String      @default("MX")
+  phone          String?
+  isDefault      Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  deletedAt      DateTime?
+
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guestSession GuestSession? @relation(fields: [guestSessionId], references: [id], onDelete: Cascade)
+
+  shippingOrders Order[] @relation("OrderShippingAddress")
+  billingOrders  Order[] @relation("OrderBillingAddress")
+
+  @@index([userId])
+  @@index([guestSessionId])
+  @@index([deletedAt])
+  @@map("addresses")
+}
+
+// ---------------------------------------------------------------------------
+// Catalog
+// ---------------------------------------------------------------------------
+
+model ProductType {
+  id        String   @id @default(uuid()) @db.Uuid
+  slug      String   @unique
+  nameEs    String
+  nameEn    String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+
+  @@map("product_types")
+}
+
+model Product {
+  id               String        @id @default(uuid()) @db.Uuid
+  productTypeId    String        @db.Uuid
+  slug             String        @unique
+  name             String
+  description      String?
+  shortDescription String?
+  status           ProductStatus @default(DRAFT)
+  basePriceCents   Int
+  customizable     Boolean       @default(true)
+  seoTitle         String?
+  seoDescription   String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  deletedAt        DateTime?
+
+  productType          ProductType               @relation(fields: [productTypeId], references: [id])
+  images               ProductImage[]
+  variants             ProductVariant[]
+  customizationRules   ProductCustomizationRule[]
+  cartItems            CartItem[]
+
+  @@index([productTypeId])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String   @id @default(uuid()) @db.Uuid
+  productId String   @db.Uuid
+  url       String
+  publicId  String?
+  alt       String?
+  sortOrder Int      @default(0)
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, sortOrder])
+  @@map("product_images")
+}
+
+model Color {
+  id        String   @id @default(uuid()) @db.Uuid
+  slug      String   @unique
+  name      String
+  hex       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variants ProductVariant[]
+
+  @@map("colors")
+}
+
+model Size {
+  id        String   @id @default(uuid()) @db.Uuid
+  slug      String   @unique
+  name      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variants ProductVariant[]
+
+  @@map("sizes")
+}
+
+model ProductVariant {
+  id             String    @id @default(uuid()) @db.Uuid
+  productId      String    @db.Uuid
+  colorId        String    @db.Uuid
+  sizeId         String    @db.Uuid
+  sku            String    @unique
+  priceCents     Int?
+  stockQty       Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  color     Color      @relation(fields: [colorId], references: [id])
+  size      Size       @relation(fields: [sizeId], references: [id])
+  cartItems CartItem[]
+
+  @@unique([productId, colorId, sizeId])
+  @@index([productId])
+  @@index([deletedAt])
+  @@map("product_variants")
+}
+
+// ---------------------------------------------------------------------------
+// Customization
+// ---------------------------------------------------------------------------
+
+model CustomizationArea {
+  id        String   @id @default(uuid()) @db.Uuid
+  slug      String   @unique
+  nameEs    String
+  nameEn    String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rules ProductCustomizationRule[]
+
+  @@map("customization_areas")
+}
+
+model CustomizationOption {
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        String   @unique
+  nameEs      String
+  nameEn      String?
+  priceCents  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  rules ProductCustomizationRule[]
+
+  @@map("customization_options")
+}
+
+model ProductCustomizationRule {
+  id         String   @id @default(uuid()) @db.Uuid
+  productId  String   @db.Uuid
+  areaId     String   @db.Uuid
+  optionId   String   @db.Uuid
+  isEnabled  Boolean  @default(true)
+  configJson Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  product Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  area    CustomizationArea @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  option  CustomizationOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, areaId, optionId])
+  @@index([productId])
+  @@map("product_customization_rules")
+}
+
+model Design {
+  id              String       @id @default(uuid()) @db.Uuid
+  userId          String?      @db.Uuid
+  guestSessionId  String?      @db.Uuid
+  status          DesignStatus @default(DRAFT)
+  name            String?
+  configJson      Json
+  previewUrl      String?
+  previewPublicId String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  deletedAt       DateTime?
+
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  guestSession GuestSession? @relation(fields: [guestSessionId], references: [id], onDelete: SetNull)
+  assets       DesignAsset[]
+  events       DesignEvent[]
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+
+  @@index([userId])
+  @@index([guestSessionId])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("designs")
+}
+
+model DesignAsset {
+  id        String          @id @default(uuid()) @db.Uuid
+  designId  String          @db.Uuid
+  type      DesignAssetType
+  url       String
+  publicId  String?
+  sortOrder Int             @default(0)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  design Design @relation(fields: [designId], references: [id], onDelete: Cascade)
+
+  @@index([designId])
+  @@map("design_assets")
+}
+
+model DesignEvent {
+  id           String          @id @default(uuid()) @db.Uuid
+  designId     String          @db.Uuid
+  type         DesignEventType
+  metadataJson Json?
+  createdAt    DateTime        @default(now())
+
+  design Design @relation(fields: [designId], references: [id], onDelete: Cascade)
+
+  @@index([designId, createdAt])
+  @@map("design_events")
+}
+
+// ---------------------------------------------------------------------------
+// Cart
+// ---------------------------------------------------------------------------
+
+model Cart {
+  id             String     @id @default(uuid()) @db.Uuid
+  userId         String?    @db.Uuid
+  guestSessionId String?    @db.Uuid
+  status         CartStatus @default(ACTIVE)
+  currency       String     @default("MXN")
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  deletedAt      DateTime?
+
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  guestSession GuestSession? @relation(fields: [guestSessionId], references: [id], onDelete: SetNull)
+  items        CartItem[]
+
+  @@index([userId])
+  @@index([guestSessionId])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("carts")
+}
+
+model CartItem {
+  id                      String   @id @default(uuid()) @db.Uuid
+  cartId                  String   @db.Uuid
+  productId               String   @db.Uuid
+  productVariantId        String?  @db.Uuid
+  designId                String?  @db.Uuid
+  quantity                Int      @default(1)
+  unitPriceCents          Int
+  customizationPriceCents Int      @default(0)
+  configSnapshotJson      Json?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  cart           Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product        Product         @relation(fields: [productId], references: [id])
+  productVariant ProductVariant? @relation(fields: [productVariantId], references: [id], onDelete: SetNull)
+  design         Design?         @relation(fields: [designId], references: [id], onDelete: SetNull)
+
+  @@index([cartId])
+  @@index([productId])
+  @@index([designId])
+  @@map("cart_items")
+}
+
+// ---------------------------------------------------------------------------
+// Orders
+// ---------------------------------------------------------------------------
+
+model Order {
+  id                     String            @id @default(uuid()) @db.Uuid
+  orderNumber            String            @unique
+  userId                 String?           @db.Uuid
+  guestSessionId         String?           @db.Uuid
+  status                 OrderStatus       @default(PENDING_PAYMENT)
+  fulfillmentStatus      FulfillmentStatus @default(UNFULFILLED)
+  customerEmail          String
+  customerPhone          String?
+  subtotalCents          Int
+  customizationTotalCents Int              @default(0)
+  shippingCents          Int               @default(0)
+  taxCents               Int               @default(0)
+  discountCents          Int               @default(0)
+  totalCents             Int
+  currency               String            @default("MXN")
+  shippingAddressId      String?           @db.Uuid
+  billingAddressId       String?           @db.Uuid
+  notes                  String?
+  placedAt               DateTime?
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  deletedAt              DateTime?
+
+  user             User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  guestSession     GuestSession? @relation(fields: [guestSessionId], references: [id], onDelete: SetNull)
+  shippingAddress  Address?      @relation("OrderShippingAddress", fields: [shippingAddressId], references: [id], onDelete: SetNull)
+  billingAddress   Address?      @relation("OrderBillingAddress", fields: [billingAddressId], references: [id], onDelete: SetNull)
+  items            OrderItem[]
+  events           OrderEvent[]
+  payments         Payment[]
+  shipments        Shipment[]
+  emailMessages    EmailMessage[]
+
+  @@index([userId])
+  @@index([guestSessionId])
+  @@index([status])
+  @@index([fulfillmentStatus])
+  @@index([customerEmail])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                 String   @id @default(uuid()) @db.Uuid
+  orderId            String   @db.Uuid
+  designId           String?  @db.Uuid
+  quantity           Int
+  unitPriceCents     Int
+  customizationPriceCents Int @default(0)
+  lineTotalCents     Int
+  productSnapshotJson Json
+  designSnapshotJson  Json?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  order  Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  design Design? @relation(fields: [designId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([designId])
+  @@map("order_items")
+}
+
+model OrderEvent {
+  id           String         @id @default(uuid()) @db.Uuid
+  orderId      String         @db.Uuid
+  type         OrderEventType
+  message      String?
+  metadataJson Json?
+  createdAt    DateTime       @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+  @@map("order_events")
+}
+
+// ---------------------------------------------------------------------------
+// Payments (Conekta-ready, no sensitive card data)
+// ---------------------------------------------------------------------------
+
+model Payment {
+  id              String          @id @default(uuid()) @db.Uuid
+  orderId         String          @db.Uuid
+  provider        PaymentProvider @default(CONEKTA)
+  providerOrderId String
+  status          PaymentStatus   @default(PENDING)
+  amountCents     Int
+  currency        String          @default("MXN")
+  method          PaymentMethod?
+  paidAt          DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  order     Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  attempts  PaymentAttempt[]
+
+  @@unique([provider, providerOrderId])
+  @@index([orderId])
+  @@index([status])
+  @@map("payments")
+}
+
+model PaymentAttempt {
+  id                String        @id @default(uuid()) @db.Uuid
+  paymentId         String        @db.Uuid
+  providerChargeId  String?
+  status            PaymentStatus @default(PENDING)
+  amountCents       Int
+  rawResponseJson   Json?
+  failureCode       String?
+  failureMessage    String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@index([providerChargeId])
+  @@index([status])
+  @@map("payment_attempts")
+}
+
+/// Idempotent storage for Conekta webhooks (eventId is unique).
+model ConektaWebhookEvent {
+  id             String    @id @default(uuid()) @db.Uuid
+  eventId        String    @unique
+  eventType      String
+  rawPayloadJson Json
+  processedAt    DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([eventType])
+  @@index([processedAt])
+  @@map("conekta_webhook_events")
+}
+
+// ---------------------------------------------------------------------------
+// Shipping
+// ---------------------------------------------------------------------------
+
+model Shipment {
+  id             String         @id @default(uuid()) @db.Uuid
+  orderId        String         @db.Uuid
+  status         ShipmentStatus @default(PENDING)
+  carrier        String?
+  trackingNumber String?
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  order  Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  events ShipmentEvent[]
+
+  @@index([orderId])
+  @@index([status])
+  @@index([trackingNumber])
+  @@map("shipments")
+}
+
+model ShipmentEvent {
+  id           String         @id @default(uuid()) @db.Uuid
+  shipmentId   String         @db.Uuid
+  status       ShipmentStatus
+  message      String?
+  metadataJson Json?
+  createdAt    DateTime       @default(now())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([shipmentId, createdAt])
+  @@map("shipment_events")
+}
+
+// ---------------------------------------------------------------------------
+// Notifications
+// ---------------------------------------------------------------------------
+
+model EmailMessage {
+  id                String        @id @default(uuid()) @db.Uuid
+  orderId           String?       @db.Uuid
+  toEmail           String
+  subject           String
+  status            EmailStatus   @default(QUEUED)
+  provider          EmailProvider @default(RESEND)
+  providerMessageId String?
+  templateKey       String?
+  metadataJson      Json?
+  sentAt            DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  order Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([toEmail])
+  @@index([status])
+  @@map("email_messages")
+}
+
+// ---------------------------------------------------------------------------
+// Audit
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id           String      @id @default(uuid()) @db.Uuid
+  userId       String?     @db.Uuid
+  action       AuditAction
+  entityType   String
+  entityId     String?
+  metadataJson Json?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime    @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

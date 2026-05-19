@@ -1,31 +1,24 @@
 import 'server-only'
 
-import { cookies } from 'next/headers'
-import {
-  type Session,
-  isAdminAuthEnforced,
-  parseSessionCookie,
-  SESSION_COOKIE_NAME,
-} from '@/src/lib/auth/session'
+import { getCurrentUser } from '@/src/server/auth/current-user'
 import { canAccessAdmin } from '@/src/server/auth/permissions'
-
-/**
- * Server Components / Route Handlers — not for middleware or client components.
- */
-export async function getServerSession(): Promise<Session | null> {
-  const cookieStore = await cookies()
-  const cookieValue = cookieStore.get(SESSION_COOKIE_NAME)?.value
-  return parseSessionCookie(cookieValue)
-}
-
-/**
- * Returns the session when present; when enforcement is off, returns null without blocking.
- * Use {@link requireAdminSession} in protected admin layouts instead of calling this directly.
- */
-export async function getAdminSessionOrNull(): Promise<Session | null> {
-  const session = await getServerSession()
-  if (!session) return null
-  return canAccessAdmin(session.role) ? session : null
-}
+import type { CurrentUser } from '@/src/server/auth/types'
+import { isAdminAuthEnforced } from '@/src/lib/auth/session'
 
 export { isAdminAuthEnforced }
+
+/**
+ * Returns the authenticated user from the session cookie, or null.
+ */
+export async function getServerSession(): Promise<CurrentUser | null> {
+  return getCurrentUser()
+}
+
+/**
+ * Returns the current user when they have admin access.
+ */
+export async function getAdminSessionOrNull(): Promise<CurrentUser | null> {
+  const user = await getCurrentUser()
+  if (!user) return null
+  return canAccessAdmin(user) ? user : null
+}
