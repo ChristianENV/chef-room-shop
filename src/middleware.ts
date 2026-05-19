@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { routes } from '@/src/config/routes'
 import {
-  getSessionFromRequest,
+  hasSessionCookieOnRequest,
   isAdminAuthEnforced,
 } from '@/src/lib/auth/session'
 import {
@@ -10,6 +10,10 @@ import {
   isProtectedAdminPath,
 } from '@/src/server/auth/permissions'
 
+/**
+ * Admin route protection (Edge).
+ * Validates cookie presence only — full session/RBAC is enforced in server layouts via requireAdminSession.
+ */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -17,16 +21,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // TODO: Remove bypass when JWT / session auth is production-ready.
-  // Set ADMIN_AUTH_ENFORCE=true locally only when testing real redirects.
   if (!isAdminAuthEnforced()) {
     return NextResponse.next()
   }
 
-  const session = getSessionFromRequest(request)
-  const role = session?.role ?? null
+  const hasCookie = hasSessionCookieOnRequest(request)
 
-  if (!canAccessAdminRoute(pathname, role)) {
+  if (!canAccessAdminRoute(pathname, hasCookie)) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = routes.adminLogin
     loginUrl.searchParams.set('callbackUrl', pathname)

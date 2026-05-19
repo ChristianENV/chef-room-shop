@@ -1,10 +1,11 @@
 /**
  * Chef Room database seed (catalog, RBAC, customization reference data).
  *
- * OAuthAccount rows are NOT seeded — they are created at runtime when a user
- * signs in with Google (providerAccountId = Google `sub`).
+ * Auth users are created via Better Auth when SEED_ADMIN_* env vars are set.
  */
-import { PrismaClient, RoleSlug } from '@prisma/client'
+import { PrismaClient, RoleSlug, UserStatus } from '@prisma/client'
+
+import { buildAuth } from '../src/server/auth/build-auth'
 
 const prisma = new PrismaClient()
 
@@ -35,7 +36,12 @@ const ADMIN_PERMISSION_SLUGS = [
   'analytics.read',
 ] as const
 
-const ROLES: { slug: RoleSlug; name: string; description: string; permissionSlugs: readonly string[] }[] = [
+const ROLES: {
+  slug: RoleSlug
+  name: string
+  description: string
+  permissionSlugs: readonly string[]
+}[] = [
   {
     slug: RoleSlug.CUSTOMER,
     name: 'Cliente',
@@ -198,6 +204,93 @@ async function seedCustomization() {
   }
 }
 
+/**
+ * Optional DEV admin via Better Auth sign-up API (password stored on Account, not User).
+ */
+async function seedDevAdmin() {
+  const email = process.env.SEED_ADMIN_EMAIL?.trim().toLowerCase()
+  const password = process.env.SEED_ADMIN_PASSWORD
+  const firstName = process.env.SEED_ADMIN_FIRST_NAME?.trim() || 'Admin'
+  const lastName = process.env.SEED_ADMIN_LAST_NAME?.trim() || 'Chef Room'
+
+  if (!email || !password) {
+    return
+  }
+
+  if (!process.env.BETTER_AUTH_SECRET) {
+    console.warn(
+      'SEED_ADMIN_* set but BETTER_AUTH_SECRET is missing — skip DEV admin seed.',
+    )
+    return
+  }
+
+  const adminRole = await prisma.role.findUnique({
+    where: { slug: RoleSlug.ADMIN },
+  })
+
+  if (!adminRole) {
+    throw new Error('ADMIN role missing — run role seed first')
+  }
+
+  const auth = buildAuth(prisma)
+  const name = `${firstName} ${lastName}`.trim()
+
+  let user = await prisma.user.findUnique({ where: { email } })
+
+  if (!user) {
+    await auth.api.signUpEmail({
+      body: {
+        email,
+        password,
+        name,
+        firstName,
+        lastName,
+      },
+    })
+    user = await prisma.user.findUniqueOrThrow({ where: { email } })
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      firstName,
+      lastName,
+      name,
+      status: UserStatus.ACTIVE,
+      emailVerified: true,
+    },
+  })
+
+  const existingRole = await prisma.userRole.findUnique({
+    where: { userId_roleId: { userId: user.id, roleId: adminRole.id } },
+  })
+
+  if (!existingRole) {
+    await prisma.userRole.create({
+      data: { userId: user.id, roleId: adminRole.id },
+    })
+  }
+
+  const customerRole = await prisma.role.findUnique({
+    where: { slug: RoleSlug.CUSTOMER },
+  })
+
+  if (customerRole) {
+    const hasCustomer = await prisma.userRole.findUnique({
+      where: {
+        userId_roleId: { userId: user.id, roleId: customerRole.id },
+      },
+    })
+    if (!hasCustomer) {
+      await prisma.userRole.create({
+        data: { userId: user.id, roleId: customerRole.id },
+      })
+    }
+  }
+
+  console.log(`DEV admin user ensured for ${email}`)
+}
+
 async function main() {
   console.log('Seeding Chef Room database...')
 
@@ -205,6 +298,7 @@ async function main() {
   await seedRoles(permissionIds)
   await seedCatalog()
   await seedCustomization()
+  await seedDevAdmin()
 
   console.log('Seed completed.')
 }

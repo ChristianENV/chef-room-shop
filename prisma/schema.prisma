@@ -27,12 +27,6 @@ enum RoleSlug {
   SUPERADMIN
 }
 
-/// External identity providers linked to a User (Google sub, etc.).
-enum AuthProvider {
-  GOOGLE
-  PASSWORD
-}
-
 enum AddressType {
   SHIPPING
   BILLING
@@ -177,35 +171,34 @@ enum OrderEventType {
 // Auth / RBAC
 // ---------------------------------------------------------------------------
 
+/// Better Auth core user + Chef Room profile / RBAC.
 model User {
-  id                String     @id @default(uuid()) @db.Uuid
-  email             String     @unique
-  /// Null when the user only signs in via OAuth (e.g. Google).
-  passwordHash      String?
-  status            UserStatus @default(PENDING_VERIFICATION)
-  firstName         String?
-  lastName          String?
-  phone             String?
-  /// Profile image URL (e.g. synced from Google on login).
-  avatarUrl         String?
-  emailVerifiedAt   DateTime?
-  lastLoginAt       DateTime?
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
-  deletedAt         DateTime?
+  id            String     @id @default(uuid()) @db.Uuid
+  name          String
+  email         String     @unique
+  emailVerified Boolean    @default(false)
+  /// Profile image URL (Better Auth `image`; synced from Google, etc.).
+  image         String?
+  status        UserStatus @default(ACTIVE)
+  firstName     String?
+  lastName      String?
+  phone         String?
+  marketingOptIn Boolean   @default(false)
+  lastLoginAt   DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  deletedAt     DateTime?
 
-  roles                   UserRole[]
-  sessions                Session[]
-  oauthAccounts           OAuthAccount[]
-  passwordResetTokens     PasswordResetToken[]
-  emailVerificationTokens EmailVerificationToken[]
-  loginAttempts           LoginAttempt[]
-  addresses               Address[]
-  carts                   Cart[]
-  designs                 Design[]
-  orders                  Order[]
-  auditLogs               AuditLog[]
-  mergedGuestSessions     GuestSession[] @relation("GuestSessionMergedToUser")
+  roles               UserRole[]
+  sessions            Session[]
+  accounts            Account[]
+  loginAttempts       LoginAttempt[]
+  addresses           Address[]
+  carts               Cart[]
+  designs             Design[]
+  orders              Order[]
+  auditLogs           AuditLog[]
+  mergedGuestSessions GuestSession[] @relation("GuestSessionMergedToUser")
 
   @@index([status])
   @@index([deletedAt])
@@ -265,15 +258,16 @@ model RolePermission {
   @@map("role_permissions")
 }
 
+/// Better Auth session (opaque token stored in DB; HttpOnly cookie on client).
 model Session {
   id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @db.Uuid
-  tokenHash String   @unique
   expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   ipAddress String?
   userAgent String?
-  createdAt DateTime @default(now())
-  revokedAt DateTime?
+  userId    String   @db.Uuid
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -282,34 +276,41 @@ model Session {
   @@map("sessions")
 }
 
-model PasswordResetToken {
-  id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @db.Uuid
-  tokenHash String    @unique
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
+/// Better Auth linked provider (credential password, Google, etc.).
+model Account {
+  id                    String    @id @default(uuid()) @db.Uuid
+  accountId             String
+  providerId            String
+  userId                String    @db.Uuid
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  /// Hashed password for email/password (`providerId` = credential).
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([providerId, accountId])
   @@index([userId])
-  @@index([expiresAt])
-  @@map("password_reset_tokens")
+  @@map("accounts")
 }
 
-model EmailVerificationToken {
-  id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @db.Uuid
-  tokenHash String    @unique
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
+/// Better Auth verification (email verify, password reset, OAuth state).
+model Verification {
+  id         String   @id @default(uuid()) @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([expiresAt])
-  @@map("email_verification_tokens")
+  @@index([identifier])
+  @@map("verifications")
 }
 
 model LoginAttempt {
@@ -327,66 +328,20 @@ model LoginAttempt {
   @@map("login_attempts")
 }
 
-/// Linked OAuth identity (Google sub). No access/refresh/id tokens stored in MVP.
-model OAuthAccount {
-  id                String       @id @default(uuid()) @db.Uuid
-  userId            String       @db.Uuid
-  provider          AuthProvider
-  /// Provider subject id (Google `sub`).
-  providerAccountId String
-  providerEmail     String?
-  providerName      String?
-  providerAvatarUrl String?
-  emailVerified     Boolean      @default(false)
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
-  lastLoginAt       DateTime?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-  @@index([userId])
-  @@index([providerEmail])
-  @@map("oauth_accounts")
-}
-
-/// Short-lived OAuth state for CSRF protection and optional PKCE (hashed values only).
-model OAuthState {
-  id               String        @id @default(uuid()) @db.Uuid
-  provider         AuthProvider
-  stateHash        String        @unique
-  codeVerifierHash String?
-  redirectTo       String?
-  guestSessionId   String?       @db.Uuid
-  ipAddress        String?
-  userAgent        String?
-  expiresAt        DateTime
-  usedAt           DateTime?
-  createdAt        DateTime      @default(now())
-
-  guestSession GuestSession? @relation(fields: [guestSessionId], references: [id], onDelete: SetNull)
-
-  @@index([provider])
-  @@index([expiresAt])
-  @@index([guestSessionId])
-  @@map("oauth_states")
-}
-
 /// Anonymous browser/session for guest checkout and design saves before registration.
 model GuestSession {
-  id            String    @id @default(uuid()) @db.Uuid
-  tokenHash     String    @unique
-  expiresAt     DateTime
+  id             String   @id @default(uuid()) @db.Uuid
+  tokenHash      String   @unique
+  expiresAt      DateTime
   mergedToUserId String?  @db.Uuid
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  mergedToUser User?         @relation("GuestSessionMergedToUser", fields: [mergedToUserId], references: [id], onDelete: SetNull)
+  mergedToUser User?     @relation("GuestSessionMergedToUser", fields: [mergedToUserId], references: [id], onDelete: SetNull)
   addresses    Address[]
   carts        Cart[]
   designs      Design[]
   orders       Order[]
-  oauthStates  OAuthState[]
 
   @@index([expiresAt])
   @@index([mergedToUserId])

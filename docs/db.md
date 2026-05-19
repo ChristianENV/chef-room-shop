@@ -98,6 +98,19 @@ npx prisma studio
 | Tables | 37 application tables + `_prisma_migrations` |
 | Seed | Roles, permissions, catalog reference data |
 
+## Optional DEV admin user
+
+Requires Better Auth env + seed vars in `.env.local`:
+
+```env
+BETTER_AUTH_SECRET="..."
+BETTER_AUTH_URL="http://localhost:3000"
+SEED_ADMIN_EMAIL="admin@chefroom.local"
+SEED_ADMIN_PASSWORD="your-dev-password"
+```
+
+Then run `npm run db:seed`. See [auth.md](./auth.md).
+
 ## Troubleshooting
 
 | Issue | Action |

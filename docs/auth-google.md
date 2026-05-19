@@ -1,38 +1,44 @@
-# Google login (schema + BFF — planned)
+# Google login (Better Auth)
 
-Chef Room uses **email/password** and **Google OAuth**, plus **guest checkout**. Session is stored in our DB (`Session`) with an **HttpOnly** cookie. Google tokens are **not** persisted in MVP.
+Google sign-in is configured through **Better Auth** (`socialProviders.google` in `src/server/auth/build-auth.ts`), not the legacy custom `OAuthAccount` / `OAuthState` tables.
 
-## Expected flow (implementation pending)
-
-1. **Start** — `GET /api/auth/google` (or similar)
-   - Create `OAuthState` with hashed `state` (and optional PKCE `codeVerifierHash`).
-   - Optionally set `guestSessionId` to merge guest cart/designs after login.
-   - Redirect to Google authorization URL.
-
-2. **Callback** — `GET /api/auth/google/callback`
-   - Validate `state` against `OAuthState` (not expired, `usedAt` null).
-   - Exchange `code` for tokens (server-side only; do not store tokens in DB).
-   - Fetch Google profile (`sub`, email, name, picture).
-
-3. **Account resolution**
-   - `providerAccountId` = Google `sub`, `provider` = `GOOGLE`.
-   - If `OAuthAccount` exists → sign in that `userId`.
-   - Else if verified email matches existing `User.email` → link new `OAuthAccount`.
-   - Else create `User` (role `CUSTOMER`), set `emailVerifiedAt` if Google verified email.
-
-4. **Session**
-   - Create `Session` with hashed token, set HttpOnly cookie.
-   - Update `User.lastLoginAt`, `OAuthAccount.lastLoginAt`, optional `avatarUrl` from Google.
-
-5. **Guest merge** (later)
-   - If `OAuthState.guestSessionId` present → merge carts/orders/designs to user.
-
-## Security notes
-
-- Never store `access_token`, `refresh_token`, or `id_token` in `OAuthAccount` for MVP.
-- Never store PAN/CVV or card data in auth tables.
-- Mark `OAuthState.usedAt` after successful callback to prevent replay.
+> **Deprecated:** `OAuthAccount`, `OAuthState`, `PasswordResetToken`, and `EmailVerificationToken` were removed in favor of Better Auth `Account` and `Verification`.
 
 ## Environment
 
-See `.env.example`: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`.
+```env
+GOOGLE_CLIENT_ID="..."
+GOOGLE_CLIENT_SECRET="..."
+BETTER_AUTH_URL="http://localhost:3000"
+```
+
+Redirect URI in Google Cloud Console:
+
+```text
+http://localhost:3000/api/auth/callback/google
+```
+
+(Use your production `BETTER_AUTH_URL` in production.)
+
+## Expected flow (when UI is wired)
+
+1. User clicks “Continuar con Google” → `authClient.signIn.social({ provider: 'google' })`.
+2. Better Auth creates/updates `Account` with `providerId: google`.
+3. Session cookie set; `User.image` / `firstName` / `lastName` mapped via `mapProfileToUser`.
+4. Assign **CUSTOMER** role in Prisma (hook / post-sign-up job — pending).
+5. **Guest merge** (pending): merge `GuestSession` carts/designs after login.
+
+## Security notes
+
+- Better Auth may persist OAuth tokens on `Account`; MVP uses default scopes only.
+- Do not store card data in auth tables.
+- For production, review token storage and enable encryption hooks if needed.
+
+## Pending
+
+- [ ] Google button in storefront / admin login
+- [ ] Account linking UI
+- [ ] Guest merge after OAuth
+- [ ] CUSTOMER role assignment hook
+
+See [auth.md](./auth.md) for full auth architecture.

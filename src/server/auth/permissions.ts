@@ -1,16 +1,10 @@
+import type { RoleSlug } from '@prisma/client'
 import { routes } from '@/src/config/routes'
 
-/**
- * Application roles.
- * TODO: Align with backend / GraphQL role claims once auth is integrated.
- */
-export type UserRole = 'USER' | 'ADMIN' | 'SUPERADMIN'
+import type { CurrentUser } from './types'
 
-export type SessionUser = {
-  id: string
-  email: string
-  role: UserRole
-}
+/** Admin panel access roles (DB slugs). */
+export const ADMIN_ROLE_SLUGS: RoleSlug[] = ['ADMIN', 'SUPERADMIN']
 
 /** Routes that must stay public (no session required). */
 export const ADMIN_PUBLIC_ROUTES = [routes.adminLogin] as const
@@ -18,7 +12,9 @@ export const ADMIN_PUBLIC_ROUTES = [routes.adminLogin] as const
 const ADMIN_PREFIX = '/admin'
 const ADMIN_PUBLIC_ROUTE_SET = new Set<string>(ADMIN_PUBLIC_ROUTES)
 
-/** Normalizes pathname (strips trailing slash except for root). */
+/**
+ * Normalizes pathname (strips trailing slash except for root).
+ */
 export function normalizePathname(pathname: string): string {
   if (pathname.length > 1 && pathname.endsWith('/')) {
     return pathname.slice(0, -1)
@@ -33,7 +29,6 @@ export function isAdminPublicPath(pathname: string): boolean {
 
 /**
  * All /admin/* routes except /admin/login require auth when enforcement is enabled.
- * TODO: Add per-route RBAC when SUPERADMIN-only areas are introduced.
  */
 export function isProtectedAdminPath(pathname: string): boolean {
   const path = normalizePathname(pathname)
@@ -43,38 +38,33 @@ export function isProtectedAdminPath(pathname: string): boolean {
 }
 
 /**
- * TODO: Replace with provider-specific role checks (JWT claims, session DB, etc.).
- */
-export function canAccessAdmin(role: UserRole | null | undefined): boolean {
-  if (!role) return false
-  return role === 'ADMIN' || role === 'SUPERADMIN'
-}
-
-/**
- * TODO: Enforce per-route policies when SUPERADMIN-only areas are introduced.
+ * Edge middleware: when enforcement is on, protected admin paths need a session cookie.
+ * Role validation happens server-side via {@link requireAdminSession} (no Prisma in Edge).
  */
 export function canAccessAdminRoute(
   pathname: string,
-  role: UserRole | null | undefined
+  hasSessionCookie: boolean,
 ): boolean {
   if (!isProtectedAdminPath(pathname)) return true
-  return canAccessAdmin(role)
+  return hasSessionCookie
 }
 
 /**
- * TODO: Implement hierarchical role checks (e.g. SUPERADMIN > ADMIN > USER).
+ * Returns true if the user has the given permission slug.
+ * SUPERADMIN is treated as having all permissions.
  */
-export function hasMinimumRole(
-  role: UserRole | null | undefined,
-  minimum: UserRole
+export function hasPermission(
+  user: CurrentUser,
+  permissionKey: string,
 ): boolean {
-  if (!role) return false
+  if (user.roles.includes('SUPERADMIN')) return true
+  return user.permissions.includes(permissionKey)
+}
 
-  const rank: Record<UserRole, number> = {
-    USER: 0,
-    ADMIN: 1,
-    SUPERADMIN: 2,
-  }
-
-  return rank[role] >= rank[minimum]
+/**
+ * Returns true if the user can access the admin panel (server-side, with RBAC).
+ */
+export function canAccessAdmin(user: CurrentUser | null | undefined): boolean {
+  if (!user) return false
+  return user.roles.some((role) => ADMIN_ROLE_SLUGS.includes(role))
 }
