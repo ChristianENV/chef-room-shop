@@ -23,6 +23,8 @@ import {
 import { ChefRoomLogo } from '@/components/brand/chef-room-logo'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { routes } from '@/src/config/routes'
+import { CartPopover } from '@/src/features/storefront/cart/components/cart-popover'
+import { MOCK_CART_PREVIEW } from '@/src/features/storefront/cart/mocks/cart.mock'
 import {
   accountNav,
   authNav,
@@ -127,12 +129,15 @@ export interface PublicHeaderProps {
 }
 
 export function PublicHeader({
-  cartItemCount = 0,
+  cartItemCount,
   isLoggedIn = false,
   userName,
 }: PublicHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
+  // TODO: Reemplazar MOCK_CART_PREVIEW por datos de useCartQuery.
+  const cartPreview = MOCK_CART_PREVIEW
+  const resolvedCartCount = cartItemCount ?? cartPreview.totalItems
 
   const closeMobileMenu = () => setMobileMenuOpen(false)
 
@@ -186,13 +191,7 @@ export function PublicHeader({
             <ThemeToggle />
             <AccountMenu isLoggedIn={isLoggedIn} userName={userName} />
 
-            <Button variant="ghost" size="icon" className="relative h-9 w-9" asChild>
-              <Link href={routes.cart}>
-                <ShoppingBag className="h-4 w-4" />
-                <CartBadge count={cartItemCount} />
-                <span className="sr-only">Carrito ({cartItemCount} productos)</span>
-              </Link>
-            </Button>
+            <CartPopover cart={cartPreview} />
 
             <div className="ml-3 h-5 w-px bg-border" />
 
@@ -208,7 +207,7 @@ export function PublicHeader({
             <Button variant="ghost" size="icon" className="relative h-9 w-9" asChild>
               <Link href={routes.cart}>
                 <ShoppingBag className="h-4 w-4" />
-                <CartBadge count={cartItemCount} />
+                <CartBadge count={resolvedCartCount} />
                 <span className="sr-only">Carrito</span>
               </Link>
             </Button>

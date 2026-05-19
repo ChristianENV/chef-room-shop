@@ -1,5 +1,6 @@
 'use client'
 import { routes } from '@/src/config/routes'
+import { formatCurrencyMXN } from '@/src/lib/formatters'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -62,7 +63,7 @@ export function OrderSummary({
             </span>
             <div className="flex items-center gap-2">
               <span className="font-sans font-bold text-foreground">
-                ${total.toLocaleString('es-MX')} MXN
+                {formatCurrencyMXN(total)}
               </span>
               {isOpen ? (
                 <ChevronUp className="h-4 w-4 text-muted-foreground" />
@@ -84,10 +85,10 @@ export function OrderSummary({
             <div className="space-y-3">
               <div className="flex items-center justify-between font-serif text-sm">
                 <span className="text-muted-foreground">
-                  Subtotal ({itemCount} {itemCount === 1 ? 'articulo' : 'articulos'})
+                  Subtotal ({itemCount} {itemCount === 1 ? 'artículo' : 'artículos'})
                 </span>
                 <span className="font-sans text-foreground">
-                  ${subtotal.toLocaleString('es-MX')} MXN
+                  {formatCurrencyMXN(subtotal)}
                 </span>
               </div>
 
@@ -95,7 +96,7 @@ export function OrderSummary({
                 <div className="flex items-center justify-between font-serif text-sm">
                   <span className="text-muted-foreground">Total personalizacion</span>
                   <span className="font-sans text-accent">
-                    +${customizationTotal.toLocaleString('es-MX')} MXN
+                    +{formatCurrencyMXN(customizationTotal)}
                   </span>
                 </div>
               )}
@@ -106,7 +107,7 @@ export function OrderSummary({
                   {shipping === 0 ? (
                     <span className="text-success">Gratis</span>
                   ) : (
-                    `$${shipping.toLocaleString('es-MX')} MXN`
+                    formatCurrencyMXN(shipping)
                   )}
                 </span>
               </div>
@@ -118,7 +119,7 @@ export function OrderSummary({
                     {discount.code}
                   </span>
                   <span className="font-sans text-success">
-                    -${discount.amount.toLocaleString('es-MX')} MXN
+                    -{formatCurrencyMXN(discount.amount)}
                   </span>
                 </div>
               )}
@@ -135,9 +136,13 @@ export function OrderSummary({
             <div className="flex items-center justify-between">
               <span className="font-sans text-lg font-semibold text-foreground">Total</span>
               <span className="font-sans text-2xl font-bold text-foreground">
-                ${total.toLocaleString('es-MX')} MXN
+                {formatCurrencyMXN(total)}
               </span>
             </div>
+
+            <p className="mt-3 text-center font-serif text-[11px] leading-relaxed text-muted-foreground">
+              El costo final se confirma antes del pago.
+            </p>
 
             {/* Checkout CTA */}
             <Button 
