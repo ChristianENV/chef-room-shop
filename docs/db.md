@@ -68,7 +68,16 @@ Seeds (idempotent `upsert`):
 - Product types, sizes, colors
 - Customization areas & options
 
-`OAuthAccount` rows are **not** seeded — created at Google sign-in (see [auth-google.md](./auth-google.md)).
+Social `Account` rows for real users are created at sign-in (see [auth-google.md](./auth-google.md)).
+
+### Demo seed (optional, DEV only)
+
+```bash
+# .env.local: ALLOW_DEMO_SEED="true"
+npm run db:seed:demo
+```
+
+See [demo-seed.md](./demo-seed.md) for credentials, guards, and dataset scope.
 
 ## Regenerate Prisma Client
 

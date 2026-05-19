@@ -6,8 +6,18 @@ import { GraphQLError } from 'graphql'
 import { routes } from '@/src/config/routes'
 import { getCurrentUser } from './current-user'
 import { canAccessAdmin } from './permissions'
+import { userHasAdminAccess } from './roles'
 import type { CurrentUser } from './types'
-import { isAdminAuthEnforced } from '@/src/lib/auth/session'
+
+/**
+ * Dev-only bypass when explicitly enabled (never in production).
+ */
+export function isAdminDevBypassEnabled(): boolean {
+  return (
+    process.env.NODE_ENV !== 'production' &&
+    process.env.ENABLE_ADMIN_DEV_BYPASS === 'true'
+  )
+}
 
 /**
  * Requires an authenticated admin user in GraphQL resolvers.
@@ -35,8 +45,7 @@ export async function requireAdmin(): Promise<CurrentUser> {
  * Server Component / layout guard for admin routes (validates session in DB).
  */
 export async function requireAdminSession(): Promise<CurrentUser> {
-  if (!isAdminAuthEnforced()) {
-    // TODO: Remove bypass when admin UI is fully wired to real sessions in all environments.
+  if (isAdminDevBypassEnabled()) {
     const user = await getCurrentUser()
     if (user && canAccessAdmin(user)) return user
     return {
@@ -54,8 +63,14 @@ export async function requireAdminSession(): Promise<CurrentUser> {
 
   const user = await getCurrentUser()
 
-  if (!user || !canAccessAdmin(user)) {
+  if (!user) {
     redirect(routes.adminLogin)
+  }
+
+  const hasAdmin = await userHasAdminAccess(user.id)
+
+  if (!hasAdmin) {
+    redirect(`${routes.home}?error=admin_forbidden`)
   }
 
   return user

@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server'
 export const BETTER_AUTH_SESSION_COOKIE = 'better-auth.session_token'
 
 /**
- * When false (default), middleware allows admin access without a session cookie.
+ * When false (default), proxy allows admin access without a session cookie.
  * Set ADMIN_AUTH_ENFORCE=true to require a Better Auth session cookie on protected admin routes.
  */
 export function isAdminAuthEnforced(): boolean {

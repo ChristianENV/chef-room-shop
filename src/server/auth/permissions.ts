@@ -38,7 +38,7 @@ export function isProtectedAdminPath(pathname: string): boolean {
 }
 
 /**
- * Edge middleware: when enforcement is on, protected admin paths need a session cookie.
+ * Edge proxy: when enforcement is on, protected admin paths need a session cookie.
  * Role validation happens server-side via {@link requireAdminSession} (no Prisma in Edge).
  */
 export function canAccessAdminRoute(
