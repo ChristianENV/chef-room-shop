@@ -37,8 +37,9 @@ Passwords are stored on `Account.password` (hashed by Better Auth), **not** on `
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `DATABASE_URL` | Yes | Neon PostgreSQL (DEV for migrations) |
-| `BETTER_AUTH_SECRET` | Yes | Min 32 chars; session signing |
-| `BETTER_AUTH_URL` | Yes | Public app URL, e.g. `http://localhost:3000` |
+| `BETTER_AUTH_SECRET` | Yes | Min 32 characters; session signing (generate with `openssl rand -base64 32`) |
+| `BETTER_AUTH_URL` | Yes | Public app URL — must match local/prod domain (e.g. `http://localhost:3000`) |
+| `NEXT_PUBLIC_APP_URL` | Recommended | Used by auth client + trusted origins |
 | `NEXT_PUBLIC_APP_URL` | Recommended | Used by auth client + trusted origins |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | For Google | Enables provider when both set |
 | `SEED_ADMIN_*` | Optional | DEV admin via `npm run db:seed` |
@@ -136,7 +137,28 @@ INSERT INTO user_roles (...)
 
 ## Google OAuth
 
-Configure `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. Callback is handled by Better Auth at `/api/auth/callback/google` (see [auth-google.md](./auth-google.md)).
+Configure `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. In Google Cloud Console add redirect URI:
+
+```text
+{BETTER_AUTH_URL}/api/auth/callback/google
+```
+
+Example local: `http://localhost:3000/api/auth/callback/google`
+
+Storefront/admin login forms call `authClient.signIn.social({ provider: 'google' })`. See [auth-google.md](./auth-google.md).
+
+## UI (storefront + admin)
+
+| Surface | Component | Behavior |
+|---------|-----------|----------|
+| `/login`, `/register` | `LoginForm`, `RegisterForm` | Better Auth email + Google |
+| Header | `PublicNavbarSession` | `useSession`, sign out |
+| `/admin/login` | `LoginForm variant="admin"` | RBAC check after login |
+| Admin shell | `requireAdminSession` | Server-side ADMIN/SUPERADMIN |
+
+### CUSTOMER role
+
+Assigned automatically via `databaseHooks.user.create.after` in `build-auth.ts`, plus `ensureCustomerRoleAction()` after email sign-up/sign-in from the UI (belt-and-suspenders).
 
 ## Adding more social providers
 
@@ -153,8 +175,7 @@ Configure `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. Callback is handled by 
 
 ## Pending
 
-- [ ] Login / register UI with `authClient`
-- [ ] Google button + account linking UX
+- [ ] Google account linking UX
 - [ ] Guest session merge on sign-in
 - [ ] Email provider (verification / reset)
 - [ ] Auto-assign CUSTOMER role on sign-up (Better Auth hook)

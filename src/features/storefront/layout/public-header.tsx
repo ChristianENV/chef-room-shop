@@ -64,7 +64,15 @@ function isLinkActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
-function AccountMenu({ isLoggedIn = false, userName }: { isLoggedIn?: boolean; userName?: string }) {
+function AccountMenu({
+  isLoggedIn = false,
+  userName,
+  onSignOut,
+}: {
+  isLoggedIn?: boolean
+  userName?: string
+  onSignOut?: () => void | Promise<void>
+}) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -93,7 +101,14 @@ function AccountMenu({ isLoggedIn = false, userName }: { isLoggedIn?: boolean; u
               <Link href={accountNav.addresses.href}>{accountNav.addresses.label}</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Cerrar Sesión</DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={() => {
+                void onSignOut?.()
+              }}
+            >
+              Cerrar sesión
+            </DropdownMenuItem>
           </>
         ) : (
           <>
@@ -126,12 +141,14 @@ export interface PublicHeaderProps {
   cartItemCount?: number
   isLoggedIn?: boolean
   userName?: string
+  onSignOut?: () => void | Promise<void>
 }
 
 export function PublicHeader({
   cartItemCount,
   isLoggedIn = false,
   userName,
+  onSignOut,
 }: PublicHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
@@ -189,7 +206,11 @@ export function PublicHeader({
 
           <div className="hidden items-center gap-1 lg:flex">
             <ThemeToggle />
-            <AccountMenu isLoggedIn={isLoggedIn} userName={userName} />
+            <AccountMenu
+              isLoggedIn={isLoggedIn}
+              userName={userName}
+              onSignOut={onSignOut}
+            />
 
             <CartPopover cart={cartPreview} />
 

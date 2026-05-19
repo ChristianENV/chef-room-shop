@@ -1,8 +1,8 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, Mail, Lock, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,102 +11,177 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
 import { routes } from '@/src/config/routes'
+import { authClient, signIn, signOut } from '@/src/lib/auth/auth-client'
+import { getAuthErrorMessage } from '@/src/lib/auth/auth-errors'
+import { loginSchema } from '@/src/lib/auth/auth-schemas'
+import {
+  assertAdminAccessAction,
+  ensureCustomerRoleAction,
+} from '@/src/server/auth/actions'
 
-interface LoginFormData {
-  email: string
-  password: string
-  rememberMe: boolean
-}
+type LoginFormVariant = 'storefront' | 'admin'
 
 interface LoginFormProps {
   className?: string
-  onSuccess?: () => void
+  variant?: LoginFormVariant
+  googleEnabled?: boolean
+  defaultCallbackUrl?: string
 }
 
-export function LoginForm({ className, onSuccess }: LoginFormProps) {
+export function LoginForm({
+  className,
+  variant = 'storefront',
+  googleEnabled = false,
+  defaultCallbackUrl,
+}: LoginFormProps) {
   const router = useRouter()
-  const [formData, setFormData] = useState<LoginFormData>({
-    email: '',
-    password: '',
-    rememberMe: false,
-  })
+  const searchParams = useSearchParams()
+  const callbackFromQuery = searchParams.get('callbackUrl')
+  const errorFromQuery = searchParams.get('error')
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [error, setError] = useState<string | null>(() => {
+    if (errorFromQuery === 'forbidden') {
+      return 'No tienes permisos para acceder al dashboard.'
+    }
+    return null
+  })
+  const [forgotMessage, setForgotMessage] = useState<string | null>(null)
 
-  // TODO: Replace with real authentication
-  // Integration points:
-  // - JWT token storage in httpOnly cookies
-  // - Session management with refresh tokens
-  // - TanStack Query for auth state
-  // - GraphQL mutation for login
+  const isAdmin = variant === 'admin'
+  const defaultRedirect = isAdmin ? routes.adminDashboard : routes.account
+  const callbackURL =
+    defaultCallbackUrl ?? callbackFromQuery ?? defaultRedirect
+
+  const resolveRedirect = () => {
+    if (callbackURL.startsWith('/')) {
+      return callbackURL
+    }
+    return defaultRedirect
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setForgotMessage(null)
     setIsLoading(true)
 
-    // Mock validation
-    // TODO: Replace with Zod schema validation
-    if (!formData.email || !formData.password) {
-      setError('Por favor completa todos los campos')
+    const parsed = loginSchema.safeParse({ email, password })
+    if (!parsed.success) {
+      setError(parsed.error.errors[0]?.message ?? 'Datos inv?lidos')
       setIsLoading(false)
       return
     }
 
-    if (!formData.email.includes('@')) {
-      setError('Por favor ingresa un correo electrónico válido')
+    const result = await signIn.email({
+      email: parsed.data.email.trim().toLowerCase(),
+      password: parsed.data.password,
+      callbackURL: resolveRedirect(),
+      rememberMe,
+    })
+
+    if (result.error) {
+      setError(
+        getAuthErrorMessage(
+          result.error,
+          'Correo o contrase?a incorrectos.',
+        ),
+      )
       setIsLoading(false)
       return
     }
 
-    // Mock API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
-
-    // Mock error for demo (use test@error.com to trigger)
-    if (formData.email === 'test@error.com') {
-      setError('Credenciales incorrectas. Por favor verifica tu correo y contraseña.')
-      setIsLoading(false)
-      return
+    if (!isAdmin) {
+      await ensureCustomerRoleAction()
+    } else {
+      const adminCheck = await assertAdminAccessAction()
+      if (!adminCheck.ok) {
+        await signOut()
+        setError(adminCheck.message)
+        setIsLoading(false)
+        return
+      }
     }
 
-    // Success
     setIsLoading(false)
-    onSuccess?.()
-    router.push(routes.account)
+    router.push(resolveRedirect())
+    router.refresh()
   }
 
   const handleGoogleLogin = async () => {
-    // TODO: Implement Google OAuth
-    // Integration point: NextAuth.js or custom OAuth flow
-    console.log('Google login clicked - integration pending')
+    if (!googleEnabled) {
+      setError(
+        'Google no est? configurado. Agrega GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en el entorno.',
+      )
+      return
+    }
+
+    setError(null)
+    setForgotMessage(null)
+    setIsGoogleLoading(true)
+
+    try {
+      await authClient.signIn.social({
+        provider: 'google',
+        callbackURL: resolveRedirect(),
+      })
+    } catch (err) {
+      setError(
+        getAuthErrorMessage(err, 'No se pudo iniciar sesi?n con Google.'),
+      )
+      setIsGoogleLoading(false)
+    }
   }
+
+  const handleForgotPassword = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setForgotMessage(
+      'La recuperaci?n de contrase?a estar? disponible pronto.',
+    )
+  }
+
+  const busy = isLoading || isGoogleLoading
 
   return (
     <div className={cn('space-y-6', className)}>
-      {/* Header */}
       <div className="space-y-2 text-center">
         <h1 className="font-sans text-2xl font-bold text-foreground">
-          Bienvenido de vuelta
+          {isAdmin ? 'Panel de administraci?n' : 'Bienvenido de vuelta'}
         </h1>
         <p className="font-serif text-muted-foreground">
-          Inicia sesión para acceder a tu cuenta
+          {isAdmin
+            ? 'Inicia sesi?n con tu cuenta de administrador'
+            : 'Inicia sesi?n para acceder a tu cuenta'}
         </p>
       </div>
 
-      {/* Error Alert */}
       {error && (
-        <Alert variant="destructive" className="border-destructive/50 bg-destructive/10">
+        <Alert
+          variant="destructive"
+          className="border-destructive/50 bg-destructive/10"
+        >
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="font-serif">{error}</AlertDescription>
         </Alert>
       )}
 
-      {/* Login Form */}
+      {forgotMessage && (
+        <Alert className="border-border bg-muted/50">
+          <AlertDescription className="font-serif">
+            {forgotMessage}
+          </AlertDescription>
+        </Alert>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Email */}
         <div className="space-y-2">
           <Label htmlFor="email" className="font-sans text-sm font-medium">
-            Correo electrónico
+            Correo electr?nico
           </Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -114,38 +189,38 @@ export function LoginForm({ className, onSuccess }: LoginFormProps) {
               id="email"
               type="email"
               placeholder="tu@email.com"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="pl-10 font-serif"
-              disabled={isLoading}
+              disabled={busy}
               autoComplete="email"
             />
           </div>
         </div>
 
-        {/* Password */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password" className="font-sans text-sm font-medium">
-              Contraseña
+              Contrase?a
             </Label>
-            <Link 
-              href={routes.login} 
+            <button
+              type="button"
+              onClick={handleForgotPassword}
               className="font-serif text-xs text-accent hover:underline"
             >
-              ¿Olvidaste tu contraseña?
-            </Link>
+              ?Olvidaste tu contrase?a?
+            </button>
           </div>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
-              placeholder="********"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              placeholder="????????"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="pl-10 pr-10 font-serif"
-              disabled={isLoading}
+              disabled={busy}
               autoComplete="current-password"
             />
             <button
@@ -163,62 +238,61 @@ export function LoginForm({ className, onSuccess }: LoginFormProps) {
           </div>
         </div>
 
-        {/* Remember Me */}
         <div className="flex items-center space-x-2">
           <Checkbox
             id="remember"
-            checked={formData.rememberMe}
-            onCheckedChange={(checked) => 
-              setFormData({ ...formData, rememberMe: checked as boolean })
-            }
-            disabled={isLoading}
+            checked={rememberMe}
+            onCheckedChange={(checked) => setRememberMe(checked === true)}
+            disabled={busy}
           />
-          <Label 
-            htmlFor="remember" 
-            className="font-serif text-sm text-muted-foreground cursor-pointer"
+          <Label
+            htmlFor="remember"
+            className="cursor-pointer font-serif text-sm text-muted-foreground"
           >
-            Mantener sesión iniciada
+            Mantener sesi?n iniciada
           </Label>
         </div>
 
-        {/* Submit Button */}
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           className="w-full font-sans font-semibold"
-          disabled={isLoading}
+          disabled={busy}
         >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Iniciando sesión...
+              Iniciando sesi?n...
             </>
           ) : (
-            'Iniciar Sesión'
+            'Iniciar sesi?n'
           )}
         </Button>
       </form>
 
-      {/* Divider */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 font-serif text-muted-foreground">
-            O continua con
+            O contin?a con
           </span>
         </div>
       </div>
 
-      {/* Google Login */}
       <Button
         type="button"
         variant="outline"
         className="w-full font-sans"
         onClick={handleGoogleLogin}
-        disabled={isLoading}
+        disabled={busy || !googleEnabled}
+        title={
+          !googleEnabled
+            ? 'Google no est? configurado. Agrega GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET.'
+            : undefined
+        }
       >
-        <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+        <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden>
           <path
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
             fill="#4285F4"
@@ -236,16 +310,27 @@ export function LoginForm({ className, onSuccess }: LoginFormProps) {
             fill="#EA4335"
           />
         </svg>
-        Continuar con Google
+        {isGoogleLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Conectando...
+          </>
+        ) : (
+          'Iniciar sesi?n con Google'
+        )}
       </Button>
 
-      {/* Register Link */}
-      <p className="text-center font-serif text-sm text-muted-foreground">
-        No tienes cuenta?{' '}
-        <Link href={routes.register} className="font-sans font-medium text-accent hover:underline">
-          Crear cuenta
-        </Link>
-      </p>
+      {!isAdmin && (
+        <p className="text-center font-serif text-sm text-muted-foreground">
+          ?No tienes cuenta?{' '}
+          <Link
+            href={routes.register}
+            className="font-sans font-medium text-accent hover:underline"
+          >
+            Crear cuenta
+          </Link>
+        </p>
+      )}
     </div>
   )
 }

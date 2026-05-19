@@ -2,6 +2,8 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from '@better-auth/prisma-adapter'
 import type { PrismaClient } from '@prisma/client'
 
+import { ensureCustomerRole } from './roles-core'
+
 /**
  * Builds trusted origins for Better Auth CSRF / callback validation.
  */
@@ -108,6 +110,17 @@ export function buildAuth(database: PrismaClient) {
     advanced: {
       database: {
         generateId: 'uuid',
+      },
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (user) => {
+            if (user.id) {
+              await ensureCustomerRole(database, user.id)
+            }
+          },
+        },
       },
     },
   })

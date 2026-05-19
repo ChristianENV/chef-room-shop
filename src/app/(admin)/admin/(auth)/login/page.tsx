@@ -1,4 +1,6 @@
+import { Suspense } from 'react'
 import { LoginForm } from '@/components/shared/auth'
+import { isGoogleAuthConfigured } from '@/src/lib/auth/google-enabled'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -7,5 +9,17 @@ export const metadata: Metadata = {
 }
 
 export default function AdminLoginPage() {
-  return <LoginForm />
+  const googleEnabled = isGoogleAuthConfigured()
+
+  return (
+    <Suspense
+      fallback={
+        <p className="py-12 text-center font-serif text-muted-foreground">
+          Cargando...
+        </p>
+      }
+    >
+      <LoginForm variant="admin" googleEnabled={googleEnabled} />
+    </Suspense>
+  )
 }

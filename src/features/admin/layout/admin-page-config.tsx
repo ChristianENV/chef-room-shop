@@ -21,7 +21,18 @@ const AdminPageConfigContext = createContext<{
   setPageConfig: (config: AdminPageConfig) => void
 } | null>(null)
 
-export function AdminShell({ children }: { children: ReactNode }) {
+export type AdminShellUser = {
+  name: string
+  email: string
+}
+
+export function AdminShell({
+  children,
+  adminUser,
+}: {
+  children: ReactNode
+  adminUser?: AdminShellUser
+}) {
   const [pageConfig, setPageConfig] = useState<AdminPageConfig>(defaultConfig)
 
   const contextValue = useMemo(() => ({ setPageConfig }), [])
@@ -34,6 +45,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <AdminTopbar
             breadcrumb={pageConfig.breadcrumb}
             notificationCount={pageConfig.notificationCount}
+            adminUser={adminUser}
           />
           <main className="flex-1 p-4 md:p-6">{children}</main>
         </SidebarInset>

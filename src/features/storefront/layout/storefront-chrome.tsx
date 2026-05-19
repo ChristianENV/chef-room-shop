@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { PublicNavbar } from './public-navbar'
+import { PublicNavbarSession } from './public-navbar-session'
 import { PublicFooter } from './public-footer'
 
 /** Routes that provide their own full-page chrome (auth, checkout, admin demo). */
@@ -45,7 +45,7 @@ export function StorefrontChrome({ children }: StorefrontChromeProps) {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <PublicNavbar />
+      <PublicNavbarSession />
       <main className="flex-1">{children}</main>
       <PublicFooter showNewsletter={showNewsletter} />
     </div>

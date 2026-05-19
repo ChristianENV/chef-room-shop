@@ -6,6 +6,10 @@ export default async function AdminProtectedLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  await requireAdminSession()
-  return <AdminShell>{children}</AdminShell>
+  const user = await requireAdminSession()
+  return (
+    <AdminShell adminUser={{ name: user.name, email: user.email }}>
+      {children}
+    </AdminShell>
+  )
 }

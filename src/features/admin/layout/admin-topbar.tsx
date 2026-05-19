@@ -1,7 +1,8 @@
 'use client'
 
 import * as React from 'react'
-import { Bell, Search } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Bell, LogOut, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { SidebarTrigger } from '@/components/ui/sidebar'
@@ -13,7 +14,9 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
+import { signOut } from '@/src/lib/auth/auth-client'
 import { routes } from '@/src/config/routes'
+import type { AdminShellUser } from './admin-page-config'
 
 export interface AdminBreadcrumbItem {
   label: string
@@ -23,9 +26,22 @@ export interface AdminBreadcrumbItem {
 interface AdminTopbarProps {
   breadcrumb?: AdminBreadcrumbItem[]
   notificationCount?: number
+  adminUser?: AdminShellUser
 }
 
-export function AdminTopbar({ breadcrumb = [], notificationCount = 0 }: AdminTopbarProps) {
+export function AdminTopbar({
+  breadcrumb = [],
+  notificationCount = 0,
+  adminUser,
+}: AdminTopbarProps) {
+  const router = useRouter()
+
+  const handleSignOut = async () => {
+    await signOut()
+    router.push(routes.adminLogin)
+    router.refresh()
+  }
+
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b border-border bg-card px-4">
       <SidebarTrigger className="-ml-1" />
@@ -66,6 +82,27 @@ export function AdminTopbar({ breadcrumb = [], notificationCount = 0 }: AdminTop
       </div>
 
       <div className="flex items-center gap-2">
+        {adminUser && (
+          <div className="hidden text-right sm:block">
+            <p className="font-sans text-sm font-medium leading-none">
+              {adminUser.name}
+            </p>
+            <p className="font-serif text-xs text-muted-foreground">
+              {adminUser.email}
+            </p>
+          </div>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => {
+            void handleSignOut()
+          }}
+          title="Cerrar sesión"
+        >
+          <LogOut className="h-5 w-5" />
+          <span className="sr-only">Cerrar sesión</span>
+        </Button>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {notificationCount > 0 && (
