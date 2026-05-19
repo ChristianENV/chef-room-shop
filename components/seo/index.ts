@@ -1,7 +1,0 @@
-export { SeoHero } from './seo-hero'
-export { BenefitsGrid } from './benefits-grid'
-export { CategoryShowcase } from './category-showcase'
-export { FAQSection } from './faq-section'
-export { InternalLinksBlock } from './internal-links-block'
-export { SeoCTA } from './seo-cta'
-export { SeoLandingLayout } from './seo-landing-layout'

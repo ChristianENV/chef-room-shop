@@ -7,19 +7,31 @@ export const routes = {
   customize: '/customize',
   products: '/products',
   productDetail: (slug: string) => `/products/${slug}`,
-  restaurants: '/restaurants',
-  sizeGuide: '/size-guide',
-  contact: '/contact',
   cart: '/cart',
   checkout: '/checkout',
   login: '/login',
   register: '/register',
   account: '/account',
-  accountOrders: '/account/orders',
-  accountDesigns: '/account/designs',
-  accountAddresses: '/account/addresses',
-  admin: '/admin',
-  shopWithCategory: (category: string) => `/shop?category=${category}`,
+  restaurants: '/restaurants',
+  sizeGuide: '/size-guide',
+  contact: '/contact',
+
+  adminLogin: '/admin/login',
+  adminDashboard: '/admin/dashboard',
+  adminProducts: '/admin/products',
+  adminOrders: '/admin/orders',
+  adminCustomization: '/admin/customization',
+  adminDesigns: '/admin/designs',
+  adminUsers: '/admin/users',
+  adminPayments: '/admin/payments',
+  adminShipping: '/admin/shipping',
+  adminAnalytics: '/admin/analytics',
+  adminSettings: '/admin/settings',
 } as const
 
 export type RoutePath = (typeof routes)[keyof typeof routes]
+
+/** Storefront shop filter query (English path, Spanish category slug). */
+export function shopCategoryUrl(category: string): string {
+  return `${routes.shop}?category=${encodeURIComponent(category)}`
+}

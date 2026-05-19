@@ -736,7 +736,14 @@ export async function updateAdminProduct(id: string, data: Partial<AdminProductF
   await new Promise(resolve => setTimeout(resolve, 500))
   const existing = MOCK_ADMIN_PRODUCTS.find(p => p.id === id)
   if (!existing) throw new Error('Product not found')
-  return { ...existing, ...data, updatedAt: new Date().toISOString() }
+  const colors =
+    data.colors?.map((color) =>
+      typeof color === 'string'
+        ? { id: color, name: color, hex: '#000000', available: true }
+        : color
+    ) ?? existing.colors
+
+  return { ...existing, ...data, colors, updatedAt: new Date().toISOString() }
 }
 
 export async function deleteAdminProduct(id: string): Promise<boolean> {
