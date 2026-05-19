@@ -18,6 +18,7 @@ import {
   assertAdminAccessAction,
   ensureCustomerRoleAction,
 } from '@/src/server/auth/actions'
+import { runPostAuthGuestMerge } from '@/src/lib/auth/post-auth-guest-merge'
 
 type LoginFormVariant = 'storefront' | 'admin'
 
@@ -98,6 +99,7 @@ export function LoginForm({
 
     if (!isAdmin) {
       await ensureCustomerRoleAction()
+      await runPostAuthGuestMerge()
     } else {
       const adminCheck = await assertAdminAccessAction()
       if (!adminCheck.ok) {

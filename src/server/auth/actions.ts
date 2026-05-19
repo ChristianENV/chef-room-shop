@@ -2,6 +2,13 @@
 
 import { headers } from 'next/headers'
 
+import {
+  clearGuestSessionCookie,
+  getActiveGuestSessionFromCookies,
+} from '@/src/server/guest/guest-session'
+import { mergeGuestSessionIntoUser } from '@/src/server/guest/merge-guest-session'
+import type { GuestMergeResult } from '@/src/server/guest/guest-merge.types'
+
 import { auth } from './better-auth'
 import { ensureCustomerRole, userHasAdminAccess } from './roles'
 
@@ -47,4 +54,34 @@ export async function assertAdminAccessAction(): Promise<ActionResult> {
   }
 
   return { ok: true }
+}
+
+/**
+ * Merges the current cookie guest session into the authenticated user (idempotent).
+ * Clears the guest cookie after a successful merge. Returns null when there is nothing to merge.
+ */
+export async function mergeCurrentGuestSessionAction(): Promise<GuestMergeResult | null> {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
+
+  if (!session?.user?.id) {
+    return null
+  }
+
+  const guestSession = await getActiveGuestSessionFromCookies()
+  if (!guestSession) {
+    return null
+  }
+
+  const result = await mergeGuestSessionIntoUser({
+    userId: session.user.id,
+    guestSessionId: guestSession.id,
+  })
+
+  if (result.merged && !result.conflict) {
+    await clearGuestSessionCookie()
+  }
+
+  return result
 }

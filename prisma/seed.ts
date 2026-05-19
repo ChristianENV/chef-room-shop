@@ -3,6 +3,11 @@
  *
  * Auth users are created via Better Auth when SEED_ADMIN_* env vars are set.
  */
+import { config } from 'dotenv'
+
+config({ path: '.env.local' })
+config({ path: '.env' })
+
 import { PrismaClient, RoleSlug, UserStatus } from '@prisma/client'
 
 import { buildAuth } from '../src/server/auth/build-auth'

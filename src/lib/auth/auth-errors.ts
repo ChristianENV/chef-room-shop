@@ -19,7 +19,13 @@ export function getAuthErrorMessage(error: unknown, fallback: string): string {
 function translateCommonAuthError(message: string): string {
   const lower = message.toLowerCase()
 
+  if (lower.includes('user not found') || lower.includes('usuario no encontrado')) {
+    return 'No hay una cuenta con este correo. Verifica el email o regístrate.'
+  }
   if (lower.includes('invalid') && lower.includes('credential')) {
+    return 'Correo o contraseña incorrectos.'
+  }
+  if (lower.includes('invalid') && lower.includes('password')) {
     return 'Correo o contraseña incorrectos.'
   }
   if (lower.includes('already exists') || lower.includes('user already')) {

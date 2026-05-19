@@ -173,10 +173,14 @@ Assigned automatically via `databaseHooks.user.create.after` in `build-auth.ts`,
 - Do not use GraphQL for login/register — use `/api/auth/*`.
 - `LoginAttempt` remains for custom audit if needed.
 
+## Guest sessions
+
+See [guest-checkout.md](./guest-checkout.md) for cookie `chefroom_guest`, merge on login/register, and V1 scope.
+
 ## Pending
 
 - [ ] Google account linking UX
-- [ ] Guest session merge on sign-in
+- [x] Guest session merge on sign-in (V1 — designs, addresses, cart; not orders)
 - [ ] Email provider (verification / reset)
 - [ ] Auto-assign CUSTOMER role on sign-up (Better Auth hook)
 - [ ] Encrypt OAuth tokens at rest if required

@@ -16,6 +16,7 @@ import { authClient, signUp } from '@/src/lib/auth/auth-client'
 import { getAuthErrorMessage } from '@/src/lib/auth/auth-errors'
 import { registerSchema } from '@/src/lib/auth/auth-schemas'
 import { ensureCustomerRoleAction } from '@/src/server/auth/actions'
+import { runPostAuthGuestMerge } from '@/src/lib/auth/post-auth-guest-merge'
 
 interface RegisterFormData {
   firstName: string
@@ -114,6 +115,7 @@ export function RegisterForm({
     }
 
     await ensureCustomerRoleAction()
+    await runPostAuthGuestMerge()
 
     setIsLoading(false)
     setSuccess(true)
