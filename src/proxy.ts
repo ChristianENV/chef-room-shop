@@ -11,10 +11,10 @@ import {
 } from '@/src/server/auth/permissions'
 
 /**
- * Admin route protection (Edge).
+ * Admin route protection (Edge proxy).
  * Validates cookie presence only — full session/RBAC is enforced in server layouts via requireAdminSession.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (!isProtectedAdminPath(pathname)) {

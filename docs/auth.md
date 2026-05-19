@@ -43,7 +43,7 @@ Passwords are stored on `Account.password` (hashed by Better Auth), **not** on `
 | `NEXT_PUBLIC_APP_URL` | Recommended | Used by auth client + trusted origins |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | For Google | Enables provider when both set |
 | `SEED_ADMIN_*` | Optional | DEV admin via `npm run db:seed` |
-| `ADMIN_AUTH_ENFORCE` | Optional | `true` = middleware requires session cookie on `/admin/*` |
+| `ADMIN_AUTH_ENFORCE` | Optional | `true` = proxy requires session cookie on `/admin/*` |
 
 Generate secret (example):
 
