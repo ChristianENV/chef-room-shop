@@ -1,5 +1,6 @@
 'use client'
 import { routes } from '@/src/config/routes'
+import { formatCurrencyMXN } from '@/src/lib/formatters'
 
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -22,10 +23,10 @@ export function EmptyCartState({ className }: EmptyCartStateProps) {
         <ShoppingBag className="h-12 w-12 text-muted-foreground" />
       </div>
       <h2 className="font-sans text-2xl font-bold text-foreground">
-        Tu carrito esta vacio
+        Tu carrito está vacío
       </h2>
       <p className="mt-2 max-w-md font-serif text-muted-foreground">
-        Tu carrito esta listo para recibir tu proximo uniforme. Explora nuestro catalogo o disena tu prenda personalizada.
+        Explora la tienda o diseña tu uniforme personalizado.
       </p>
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
         <Button asChild size="lg" className="font-sans">
@@ -37,7 +38,7 @@ export function EmptyCartState({ className }: EmptyCartStateProps) {
         <Button asChild variant="outline" size="lg" className="font-sans">
           <Link href={routes.customize}>
             <Palette className="mr-2 h-4 w-4" />
-            Disenar uniforme
+            Diseñar uniforme
           </Link>
         </Button>
       </div>
@@ -169,10 +170,10 @@ export function StickyCheckoutBar({ total, itemCount, className }: StickyCheckou
       <div className="flex items-center justify-between">
         <div>
           <p className="font-serif text-sm text-muted-foreground">
-            {itemCount} {itemCount === 1 ? 'articulo' : 'articulos'}
+            {itemCount} {itemCount === 1 ? 'artículo' : 'artículos'}
           </p>
           <p className="font-sans text-xl font-bold text-foreground">
-            ${total.toLocaleString('es-MX')} MXN
+            {formatCurrencyMXN(total)}
           </p>
         </div>
         <Button asChild size="lg" className="font-sans font-semibold">

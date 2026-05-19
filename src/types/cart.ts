@@ -36,3 +36,9 @@ export type CartPreview = {
   customizationTotal: number
   totalItems: number
 }
+
+/** Full cart page state (preview totals + checkout shipping). */
+export type CartPageState = CartPreview & {
+  shipping: number
+  total: number
+}

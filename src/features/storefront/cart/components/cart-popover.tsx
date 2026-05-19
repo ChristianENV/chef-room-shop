@@ -14,7 +14,11 @@ import {
 import { routes } from '@/src/config/routes'
 import { formatCurrencyMXN } from '@/src/lib/formatters'
 import type { CartPreview, CartPreviewItem } from '@/src/types/cart'
-import { MOCK_CART_PREVIEW } from '@/src/features/storefront/cart/mocks/cart-preview.mock'
+import { MOCK_CART_PREVIEW } from '@/src/features/storefront/cart/mocks/cart.mock'
+import {
+  formatCartItemCountLabel,
+  getCartPreviewLineTotal,
+} from '@/src/features/storefront/cart/lib/cart-utils'
 
 // TODO: Reemplazar MOCK_CART_PREVIEW por useCartQuery cuando TanStack Query esté conectado.
 // TODO: Conectar removeItem/updateQuantity cuando exista mutation.
@@ -33,22 +37,6 @@ function CartTriggerBadge({ count }: { count: number }) {
       {count > 99 ? '99+' : count}
     </span>
   )
-}
-
-/**
- * Returns the line total for a cart preview item (unit + customization × qty).
- */
-export function getCartPreviewLineTotal(item: CartPreviewItem): number {
-  const customization = item.customizationPrice ?? 0
-  return (item.unitPrice + customization) * item.quantity
-}
-
-/**
- * Formats item count copy for the popover header badge.
- */
-export function formatCartItemCountLabel(count: number): string {
-  if (count === 1) return '1 artículo'
-  return `${count} artículos`
 }
 
 function CartPopoverItem({ item }: { item: CartPreviewItem }) {

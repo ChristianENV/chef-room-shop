@@ -24,7 +24,7 @@ import { ChefRoomLogo } from '@/components/brand/chef-room-logo'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { routes } from '@/src/config/routes'
 import { CartPopover } from '@/src/features/storefront/cart/components/cart-popover'
-import { MOCK_CART_PREVIEW } from '@/src/features/storefront/cart/mocks/cart-preview.mock'
+import { MOCK_CART_PREVIEW } from '@/src/features/storefront/cart/mocks/cart.mock'
 import {
   accountNav,
   authNav,

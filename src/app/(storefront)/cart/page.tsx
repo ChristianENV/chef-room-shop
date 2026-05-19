@@ -1,126 +1,55 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import { 
-  CartItemCard, 
-  OrderSummary, 
-  EmptyCartState, 
-  CartSkeleton, 
-  CartErrorState,
-  StickyCheckoutBar 
+import {
+  CartItemCard,
+  OrderSummary,
+  EmptyCartState,
+  StickyCheckoutBar,
 } from '@/src/features/storefront/cart'
 import { Button } from '@/components/ui/button'
 import { routes } from '@/src/config/routes'
+import { formatCurrencyMXN } from '@/src/lib/formatters'
 import { ArrowLeft, ShoppingBag } from 'lucide-react'
-import { MOCK_CART, updateCartItemQuantity, removeCartItem } from '@/lib/mock-data'
-import type { Cart } from '@/lib/types'
+import type { CartPageState } from '@/src/types/cart'
+import { MOCK_CART_PAGE } from '@/src/features/storefront/cart/mocks/cart.mock'
+import {
+  buildCartPageState,
+  computeCartTotals,
+  FREE_SHIPPING_THRESHOLD_MXN,
+  getFreeShippingRemaining,
+  removeCartPreviewItem,
+  updateCartPreviewItemQuantity,
+} from '@/src/features/storefront/cart/lib/cart-utils'
+
+// TODO: Reemplazar MOCK_CART_PAGE por useCartQuery cuando TanStack Query esté conectado.
+// TODO: Conectar updateQuantity con mutation real.
+// TODO: Conectar removeItem con mutation real.
+// TODO: Conectar previews reales del customizador.
+// TODO: Tomar totales desde backend.
 
 export default function CartPage() {
-  const [cart, setCart] = useState<Cart | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [cart, setCart] = useState<CartPageState>(MOCK_CART_PAGE)
 
-  // TODO: Replace with TanStack Query useQuery
-  useEffect(() => {
-    const loadCart = async () => {
-      try {
-        setIsLoading(true)
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 600))
-        setCart(MOCK_CART)
-      } catch {
-        setError('No pudimos cargar tu carrito')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    loadCart()
-  }, [])
-
-  const handleUpdateQuantity = async (itemId: string, quantity: number) => {
-    if (!cart) return
-    
-    // Optimistic update
-    const optimisticItems = cart.items.map(item => {
-      if (item.id === itemId) {
-        const basePrice = item.product.price
-        const customizationPrice = item.customization.embroidery ? 199 : 0
-        return {
-          ...item,
-          customization: { ...item.customization, quantity },
-          subtotal: (basePrice + customizationPrice) * quantity,
-        }
-      }
-      return item
-    })
-    const optimisticSubtotal = optimisticItems.reduce((sum, item) => sum + item.subtotal, 0)
-    setCart({
-      ...cart,
-      items: optimisticItems,
-      subtotal: optimisticSubtotal,
-      total: optimisticSubtotal >= 2000 ? optimisticSubtotal : optimisticSubtotal + 199,
-      shipping: optimisticSubtotal >= 2000 ? 0 : 199,
-    })
-
-    // TODO: Replace with TanStack Query mutation
-    try {
-      const updatedCart = await updateCartItemQuantity(itemId, quantity)
-      setCart(updatedCart)
-    } catch {
-      // Revert on error
-      setCart(cart)
-    }
+  const handleUpdateQuantity = (itemId: string, quantity: number) => {
+    setCart((prev) =>
+      buildCartPageState(updateCartPreviewItemQuantity(prev.items, itemId, quantity)),
+    )
   }
 
-  const handleRemoveItem = async (itemId: string) => {
-    if (!cart) return
-    
-    // Optimistic update
-    const optimisticItems = cart.items.filter(item => item.id !== itemId)
-    const optimisticSubtotal = optimisticItems.reduce((sum, item) => sum + item.subtotal, 0)
-    setCart({
-      ...cart,
-      items: optimisticItems,
-      subtotal: optimisticSubtotal,
-      total: optimisticSubtotal >= 2000 ? optimisticSubtotal : optimisticSubtotal + 199,
-      shipping: optimisticSubtotal >= 2000 ? 0 : 199,
-    })
-
-    // TODO: Replace with TanStack Query mutation
-    try {
-      const updatedCart = await removeCartItem(itemId)
-      setCart(updatedCart)
-    } catch {
-      // Revert on error
-      setCart(cart)
-    }
+  const handleRemoveItem = (itemId: string) => {
+    setCart((prev) => buildCartPageState(removeCartPreviewItem(prev.items, itemId)))
   }
 
-  const handleRetry = () => {
-    setError(null)
-    setIsLoading(true)
-    // Retry logic
-    setTimeout(() => {
-      setCart(MOCK_CART)
-      setIsLoading(false)
-    }, 600)
-  }
-
-  // Calculate totals for summary
-  const customizationTotal = cart?.items.reduce((sum, item) => {
-    return sum + (item.customization.embroidery ? 199 * item.customization.quantity : 0)
-  }, 0) || 0
-
-  const productSubtotal = cart?.items.reduce((sum, item) => {
-    return sum + (item.product.price * item.customization.quantity)
-  }, 0) || 0
+  const { partialTotal } = computeCartTotals(cart.items)
+  const freeShippingRemaining = getFreeShippingRemaining(partialTotal)
+  const hasItems = cart.items.length > 0
 
   return (
     <>
-    <div className="min-h-screen bg-background pb-32 lg:pb-16">
+      <div className="min-h-screen bg-background pb-32 lg:pb-16">
         <div className="mx-auto max-w-6xl px-4 py-8 md:px-6 md:py-12">
-          {/* Header */}
           <div className="mb-8">
             <Button
               variant="ghost"
@@ -133,7 +62,7 @@ export default function CartPage() {
                 Continuar comprando
               </Link>
             </Button>
-            
+
             <div className="flex items-center gap-3">
               <ShoppingBag className="h-8 w-8 text-primary" />
               <div>
@@ -141,26 +70,16 @@ export default function CartPage() {
                   Tu carrito
                 </h1>
                 <p className="font-serif text-muted-foreground">
-                  Revisa tus prendas, disenos personalizados y costos antes de continuar.
+                  Revisa tus prendas, diseños personalizados y costos antes de continuar.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Content */}
-          {isLoading && <CartSkeleton itemCount={2} />}
+          {!hasItems && <EmptyCartState />}
 
-          {error && !isLoading && (
-            <CartErrorState message={error} onRetry={handleRetry} />
-          )}
-
-          {!isLoading && !error && cart?.items.length === 0 && (
-            <EmptyCartState />
-          )}
-
-          {!isLoading && !error && cart && cart.items.length > 0 && (
+          {hasItems && (
             <div className="grid gap-8 lg:grid-cols-3">
-              {/* Cart Items */}
               <div className="space-y-4 lg:col-span-2">
                 {cart.items.map((item) => (
                   <CartItemCard
@@ -171,35 +90,35 @@ export default function CartPage() {
                   />
                 ))}
 
-                {/* Free Shipping Progress */}
-                {cart.subtotal < 2000 && (
+                {freeShippingRemaining > 0 && (
                   <div className="rounded-lg border border-border bg-secondary/50 p-4">
                     <p className="font-serif text-sm text-muted-foreground">
                       Agrega{' '}
                       <span className="font-sans font-semibold text-accent">
-                        ${(2000 - cart.subtotal).toLocaleString('es-MX')} MXN
+                        {formatCurrencyMXN(freeShippingRemaining)}
                       </span>{' '}
-                      mas para obtener{' '}
-                      <span className="font-sans font-semibold text-success">envio gratis</span>
+                      más para obtener{' '}
+                      <span className="font-sans font-semibold text-success">envío gratis</span>
                     </p>
                     <div className="mt-2 h-2 overflow-hidden rounded-full bg-border">
-                      <div 
+                      <div
                         className="h-full bg-success transition-all duration-300"
-                        style={{ width: `${Math.min((cart.subtotal / 2000) * 100, 100)}%` }}
+                        style={{
+                          width: `${Math.min((partialTotal / FREE_SHIPPING_THRESHOLD_MXN) * 100, 100)}%`,
+                        }}
                       />
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Order Summary */}
               <div className="lg:col-span-1">
                 <div className="lg:sticky lg:top-24">
                   <OrderSummary
-                    subtotal={productSubtotal}
-                    customizationTotal={customizationTotal}
+                    subtotal={cart.subtotal}
+                    customizationTotal={cart.customizationTotal}
                     shipping={cart.shipping}
-                    itemCount={cart.items.reduce((sum, item) => sum + item.customization.quantity, 0)}
+                    itemCount={cart.totalItems}
                   />
                 </div>
               </div>
@@ -208,12 +127,8 @@ export default function CartPage() {
         </div>
       </div>
 
-      {/* Mobile Sticky Checkout Bar */}
-      {!isLoading && !error && cart && cart.items.length > 0 && (
-        <StickyCheckoutBar 
-          total={cart.total} 
-          itemCount={cart.items.reduce((sum, item) => sum + item.customization.quantity, 0)}
-        />
+      {hasItems && (
+        <StickyCheckoutBar total={cart.total} itemCount={cart.totalItems} />
       )}
     </>
   )
