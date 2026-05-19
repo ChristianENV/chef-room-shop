@@ -4,6 +4,8 @@ import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent } from '@/components/ui/card'
 
+const TABLE_SKELETON_WIDTHS = [64, 80, 72, 96, 56, 88, 76, 68] as const
+
 // Product Card Skeleton
 export function ProductCardSkeleton({ className }: { className?: string }) {
   return (
@@ -326,7 +328,7 @@ export function AdminTableSkeleton({
             <Skeleton 
               key={i} 
               className="h-4" 
-              style={{ width: `${Math.random() * 60 + 40}px` }} 
+              style={{ width: `${TABLE_SKELETON_WIDTHS[i % TABLE_SKELETON_WIDTHS.length]}px` }}
             />
           ))}
         </div>
@@ -343,7 +345,7 @@ export function AdminTableSkeleton({
               <Skeleton 
                 key={colIndex} 
                 className="h-4" 
-                style={{ width: `${Math.random() * 80 + 40}px` }} 
+                style={{ width: `${TABLE_SKELETON_WIDTHS[(rowIndex + colIndex) % TABLE_SKELETON_WIDTHS.length]}px` }}
               />
             ))}
           </div>

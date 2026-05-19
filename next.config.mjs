@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   images: {
     unoptimized: true,
   },
@@ -30,13 +27,12 @@ const nextConfig = {
       { source: '/guia-bordados', destination: '/size-guide', permanent: true },
       { source: '/mayoreo', destination: '/contact', permanent: true },
       { source: '/recuperar-contrasena', destination: '/login', permanent: true },
-      { source: '/privacidad', destination: '/contact', permanent: true },
-      { source: '/terminos', destination: '/contact', permanent: true },
+      { source: '/privacidad', destination: '/privacy', permanent: true },
+      { source: '/terminos', destination: '/terms', permanent: true },
       { source: '/iniciar-sesion', destination: '/login', permanent: true },
       { source: '/filipinas-personalizadas', destination: '/shop/chef-jackets', permanent: true },
       { source: '/mandiles-personalizados', destination: '/shop/aprons', permanent: true },
       { source: '/uniformes-para-restaurantes', destination: '/restaurants', permanent: true },
-      { source: '/uniformes-para-chef', destination: '/shop', permanent: true },
       // Admin legacy (Spanish paths)
       { source: '/admin', destination: '/admin/dashboard', permanent: false },
       { source: '/admin/productos', destination: '/admin/products', permanent: true },

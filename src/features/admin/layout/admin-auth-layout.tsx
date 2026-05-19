@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ChefRoomLogo } from '@/components/brand/chef-room-logo'
+import { routes } from '@/src/config/routes'
 
 interface AdminAuthLayoutProps {
   children: React.ReactNode
@@ -12,7 +13,7 @@ export function AdminAuthLayout({ children }: AdminAuthLayoutProps) {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="border-b border-border bg-card px-6 py-4">
-        <Link href="/admin/login" className="inline-flex transition-opacity hover:opacity-80">
+        <Link href={routes.adminLogin} className="inline-flex transition-opacity hover:opacity-80">
           <ChefRoomLogo variant="horizontal" colorScheme="auto" size="md" />
         </Link>
         <p className="mt-2 font-sans text-xs font-medium uppercase tracking-wider text-muted-foreground">

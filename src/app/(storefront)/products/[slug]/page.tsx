@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState, useEffect } from 'react'
+import { use, useState, useEffect, useCallback } from 'react'
 import {
   ProductGallery,
   ProductInfo,
@@ -48,7 +48,7 @@ export default function ProductPage({ params }: ProductPageProps) {
   //   queryFn: () => fetchProductBySlug(slug),
   // })
 
-  const loadProduct = async () => {
+  const loadProduct = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
@@ -59,11 +59,14 @@ export default function ProductPage({ params }: ProductPageProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [resolvedParams.slug])
 
   useEffect(() => {
-    loadProduct()
-  }, [resolvedParams.slug])
+    const timer = setTimeout(() => {
+      void loadProduct()
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [loadProduct])
 
   const handleRetry = () => {
     loadProduct()

@@ -36,7 +36,7 @@ interface ProductFormDrawerProps {
   onSave: (data: ProductFormData) => Promise<void>
 }
 
-interface ProductFormData {
+export interface ProductFormData {
   name: string
   slug: string
   sku: string

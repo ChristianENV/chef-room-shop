@@ -9,8 +9,8 @@ import { routes } from '@/src/config/routes'
 import { footerCompanyLinks, footerProductLinks } from '@/src/config/navigation.storefront'
 
 const footerLegalLinks = [
-  { href: '/privacidad', label: 'Aviso de Privacidad' },
-  { href: '/terminos', label: 'Términos y Condiciones' },
+  { href: routes.privacy, label: 'Aviso de Privacidad' },
+  { href: routes.terms, label: 'Términos y Condiciones' },
 ] as const
 
 function NewsletterSection() {
@@ -59,7 +59,9 @@ export function PublicFooter({ showNewsletter = true, className }: PublicFooterP
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-6">
             <div className="lg:col-span-2">
-              <ChefRoomLogo variant="horizontal" colorScheme="auto" size="lg" />
+              <Link href={routes.home} className="inline-flex transition-opacity hover:opacity-90">
+                <ChefRoomLogo variant="horizontal" colorScheme="auto" size="lg" />
+              </Link>
               <p className="mt-5 max-w-xs font-serif text-sm leading-relaxed text-muted-foreground">
                 {BRAND_TAGLINE}
               </p>

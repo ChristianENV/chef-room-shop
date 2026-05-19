@@ -23,15 +23,17 @@ export default function PublicLayoutDemo() {
             </h1>
             <p className="mx-auto mt-6 max-w-xl font-serif text-lg text-white/80 text-pretty">
               Uniformes de chef de alta calidad, personalizables con bordados unicos. 
-              Disena el tuyo y destaca en cada servicio.
+              Diseña el tuyo y destaca en cada servicio.
             </p>
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Button size="lg" className="bg-white font-sans font-semibold text-primary hover:bg-white/90">
-                Ver Catalogo
-                <ArrowRight className="ml-2 h-4 w-4" />
+              <Button size="lg" className="bg-white font-sans font-semibold text-primary hover:bg-white/90" asChild>
+                <Link href={routes.shop}>
+                  Ver Catálogo
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-white/30 font-sans text-white hover:bg-white/10">
-                Personalizar Uniforme
+              <Button size="lg" variant="outline" className="border-white/30 font-sans text-white hover:bg-white/10" asChild>
+                <Link href={routes.customize}>Personalizar Uniforme</Link>
               </Button>
             </div>
           </div>
@@ -62,7 +64,7 @@ export default function PublicLayoutDemo() {
           <div className="mt-8 text-center">
             <Button variant="outline" size="lg" asChild>
               <Link href={routes.shop}>
-                Ver Todo el Catalogo
+                Ver Todo el Catálogo
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -92,7 +94,7 @@ export default function PublicLayoutDemo() {
         <ResponsiveShell>
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="font-sans text-2xl font-bold text-white md:text-3xl">
-              Disena tu uniforme perfecto
+              Diseña tu uniforme perfecto
             </h2>
             <p className="mt-4 font-serif text-white/80">
               Utiliza nuestro personalizador para agregar tu nombre, logo o diseno exclusivo.

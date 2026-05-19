@@ -11,6 +11,7 @@ import {
   StickyCheckoutBar 
 } from '@/src/features/storefront/cart'
 import { Button } from '@/components/ui/button'
+import { routes } from '@/src/config/routes'
 import { ArrowLeft, ShoppingBag } from 'lucide-react'
 import { MOCK_CART, updateCartItemQuantity, removeCartItem } from '@/lib/mock-data'
 import type { Cart } from '@/lib/types'
@@ -127,7 +128,7 @@ export default function CartPage() {
               asChild
               className="mb-4 -ml-2 text-muted-foreground hover:text-foreground"
             >
-              <Link href="/shop">
+              <Link href={routes.shop}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Continuar comprando
               </Link>

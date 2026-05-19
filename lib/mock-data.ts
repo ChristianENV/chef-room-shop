@@ -223,18 +223,6 @@ export async function createPaymentIntent(amount: number): Promise<{ clientSecre
   return { clientSecret: 'mock_client_secret_' + Date.now() }
 }
 
-// Simplified product data for components
-export const mockProducts = MOCK_PRODUCTS.map(p => ({
-  id: p.id,
-  name: p.name,
-  price: p.price,
-  originalPrice: p.originalPrice,
-  badge: p.badge,
-  colors: p.colors,
-  image: p.images[0]?.url,
-  customizable: p.customizable,
-}))
-
 // Mock Cart Data
 // TODO: Replace with TanStack Query useQuery for cart data
 import type { CartItem, Cart } from './types'

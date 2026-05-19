@@ -12,21 +12,10 @@ export type SessionUser = {
   role: UserRole
 }
 
-/** Admin routes that require an authenticated ADMIN or SUPERADMIN session. */
-export const PROTECTED_ADMIN_ROUTES = [
-  routes.adminDashboard,
-  routes.adminProducts,
-  routes.adminOrders,
-  routes.adminCustomization,
-  routes.adminAnalytics,
-] as const
-
-export type ProtectedAdminRoute = (typeof PROTECTED_ADMIN_ROUTES)[number]
-
 /** Routes that must stay public (no session required). */
 export const ADMIN_PUBLIC_ROUTES = [routes.adminLogin] as const
 
-const PROTECTED_ADMIN_ROUTE_SET = new Set<string>(PROTECTED_ADMIN_ROUTES)
+const ADMIN_PREFIX = '/admin'
 const ADMIN_PUBLIC_ROUTE_SET = new Set<string>(ADMIN_PUBLIC_ROUTES)
 
 /** Normalizes pathname (strips trailing slash except for root). */
@@ -42,10 +31,15 @@ export function isAdminPublicPath(pathname: string): boolean {
   return ADMIN_PUBLIC_ROUTE_SET.has(path)
 }
 
+/**
+ * All /admin/* routes except /admin/login require auth when enforcement is enabled.
+ * TODO: Add per-route RBAC when SUPERADMIN-only areas are introduced.
+ */
 export function isProtectedAdminPath(pathname: string): boolean {
   const path = normalizePathname(pathname)
+  if (!path.startsWith(ADMIN_PREFIX)) return false
   if (ADMIN_PUBLIC_ROUTE_SET.has(path)) return false
-  return PROTECTED_ADMIN_ROUTE_SET.has(path)
+  return true
 }
 
 /**

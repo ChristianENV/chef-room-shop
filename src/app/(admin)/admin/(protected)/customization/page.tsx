@@ -30,9 +30,8 @@ export default function CustomizationRulesPage() {
   // Load rules
   // TODO: Replace with TanStack Query useQuery
   useEffect(() => {
-    setIsLoading(true)
     // Simulate API call
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       const filteredRules = selectedProductId
         ? MOCK_CUSTOMIZATION_RULES.filter((r) => r.productId === selectedProductId)
         : MOCK_CUSTOMIZATION_RULES.filter((r) => 
@@ -42,6 +41,7 @@ export default function CustomizationRulesPage() {
       setOriginalRules(JSON.parse(JSON.stringify(filteredRules)))
       setIsLoading(false)
     }, 300)
+    return () => clearTimeout(timer)
   }, [selectedProductId, selectedType])
 
   // Check for unsaved changes

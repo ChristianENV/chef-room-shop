@@ -39,12 +39,12 @@ export function AuthLayout({ children, className }: AuthLayoutProps) {
         <footer className="p-6 text-center">
           <p className="font-serif text-xs text-muted-foreground">
             Al continuar, aceptas nuestros{' '}
-            <Link href={routes.contact} className="text-accent underline-offset-4 hover:underline">
-              Terminos de Servicio
+            <Link href={routes.terms} className="text-accent underline-offset-4 hover:underline">
+              Términos de Servicio
             </Link>{' '}
             y{' '}
-            <Link href={routes.contact} className="text-accent underline-offset-4 hover:underline">
-              Politica de Privacidad
+            <Link href={routes.privacy} className="text-accent underline-offset-4 hover:underline">
+              Política de Privacidad
             </Link>
           </p>
         </footer>
@@ -103,7 +103,7 @@ function AuthBrandPanel() {
         {/* Tagline */}
         <div className="mt-12 text-center">
           <p className="font-sans text-xl font-semibold text-white">
-            Disena, guarda y compra
+            Diseña, guarda y compra
           </p>
           <p className="font-sans text-xl font-semibold text-white">
             tus uniformes personalizados.

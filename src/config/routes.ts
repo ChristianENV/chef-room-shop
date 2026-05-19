@@ -15,6 +15,8 @@ export const routes = {
   restaurants: '/restaurants',
   sizeGuide: '/size-guide',
   contact: '/contact',
+  privacy: '/privacy',
+  terms: '/terms',
 
   adminLogin: '/admin/login',
   adminDashboard: '/admin/dashboard',

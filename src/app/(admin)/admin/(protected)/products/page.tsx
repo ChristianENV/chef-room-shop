@@ -14,6 +14,7 @@ import {
   ProductsEmptyState,
   ProductsErrorState,
 } from '@/src/features/admin/products'
+import type { ProductFormData } from '@/src/features/admin/products/product-form-drawer'
 import { fetchAdminProducts, createAdminProduct, updateAdminProduct, deleteAdminProduct } from '@/lib/mock-data'
 import type { AdminProduct, AdminProductStatus } from '@/lib/types'
 
@@ -40,12 +41,6 @@ export default function AdminProductsPage() {
   const [deletingProduct, setDeletingProduct] = useState<AdminProduct | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // Fetch products
-  // TODO: Replace with TanStack Query useQuery
-  useEffect(() => {
-    loadProducts()
-  }, [])
-
   const loadProducts = async () => {
     setIsLoading(true)
     setError(null)
@@ -58,6 +53,15 @@ export default function AdminProductsPage() {
       setIsLoading(false)
     }
   }
+
+  // Fetch products
+  // TODO: Replace with TanStack Query useQuery
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void loadProducts()
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [])
 
   // Filtered and sorted products
   const filteredProducts = useMemo(() => {
@@ -183,7 +187,7 @@ export default function AdminProductsPage() {
     }
   }
 
-  const handleSaveProduct = async (data: any) => {
+  const handleSaveProduct = async (data: ProductFormData) => {
     // TODO: Replace with GraphQL mutation
     if (editingProduct) {
       const updated = await updateAdminProduct(editingProduct.id, data)

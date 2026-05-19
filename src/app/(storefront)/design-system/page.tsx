@@ -13,6 +13,7 @@ import {
   CoreComponentsSection,
   HomepagePreviewSection,
 } from '@/components/shared/design-system'
+import { routes } from '@/src/config/routes'
 import { 
   Palette, 
   Type, 
@@ -59,7 +60,7 @@ export default function DesignSystemPage() {
         <div className="mx-auto max-w-7xl px-4 py-4 md:px-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+              <Link href={routes.home} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="h-4 w-4" />
                 <span className="hidden font-sans text-sm md:inline">Volver</span>
               </Link>

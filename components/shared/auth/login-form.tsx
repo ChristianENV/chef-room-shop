@@ -54,7 +54,7 @@ export function LoginForm({ className, onSuccess }: LoginFormProps) {
     }
 
     if (!formData.email.includes('@')) {
-      setError('Por favor ingresa un correo electronico valido')
+      setError('Por favor ingresa un correo electrónico válido')
       setIsLoading(false)
       return
     }
@@ -64,7 +64,7 @@ export function LoginForm({ className, onSuccess }: LoginFormProps) {
 
     // Mock error for demo (use test@error.com to trigger)
     if (formData.email === 'test@error.com') {
-      setError('Credenciales incorrectas. Por favor verifica tu correo y contrasena.')
+      setError('Credenciales incorrectas. Por favor verifica tu correo y contraseña.')
       setIsLoading(false)
       return
     }
@@ -89,7 +89,7 @@ export function LoginForm({ className, onSuccess }: LoginFormProps) {
           Bienvenido de vuelta
         </h1>
         <p className="font-serif text-muted-foreground">
-          Inicia sesion para acceder a tu cuenta
+          Inicia sesión para acceder a tu cuenta
         </p>
       </div>
 
@@ -106,7 +106,7 @@ export function LoginForm({ className, onSuccess }: LoginFormProps) {
         {/* Email */}
         <div className="space-y-2">
           <Label htmlFor="email" className="font-sans text-sm font-medium">
-            Correo electronico
+            Correo electrónico
           </Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -127,13 +127,13 @@ export function LoginForm({ className, onSuccess }: LoginFormProps) {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password" className="font-sans text-sm font-medium">
-              Contrasena
+              Contraseña
             </Label>
             <Link 
               href={routes.login} 
               className="font-serif text-xs text-accent hover:underline"
             >
-              Olvidaste tu contrasena?
+              ¿Olvidaste tu contraseña?
             </Link>
           </div>
           <div className="relative">
@@ -177,7 +177,7 @@ export function LoginForm({ className, onSuccess }: LoginFormProps) {
             htmlFor="remember" 
             className="font-serif text-sm text-muted-foreground cursor-pointer"
           >
-            Mantener sesion iniciada
+            Mantener sesión iniciada
           </Label>
         </div>
 
@@ -190,10 +190,10 @@ export function LoginForm({ className, onSuccess }: LoginFormProps) {
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Iniciando sesion...
+              Iniciando sesión...
             </>
           ) : (
-            'Iniciar Sesion'
+            'Iniciar Sesión'
           )}
         </Button>
       </form>

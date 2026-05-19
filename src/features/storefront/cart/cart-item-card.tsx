@@ -250,7 +250,7 @@ function CustomizationSnapshot({ embroidery }: CustomizationSnapshotProps) {
       </div>
       {/* Design ID for future reference */}
       <p className="mt-2 font-mono text-xs text-muted-foreground">
-        ID: DESIGN-{Math.random().toString(36).substr(2, 8).toUpperCase()}
+        ID: DESIGN-{`${embroidery.type}-${embroidery.position}`.replace(/[^a-z0-9]+/gi, '-').toUpperCase()}
       </p>
     </div>
   )

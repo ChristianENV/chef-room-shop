@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Iniciar Sesión | Chef Room by Bedolla',
-  description: 'Inicia sesion en tu cuenta de Chef Room para disenar y comprar uniformes de chef personalizados.',
+  description: 'Inicia sesión en tu cuenta de Chef Room para diseñar y comprar uniformes de chef personalizados.',
 }
 
 export default function LoginPage() {

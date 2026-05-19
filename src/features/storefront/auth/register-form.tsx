@@ -68,25 +68,25 @@ export function RegisterForm({ className, onSuccess }: RegisterFormProps) {
     }
 
     if (!formData.email.includes('@')) {
-      setError('Por favor ingresa un correo electronico valido')
+      setError('Por favor ingresa un correo electrónico válido')
       setIsLoading(false)
       return
     }
 
     if (formData.password.length < 8) {
-      setError('La contrasena debe tener al menos 8 caracteres')
+      setError('La contraseña debe tener al menos 8 caracteres')
       setIsLoading(false)
       return
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Las contrasenas no coinciden')
+      setError('Las contraseñas no coinciden')
       setIsLoading(false)
       return
     }
 
     if (!formData.acceptTerms) {
-      setError('Debes aceptar los terminos y condiciones')
+      setError('Debes aceptar los términos y condiciones')
       setIsLoading(false)
       return
     }
@@ -96,7 +96,7 @@ export function RegisterForm({ className, onSuccess }: RegisterFormProps) {
 
     // Mock error for demo (use test@exists.com to trigger)
     if (formData.email === 'test@exists.com') {
-      setError('Ya existe una cuenta con este correo electronico')
+      setError('Ya existe una cuenta con este correo electrónico')
       setIsLoading(false)
       return
     }
@@ -152,7 +152,7 @@ export function RegisterForm({ className, onSuccess }: RegisterFormProps) {
           Crea tu cuenta
         </h1>
         <p className="font-serif text-muted-foreground">
-          Unete a Chef Room y disena tus uniformes
+          Únete a Chef Room y diseña tus uniformes
         </p>
       </div>
 
@@ -206,7 +206,7 @@ export function RegisterForm({ className, onSuccess }: RegisterFormProps) {
         {/* Email */}
         <div className="space-y-2">
           <Label htmlFor="email" className="font-sans text-sm font-medium">
-            Correo electronico <span className="text-destructive">*</span>
+            Correo electrónico <span className="text-destructive">*</span>
           </Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -246,7 +246,7 @@ export function RegisterForm({ className, onSuccess }: RegisterFormProps) {
         {/* Password */}
         <div className="space-y-2">
           <Label htmlFor="password" className="font-sans text-sm font-medium">
-            Contrasena <span className="text-destructive">*</span>
+            Contraseña <span className="text-destructive">*</span>
           </Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -275,14 +275,14 @@ export function RegisterForm({ className, onSuccess }: RegisterFormProps) {
         {/* Confirm Password */}
         <div className="space-y-2">
           <Label htmlFor="confirmPassword" className="font-sans text-sm font-medium">
-            Confirmar contrasena <span className="text-destructive">*</span>
+            Confirmar contraseña <span className="text-destructive">*</span>
           </Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               id="confirmPassword"
               type={showConfirmPassword ? 'text' : 'password'}
-              placeholder="Repite tu contrasena"
+              placeholder="Repite tu contraseña"
               value={formData.confirmPassword}
               onChange={(e) => updateField('confirmPassword', e.target.value)}
               className={cn(
@@ -302,7 +302,7 @@ export function RegisterForm({ className, onSuccess }: RegisterFormProps) {
             </button>
           </div>
           {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-            <p className="font-serif text-xs text-destructive">Las contrasenas no coinciden</p>
+            <p className="font-serif text-xs text-destructive">Las contraseñas no coinciden</p>
           )}
         </div>
 
@@ -320,12 +320,12 @@ export function RegisterForm({ className, onSuccess }: RegisterFormProps) {
             className="font-serif text-sm text-muted-foreground cursor-pointer leading-snug"
           >
             Acepto los{' '}
-            <Link href={routes.contact} className="text-accent hover:underline">
-              Terminos de Servicio
+            <Link href={routes.terms} className="text-accent hover:underline">
+              Términos de Servicio
             </Link>{' '}
             y la{' '}
-            <Link href={routes.contact} className="text-accent hover:underline">
-              Politica de Privacidad
+            <Link href={routes.privacy} className="text-accent hover:underline">
+              Política de Privacidad
             </Link>{' '}
             <span className="text-destructive">*</span>
           </Label>
@@ -410,7 +410,7 @@ export function RegisterForm({ className, onSuccess }: RegisterFormProps) {
       <p className="text-center font-serif text-sm text-muted-foreground">
         Ya tienes cuenta?{' '}
         <Link href={routes.login} className="font-sans font-medium text-accent hover:underline">
-          Iniciar sesion
+          Iniciar sesión
         </Link>
       </p>
     </div>

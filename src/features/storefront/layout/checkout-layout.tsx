@@ -55,16 +55,16 @@ export function CheckoutLayout({ children, className }: CheckoutLayoutProps) {
             </p>
             <div className="flex items-center gap-4">
               <Link
-                href={routes.contact}
+                href={routes.privacy}
                 className="font-serif text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 Privacidad
               </Link>
               <Link
-                href={routes.contact}
+                href={routes.terms}
                 className="font-serif text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
-                Terminos
+                Términos
               </Link>
               <Link
                 href={routes.contact}

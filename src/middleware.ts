@@ -17,7 +17,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // TODO: remove bypass when JWT / session auth is production-ready
+  // TODO: Remove bypass when JWT / session auth is production-ready.
+  // Set ADMIN_AUTH_ENFORCE=true locally only when testing real redirects.
   if (!isAdminAuthEnforced()) {
     return NextResponse.next()
   }
@@ -36,11 +37,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/admin/dashboard/:path*',
-    '/admin/products/:path*',
-    '/admin/orders/:path*',
-    '/admin/customization/:path*',
-    '/admin/analytics/:path*',
-  ],
+  matcher: ['/admin', '/admin/:path*'],
 }
