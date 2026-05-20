@@ -6,11 +6,11 @@ import {
 } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 
-import { getAppBaseUrl } from '@/src/server/payments/app-url'
 import { createConektaCheckoutForOrder } from '@/src/server/payments/conekta/conekta.client'
 import { ConektaConfigError } from '@/src/server/payments/conekta/conekta.errors'
 import { sanitizeConektaPayload } from '@/src/server/payments/conekta/conekta.sanitize'
-import { routes } from '@/src/config/routes'
+import { getAppBaseUrl } from '@/src/server/payments/app-url'
+import { conektaCheckoutRedirectUrls } from '@/src/lib/checkout-redirect-urls'
 
 import type { GraphQLContext } from '../../context'
 import {
@@ -114,9 +114,10 @@ export async function createConektaCheckout(
     }
   }
 
-  const baseUrl = getAppBaseUrl()
-  const successUrl = `${baseUrl}${routes.checkoutSuccess}?orderNumber=${encodeURIComponent(order.orderNumber)}`
-  const failureUrl = `${baseUrl}${routes.checkout}?orderNumber=${encodeURIComponent(order.orderNumber)}`
+  const { successUrl, failureUrl } = conektaCheckoutRedirectUrls(
+    order.orderNumber,
+    getAppBaseUrl(),
+  )
 
   let conektaResult
   try {

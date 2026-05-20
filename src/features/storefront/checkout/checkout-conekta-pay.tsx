@@ -3,28 +3,36 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, ExternalLink, AlertCircle } from 'lucide-react'
+import { Loader2, ExternalLink, AlertCircle, RefreshCw } from 'lucide-react'
 import { useCreateConektaCheckoutMutation } from './api/use-create-conekta-checkout-mutation'
 
 type CheckoutConektaPayProps = {
   orderNumber: string
   email: string
   disabled?: boolean
+  /** First-time pay flow vs new attempt after failed/expired */
+  mode?: 'prepare' | 'retry'
 }
 
 /**
  * Starts Conekta hosted checkout and renders pay / retry CTA.
  */
-export function CheckoutConektaPay({ orderNumber, email, disabled }: CheckoutConektaPayProps) {
+export function CheckoutConektaPay({
+  orderNumber,
+  email,
+  disabled = false,
+  mode = 'prepare',
+}: CheckoutConektaPayProps) {
   const conektaCheckout = useCreateConektaCheckoutMutation()
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [started, setStarted] = useState(false)
+  const [started, setStarted] = useState(mode === 'retry')
 
   const startCheckout = async () => {
     if (!orderNumber || !email || disabled) return
     setStarted(true)
     setErrorMessage(null)
+    setCheckoutUrl(null)
     try {
       const result = await conektaCheckout.mutateAsync({
         orderNumber,
@@ -89,7 +97,11 @@ export function CheckoutConektaPay({ orderNumber, email, disabled }: CheckoutCon
           disabled={conektaCheckout.isPending}
           className="font-sans"
         >
-          {conektaCheckout.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {conektaCheckout.isPending ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="mr-2 h-4 w-4" />
+          )}
           Reintentar pago
         </Button>
       </div>
@@ -98,13 +110,24 @@ export function CheckoutConektaPay({ orderNumber, email, disabled }: CheckoutCon
 
   if (!checkoutUrl) {
     return (
-      <Alert className="mt-6 border-warning/30 bg-warning/5">
-        <AlertCircle className="h-4 w-4 text-warning" />
-        <AlertDescription className="font-serif text-sm">
-          El checkout de Conekta no está disponible. Verifica la configuración del servidor o
-          intenta más tarde.
-        </AlertDescription>
-      </Alert>
+      <div className="mt-6 space-y-3">
+        <Alert className="border-warning/30 bg-warning/5">
+          <AlertCircle className="h-4 w-4 text-warning" />
+          <AlertDescription className="font-serif text-sm">
+            El checkout de Conekta no está disponible. Verifica la configuración del servidor o
+            intenta más tarde.
+          </AlertDescription>
+        </Alert>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => void startCheckout()}
+          disabled={conektaCheckout.isPending}
+          className="font-sans"
+        >
+          Reintentar pago
+        </Button>
+      </div>
     )
   }
 

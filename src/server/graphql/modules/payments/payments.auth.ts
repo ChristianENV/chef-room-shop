@@ -57,9 +57,13 @@ export async function assertCanStartConektaCheckout(
   }
 }
 
+/** Orders that may start or restart Conekta hosted checkout. */
 export function assertOrderPendingPayment(order: OrderWithPaymentsAndItems): void {
-  if (order.status !== 'PENDING_PAYMENT') {
-    throw new GraphQLError('Este pedido ya no está pendiente de pago.', {
+  const canCheckout =
+    order.status === 'PENDING_PAYMENT' || order.status === 'PAYMENT_FAILED'
+
+  if (!canCheckout) {
+    throw new GraphQLError('Este pedido ya no admite un nuevo intento de pago.', {
       extensions: { code: 'BAD_REQUEST' },
     })
   }

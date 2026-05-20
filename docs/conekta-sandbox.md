@@ -81,26 +81,68 @@ Configure in Conekta panel → Webhooks → point to:
 - Dev: optional `CONEKTA_WEBHOOK_SECRET` matched against `Digest` / `Authorization` headers.
 - Without verification in production, webhooks are rejected.
 
+## Redirect URLs
+
+| URL | Purpose |
+|-----|---------|
+| `/checkout/success?orderNumber=CR-...` | Conekta `success_url` (no email in query) |
+| `/checkout/success?orderNumber=CR-...&payment=failed` | Conekta `failure_url` (informative only) |
+
+Real payment state always comes from `orderByNumber` + webhooks, not from `payment=failed`.
+
+## Webhook testing (ngrok)
+
+1. Run the app: `npm run dev`
+2. Expose with ngrok: `ngrok http 3000`
+3. In Conekta panel → **Webhooks** → add endpoint:
+   `https://<subdomain>.ngrok-free.app/api/webhooks/conekta`
+4. Copy the webhook public key into `CONEKTA_WEBHOOK_PUBLIC_KEY` (or use `CONEKTA_WEBHOOK_SECRET` in dev).
+5. Create an order and complete Conekta checkout, or replay an event from the panel.
+
+**Idempotency:** send the same `event.id` twice → second request returns `200` without duplicating `Payment` / `Order` updates. Check `conekta_webhook_events.processedAt` in Prisma Studio.
+
+**Prisma Studio checks:**
+
+| Model | Field | After `order.paid` |
+|-------|--------|-------------------|
+| `Order` | `status` | `PAID` |
+| `Payment` | `status` | `PAID` |
+| `ConektaWebhookEvent` | `processedAt` | set |
+
+## `/checkout/success` (Payment Status UX)
+
+While `paymentStatus` is `PENDING`, the page polls `orderByNumber` every **5s** (max **24** attempts ≈ 2 min). When the webhook marks the order `PAID`, the UI switches to **Pago confirmado** without a manual refresh.
+
+| BFF status | UI title |
+|------------|----------|
+| `PENDING` / `PENDING_PAYMENT` | Pago pendiente |
+| `PAID` | Pago confirmado |
+| `FAILED` / `PAYMENT_FAILED` | Pago no completado (+ reintentar) |
+| `CANCELLED` / `EXPIRED` | Pago expirado (+ reintentar) |
+
 ## Manual smoke
 
 1. Add product → checkout → success page.
-2. Success page calls `createConektaCheckout` → **Pagar ahora** opens Conekta URL.
+2. **Preparar pago con Conekta** → **Pagar ahora** opens Conekta URL.
 3. Complete payment in sandbox (test cards in Conekta docs).
-4. Webhook updates `Payment` + `Order` to `PAID`.
+4. Webhook updates `Payment` + `Order` to `PAID`; success page shows **Pago confirmado** via polling.
 5. Wrong email → GraphQL `FORBIDDEN`.
 
-**Local webhook testing:** use ngrok + Conekta panel, or POST a fixture:
+**Local webhook curl (dev secret):**
 
 ```bash
 curl -X POST http://localhost:3000/api/webhooks/conekta \
   -H "Content-Type: application/json" \
-  -H "Digest: <your-dev-secret-if-configured>" \
-  -d @fixtures/conekta-order-paid.json
+  -H "Digest: <CONEKTA_WEBHOOK_SECRET-if-set>" \
+  -d "{\"id\":\"evt_test_001\",\"type\":\"order.paid\",\"data\":{\"object\":{\"id\":\"ord_REPLACE\",\"object\":\"order\"}}}"
 ```
+
+Replace `ord_REPLACE` with the `Payment.providerOrderId` from Prisma.
 
 ## Frontend
 
-- `useCreateConektaCheckoutMutation`
+- `useOrderByNumberQuery` with `pollWhilePending`
+- `getPaymentStatusUi` — copy and polling rules
 - `CheckoutConektaPay` on `/checkout/success`
 
 ## Not in v1

@@ -64,6 +64,13 @@ Step helpers: `src/features/storefront/checkout/lib/checkout-step-validation.ts`
 
 On `/checkout/success`, `CheckoutConektaPay` calls `createConektaCheckout` and shows **Pagar ahora** → Conekta hosted checkout. See [conekta-sandbox.md](./conekta-sandbox.md).
 
+## Payment Status UX (v1)
+
+- `getPaymentStatusUi` drives banner copy, badge, and when to poll.
+- `useOrderByNumberQuery({ pollWhilePending: true })` refetches every 5s while pending (max ~2 min).
+- Email stays in `sessionStorage` (not in URL); cleared only after `PAID`.
+- `payment=failed` in URL is informational after Conekta redirect only.
+
 ## Not in scope (v1)
 
 - Card capture in Chef Room UI
