@@ -400,6 +400,81 @@ export const adminDashboardTypeDefs = /* GraphQL */ `
   }
 `
 
+export const checkoutTypeDefs = /* GraphQL */ `
+  input CheckoutAddressInput {
+    firstName: String!
+    lastName: String!
+    phone: String!
+    street: String!
+    extNumber: String
+    intNumber: String
+    neighborhood: String
+    city: String!
+    state: String!
+    country: String!
+    postalCode: String!
+    references: String
+  }
+
+  input CreateCheckoutOrderInput {
+    email: String!
+    phone: String!
+    shippingAddress: CheckoutAddressInput!
+    billingAddress: CheckoutAddressInput
+    useSameBillingAddress: Boolean
+    notes: String
+    paymentMethod: String!
+  }
+
+  type CheckoutOrderPayload {
+    orderNumber: String!
+    orderId: ID!
+    status: String!
+    paymentStatus: String!
+    totalCents: Int!
+    currency: String!
+  }
+
+  type PublicOrderItem {
+    id: ID!
+    name: String!
+    quantity: Int!
+    totalPriceCents: Int!
+    customizationPriceCents: Int!
+    productSnapshotJson: JSON
+    designSnapshotJson: JSON
+  }
+
+  type PublicOrderPayment {
+    id: ID!
+    provider: String!
+    method: String!
+    status: String!
+    amountCents: Int!
+    currency: String!
+  }
+
+  type PublicOrder {
+    id: ID!
+    orderNumber: String!
+    status: String!
+    paymentStatus: String!
+    fulfillmentStatus: String!
+    customerEmail: String!
+    customerPhone: String
+    currency: String!
+    subtotalCents: Int!
+    customizationTotalCents: Int!
+    shippingCostCents: Int!
+    discountTotalCents: Int!
+    taxTotalCents: Int!
+    totalCents: Int!
+    createdAt: String!
+    items: [PublicOrderItem!]!
+    payments: [PublicOrderPayment!]!
+  }
+`
+
 export const typeDefs = /* GraphQL */ `
   """
   Business BFF — authentication is handled by Better Auth at /api/auth/*.
@@ -430,6 +505,7 @@ export const typeDefs = /* GraphQL */ `
     adminRecentPayments(limit: Int): [AdminRecentPayment!]!
     adminTopProducts(limit: Int): [AdminTopProduct!]!
     myCart: Cart!
+    orderByNumber(orderNumber: String!, email: String!): PublicOrder
   }
 
   type Mutation {
@@ -442,10 +518,12 @@ export const typeDefs = /* GraphQL */ `
     updateCartItemQuantity(input: UpdateCartItemQuantityInput!): Cart!
     removeCartItem(itemId: ID!): Cart!
     clearCart: Cart!
+    createCheckoutOrder(input: CreateCheckoutOrderInput!): CheckoutOrderPayload!
   }
 
   ${catalogTypeDefs}
   ${accountTypeDefs}
   ${cartTypeDefs}
+  ${checkoutTypeDefs}
   ${adminDashboardTypeDefs}
 `
