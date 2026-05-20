@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { CheckoutLayout } from '@/src/features/storefront/layout/checkout-layout'
 import {
   CheckoutSteps,
@@ -10,21 +12,37 @@ import {
   ShippingMethodSelector,
   PaymentMethodTabs,
   CheckoutOrderSummary,
-  PaymentConfirmationDialog,
   type CheckoutStep,
   type ContactFormData,
   type ShippingAddressData,
   type BillingAddressData,
   type ShippingMethod,
   type PaymentMethod,
-  type CardPaymentData,
+  useCreateCheckoutOrderMutation,
 } from '@/src/features/storefront/checkout'
+import { useMyCartQuery } from '@/src/features/storefront/cart/api/use-my-cart-query'
+import {
+  CartSkeleton,
+  CartErrorState,
+  EmptyCartState,
+} from '@/src/features/storefront/cart/cart-states'
+import { mapBffCartToCheckoutSummary } from '@/src/features/storefront/checkout/mappers/checkout-ui.mapper'
+import { buildCreateCheckoutOrderInput } from '@/src/features/storefront/checkout/mappers/checkout-ui.mapper'
+import {
+  getCheckoutErrorMessage,
+  validateBillingStep,
+  validateContactStep,
+  validatePaymentStep,
+  validateShippingStep,
+} from '@/src/features/storefront/checkout/lib/checkout-step-validation'
+import { saveCheckoutConfirmation } from '@/src/features/storefront/checkout/lib/checkout-session'
+import { checkoutSuccessUrl } from '@/src/features/storefront/checkout/lib/checkout-routes'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Loader2, ChevronRight, ChevronLeft } from 'lucide-react'
-import { MOCK_CART } from '@/lib/mock-data'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Loader2, ChevronRight, ChevronLeft, AlertCircle } from 'lucide-react'
+import { routes } from '@/src/config/routes'
 
-// Initial form data
 const initialContactData: ContactFormData = {
   email: '',
   phone: '',
@@ -58,165 +76,150 @@ const initialBillingData: BillingAddressData = {
   country: 'Mexico',
 }
 
-const initialCardData: CardPaymentData = {
-  cardholderName: '',
-  cardNumber: '',
-  expirationMonth: '',
-  expirationYear: '',
-  cvv: '',
-  installments: 1,
-}
-
 export default function CheckoutPage() {
-  // Step management
+  const router = useRouter()
+  const { data: cart, isLoading, isError, refetch, isFetching } = useMyCartQuery()
+  const createOrder = useCreateCheckoutOrderMutation()
+
   const [currentStep, setCurrentStep] = useState<CheckoutStep>('informacion')
   const [completedSteps, setCompletedSteps] = useState<CheckoutStep[]>([])
 
-  // Form data
   const [contactData, setContactData] = useState<ContactFormData>(initialContactData)
   const [shippingData, setShippingData] = useState<ShippingAddressData>(initialShippingData)
   const [billingData, setBillingData] = useState<BillingAddressData>(initialBillingData)
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('standard')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card')
-  const [cardData, setCardData] = useState<CardPaymentData>(initialCardData)
+  const [orderNotes, setOrderNotes] = useState('')
 
-  // UI states
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showConfirmation, setShowConfirmation] = useState(false)
-  const [orderId, setOrderId] = useState('')
-
-  // Form validation errors
   const [contactErrors, setContactErrors] = useState<Partial<Record<keyof ContactFormData, string>>>({})
   const [shippingErrors, setShippingErrors] = useState<Partial<Record<keyof ShippingAddressData, string>>>({})
-  const [cardErrors, setCardErrors] = useState<Partial<Record<keyof CardPaymentData, string>>>({})
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
-  // Check if cart has customized items
-  const hasCustomization = MOCK_CART.items.some(item => item.customization.embroidery)
+  const summary = useMemo(
+    () => (cart ? mapBffCartToCheckoutSummary(cart) : null),
+    [cart],
+  )
 
-  // Calculate shipping cost
-  const shippingCost = shippingMethod === 'express' ? 499 : 199
+  const hasCustomization = useMemo(
+    () =>
+      cart?.items.some(
+        (item) =>
+          Boolean(item.designId) ||
+          item.customizationPriceCents > 0 ||
+          Boolean(item.customizationSnapshot),
+      ) ?? false,
+    [cart],
+  )
 
-  // Validate contact form
-  const validateContact = (): boolean => {
-    const errors: Partial<Record<keyof ContactFormData, string>> = {}
-    
-    if (!contactData.email) {
-      errors.email = 'El correo es requerido'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactData.email)) {
-      errors.email = 'Ingresa un correo valido'
-    }
-    
-    if (!contactData.phone) {
-      errors.phone = 'El telefono es requerido'
-    }
-    
-    setContactErrors(errors)
-    return Object.keys(errors).length === 0
-  }
+  const hasItems = (cart?.items.length ?? 0) > 0
+  const isSubmitting = createOrder.isPending
 
-  // Validate shipping form
-  const validateShipping = (): boolean => {
-    const errors: Partial<Record<keyof ShippingAddressData, string>> = {}
-    
-    if (!shippingData.firstName) errors.firstName = 'El nombre es requerido'
-    if (!shippingData.lastName) errors.lastName = 'El apellido es requerido'
-    if (!shippingData.street) errors.street = 'La calle es requerida'
-    if (!shippingData.exteriorNumber) errors.exteriorNumber = 'El numero es requerido'
-    if (!shippingData.neighborhood) errors.neighborhood = 'La colonia es requerida'
-    if (!shippingData.city) errors.city = 'La ciudad es requerida'
-    if (!shippingData.state) errors.state = 'El estado es requerido'
-    if (!shippingData.postalCode) errors.postalCode = 'El codigo postal es requerido'
-    
-    setShippingErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
-  // Validate card form
-  const validateCard = (): boolean => {
-    if (paymentMethod !== 'card') return true
-    
-    const errors: Partial<Record<keyof CardPaymentData, string>> = {}
-    
-    if (!cardData.cardholderName) errors.cardholderName = 'El nombre es requerido'
-    if (!cardData.cardNumber || cardData.cardNumber.length < 16) errors.cardNumber = 'Numero de tarjeta invalido'
-    if (!cardData.expirationMonth) errors.expirationMonth = 'Requerido'
-    if (!cardData.expirationYear) errors.expirationYear = 'Requerido'
-    if (!cardData.cvv || cardData.cvv.length < 3) errors.cvv = 'CVV invalido'
-    
-    setCardErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
-  // Handle step navigation
   const goToNextStep = () => {
+    setSubmitError(null)
+
     if (currentStep === 'informacion') {
-      if (validateContact()) {
-        setCompletedSteps(prev => [...prev, 'informacion'])
-        setCurrentStep('envio')
-      }
-    } else if (currentStep === 'envio') {
-      if (validateShipping()) {
-        setCompletedSteps(prev => [...prev, 'envio'])
-        setCurrentStep('pago')
-      }
-    } else if (currentStep === 'pago') {
-      if (validateCard()) {
-        handleSubmitOrder()
-      }
+      const { success, errors } = validateContactStep(contactData)
+      setContactErrors(errors)
+      if (!success) return
+      setCompletedSteps((prev) => [...prev, 'informacion'])
+      setCurrentStep('envio')
+      return
+    }
+
+    if (currentStep === 'envio') {
+      const shippingResult = validateShippingStep(shippingData)
+      const billingResult = validateBillingStep(billingData)
+      setShippingErrors(shippingResult.errors)
+      if (!shippingResult.success || !billingResult.success) return
+      setCompletedSteps((prev) => [...prev, 'envio'])
+      setCurrentStep('pago')
+      return
+    }
+
+    if (currentStep === 'pago') {
+      if (!validatePaymentStep(paymentMethod)) return
+      void handleSubmitOrder()
     }
   }
 
   const goToPreviousStep = () => {
-    if (currentStep === 'envio') {
-      setCurrentStep('informacion')
-    } else if (currentStep === 'pago') {
-      setCurrentStep('envio')
+    setSubmitError(null)
+    if (currentStep === 'envio') setCurrentStep('informacion')
+    else if (currentStep === 'pago') setCurrentStep('envio')
+  }
+
+  const handleSubmitOrder = async () => {
+    if (!cart || !summary) return
+
+    setSubmitError(null)
+
+    const input = buildCreateCheckoutOrderInput({
+      contact: contactData,
+      shipping: shippingData,
+      billing: billingData,
+      paymentMethod,
+      notes: orderNotes || undefined,
+    })
+
+    try {
+      const payload = await createOrder.mutateAsync(input)
+      saveCheckoutConfirmation({
+        ...payload,
+        email: contactData.email.trim(),
+        paymentMethod,
+      })
+      router.push(checkoutSuccessUrl(payload.orderNumber))
+    } catch (error) {
+      setSubmitError(getCheckoutErrorMessage(error))
     }
   }
 
-  // Handle order submission
-  const handleSubmitOrder = async () => {
-    setIsSubmitting(true)
-
-    // TODO: Integrate with createOrder GraphQL mutation
-    // TODO: For card payments: tokenize card with Conekta.js first
-    // TODO: For OXXO/SPEI: create payment reference via Conekta API
-    
-    // Mock API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    // Generate mock order ID
-    const mockOrderId = `CR-${Date.now().toString(36).toUpperCase()}`
-    setOrderId(mockOrderId)
-    setCompletedSteps(prev => [...prev, 'pago', 'confirmacion'])
-    setCurrentStep('confirmacion')
-    setShowConfirmation(true)
-    setIsSubmitting(false)
-  }
-
-  // Get button text based on current step
   const getButtonText = () => {
     if (isSubmitting) return 'Procesando...'
-    if (currentStep === 'informacion') return 'Continuar a envio'
+    if (currentStep === 'informacion') return 'Continuar a envío'
     if (currentStep === 'envio') return 'Continuar a pago'
     if (currentStep === 'pago') {
-      if (paymentMethod === 'card') return 'Pagar ahora'
-      if (paymentMethod === 'oxxo') return 'Generar referencia OXXO'
-      if (paymentMethod === 'spei') return 'Obtener datos SPEI'
+      if (paymentMethod === 'card') return 'Crear pedido'
+      if (paymentMethod === 'oxxo') return 'Crear pedido (OXXO)'
+      if (paymentMethod === 'spei') return 'Crear pedido (SPEI)'
     }
     return 'Continuar'
   }
 
-  // Calculate final total
-  const calculateTotal = () => {
-    const subtotal = MOCK_CART.subtotal
-    const finalShipping = subtotal >= 2000 ? 0 : shippingCost
-    return subtotal + finalShipping
+  if (isLoading) {
+    return (
+      <CheckoutLayout>
+        <CartSkeleton itemCount={2} className="grid-cols-1 lg:grid-cols-[1fr,380px]" />
+      </CheckoutLayout>
+    )
+  }
+
+  if (isError) {
+    return (
+      <CheckoutLayout>
+        <CartErrorState
+          message="No pudimos cargar tu carrito. Por favor intenta de nuevo."
+          onRetry={() => void refetch()}
+        />
+      </CheckoutLayout>
+    )
+  }
+
+  if (!hasItems || !summary) {
+    return (
+      <CheckoutLayout>
+        <EmptyCartState />
+        <div className="mt-6 flex justify-center">
+          <Button asChild variant="outline" className="font-sans">
+            <Link href={routes.shop}>Ir a tienda</Link>
+          </Button>
+        </div>
+      </CheckoutLayout>
+    )
   }
 
   return (
     <CheckoutLayout>
-      {/* Checkout Steps */}
       <CheckoutSteps
         currentStep={currentStep}
         completedSteps={completedSteps}
@@ -224,9 +227,7 @@ export default function CheckoutPage() {
       />
 
       <div className="grid gap-8 lg:grid-cols-[1fr,380px]">
-        {/* Left Column - Forms */}
         <div className="space-y-6">
-          {/* Contact Information */}
           {(currentStep === 'informacion' || completedSteps.includes('informacion')) && (
             <div className="rounded-lg border border-border bg-card p-4 md:p-6">
               <ContactForm
@@ -237,8 +238,9 @@ export default function CheckoutPage() {
             </div>
           )}
 
-          {/* Shipping Address */}
-          {(currentStep === 'envio' || currentStep === 'pago' || completedSteps.includes('envio')) && (
+          {(currentStep === 'envio' ||
+            currentStep === 'pago' ||
+            completedSteps.includes('envio')) && (
             <div className="rounded-lg border border-border bg-card p-4 md:p-6">
               <ShippingAddressForm
                 data={shippingData}
@@ -248,10 +250,7 @@ export default function CheckoutPage() {
 
               <Separator className="my-6" />
 
-              <BillingAddressForm
-                data={billingData}
-                onChange={setBillingData}
-              />
+              <BillingAddressForm data={billingData} onChange={setBillingData} />
 
               <Separator className="my-6" />
 
@@ -260,33 +259,42 @@ export default function CheckoutPage() {
                 onMethodChange={setShippingMethod}
                 hasCustomization={hasCustomization}
               />
+
+              <p className="mt-4 font-serif text-xs text-muted-foreground">
+                El costo de envío se calculará en una fase posterior. Por ahora el pedido se crea
+                con envío en $0.
+              </p>
             </div>
           )}
 
-          {/* Payment */}
           {currentStep === 'pago' && (
             <div className="rounded-lg border border-border bg-card p-4 md:p-6">
               <PaymentMethodTabs
                 selectedMethod={paymentMethod}
                 onMethodChange={setPaymentMethod}
-                cardData={cardData}
-                onCardDataChange={setCardData}
                 customerEmail={contactData.email}
-                errors={cardErrors}
+                notes={orderNotes}
+                onNotesChange={setOrderNotes}
               />
             </div>
           )}
 
-          {/* Navigation Buttons */}
+          {submitError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="font-serif">{submitError}</AlertDescription>
+            </Alert>
+          )}
+
           <div className="flex items-center justify-between">
             {currentStep !== 'informacion' ? (
               <Button
                 variant="ghost"
                 onClick={goToPreviousStep}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isFetching}
               >
                 <ChevronLeft className="mr-2 h-4 w-4" />
-                Atras
+                Atrás
               </Button>
             ) : (
               <div />
@@ -295,7 +303,7 @@ export default function CheckoutPage() {
             <Button
               size="lg"
               onClick={goToNextStep}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isFetching}
               className="bg-primary font-sans font-semibold hover:bg-primary/90"
             >
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -307,24 +315,12 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* Right Column - Order Summary */}
         <div className="lg:sticky lg:top-4 lg:self-start">
-          <CheckoutOrderSummary
-            cart={MOCK_CART}
-            shippingCost={shippingCost}
-          />
+          <CheckoutOrderSummary summary={summary} />
         </div>
       </div>
-
-      {/* Payment Confirmation Dialog */}
-      <PaymentConfirmationDialog
-        open={showConfirmation}
-        onOpenChange={setShowConfirmation}
-        paymentMethod={paymentMethod}
-        orderId={orderId}
-        total={calculateTotal()}
-        customerEmail={contactData.email}
-      />
     </CheckoutLayout>
   )
 }
+
+

@@ -137,7 +137,11 @@ export default function ProductPage({ params }: ProductPageProps) {
             }}
           />
 
-          <ProductInfo product={product} onCustomize={handleCustomize} />
+          <ProductInfo
+            key={product.id}
+            product={product}
+            onCustomize={handleCustomize}
+          />
         </div>
 
         {product.customizable && (

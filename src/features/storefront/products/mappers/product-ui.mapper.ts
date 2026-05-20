@@ -1,11 +1,10 @@
 import { mapCatalogProductToDetail } from '@/src/features/storefront/catalog/mappers/catalog-ui.mapper'
-import type { Product } from '@/lib/types'
 
-import type { ProductDetail } from '../types'
+import type { ProductDetail, StorefrontProductDetail } from '../types'
 
 /**
- * Maps product detail BFF payload to the legacy storefront `Product` UI model.
+ * Maps product detail BFF payload to the legacy storefront `Product` UI model with variants.
  */
-export function mapProductDetailToUi(product: ProductDetail): Product {
+export function mapProductDetailToUi(product: ProductDetail): StorefrontProductDetail {
   return mapCatalogProductToDetail(product)
 }

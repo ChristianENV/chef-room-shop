@@ -1,11 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
-import { ShoppingBag, Sparkles } from 'lucide-react'
+import { ShoppingBag, Sparkles, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Popover,
   PopoverContent,
@@ -14,19 +16,14 @@ import {
 import { routes } from '@/src/config/routes'
 import { formatCurrencyMXN } from '@/src/lib/formatters'
 import type { CartPreview, CartPreviewItem } from '@/src/types/cart'
-import { MOCK_CART_PREVIEW } from '@/src/features/storefront/cart/mocks/cart.mock'
+import { useMyCartQuery } from '@/src/features/storefront/cart/api/use-my-cart-query'
+import { mapBffCartToCartPreview } from '@/src/features/storefront/cart/mappers/cart-ui.mapper'
 import {
   formatCartItemCountLabel,
   getCartPreviewLineTotal,
 } from '@/src/features/storefront/cart/lib/cart-utils'
 
-// TODO: Reemplazar MOCK_CART_PREVIEW por useCartQuery cuando TanStack Query esté conectado.
-// TODO: Conectar removeItem/updateQuantity cuando exista mutation.
-// TODO: Conectar design preview real cuando el customizador guarde previews.
-// TODO: Conectar subtotal real desde backend para evitar inconsistencias.
-
 type CartPopoverProps = {
-  cart?: CartPreview
   triggerClassName?: string
 }
 
@@ -102,9 +99,10 @@ function CartPopoverItem({ item }: { item: CartPreviewItem }) {
                   {item.customizationSummary.embroideredName && (
                     <li>&quot;{item.customizationSummary.embroideredName}&quot;</li>
                   )}
-                  {item.customizationSummary.areas && item.customizationSummary.areas.length > 0 && (
-                    <li>Áreas: {item.customizationSummary.areas.join(', ')}</li>
-                  )}
+                  {item.customizationSummary.areas &&
+                    item.customizationSummary.areas.length > 0 && (
+                      <li>Áreas: {item.customizationSummary.areas.join(', ')}</li>
+                    )}
                 </ul>
               )}
               <Link
@@ -141,6 +139,39 @@ function CartPopoverEmpty() {
           <Link href={routes.customize}>Diseñar uniforme</Link>
         </Button>
       </div>
+    </div>
+  )
+}
+
+function CartPopoverSkeleton() {
+  return (
+    <ul className="space-y-3">
+      {Array.from({ length: 2 }).map((_, index) => (
+        <li key={index} className="rounded-lg border border-border p-3">
+          <div className="flex gap-3">
+            <Skeleton className="h-16 w-16 flex-shrink-0 rounded-md" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+              <Skeleton className="h-3 w-2/3" />
+            </div>
+          </div>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function CartPopoverError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="py-6 text-center">
+      <p className="font-serif text-sm text-muted-foreground">
+        No pudimos cargar tu carrito.
+      </p>
+      <Button variant="outline" size="sm" className="mt-4" onClick={onRetry}>
+        <RefreshCw className="mr-2 h-4 w-4" />
+        Reintentar
+      </Button>
     </div>
   )
 }
@@ -196,20 +227,27 @@ function CartPopoverContent({ cart }: { cart: CartPreview }) {
   )
 }
 
-export function CartPopover({ cart = MOCK_CART_PREVIEW, triggerClassName }: CartPopoverProps) {
-  const itemCount = cart.totalItems
+/**
+ * Desktop cart popover. Shares `myCart` query with navbar badge (see `useCartBadgeCount`).
+ */
+export function CartPopover({ triggerClassName }: CartPopoverProps) {
+  const [open, setOpen] = useState(false)
+  const { data, isLoading, isError, refetch, isFetching } = useMyCartQuery()
+  const badgeCount = data?.totalItems ?? 0
+  const cartPreview = data ? mapBffCartToCartPreview(data) : null
+  const showPopoverLoading = open && (isLoading || (isFetching && !cartPreview))
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
           size="icon"
           className={cn('relative h-9 w-9', triggerClassName)}
-          aria-label={`Carrito (${itemCount} productos)`}
+          aria-label={`Carrito (${badgeCount} productos)`}
         >
           <ShoppingBag className="h-4 w-4" />
-          <CartTriggerBadge count={itemCount} />
+          <CartTriggerBadge count={badgeCount} />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-96 p-0" sideOffset={8}>
@@ -221,16 +259,22 @@ export function CartPopover({ cart = MOCK_CART_PREVIEW, triggerClassName }: Cart
                 Vista rápida de tus prendas seleccionadas
               </p>
             </div>
-            {itemCount > 0 && (
+            {badgeCount > 0 && (
               <Badge variant="secondary" className="shrink-0 font-sans text-[11px]">
-                {formatCartItemCountLabel(itemCount)}
+                {formatCartItemCountLabel(badgeCount)}
               </Badge>
             )}
           </div>
         </div>
 
         <div className="px-4 py-4">
-          <CartPopoverContent cart={cart} />
+          {showPopoverLoading && <CartPopoverSkeleton />}
+          {isError && !showPopoverLoading && (
+            <CartPopoverError onRetry={() => void refetch()} />
+          )}
+          {!showPopoverLoading && !isError && cartPreview && (
+            <CartPopoverContent cart={cartPreview} />
+          )}
         </div>
       </PopoverContent>
     </Popover>

@@ -39,7 +39,6 @@ export default function AccountLayoutDemo() {
     <AccountLayout
       title="Mis Pedidos"
       description="Historial y seguimiento de tus compras"
-      cartItemCount={2}
       userName="Juan Perez"
     >
       <div className="space-y-6">

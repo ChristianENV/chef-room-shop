@@ -258,6 +258,75 @@ export const accountTypeDefs = /* GraphQL */ `
   }
 `
 
+export const cartTypeDefs = /* GraphQL */ `
+  type CartProductSnapshot {
+    productId: ID!
+    variantId: ID
+    slug: String!
+    name: String!
+    sku: String
+    imageUrl: String
+    productType: String
+    colorName: String
+    colorHex: String
+    sizeName: String
+  }
+
+  type CartCustomizationSnapshot {
+    designId: ID
+    previewUrl: String
+    summary: [String!]!
+    areas: [String!]!
+    hasLogo: Boolean!
+    hasEmbroidery: Boolean!
+    embroideredName: String
+  }
+
+  type CartItem {
+    id: ID!
+    productId: ID!
+    productVariantId: ID
+    designId: ID
+    quantity: Int!
+    unitPriceCents: Int!
+    customizationPriceCents: Int!
+    totalPriceCents: Int!
+    product: Product
+    design: AccountDesign
+    productSnapshot: CartProductSnapshot!
+    customizationSnapshot: CartCustomizationSnapshot!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type Cart {
+    id: ID!
+    status: String!
+    currency: String!
+    subtotalCents: Int!
+    customizationTotalCents: Int!
+    shippingCostCents: Int!
+    discountTotalCents: Int!
+    totalCents: Int!
+    totalItems: Int!
+    items: [CartItem!]!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  input AddCartItemInput {
+    productId: ID!
+    productVariantId: ID
+    designId: ID
+    quantity: Int!
+  }
+
+  input UpdateCartItemQuantityInput {
+    itemId: ID!
+    quantity: Int!
+  }
+`
+
 export const adminDashboardTypeDefs = /* GraphQL */ `
   type AdminDashboardMetrics {
     salesTodayCents: Int!
@@ -331,6 +400,100 @@ export const adminDashboardTypeDefs = /* GraphQL */ `
   }
 `
 
+export const paymentsTypeDefs = /* GraphQL */ `
+  input CreateConektaCheckoutInput {
+    orderNumber: String!
+    email: String
+  }
+
+  type ConektaCheckoutPayload {
+    orderId: ID!
+    orderNumber: String!
+    paymentId: ID!
+    providerOrderId: String
+    checkoutId: String
+    checkoutUrl: String
+    status: String!
+    amountCents: Int!
+    currency: String!
+  }
+`
+
+export const checkoutTypeDefs = /* GraphQL */ `
+  input CheckoutAddressInput {
+    firstName: String!
+    lastName: String!
+    phone: String!
+    street: String!
+    extNumber: String
+    intNumber: String
+    neighborhood: String
+    city: String!
+    state: String!
+    country: String!
+    postalCode: String!
+    references: String
+  }
+
+  input CreateCheckoutOrderInput {
+    email: String!
+    phone: String!
+    shippingAddress: CheckoutAddressInput!
+    billingAddress: CheckoutAddressInput
+    useSameBillingAddress: Boolean
+    notes: String
+    paymentMethod: String!
+  }
+
+  type CheckoutOrderPayload {
+    orderNumber: String!
+    orderId: ID!
+    status: String!
+    paymentStatus: String!
+    totalCents: Int!
+    currency: String!
+  }
+
+  type PublicOrderItem {
+    id: ID!
+    name: String!
+    quantity: Int!
+    totalPriceCents: Int!
+    customizationPriceCents: Int!
+    productSnapshotJson: JSON
+    designSnapshotJson: JSON
+  }
+
+  type PublicOrderPayment {
+    id: ID!
+    provider: String!
+    method: String!
+    status: String!
+    amountCents: Int!
+    currency: String!
+  }
+
+  type PublicOrder {
+    id: ID!
+    orderNumber: String!
+    status: String!
+    paymentStatus: String!
+    fulfillmentStatus: String!
+    customerEmail: String!
+    customerPhone: String
+    currency: String!
+    subtotalCents: Int!
+    customizationTotalCents: Int!
+    shippingCostCents: Int!
+    discountTotalCents: Int!
+    taxTotalCents: Int!
+    totalCents: Int!
+    createdAt: String!
+    items: [PublicOrderItem!]!
+    payments: [PublicOrderPayment!]!
+  }
+`
+
 export const typeDefs = /* GraphQL */ `
   """
   Business BFF — authentication is handled by Better Auth at /api/auth/*.
@@ -360,6 +523,8 @@ export const typeDefs = /* GraphQL */ `
     adminRecentDesigns(limit: Int): [AdminRecentDesign!]!
     adminRecentPayments(limit: Int): [AdminRecentPayment!]!
     adminTopProducts(limit: Int): [AdminTopProduct!]!
+    myCart: Cart!
+    orderByNumber(orderNumber: String!, email: String!): PublicOrder
   }
 
   type Mutation {
@@ -368,9 +533,18 @@ export const typeDefs = /* GraphQL */ `
     updateMyAddress(id: ID!, input: MyAddressInput!): AccountAddress!
     deleteMyAddress(id: ID!): Boolean!
     setDefaultAddress(id: ID!, type: String!): AccountAddress!
+    addCartItem(input: AddCartItemInput!): Cart!
+    updateCartItemQuantity(input: UpdateCartItemQuantityInput!): Cart!
+    removeCartItem(itemId: ID!): Cart!
+    clearCart: Cart!
+    createCheckoutOrder(input: CreateCheckoutOrderInput!): CheckoutOrderPayload!
+    createConektaCheckout(input: CreateConektaCheckoutInput!): ConektaCheckoutPayload!
   }
 
   ${catalogTypeDefs}
   ${accountTypeDefs}
+  ${cartTypeDefs}
+  ${checkoutTypeDefs}
+  ${paymentsTypeDefs}
   ${adminDashboardTypeDefs}
 `
