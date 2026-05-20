@@ -23,7 +23,7 @@ import { ChefRoomLogo } from '@/components/brand/chef-room-logo'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { routes } from '@/src/config/routes'
 import { CartPopover } from '@/src/features/storefront/cart/components/cart-popover'
-import { MOCK_CART_PREVIEW } from '@/src/features/storefront/cart/mocks/cart.mock'
+import { useCartBadgeCount } from '@/src/features/storefront/cart/api/use-my-cart-query'
 import {
   authNav,
   ctaNav,
@@ -181,7 +181,6 @@ function DesktopNavLink({ link, pathname }: { link: NavLink; pathname: string })
 }
 
 export interface PublicHeaderProps {
-  cartItemCount?: number
   isLoggedIn?: boolean
   userName?: string
   isAdmin?: boolean
@@ -189,7 +188,6 @@ export interface PublicHeaderProps {
 }
 
 export function PublicHeader({
-  cartItemCount,
   isLoggedIn = false,
   userName,
   isAdmin = false,
@@ -197,9 +195,7 @@ export function PublicHeader({
 }: PublicHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
-  // TODO: Reemplazar MOCK_CART_PREVIEW por datos de useCartQuery.
-  const cartPreview = MOCK_CART_PREVIEW
-  const resolvedCartCount = cartItemCount ?? cartPreview.totalItems
+  const cartBadgeCount = useCartBadgeCount()
 
   const closeMobileMenu = () => setMobileMenuOpen(false)
 
@@ -257,7 +253,7 @@ export function PublicHeader({
               onSignOut={onSignOut}
             />
 
-            <CartPopover cart={cartPreview} />
+            <CartPopover />
 
             <div className="ml-3 h-5 w-px bg-border" />
 
@@ -281,7 +277,7 @@ export function PublicHeader({
             <Button variant="ghost" size="icon" className="relative h-9 w-9" asChild>
               <Link href={routes.cart}>
                 <ShoppingBag className="h-4 w-4" />
-                <CartBadge count={resolvedCartCount} />
+                <CartBadge count={cartBadgeCount} />
                 <span className="sr-only">Carrito</span>
               </Link>
             </Button>

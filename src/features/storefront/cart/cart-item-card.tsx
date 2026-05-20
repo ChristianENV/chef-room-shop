@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -18,8 +17,9 @@ import { CartCustomizationSummary } from '@/src/features/storefront/cart/compone
 
 interface CartItemCardProps {
   item: CartPreviewItem
-  onUpdateQuantity: (id: string, quantity: number) => void
-  onRemove: (id: string) => void
+  onUpdateQuantity: (id: string, quantity: number) => void | Promise<void>
+  onRemove: (id: string) => void | Promise<void>
+  isUpdating?: boolean
   className?: string
 }
 
@@ -27,21 +27,16 @@ export function CartItemCard({
   item,
   onUpdateQuantity,
   onRemove,
+  isUpdating = false,
   className,
 }: CartItemCardProps) {
-  const [isUpdating, setIsUpdating] = useState(false)
   const lineTotal = getCartPreviewLineTotal(item)
   const customizationUnit = item.customizationPrice ?? 0
 
-  const handleQuantityChange = async (delta: number) => {
+  const handleQuantityChange = (delta: number) => {
     const newQuantity = item.quantity + delta
-    if (newQuantity < 1 || newQuantity > 10) return
-
-    setIsUpdating(true)
-    // TODO: Conectar con mutation updateQuantity (TanStack Query).
-    await new Promise((resolve) => setTimeout(resolve, 150))
-    onUpdateQuantity(item.id, newQuantity)
-    setIsUpdating(false)
+    if (newQuantity < 1 || newQuantity > 10 || isUpdating) return
+    void onUpdateQuantity(item.id, newQuantity)
   }
 
   return (
@@ -87,7 +82,8 @@ export function CartItemCard({
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-muted-foreground hover:text-destructive"
-              onClick={() => onRemove(item.id)}
+              onClick={() => void onRemove(item.id)}
+              disabled={isUpdating}
               aria-label={`Eliminar ${item.productName}`}
             >
               <Trash2 className="h-4 w-4" />

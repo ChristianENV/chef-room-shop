@@ -1,6 +1,6 @@
 export { getMyCart, addCartItem, updateCartItemQuantity, removeCartItem, clearCart } from './api/cart.api'
 export { cartQueryKeys } from './api/cart.query-keys'
-export { useMyCartQuery } from './api/use-my-cart-query'
+export { useMyCartQuery, useCartBadgeCount } from './api/use-my-cart-query'
 export { useAddCartItemMutation } from './api/use-add-cart-item-mutation'
 export { useUpdateCartItemQuantityMutation } from './api/use-update-cart-item-quantity-mutation'
 export { useRemoveCartItemMutation } from './api/use-remove-cart-item-mutation'
@@ -15,10 +15,10 @@ export {
   buildCartPreview,
 } from './lib/cart-utils'
 export {
-  EMPTY_CART_PREVIEW,
-  MOCK_CART_PREVIEW,
-  MOCK_CART_PAGE,
-} from './mocks/cart.mock'
+  mapBffCartToCartPage,
+  mapBffCartToCartPreview,
+  mapBffCartItemToUiItem,
+} from './mappers/cart-ui.mapper'
 export { CartItemCard } from './cart-item-card'
 export { OrderSummary } from './order-summary'
 export {

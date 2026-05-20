@@ -7,44 +7,68 @@ import {
   OrderSummary,
   EmptyCartState,
   StickyCheckoutBar,
+  CartSkeleton,
+  CartErrorState,
 } from '@/src/features/storefront/cart'
+import { useMyCartQuery } from '@/src/features/storefront/cart/api/use-my-cart-query'
+import { useUpdateCartItemQuantityMutation } from '@/src/features/storefront/cart/api/use-update-cart-item-quantity-mutation'
+import { useRemoveCartItemMutation } from '@/src/features/storefront/cart/api/use-remove-cart-item-mutation'
+import {
+  getCartPageFreeShippingRemaining,
+  mapBffCartToCartPage,
+} from '@/src/features/storefront/cart/mappers/cart-ui.mapper'
 import { Button } from '@/components/ui/button'
 import { routes } from '@/src/config/routes'
-import { formatCurrencyMXN } from '@/src/lib/formatters'
+import { formatCurrencyMXN, centsToPesos } from '@/src/lib/formatters'
 import { ArrowLeft, ShoppingBag } from 'lucide-react'
-import type { CartPageState } from '@/src/types/cart'
-import { MOCK_CART_PAGE } from '@/src/features/storefront/cart/mocks/cart.mock'
-import {
-  buildCartPageState,
-  computeCartTotals,
-  FREE_SHIPPING_THRESHOLD_MXN,
-  getFreeShippingRemaining,
-  removeCartPreviewItem,
-  updateCartPreviewItemQuantity,
-} from '@/src/features/storefront/cart/lib/cart-utils'
+import { FREE_SHIPPING_THRESHOLD_MXN } from '@/src/features/storefront/cart/lib/cart-utils'
 
-// TODO: Reemplazar MOCK_CART_PAGE por useCartQuery cuando TanStack Query esté conectado.
-// TODO: Conectar updateQuantity con mutation real.
-// TODO: Conectar removeItem con mutation real.
-// TODO: Conectar previews reales del customizador.
-// TODO: Tomar totales desde backend.
+const GENERIC_ACTION_ERROR =
+  'No pudimos actualizar tu carrito. Por favor intenta de nuevo.'
 
 export default function CartPage() {
-  const [cart, setCart] = useState<CartPageState>(MOCK_CART_PAGE)
+  const { data, isLoading, isError, refetch, isFetching } = useMyCartQuery()
+  const updateQuantity = useUpdateCartItemQuantityMutation()
+  const removeItem = useRemoveCartItemMutation()
+  const [pendingItemId, setPendingItemId] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
-  const handleUpdateQuantity = (itemId: string, quantity: number) => {
-    setCart((prev) =>
-      buildCartPageState(updateCartPreviewItemQuantity(prev.items, itemId, quantity)),
-    )
+  const cart = data ? mapBffCartToCartPage(data) : null
+  const hasItems = (cart?.items.length ?? 0) > 0
+  const partialTotalPesos = cart ? cart.subtotal + cart.customizationTotal : 0
+  const freeShippingRemaining = data ? getCartPageFreeShippingRemaining(data) : 0
+
+  const handleUpdateQuantity = async (itemId: string, quantity: number) => {
+    setActionError(null)
+    setPendingItemId(itemId)
+    try {
+      await updateQuantity.mutateAsync({ itemId, quantity })
+    } catch {
+      setActionError(GENERIC_ACTION_ERROR)
+    } finally {
+      setPendingItemId(null)
+    }
   }
 
-  const handleRemoveItem = (itemId: string) => {
-    setCart((prev) => buildCartPageState(removeCartPreviewItem(prev.items, itemId)))
+  const handleRemoveItem = async (itemId: string) => {
+    setActionError(null)
+    setPendingItemId(itemId)
+    try {
+      await removeItem.mutateAsync(itemId)
+    } catch {
+      setActionError(GENERIC_ACTION_ERROR)
+    } finally {
+      setPendingItemId(null)
+    }
   }
 
-  const { partialTotal } = computeCartTotals(cart.items)
-  const freeShippingRemaining = getFreeShippingRemaining(partialTotal)
-  const hasItems = cart.items.length > 0
+  const discount =
+    data && data.discountTotalCents > 0
+      ? { code: 'Descuento', amount: centsToPesos(data.discountTotalCents) }
+      : undefined
+
+  const isItemPending = (itemId: string) =>
+    pendingItemId === itemId && (updateQuantity.isPending || removeItem.isPending)
 
   return (
     <>
@@ -70,15 +94,30 @@ export default function CartPage() {
                   Tu carrito
                 </h1>
                 <p className="font-serif text-muted-foreground">
-                  Revisa tus prendas, diseños personalizados y costos antes de continuar.
+                  Revisa tus prendas, dise�os personalizados y costos antes de continuar.
                 </p>
               </div>
             </div>
           </div>
 
-          {!hasItems && <EmptyCartState />}
+          {actionError ? (
+            <p className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 font-serif text-sm text-destructive">
+              {actionError}
+            </p>
+          ) : null}
 
-          {hasItems && (
+          {isLoading ? <CartSkeleton /> : null}
+
+          {isError && !isLoading ? (
+            <CartErrorState
+              message="No pudimos cargar tu carrito. Por favor intenta de nuevo."
+              onRetry={() => void refetch()}
+            />
+          ) : null}
+
+          {!isLoading && !isError && cart && !hasItems ? <EmptyCartState /> : null}
+
+          {!isLoading && !isError && cart && hasItems ? (
             <div className="grid gap-8 lg:grid-cols-3">
               <div className="space-y-4 lg:col-span-2">
                 {cart.items.map((item) => (
@@ -87,29 +126,30 @@ export default function CartPage() {
                     item={item}
                     onUpdateQuantity={handleUpdateQuantity}
                     onRemove={handleRemoveItem}
+                    isUpdating={isItemPending(item.id)}
                   />
                 ))}
 
-                {freeShippingRemaining > 0 && (
+                {freeShippingRemaining > 0 ? (
                   <div className="rounded-lg border border-border bg-secondary/50 p-4">
                     <p className="font-serif text-sm text-muted-foreground">
                       Agrega{' '}
                       <span className="font-sans font-semibold text-accent">
                         {formatCurrencyMXN(freeShippingRemaining)}
                       </span>{' '}
-                      más para obtener{' '}
-                      <span className="font-sans font-semibold text-success">envío gratis</span>
+                      m�s para obtener{' '}
+                      <span className="font-sans font-semibold text-success">env�o gratis</span>
                     </p>
                     <div className="mt-2 h-2 overflow-hidden rounded-full bg-border">
                       <div
                         className="h-full bg-success transition-all duration-300"
                         style={{
-                          width: `${Math.min((partialTotal / FREE_SHIPPING_THRESHOLD_MXN) * 100, 100)}%`,
+                          width: `${Math.min((partialTotalPesos / FREE_SHIPPING_THRESHOLD_MXN) * 100, 100)}%`,
                         }}
                       />
                     </div>
                   </div>
-                )}
+                ) : null}
               </div>
 
               <div className="lg:col-span-1">
@@ -118,18 +158,25 @@ export default function CartPage() {
                     subtotal={cart.subtotal}
                     customizationTotal={cart.customizationTotal}
                     shipping={cart.shipping}
+                    discount={discount}
                     itemCount={cart.totalItems}
                   />
                 </div>
               </div>
             </div>
-          )}
+          ) : null}
+
+          {isFetching && !isLoading && hasItems ? (
+            <p className="mt-4 text-center font-serif text-xs text-muted-foreground">
+              Actualizando carrito?
+            </p>
+          ) : null}
         </div>
       </div>
 
-      {hasItems && (
+      {cart && hasItems ? (
         <StickyCheckoutBar total={cart.total} itemCount={cart.totalItems} />
-      )}
+      ) : null}
     </>
   )
 }
