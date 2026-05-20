@@ -114,18 +114,35 @@ export function RegisterForm({
     await ensureCustomerRoleAction()
     await runPostAuthGuestMerge()
 
-    const redirectTo = await getPostLoginRedirectAction({
-      source: 'storefront-register',
-      callbackUrl: callbackFromQuery,
-    })
+    const session = await authClient.getSession()
+    const emailVerified = session.data?.user?.emailVerified ?? false
 
     setIsLoading(false)
     setSuccess(true)
 
     setTimeout(() => {
       onSuccess?.()
-      router.push(redirectTo)
-      router.refresh()
+
+      if (!emailVerified) {
+        const verifyParams = new URLSearchParams()
+        if (callbackFromQuery?.startsWith('/')) {
+          verifyParams.set('callbackUrl', callbackFromQuery)
+        }
+        const verifyPath = verifyParams.toString()
+          ? `${routes.verifyEmail}?${verifyParams.toString()}`
+          : routes.verifyEmail
+        router.push(verifyPath)
+        router.refresh()
+        return
+      }
+
+      void getPostLoginRedirectAction({
+        source: 'storefront-register',
+        callbackUrl: callbackFromQuery,
+      }).then((redirectTo) => {
+        router.push(redirectTo)
+        router.refresh()
+      })
     }, 1200)
   }
 

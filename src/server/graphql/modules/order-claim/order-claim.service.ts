@@ -107,6 +107,15 @@ export async function claimOrder(
     }
   }
 
+  if (!context.currentUser.emailVerified) {
+    return {
+      success: false,
+      orderNumber: order.orderNumber,
+      redirectTo: null,
+      message: 'Verifica tu correo para reclamar este pedido.',
+    }
+  }
+
   if (order.userId) {
     if (order.userId === context.currentUser.id) {
       return {

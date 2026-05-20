@@ -13,7 +13,8 @@
 2. Email `order_created` incluye `claimUrl` → `/claim-order?token=...`
 3. Sin sesión → pantalla pide registro/login con `callbackUrl` de vuelta al claim.
 4. Con sesión → mutation `claimOrder` valida email de sesión vs `order.customerEmail`.
-5. Redirect a `/account/orders/[orderNumber]`.
+5. **Email verificado** (`User.emailVerified`) — obligatorio para cuentas email/password; OAuth con email verificado (p. ej. Google) puede reclamar de inmediato.
+6. Redirect a `/account/orders/[orderNumber]`.
 
 ## Flujo autenticado
 
@@ -28,6 +29,7 @@
 | No token plano en DB | `tokenHash` único |
 | No `userId` desde cliente | Solo sesión Better Auth |
 | Email debe coincidir | `currentUser.email` === `order.customerEmail` |
+| Email verificado | `currentUser.emailVerified` antes de vincular |
 | Token usado/expirado | Preview null / mensaje controlado |
 | Pedido de otro usuario | `FORBIDDEN` si `userId` distinto |
 
@@ -44,6 +46,7 @@
 ## Rutas
 
 - `/claim-order?token=...`
+- `/verify-email` — aviso y reenvío de verificación
 - `/account/orders/[orderNumber]`
 
 ## Tracking público temporal
@@ -52,7 +55,6 @@
 
 ## Pendientes
 
-- Verificación de email real antes de claim.
 - Reemitir claim link (soporte / self-service).
 - Flujo soporte para links expirados.
 - Panel admin de claims.

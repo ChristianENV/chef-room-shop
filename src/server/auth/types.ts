@@ -4,6 +4,7 @@ import type { RoleSlug } from '@prisma/client'
 export type CurrentUser = {
   id: string
   email: string
+  emailVerified: boolean
   name: string
   firstName: string | null
   lastName: string | null

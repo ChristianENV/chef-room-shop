@@ -12,6 +12,7 @@ export const routes = {
   checkoutSuccess: '/checkout/success',
   login: '/login',
   register: '/register',
+  verifyEmail: '/verify-email',
   account: '/account',
   claimOrder: '/claim-order',
   accountOrderDetail: (orderNumber: string) => `/account/orders/${orderNumber}`,

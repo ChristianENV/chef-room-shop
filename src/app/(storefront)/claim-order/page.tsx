@@ -12,6 +12,7 @@ import {
   useClaimOrderMutation,
   useOrderClaimPreviewQuery,
 } from '@/src/features/storefront/order-claim'
+import { VerifyEmailResend } from '@/src/features/storefront/auth/verify-email-resend'
 import { routes } from '@/src/config/routes'
 import { signOut, useSession } from '@/src/lib/auth/auth-client'
 
@@ -38,9 +39,12 @@ function ClaimOrderContent() {
   const registerHref = `${routes.register}?callbackUrl=${encodeURIComponent(callbackUrl)}`
 
   const isAuthenticated = Boolean(session?.user)
+  const emailVerified = session?.user?.emailVerified ?? false
+  const needsEmailVerification = isAuthenticated && !emailVerified
 
   useEffect(() => {
     if (!token || !isAuthenticated || sessionPending || previewQuery.isLoading) return
+    if (!emailVerified) return
     if (!previewQuery.data || claimStartedRef.current) return
     if (previewQuery.data.alreadyClaimed) return
 
@@ -57,6 +61,7 @@ function ClaimOrderContent() {
     sessionPending,
     previewQuery.isLoading,
     previewQuery.data,
+    emailVerified,
     claimMutation,
     router,
   ])
@@ -115,6 +120,37 @@ function ClaimOrderContent() {
     )
   }
 
+  if (needsEmailVerification) {
+    return (
+      <ClaimOrderShell>
+        <div className="rounded-lg border border-border bg-card p-6 md:p-8">
+          <h1 className="font-sans text-xl font-bold text-foreground">
+            Verifica tu correo para reclamar este pedido
+          </h1>
+          <p className="mt-3 font-serif text-muted-foreground">
+            Pedido <strong>{preview.orderNumber}</strong> · correo asociado:{' '}
+            <strong>{preview.maskedEmail}</strong>
+          </p>
+          <p className="mt-2 font-serif text-sm text-muted-foreground">
+            Revisa tu bandeja de entrada y confirma tu correo antes de vincular el pedido a tu
+            cuenta.
+          </p>
+          <div className="mt-6 space-y-3">
+            <VerifyEmailResend
+              callbackURL={callbackUrl}
+              email={session?.user?.email}
+            />
+            <Button asChild variant="outline" className="font-sans">
+              <Link href={`${routes.verifyEmail}?callbackUrl=${encodeURIComponent(callbackUrl)}`}>
+                Ir a verificación de correo
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </ClaimOrderShell>
+    )
+  }
+
   if (!isAuthenticated) {
     return (
       <ClaimOrderShell>
@@ -156,6 +192,25 @@ function ClaimOrderContent() {
   const claimResult = claimMutation.data
   if (claimResult && !claimResult.success) {
     const emailMismatch = claimResult.message?.includes('otro correo')
+    const needsVerify = claimResult.message?.includes('Verifica tu correo')
+
+    if (needsVerify) {
+      return (
+        <ClaimOrderShell>
+          <div className="rounded-lg border border-border bg-card p-6 md:p-8">
+            <h1 className="font-sans text-xl font-bold text-foreground">
+              Verifica tu correo para reclamar este pedido
+            </h1>
+            <p className="mt-3 font-serif text-muted-foreground">
+              Pedido <strong>{preview.orderNumber}</strong>
+            </p>
+            <div className="mt-6">
+              <VerifyEmailResend callbackURL={callbackUrl} email={session?.user?.email} />
+            </div>
+          </div>
+        </ClaimOrderShell>
+      )
+    }
 
     return (
       <ClaimOrderShell>

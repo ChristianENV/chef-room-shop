@@ -11,6 +11,7 @@ import type { CurrentUser } from './types'
 type UserWithRoles = {
   id: string
   email: string
+  emailVerified: boolean
   name: string
   firstName: string | null
   lastName: string | null
@@ -41,6 +42,7 @@ export function mapPrismaUserToCurrentUser(user: UserWithRoles): CurrentUser {
   return {
     id: user.id,
     email: user.email,
+    emailVerified: user.emailVerified,
     name: user.name,
     firstName: user.firstName,
     lastName: user.lastName,

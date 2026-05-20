@@ -68,6 +68,28 @@ npm run db:seed
 
 Creates user via `auth.api.signUpEmail`, assigns role **ADMIN**, never prints the password.
 
+## Email verification (v1)
+
+Better Auth envía verificación con nuestro `EmailService` (`templateKey: email_verification`).
+
+| Opción | Valor | Efecto |
+|--------|--------|--------|
+| `emailVerification.sendOnSignUp` | `true` | Correo al registrarse con email/password |
+| `emailVerification.autoSignInAfterVerification` | `true` | Sesión tras hacer clic en el enlace |
+| `emailAndPassword.requireEmailVerification` | **no** | Login permitido sin verificar; claim de pedidos **sí** exige verificación |
+
+**Rutas**
+
+- `/verify-email` — mensaje + reenvío (`resendVerificationEmailAction`)
+- Tras registro sin verificar → redirect a `/verify-email?callbackUrl=...`
+- Tras verificar → Better Auth redirige a `callbackURL` (p. ej. `/claim-order?token=...` o `/account`)
+
+**OAuth (Google):** si el proveedor marca el email como verificado, Better Auth establece `User.emailVerified = true` y el usuario puede reclamar pedidos sin paso extra.
+
+**Claim:** `claimOrder` rechaza usuarios con `emailVerified === false` (mensaje en español). UI en `/claim-order` muestra reenvío de verificación.
+
+**Pendiente:** password reset, newsletter.
+
 ## Endpoints
 
 | Path | Handler |
@@ -128,7 +150,9 @@ INSERT INTO user_roles (...)
 
 | File | Role |
 |------|------|
-| `src/server/auth/build-auth.ts` | Better Auth config (shared with seed) |
+| `src/server/auth/build-auth.ts` | Better Auth config + `emailVerification` |
+| `src/server/auth/send-verification-email.ts` | Puente Better Auth → EmailService |
+| `src/app/(storefront)/verify-email/page.tsx` | Aviso post-registro |
 | `src/server/auth/better-auth.ts` | App singleton |
 | `src/lib/auth/auth-client.ts` | React client (future UI) |
 | `src/app/api/auth/[...all]/route.ts` | Route handler |

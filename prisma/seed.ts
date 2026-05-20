@@ -248,8 +248,6 @@ async function seedDevAdmin() {
         email,
         password,
         name,
-        firstName,
-        lastName,
       },
     })
     user = await prisma.user.findUniqueOrThrow({ where: { email } })

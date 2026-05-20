@@ -218,10 +218,6 @@ async function ensureDemoUser(
         email,
         password: DEMO_PASSWORD,
         name,
-        firstName: spec.firstName,
-        lastName: spec.lastName,
-        phone: spec.phone,
-        marketingOptIn: spec.marketingOptIn,
       },
     })
     user = await prisma.user.findUniqueOrThrow({ where: { email } })

@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 
 import { AccountLayout } from '@/src/features/storefront/layout/account-layout'
+import { EmailVerificationBanner } from '@/src/features/storefront/account/components/email-verification-banner'
 import { ProfileSummary } from '@/src/features/storefront/account/profile-summary'
 import { AccountQueryError } from '@/src/features/storefront/account/components/account-query-error'
 import { useAccountAuthRedirect } from '@/src/features/storefront/account/api/use-account-auth-redirect'
@@ -87,6 +88,7 @@ export default function AccountPage() {
       description="Resumen de tu cuenta"
       userName={userName}
     >
+      <EmailVerificationBanner />
       <ProfileSummary
         user={user}
         defaultAddress={defaultAddress}

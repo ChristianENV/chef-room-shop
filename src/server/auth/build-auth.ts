@@ -2,6 +2,7 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from '@better-auth/prisma-adapter'
 import type { PrismaClient } from '@prisma/client'
 
+import { sendBetterAuthVerificationEmail } from './send-verification-email'
 import { ensureCustomerRole } from './roles-core'
 
 /**
@@ -64,6 +65,17 @@ export function buildAuth(database: PrismaClient) {
     trustedOrigins: getBetterAuthTrustedOrigins(),
     emailAndPassword: {
       enabled: true,
+    },
+    emailVerification: {
+      sendOnSignUp: true,
+      autoSignInAfterVerification: true,
+      sendVerificationEmail: async ({ user, url }) => {
+        sendBetterAuthVerificationEmail({
+          to: user.email,
+          userId: user.id,
+          verificationUrl: url,
+        })
+      },
     },
     socialProviders,
     user: {

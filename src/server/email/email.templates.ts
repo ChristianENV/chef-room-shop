@@ -144,6 +144,19 @@ export function renderTransactionalTemplate(
       `)
       return { subject, html, text }
     }
+
+    case 'email_verification': {
+      const verifyUrl = payload.verificationUrl ?? '#'
+      const subject = 'Verifica tu correo en Chef Room'
+      const text = `Hola,\n\nNecesitamos confirmar tu correo para proteger la información de tus pedidos.\n\nVerifica aquí: ${verifyUrl}\n\nEste enlace expira en un tiempo limitado por seguridad.\n\nChef Room`
+      const html = layoutHtml(`
+        <p>Hola,</p>
+        <p>Necesitamos confirmar tu correo para proteger la información de tus pedidos.</p>
+        ${cta(verifyUrl, 'Verificar correo')}
+        <p style="font-size:14px;color:#6b7280;">Este enlace expira en un tiempo limitado por seguridad. Si no solicitaste esta verificación, puedes ignorar este mensaje.</p>
+      `)
+      return { subject, html, text }
+    }
   }
 }
 
