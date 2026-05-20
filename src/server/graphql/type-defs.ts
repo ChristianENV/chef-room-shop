@@ -452,6 +452,8 @@ export const checkoutTypeDefs = /* GraphQL */ `
     paymentStatus: String!
     totalCents: Int!
     currency: String!
+    claimUrl: String
+    accountOrderUrl: String
   }
 
   type PublicOrderItem {
@@ -494,6 +496,24 @@ export const checkoutTypeDefs = /* GraphQL */ `
   }
 `
 
+const orderClaimTypeDefs = /* GraphQL */ `
+  type OrderClaimPreview {
+    orderNumber: String!
+    maskedEmail: String!
+    status: String!
+    paymentStatus: String!
+    expiresAt: String!
+    alreadyClaimed: Boolean!
+  }
+
+  type OrderClaimPayload {
+    success: Boolean!
+    orderNumber: String
+    redirectTo: String
+    message: String
+  }
+`
+
 export const typeDefs = /* GraphQL */ `
   """
   Business BFF — authentication is handled by Better Auth at /api/auth/*.
@@ -525,6 +545,7 @@ export const typeDefs = /* GraphQL */ `
     adminTopProducts(limit: Int): [AdminTopProduct!]!
     myCart: Cart!
     orderByNumber(orderNumber: String!, email: String!): PublicOrder
+    orderClaimPreview(token: String!): OrderClaimPreview
   }
 
   type Mutation {
@@ -539,12 +560,14 @@ export const typeDefs = /* GraphQL */ `
     clearCart: Cart!
     createCheckoutOrder(input: CreateCheckoutOrderInput!): CheckoutOrderPayload!
     createConektaCheckout(input: CreateConektaCheckoutInput!): ConektaCheckoutPayload!
+    claimOrder(token: String!): OrderClaimPayload!
   }
 
   ${catalogTypeDefs}
   ${accountTypeDefs}
   ${cartTypeDefs}
   ${checkoutTypeDefs}
+  ${orderClaimTypeDefs}
   ${paymentsTypeDefs}
   ${adminDashboardTypeDefs}
 `

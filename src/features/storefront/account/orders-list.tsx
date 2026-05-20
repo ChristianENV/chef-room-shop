@@ -128,7 +128,7 @@ export function OrderCard({ order }: OrderCardProps) {
               )
             )}
             <Button variant="ghost" size="sm" asChild>
-              <Link href={`/account/orders/${order.id}`}>
+              <Link href={routes.accountOrderDetail(order.orderNumber)}>
                 Ver detalle
                 <ChevronRight className="ml-1 h-4 w-4" />
               </Link>

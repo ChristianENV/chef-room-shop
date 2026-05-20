@@ -33,7 +33,11 @@ export type TransactionalEmailPayload = {
     checkoutSuccessUrl?: string
     accountUrl?: string
     shopUrl?: string
+    claimUrl?: string
+    accountOrderUrl?: string
   }
+  claimUrl?: string
+  accountOrderUrl?: string
   userId?: string | null
   guestSessionId?: string | null
 }

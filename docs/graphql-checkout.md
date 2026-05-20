@@ -15,9 +15,13 @@ mutation CreateCheckoutOrder($input: CreateCheckoutOrderInput!) {
     paymentStatus
     totalCents
     currency
+    claimUrl
+    accountOrderUrl
   }
 }
 ```
+
+Guest checkout returns `claimUrl`; authenticated returns `accountOrderUrl`. See `docs/order-claim.md`.
 
 **Input highlights**
 
@@ -42,6 +46,8 @@ query OrderByNumber($orderNumber: String!, $email: String!) {
 ```
 
 Returns `null` if the order does not exist or the email does not match `customerEmail` (case-insensitive).
+
+> **Temporal / receipt only:** used by `/checkout/success` for polling and confirmation while the tab is open. **Not** for post-purchase tracking in emails or new features — use account order detail + claim token (`docs/order-claim.md`).
 
 ## Guest vs authenticated
 

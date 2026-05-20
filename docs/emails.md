@@ -32,6 +32,16 @@ Server-only layer for order/payment notifications. Checkout and webhooks **never
 
 HTML uses brand color `#2B3280`, Spanish copy, minimal layout (no React Email).
 
+### Tracking CTAs (order claim v1)
+
+| Context | CTA link | Copy |
+|---------|----------|------|
+| Guest (`claimUrl`) | `/claim-order?token=...` | Crea tu cuenta para consultar el estado y seguimiento de tu pedido. |
+| Authenticated (`accountOrderUrl`) | `/account/orders/[orderNumber]` | Consulta el estado de tu pedido desde tu cuenta. |
+| Payment retry | `checkoutSuccessUrl` | Completar / reintentar pago (sin email en URL) |
+
+Helpers: `buildOrderClaimUrl`, `buildAccountOrderUrl`, `buildOrderEmailTrackingLinks` in `email.links.ts`. See `docs/order-claim.md`.
+
 ## Persistence (`EmailMessage`)
 
 Prisma model fields used:

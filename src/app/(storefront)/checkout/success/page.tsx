@@ -182,15 +182,41 @@ function CheckoutSuccessLoading() {
   )
 }
 
-function SuccessPageActions({ isAuthenticated }: { isAuthenticated: boolean }) {
+type SuccessPageActionsProps = {
+  isAuthenticated: boolean
+  orderNumber: string
+  claimUrl?: string | null
+  accountOrderUrl?: string | null
+}
+
+function SuccessPageActions({
+  isAuthenticated,
+  orderNumber,
+  claimUrl,
+  accountOrderUrl,
+}: SuccessPageActionsProps) {
+  const orderDetailHref =
+    accountOrderUrl ??
+    (isAuthenticated ? routes.accountOrderDetail(orderNumber) : null)
+
   return (
-    <div className="flex flex-col gap-3 sm:flex-row">
-      {isAuthenticated && (
+    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+      {orderDetailHref && (
+        <Button asChild className="font-sans">
+          <Link href={orderDetailHref}>Ver pedido</Link>
+        </Button>
+      )}
+      {!isAuthenticated && claimUrl && (
+        <Button asChild variant="default" className="font-sans">
+          <Link href={claimUrl}>Crear cuenta para ver seguimiento</Link>
+        </Button>
+      )}
+      {isAuthenticated && !orderDetailHref && (
         <Button asChild variant="outline" className="font-sans">
           <Link href={routes.account}>Ir a mi cuenta</Link>
         </Button>
       )}
-      <Button asChild className="font-sans">
+      <Button asChild variant="outline" className="font-sans">
         <Link href={routes.shop}>
           <ShoppingBag className="mr-2 h-4 w-4" />
           Seguir comprando
@@ -356,7 +382,12 @@ function CheckoutSuccessContent() {
             isPolling={isPolling}
             conektaEmail={order.customerEmail}
           />
-          <SuccessPageActions isAuthenticated={isAuthenticated} />
+          <SuccessPageActions
+            isAuthenticated={isAuthenticated}
+            orderNumber={order.orderNumber}
+            claimUrl={storedSession?.claimUrl}
+            accountOrderUrl={storedSession?.accountOrderUrl}
+          />
         </div>
       </CheckoutLayout>
     )
@@ -392,7 +423,12 @@ function CheckoutSuccessContent() {
             </Alert>
           )}
 
-          <SuccessPageActions isAuthenticated={isAuthenticated} />
+          <SuccessPageActions
+            isAuthenticated={isAuthenticated}
+            orderNumber={storedSession.orderNumber}
+            claimUrl={storedSession.claimUrl}
+            accountOrderUrl={storedSession.accountOrderUrl}
+          />
         </div>
       </CheckoutLayout>
     )

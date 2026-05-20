@@ -11,6 +11,8 @@ export const CREATE_CHECKOUT_ORDER_MUTATION = /* GraphQL */ `
       paymentStatus
       totalCents
       currency
+      claimUrl
+      accountOrderUrl
     }
   }
 `

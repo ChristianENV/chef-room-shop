@@ -66,6 +66,7 @@ export type AccountOrder = {
   items: AccountOrderItem[]
   payments?: Array<{ method: string | null; status: string; amountCents: number }>
   shipments?: AccountShipment[]
+  events?: Array<{ type: string; message: string | null; createdAt: string }>
 }
 
 export type AccountDesign = {

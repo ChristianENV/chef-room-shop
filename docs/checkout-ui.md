@@ -41,8 +41,10 @@ No card number, CVV, or bank details are collected.
 - Reads email from `sessionStorage` (`chefroom_checkout_confirmation`) for `orderByNumber`.
 - Falls back to session payload if the query fails.
 - Shows order number, `PENDING_PAYMENT`, total, payment method, and items when available.
+- Guest CTA: **Crear cuenta para ver seguimiento** → `claimUrl` from `createCheckoutOrder` (stored in session).
+- Authenticated CTA: **Ver pedido** → `/account/orders/[orderNumber]`.
 
-**Pending:** secure public tracking token so email is not required in `orderByNumber`.
+Post-purchase tracking for guests: `/claim-order?token=...` from email (see `docs/order-claim.md`). `orderByNumber` remains for same-tab receipt/polling only.
 
 ## Validation
 

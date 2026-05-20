@@ -13,6 +13,8 @@ export const routes = {
   login: '/login',
   register: '/register',
   account: '/account',
+  claimOrder: '/claim-order',
+  accountOrderDetail: (orderNumber: string) => `/account/orders/${orderNumber}`,
   restaurants: '/restaurants',
   sizeGuide: '/size-guide',
   contact: '/contact',

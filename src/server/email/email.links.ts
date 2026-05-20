@@ -26,6 +26,21 @@ export function absoluteShopUrl(): string {
 }
 
 /**
+ * Absolute URL to claim a guest order (token in query, not email).
+ */
+export function buildOrderClaimUrl(token: string): string {
+  const params = new URLSearchParams({ token })
+  return `${getAppBaseUrl()}${routes.claimOrder}?${params.toString()}`
+}
+
+/**
+ * Absolute URL to authenticated order detail.
+ */
+export function buildAccountOrderUrl(orderNumber: string): string {
+  return `${getAppBaseUrl()}${routes.accountOrderDetail(orderNumber)}`
+}
+
+/**
  * Link bundle for transactional order emails.
  */
 export function buildOrderEmailLinks(orderNumber: string) {
@@ -34,4 +49,39 @@ export function buildOrderEmailLinks(orderNumber: string) {
     accountUrl: absoluteAccountUrl(),
     shopUrl: absoluteShopUrl(),
   }
+}
+
+export type OrderEmailTrackingLinks = {
+  checkoutSuccessUrl: string
+  accountUrl: string
+  shopUrl: string
+  claimUrl?: string
+  accountOrderUrl?: string
+}
+
+/**
+ * Tracking links for order emails: account detail for auth, claim URL for guests.
+ */
+export function buildOrderEmailTrackingLinks(input: {
+  orderNumber: string
+  userId: string | null
+  claimToken?: string | null
+}): OrderEmailTrackingLinks {
+  const base = buildOrderEmailLinks(input.orderNumber)
+
+  if (input.userId) {
+    return {
+      ...base,
+      accountOrderUrl: buildAccountOrderUrl(input.orderNumber),
+    }
+  }
+
+  if (input.claimToken) {
+    return {
+      ...base,
+      claimUrl: buildOrderClaimUrl(input.claimToken),
+    }
+  }
+
+  return base
 }

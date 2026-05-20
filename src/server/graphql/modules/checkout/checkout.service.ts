@@ -30,8 +30,11 @@ import {
   createCheckoutOrderInputSchema,
   toPaymentMethod,
 } from './checkout.validation'
-import { buildOrderEmailLinks } from '@/src/server/email/email.links'
+import {
+  buildOrderEmailTrackingLinks,
+} from '@/src/server/email/email.links'
 import { safeSendTransactionalEmail } from '@/src/server/email/email.service'
+import { createOrderClaimToken } from '@/src/server/orders/order-claim-token'
 
 function parseConfigSnapshot(value: unknown): CartConfigSnapshotJson {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -256,6 +259,28 @@ export async function createCheckoutOrder(
 
   const { order, payments } = result
 
+  let claimToken: string | null = null
+  if (!owner.userId) {
+    try {
+      const created = await createOrderClaimToken({
+        orderId: order.id,
+        sentToEmail: parsed.email,
+      })
+      claimToken = created.token
+    } catch (error) {
+      console.error('[checkout] Failed to create order claim token', {
+        orderId: order.id,
+        error: error instanceof Error ? error.message : 'unknown',
+      })
+    }
+  }
+
+  const trackingLinks = buildOrderEmailTrackingLinks({
+    orderNumber: order.orderNumber,
+    userId: owner.userId,
+    claimToken,
+  })
+
   void safeSendTransactionalEmail({
     to: parsed.email,
     templateKey: 'order_created',
@@ -270,11 +295,16 @@ export async function createCheckoutOrder(
       paymentStatus: payments[0]?.status ?? PaymentStatus.PENDING,
       orderStatus: order.status,
       paymentMethod: payments[0]?.method ?? paymentMethod,
-      links: buildOrderEmailLinks(order.orderNumber),
+      links: trackingLinks,
+      claimUrl: trackingLinks.claimUrl,
+      accountOrderUrl: trackingLinks.accountOrderUrl,
     },
   })
 
-  return mapOrderToCheckoutPayload(order, payments)
+  return mapOrderToCheckoutPayload(order, payments, {
+    claimUrl: trackingLinks.claimUrl ?? null,
+    accountOrderUrl: trackingLinks.accountOrderUrl ?? null,
+  })
 }
 
 /**

@@ -3,7 +3,7 @@ import { routes } from '@/src/config/routes'
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, Mail, Lock, User, Phone, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -44,6 +44,8 @@ export function RegisterForm({
   googleEnabled = false,
 }: RegisterFormProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackFromQuery = searchParams.get('callbackUrl')
   const [formData, setFormData] = useState<RegisterFormData>({
     firstName: '',
     lastName: '',
@@ -114,6 +116,7 @@ export function RegisterForm({
 
     const redirectTo = await getPostLoginRedirectAction({
       source: 'storefront-register',
+      callbackUrl: callbackFromQuery,
     })
 
     setIsLoading(false)
