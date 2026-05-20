@@ -7,8 +7,21 @@ export function isAccountUnauthenticated(error: unknown): boolean {
   if (!(error instanceof GraphQLRequestError)) return false
   return error.errors.some(
     (entry) =>
+      entry.extensions?.code === 'UNAUTHENTICATED' ||
       entry.message.includes('iniciar sesión') ||
       entry.message.toLowerCase().includes('unauthenticated'),
+  )
+}
+
+/**
+ * Returns true when order detail is blocked until email verification.
+ */
+export function isEmailNotVerifiedError(error: unknown): boolean {
+  if (!(error instanceof GraphQLRequestError)) return false
+  return error.errors.some(
+    (entry) =>
+      entry.extensions?.code === 'EMAIL_NOT_VERIFIED' ||
+      entry.message.toLowerCase().includes('verifica tu correo'),
   )
 }
 

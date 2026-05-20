@@ -40,14 +40,34 @@ export type AccountOrderItem = {
   unitPriceCents: number
   customizationPriceCents: number
   totalPriceCents: number
+  productSnapshotJson?: unknown
+  designSnapshotJson?: unknown | null
+}
+
+export type AccountOrderPayment = {
+  id: string
+  provider: string
+  method: string
+  status: string
+  amountCents: number
+  currency: string
+  paidAt: string | null
 }
 
 export type AccountShipment = {
+  id: string
   carrier: string | null
   trackingNumber: string | null
   status: string
   shippedAt?: string | null
   deliveredAt?: string | null
+}
+
+export type AccountOrderEvent = {
+  id: string
+  type: string
+  message: string
+  createdAt: string
 }
 
 export type AccountOrder = {
@@ -56,17 +76,21 @@ export type AccountOrder = {
   status: string
   paymentStatus: string
   fulfillmentStatus: string
+  customerEmail?: string
+  customerPhone?: string | null
   totalCents: number
   currency: string
   placedAt: string | null
   createdAt: string
-  subtotalCents?: number
+  subtotalCents: number
+  customizationTotalCents?: number
   shippingCostCents?: number
   discountTotalCents?: number
+  taxTotalCents?: number
   items: AccountOrderItem[]
-  payments?: Array<{ method: string | null; status: string; amountCents: number }>
-  shipments?: AccountShipment[]
-  events?: Array<{ type: string; message: string | null; createdAt: string }>
+  payments: AccountOrderPayment[]
+  shipments: AccountShipment[]
+  events: AccountOrderEvent[]
 }
 
 export type AccountDesign = {

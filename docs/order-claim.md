@@ -14,7 +14,7 @@
 3. Sin sesión → pantalla pide registro/login con `callbackUrl` de vuelta al claim.
 4. Con sesión → mutation `claimOrder` valida email de sesión vs `order.customerEmail`.
 5. **Email verificado** (`User.emailVerified`) — obligatorio para cuentas email/password; OAuth con email verificado (p. ej. Google) puede reclamar de inmediato.
-6. Redirect a `/account/orders/[orderNumber]`.
+6. Redirect a `/account/orders/[orderNumber]` (detalle premium; requiere email verificado).
 
 ## Flujo autenticado
 
@@ -47,7 +47,7 @@
 
 - `/claim-order?token=...`
 - `/verify-email` — aviso y reenvío de verificación
-- `/account/orders/[orderNumber]`
+- `/account/orders/[orderNumber]` — hero, timeline, items, pago, envío, totales (solo cuenta + email verificado)
 
 ## Tracking público temporal
 

@@ -7,7 +7,10 @@ import {
 import { GraphQLError } from 'graphql'
 
 import type { GraphQLContext } from '../../context'
-import { requireAuthenticatedAccount } from './account.auth'
+import {
+  requireAuthenticatedAccount,
+  requireVerifiedEmailForOrderDetail,
+} from './account.auth'
 import {
   mapAddressInputToPrisma,
   mapAddressToGql,
@@ -228,6 +231,7 @@ export async function getMyOrderByNumber(
   orderNumber: string,
 ): Promise<AccountOrderGql | null> {
   const userId = requireAuthenticatedAccount(context)
+  requireVerifiedEmailForOrderDetail(context)
 
   const order = await context.prisma.order.findFirst({
     where: {
