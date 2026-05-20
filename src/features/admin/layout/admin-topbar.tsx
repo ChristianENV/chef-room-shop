@@ -1,7 +1,6 @@
 'use client'
 
 import * as React from 'react'
-import { useRouter } from 'next/navigation'
 import { Bell, LogOut, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,9 +13,9 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { signOut } from '@/src/lib/auth/auth-client'
 import { routes } from '@/src/config/routes'
 import type { AdminShellUser } from './admin-page-config'
+import { useAdminSignOut } from './use-admin-sign-out'
 
 export interface AdminBreadcrumbItem {
   label: string
@@ -34,13 +33,7 @@ export function AdminTopbar({
   notificationCount = 0,
   adminUser,
 }: AdminTopbarProps) {
-  const router = useRouter()
-
-  const handleSignOut = async () => {
-    await signOut()
-    router.push(routes.adminLogin)
-    router.refresh()
-  }
+  const handleSignOut = useAdminSignOut()
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b border-border bg-card px-4">
@@ -93,11 +86,10 @@ export function AdminTopbar({
           </div>
         )}
         <Button
+          type="button"
           variant="ghost"
           size="icon"
-          onClick={() => {
-            void handleSignOut()
-          }}
+          onClick={() => void handleSignOut()}
           title="Cerrar sesión"
         >
           <LogOut className="h-5 w-5" />
