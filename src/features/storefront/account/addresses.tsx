@@ -141,7 +141,8 @@ interface AddressDialogProps {
   address?: Address | null
   open?: boolean
   onOpenChange?: (open: boolean) => void
-  onSave?: (address: Partial<Address>) => void
+  onSave?: (address: Partial<Address>) => void | Promise<void>
+  isSubmitting?: boolean
   trigger?: React.ReactNode
 }
 
@@ -150,31 +151,31 @@ export function AddressDialog({
   open,
   onOpenChange,
   onSave,
+  isSubmitting = false,
   trigger,
 }: AddressDialogProps) {
-  const [formData, setFormData] = useState<Partial<Address>>(
-    address || {
-      label: '',
-      firstName: '',
-      lastName: '',
-      street: '',
-      exteriorNumber: '',
-      interiorNumber: '',
-      neighborhood: '',
-      city: '',
-      state: '',
-      postalCode: '',
-      country: 'Mexico',
-      phone: '',
-      isDefaultShipping: false,
-      isDefaultBilling: false,
-    }
-  )
+  const emptyForm: Partial<Address> = {
+    label: '',
+    firstName: '',
+    lastName: '',
+    street: '',
+    exteriorNumber: '',
+    interiorNumber: '',
+    neighborhood: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: 'Mexico',
+    phone: '',
+    isDefaultShipping: false,
+    isDefaultBilling: false,
+  }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [formData, setFormData] = useState<Partial<Address>>(address ?? emptyForm)
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    onSave?.(formData)
-    onOpenChange?.(false)
+    await onSave?.(formData)
   }
 
   const isEditing = !!address
@@ -357,8 +358,12 @@ export function AddressDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange?.(false)}>
               Cancelar
             </Button>
-            <Button type="submit">
-              {isEditing ? 'Guardar cambios' : 'Agregar direccion'}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting
+                ? 'Guardando...'
+                : isEditing
+                  ? 'Guardar cambios'
+                  : 'Agregar direccion'}
             </Button>
           </DialogFooter>
         </form>

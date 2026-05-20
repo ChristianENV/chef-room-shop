@@ -51,6 +51,7 @@ export async function fetchGraphQL<TData, TVariables = Record<string, never>>(
       query: input.query,
       variables: input.variables ?? {},
     }),
+    credentials: 'include',
     cache: input.cache ?? 'no-store',
     next: input.next,
   })

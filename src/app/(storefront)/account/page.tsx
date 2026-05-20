@@ -1,69 +1,97 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
+
 import { AccountLayout } from '@/src/features/storefront/layout/account-layout'
 import { ProfileSummary } from '@/src/features/storefront/account/profile-summary'
-import { 
-  MOCK_USER, 
-  MOCK_ADDRESSES, 
-  MOCK_ORDERS, 
-  MOCK_SAVED_DESIGNS,
-} from '@/lib/mock-data'
-import type { UserProfile, Address, Order, SavedDesign } from '@/lib/types'
-
-// TODO: Replace with TanStack Query useQuery hooks
-// import { useQuery } from '@tanstack/react-query'
-// import { fetchUserProfile, fetchUserAddresses, fetchUserOrders, fetchSavedDesigns } from '@/lib/api'
+import { AccountQueryError } from '@/src/features/storefront/account/components/account-query-error'
+import { useAccountAuthRedirect } from '@/src/features/storefront/account/api/use-account-auth-redirect'
+import { getAccountUserErrorMessage } from '@/src/features/storefront/account/api/account-errors'
+import { useAccountSummaryQuery } from '@/src/features/storefront/account/api/use-account-summary-query'
+import { useMeProfileQuery } from '@/src/features/storefront/account/api/use-me-profile-query'
+import {
+  mapAccountAddressToUi,
+  mapAccountDesignToUi,
+  mapAccountUserToProfile,
+  mapSummaryOrderToUi,
+} from '@/src/features/storefront/account/mappers/account-ui.mapper'
 
 export default function AccountPage() {
-  const [user, setUser] = useState<UserProfile | null>(null)
-  const [addresses, setAddresses] = useState<Address[]>([])
-  const [orders, setOrders] = useState<Order[]>([])
-  const [designs, setDesigns] = useState<SavedDesign[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const profileQuery = useMeProfileQuery()
+  const summaryQuery = useAccountSummaryQuery()
 
-  useEffect(() => {
-    // Simulate API fetch
-    const loadData = async () => {
-      await new Promise(resolve => setTimeout(resolve, 500))
-      setUser(MOCK_USER)
-      setAddresses(MOCK_ADDRESSES)
-      setOrders(MOCK_ORDERS)
-      setDesigns(MOCK_SAVED_DESIGNS)
-      setIsLoading(false)
-    }
-    loadData()
-  }, [])
+  const isLoading = profileQuery.isLoading || summaryQuery.isLoading
+  const isError = profileQuery.isError || summaryQuery.isError
+  const error = profileQuery.error ?? summaryQuery.error
 
-  const defaultAddress = addresses.find(a => a.isDefaultShipping)
+  useAccountAuthRedirect(isError, error)
+
+  const user = useMemo(
+    () => (profileQuery.data ? mapAccountUserToProfile(profileQuery.data) : null),
+    [profileQuery.data],
+  )
+
+  const defaultAddress = useMemo(() => {
+    const addr = summaryQuery.data?.defaultShippingAddress
+    return addr ? mapAccountAddressToUi(addr) : undefined
+  }, [summaryQuery.data])
+
+  const recentOrders = useMemo(
+    () => summaryQuery.data?.recentOrders.map(mapSummaryOrderToUi) ?? [],
+    [summaryQuery.data],
+  )
+
+  const savedDesigns = useMemo(
+    () => summaryQuery.data?.recentDesigns.map(mapAccountDesignToUi) ?? [],
+    [summaryQuery.data],
+  )
+
+  const userName = user?.firstName ?? 'Cliente'
 
   if (isLoading) {
     return (
-      <AccountLayout 
-        title="Mi Perfil" 
+      <AccountLayout
+        title="Mi Perfil"
         description="Resumen de tu cuenta"
-        userName={MOCK_USER.firstName}
+        userName={userName}
       >
         <ProfileSummarySkeleton />
       </AccountLayout>
     )
   }
 
-  if (!user) {
-    return null
+  if (isError || !user) {
+    return (
+      <AccountLayout
+        title="Mi Perfil"
+        description="Resumen de tu cuenta"
+        userName={userName}
+      >
+        <AccountQueryError
+          message={getAccountUserErrorMessage(
+            error,
+            'No pudimos cargar tu cuenta. Intenta de nuevo.',
+          )}
+          onRetry={() => {
+            void profileQuery.refetch()
+            void summaryQuery.refetch()
+          }}
+        />
+      </AccountLayout>
+    )
   }
 
   return (
-    <AccountLayout 
-      title="Mi Perfil" 
+    <AccountLayout
+      title="Mi Perfil"
       description="Resumen de tu cuenta"
-      userName={user.firstName}
+      userName={userName}
     >
       <ProfileSummary
         user={user}
         defaultAddress={defaultAddress}
-        recentOrders={orders}
-        savedDesigns={designs}
+        recentOrders={recentOrders}
+        savedDesigns={savedDesigns}
       />
     </AccountLayout>
   )

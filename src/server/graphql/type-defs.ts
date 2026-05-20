@@ -110,6 +110,154 @@ export const catalogTypeDefs = /* GraphQL */ `
   }
 `
 
+export const accountTypeDefs = /* GraphQL */ `
+  scalar JSON
+
+  type AccountUser {
+    id: ID!
+    email: String!
+    name: String
+    firstName: String
+    lastName: String
+    phone: String
+    image: String
+    marketingOptIn: Boolean!
+    roles: [String!]!
+    createdAt: String!
+  }
+
+  type AccountAddress {
+    id: ID!
+    type: String!
+    firstName: String
+    lastName: String
+    phone: String
+    street: String!
+    extNumber: String
+    intNumber: String
+    neighborhood: String
+    city: String!
+    state: String!
+    country: String!
+    postalCode: String!
+    references: String
+    isDefault: Boolean!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type AccountOrderItem {
+    id: ID!
+    name: String!
+    sku: String
+    quantity: Int!
+    unitPriceCents: Int!
+    customizationPriceCents: Int!
+    totalPriceCents: Int!
+    productSnapshotJson: JSON
+    designSnapshotJson: JSON
+    productionNotes: String
+  }
+
+  type AccountPayment {
+    id: ID!
+    provider: String!
+    method: String!
+    status: String!
+    amountCents: Int!
+    currency: String!
+    paidAt: String
+    expiresAt: String
+  }
+
+  type AccountShipment {
+    id: ID!
+    carrier: String
+    trackingNumber: String
+    status: String!
+    shippedAt: String
+    deliveredAt: String
+  }
+
+  type AccountOrderEvent {
+    id: ID!
+    type: String!
+    message: String!
+    createdAt: String!
+  }
+
+  type AccountOrder {
+    id: ID!
+    orderNumber: String!
+    status: String!
+    paymentStatus: String!
+    fulfillmentStatus: String!
+    customerEmail: String!
+    customerPhone: String
+    currency: String!
+    subtotalCents: Int!
+    customizationTotalCents: Int!
+    shippingCostCents: Int!
+    discountTotalCents: Int!
+    taxTotalCents: Int!
+    totalCents: Int!
+    placedAt: String
+    createdAt: String!
+    items: [AccountOrderItem!]!
+    payments: [AccountPayment!]!
+    shipments: [AccountShipment!]!
+    events: [AccountOrderEvent!]!
+  }
+
+  type AccountDesign {
+    id: ID!
+    name: String
+    status: String!
+    previewUrl: String
+    previewPublicId: String
+    finalPriceCents: Int!
+    currency: String!
+    configJson: JSON!
+    createdAt: String!
+    updatedAt: String!
+    purchasedAt: String
+    product: Product
+  }
+
+  input UpdateMyProfileInput {
+    firstName: String
+    lastName: String
+    phone: String
+    marketingOptIn: Boolean
+  }
+
+  input MyAddressInput {
+    type: String!
+    firstName: String
+    lastName: String
+    phone: String
+    street: String!
+    extNumber: String
+    intNumber: String
+    neighborhood: String
+    city: String!
+    state: String!
+    country: String
+    postalCode: String!
+    references: String
+    isDefault: Boolean
+  }
+
+  type AccountDashboardSummary {
+    totalOrders: Int!
+    activeOrders: Int!
+    savedDesigns: Int!
+    defaultShippingAddress: AccountAddress
+    recentOrders: [AccountOrder!]!
+    recentDesigns: [AccountDesign!]!
+  }
+`
+
 export const typeDefs = /* GraphQL */ `
   """
   Business BFF — authentication is handled by Better Auth at /api/auth/*.
@@ -127,7 +275,22 @@ export const typeDefs = /* GraphQL */ `
     colors: [Color!]!
     sizes: [Size!]!
     customizationRulesByProduct(productId: ID!): [ProductCustomizationRule!]!
+    meProfile: AccountUser!
+    myAccountSummary: AccountDashboardSummary!
+    myOrders(limit: Int, offset: Int): [AccountOrder!]!
+    myOrderByNumber(orderNumber: String!): AccountOrder
+    myDesigns(limit: Int, offset: Int, status: String): [AccountDesign!]!
+    myAddresses: [AccountAddress!]!
+  }
+
+  type Mutation {
+    updateMyProfile(input: UpdateMyProfileInput!): AccountUser!
+    createMyAddress(input: MyAddressInput!): AccountAddress!
+    updateMyAddress(id: ID!, input: MyAddressInput!): AccountAddress!
+    deleteMyAddress(id: ID!): Boolean!
+    setDefaultAddress(id: ID!, type: String!): AccountAddress!
   }
 
   ${catalogTypeDefs}
+  ${accountTypeDefs}
 `
