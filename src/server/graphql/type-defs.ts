@@ -258,6 +258,75 @@ export const accountTypeDefs = /* GraphQL */ `
   }
 `
 
+export const cartTypeDefs = /* GraphQL */ `
+  type CartProductSnapshot {
+    productId: ID!
+    variantId: ID
+    slug: String!
+    name: String!
+    sku: String
+    imageUrl: String
+    productType: String
+    colorName: String
+    colorHex: String
+    sizeName: String
+  }
+
+  type CartCustomizationSnapshot {
+    designId: ID
+    previewUrl: String
+    summary: [String!]!
+    areas: [String!]!
+    hasLogo: Boolean!
+    hasEmbroidery: Boolean!
+    embroideredName: String
+  }
+
+  type CartItem {
+    id: ID!
+    productId: ID!
+    productVariantId: ID
+    designId: ID
+    quantity: Int!
+    unitPriceCents: Int!
+    customizationPriceCents: Int!
+    totalPriceCents: Int!
+    product: Product
+    design: AccountDesign
+    productSnapshot: CartProductSnapshot!
+    customizationSnapshot: CartCustomizationSnapshot!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type Cart {
+    id: ID!
+    status: String!
+    currency: String!
+    subtotalCents: Int!
+    customizationTotalCents: Int!
+    shippingCostCents: Int!
+    discountTotalCents: Int!
+    totalCents: Int!
+    totalItems: Int!
+    items: [CartItem!]!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  input AddCartItemInput {
+    productId: ID!
+    productVariantId: ID
+    designId: ID
+    quantity: Int!
+  }
+
+  input UpdateCartItemQuantityInput {
+    itemId: ID!
+    quantity: Int!
+  }
+`
+
 export const adminDashboardTypeDefs = /* GraphQL */ `
   type AdminDashboardMetrics {
     salesTodayCents: Int!
@@ -360,6 +429,7 @@ export const typeDefs = /* GraphQL */ `
     adminRecentDesigns(limit: Int): [AdminRecentDesign!]!
     adminRecentPayments(limit: Int): [AdminRecentPayment!]!
     adminTopProducts(limit: Int): [AdminTopProduct!]!
+    myCart: Cart!
   }
 
   type Mutation {
@@ -368,9 +438,14 @@ export const typeDefs = /* GraphQL */ `
     updateMyAddress(id: ID!, input: MyAddressInput!): AccountAddress!
     deleteMyAddress(id: ID!): Boolean!
     setDefaultAddress(id: ID!, type: String!): AccountAddress!
+    addCartItem(input: AddCartItemInput!): Cart!
+    updateCartItemQuantity(input: UpdateCartItemQuantityInput!): Cart!
+    removeCartItem(itemId: ID!): Cart!
+    clearCart: Cart!
   }
 
   ${catalogTypeDefs}
   ${accountTypeDefs}
+  ${cartTypeDefs}
   ${adminDashboardTypeDefs}
 `
