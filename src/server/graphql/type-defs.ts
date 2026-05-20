@@ -258,6 +258,79 @@ export const accountTypeDefs = /* GraphQL */ `
   }
 `
 
+export const adminDashboardTypeDefs = /* GraphQL */ `
+  type AdminDashboardMetrics {
+    salesTodayCents: Int!
+    salesMonthCents: Int!
+    pendingOrders: Int!
+    designsCreated: Int!
+    abandonedCarts: Int!
+    averageOrderValueCents: Int!
+    totalOrders: Int!
+    totalCustomers: Int!
+  }
+
+  type AdminRecentOrder {
+    id: ID!
+    orderNumber: String!
+    customerName: String
+    customerEmail: String!
+    status: String!
+    paymentStatus: String!
+    fulfillmentStatus: String!
+    totalCents: Int!
+    createdAt: String!
+    itemCount: Int!
+    hasCustomDesign: Boolean!
+  }
+
+  type AdminProductionQueueItem {
+    id: ID!
+    orderNumber: String!
+    customerName: String
+    productNames: [String!]!
+    customizationTypes: [String!]!
+    status: String!
+    fulfillmentStatus: String!
+    estimatedDeliveryDate: String
+    createdAt: String!
+  }
+
+  type AdminRecentDesign {
+    id: ID!
+    name: String
+    status: String!
+    previewUrl: String
+    productName: String!
+    customerName: String
+    customerEmail: String
+    finalPriceCents: Int!
+    updatedAt: String!
+  }
+
+  type AdminRecentPayment {
+    id: ID!
+    orderNumber: String!
+    provider: String!
+    method: String!
+    status: String!
+    amountCents: Int!
+    currency: String!
+    createdAt: String!
+    paidAt: String
+  }
+
+  type AdminTopProduct {
+    productId: ID!
+    productName: String!
+    productSlug: String!
+    orderCount: Int!
+    quantitySold: Int!
+    revenueCents: Int!
+    customizedCount: Int!
+  }
+`
+
 export const typeDefs = /* GraphQL */ `
   """
   Business BFF — authentication is handled by Better Auth at /api/auth/*.
@@ -281,6 +354,12 @@ export const typeDefs = /* GraphQL */ `
     myOrderByNumber(orderNumber: String!): AccountOrder
     myDesigns(limit: Int, offset: Int, status: String): [AccountDesign!]!
     myAddresses: [AccountAddress!]!
+    adminDashboardMetrics: AdminDashboardMetrics!
+    adminRecentOrders(limit: Int): [AdminRecentOrder!]!
+    adminProductionQueue(limit: Int): [AdminProductionQueueItem!]!
+    adminRecentDesigns(limit: Int): [AdminRecentDesign!]!
+    adminRecentPayments(limit: Int): [AdminRecentPayment!]!
+    adminTopProducts(limit: Int): [AdminTopProduct!]!
   }
 
   type Mutation {
@@ -293,4 +372,5 @@ export const typeDefs = /* GraphQL */ `
 
   ${catalogTypeDefs}
   ${accountTypeDefs}
+  ${adminDashboardTypeDefs}
 `

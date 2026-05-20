@@ -26,6 +26,7 @@ import {
 import { cn } from '@/lib/utils'
 import { adminNavItems } from '@/src/config/navigation.admin'
 import { routes } from '@/src/config/routes'
+import { useAdminSignOut } from './use-admin-sign-out'
 
 export type AdminEnvironment = 'DEV' | 'NP' | 'PROD'
 
@@ -56,6 +57,7 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ environment = 'DEV' }: AdminSidebarProps) {
   const pathname = usePathname()
+  const handleSignOut = useAdminSignOut()
 
   return (
     <Sidebar variant="sidebar" collapsible="icon">
@@ -120,7 +122,10 @@ export function AdminSidebar({ environment = 'DEV' }: AdminSidebarProps) {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem
+              variant="destructive"
+              onSelect={() => void handleSignOut()}
+            >
               <LogOut className="mr-2 h-4 w-4" />
               Cerrar Sesión
             </DropdownMenuItem>

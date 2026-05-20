@@ -1,0 +1,75 @@
+/** GraphQL-shaped admin dashboard metrics. */
+export type AdminDashboardMetricsGql = {
+  salesTodayCents: number
+  salesMonthCents: number
+  pendingOrders: number
+  designsCreated: number
+  abandonedCarts: number
+  averageOrderValueCents: number
+  totalOrders: number
+  totalCustomers: number
+}
+
+export type AdminRecentOrderGql = {
+  id: string
+  orderNumber: string
+  customerName: string | null
+  customerEmail: string
+  status: string
+  paymentStatus: string
+  fulfillmentStatus: string
+  totalCents: number
+  createdAt: string
+  itemCount: number
+  hasCustomDesign: boolean
+}
+
+export type AdminProductionQueueItemGql = {
+  id: string
+  orderNumber: string
+  customerName: string | null
+  productNames: string[]
+  customizationTypes: string[]
+  status: string
+  fulfillmentStatus: string
+  estimatedDeliveryDate: string | null
+  createdAt: string
+}
+
+export type AdminRecentDesignGql = {
+  id: string
+  name: string | null
+  status: string
+  previewUrl: string | null
+  productName: string
+  customerName: string | null
+  customerEmail: string | null
+  finalPriceCents: number
+  updatedAt: string
+}
+
+export type AdminRecentPaymentGql = {
+  id: string
+  orderNumber: string
+  provider: string
+  method: string
+  status: string
+  amountCents: number
+  currency: string
+  createdAt: string
+  paidAt: string | null
+}
+
+export type AdminTopProductGql = {
+  productId: string
+  productName: string
+  productSlug: string
+  orderCount: number
+  quantitySold: number
+  revenueCents: number
+  customizedCount: number
+}
+
+export type AdminDashboardLimitInput = {
+  limit?: number | null
+}

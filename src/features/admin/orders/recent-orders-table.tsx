@@ -96,6 +96,15 @@ export function RecentOrdersTable({ orders, className }: RecentOrdersTableProps)
             </TableRow>
           </TableHeader>
           <TableBody>
+            {orders.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="py-12 text-center">
+                  <p className="font-serif text-sm text-muted-foreground">
+                    No hay órdenes recientes por ahora.
+                  </p>
+                </TableCell>
+              </TableRow>
+            ) : null}
             {orders.map((order) => {
               const status = statusConfig[order.status]
               const payment = paymentStatusConfig[order.paymentStatus]
