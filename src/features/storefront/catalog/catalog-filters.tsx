@@ -23,6 +23,11 @@ import {
 } from '@/components/ui/sheet'
 import { SlidersHorizontal, X } from 'lucide-react'
 
+import {
+  EMPTY_FILTER_OPTIONS,
+  type CatalogFilterOptions,
+} from './catalog-filter-options'
+
 export interface FilterState {
   categories: string[]
   sizes: string[]
@@ -36,24 +41,10 @@ export interface FilterState {
 interface CatalogFiltersProps {
   filters: FilterState
   onFiltersChange: (filters: FilterState) => void
+  filterOptions?: CatalogFilterOptions
+  isLoadingOptions?: boolean
   className?: string
 }
-
-const CATEGORIES = [
-  { id: 'filipinas', label: 'Filipinas' },
-  { id: 'mandiles', label: 'Mandiles' },
-  { id: 'pantalones', label: 'Pantalones' },
-]
-
-const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-
-const COLORS = [
-  { id: 'white', label: 'Blanco', hex: '#FFFFFF' },
-  { id: 'black', label: 'Negro', hex: '#111111' },
-  { id: 'navy', label: 'Azul Marino', hex: '#0B1026' },
-  { id: 'gray', label: 'Gris', hex: '#6B7280' },
-  { id: 'charcoal', label: 'Carbon', hex: '#374151' },
-]
 
 const PRODUCTION_TIMES = [
   { id: '3-5', label: '3-5 dias' },
@@ -67,7 +58,12 @@ const MATERIALS = [
   { id: 'mezcla', label: 'Mezcla' },
 ]
 
-function FilterContent({ filters, onFiltersChange }: CatalogFiltersProps) {
+function FilterContent({
+  filters,
+  onFiltersChange,
+  filterOptions = EMPTY_FILTER_OPTIONS,
+  isLoadingOptions = false,
+}: CatalogFiltersProps) {
   const updateFilter = <K extends keyof FilterState>(key: K, value: FilterState[K]) => {
     onFiltersChange({ ...filters, [key]: value })
   }
@@ -90,21 +86,25 @@ function FilterContent({ filters, onFiltersChange }: CatalogFiltersProps) {
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-3 pt-1">
-              {CATEGORIES.map((cat) => (
-                <div key={cat.id} className="flex items-center gap-2">
-                  <Checkbox
-                    id={`cat-${cat.id}`}
-                    checked={filters.categories.includes(cat.id)}
-                    onCheckedChange={() => toggleArrayFilter('categories', cat.id)}
-                  />
-                  <Label
-                    htmlFor={`cat-${cat.id}`}
-                    className="cursor-pointer font-serif text-sm text-foreground"
-                  >
-                    {cat.label}
-                  </Label>
-                </div>
-              ))}
+              {isLoadingOptions ? (
+                <p className="font-serif text-sm text-muted-foreground">Cargando categorías…</p>
+              ) : (
+                filterOptions.productTypes.map((cat) => (
+                  <div key={cat.slug} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`cat-${cat.slug}`}
+                      checked={filters.categories.includes(cat.slug)}
+                      onCheckedChange={() => toggleArrayFilter('categories', cat.slug)}
+                    />
+                    <Label
+                      htmlFor={`cat-${cat.slug}`}
+                      className="cursor-pointer font-serif text-sm text-foreground"
+                    >
+                      {cat.label}
+                    </Label>
+                  </div>
+                ))
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -116,20 +116,24 @@ function FilterContent({ filters, onFiltersChange }: CatalogFiltersProps) {
           </AccordionTrigger>
           <AccordionContent>
             <div className="flex flex-wrap gap-2 pt-1">
-              {SIZES.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => toggleArrayFilter('sizes', size)}
-                  className={cn(
-                    'rounded-md border px-3 py-1.5 font-sans text-xs font-medium transition-colors',
-                    filters.sizes.includes(size)
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-border bg-card text-foreground hover:border-primary/50'
-                  )}
-                >
-                  {size}
-                </button>
-              ))}
+              {isLoadingOptions ? (
+                <p className="font-serif text-sm text-muted-foreground">Cargando tallas…</p>
+              ) : (
+                filterOptions.sizes.map((size) => (
+                  <button
+                    key={size.slug}
+                    onClick={() => toggleArrayFilter('sizes', size.slug)}
+                    className={cn(
+                      'rounded-md border px-3 py-1.5 font-sans text-xs font-medium transition-colors',
+                      filters.sizes.includes(size.slug)
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border bg-card text-foreground hover:border-primary/50',
+                    )}
+                  >
+                    {size.label}
+                  </button>
+                ))
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -141,25 +145,29 @@ function FilterContent({ filters, onFiltersChange }: CatalogFiltersProps) {
           </AccordionTrigger>
           <AccordionContent>
             <div className="flex flex-wrap gap-2 pt-1">
-              {COLORS.map((color) => (
-                <button
-                  key={color.id}
-                  onClick={() => toggleArrayFilter('colors', color.id)}
-                  className={cn(
-                    'flex items-center gap-2 rounded-md border px-2.5 py-1.5 transition-colors',
-                    filters.colors.includes(color.id)
-                      ? 'border-primary bg-primary/10'
-                      : 'border-border bg-card hover:border-primary/50'
-                  )}
-                  title={color.label}
-                >
-                  <div
-                    className="h-4 w-4 rounded-full border border-border"
-                    style={{ backgroundColor: color.hex }}
-                  />
-                  <span className="font-serif text-xs text-foreground">{color.label}</span>
-                </button>
-              ))}
+              {isLoadingOptions ? (
+                <p className="font-serif text-sm text-muted-foreground">Cargando colores…</p>
+              ) : (
+                filterOptions.colors.map((color) => (
+                  <button
+                    key={color.slug}
+                    onClick={() => toggleArrayFilter('colors', color.slug)}
+                    className={cn(
+                      'flex items-center gap-2 rounded-md border px-2.5 py-1.5 transition-colors',
+                      filters.colors.includes(color.slug)
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border bg-card hover:border-primary/50',
+                    )}
+                    title={color.label}
+                  >
+                    <div
+                      className="h-4 w-4 rounded-full border border-border"
+                      style={{ backgroundColor: color.hex }}
+                    />
+                    <span className="font-serif text-xs text-foreground">{color.label}</span>
+                  </button>
+                ))
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -270,7 +278,13 @@ function FilterContent({ filters, onFiltersChange }: CatalogFiltersProps) {
 }
 
 // Desktop Sidebar Filters
-export function CatalogFilters({ filters, onFiltersChange, className }: CatalogFiltersProps) {
+export function CatalogFilters({
+  filters,
+  onFiltersChange,
+  filterOptions,
+  isLoadingOptions,
+  className,
+}: CatalogFiltersProps) {
   return (
     <aside className={cn('hidden w-64 flex-shrink-0 lg:block', className)}>
       <div className="sticky top-24 rounded-lg border border-border bg-card p-4">
@@ -294,7 +308,12 @@ export function CatalogFilters({ filters, onFiltersChange, className }: CatalogF
           </Button>
         </div>
         <Separator className="mb-4" />
-        <FilterContent filters={filters} onFiltersChange={onFiltersChange} />
+        <FilterContent
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+          filterOptions={filterOptions}
+          isLoadingOptions={isLoadingOptions}
+        />
       </div>
     </aside>
   )
@@ -305,10 +324,12 @@ interface MobileFiltersSheetProps extends CatalogFiltersProps {
   activeFilterCount: number
 }
 
-export function MobileFiltersSheet({ 
-  filters, 
-  onFiltersChange, 
-  activeFilterCount 
+export function MobileFiltersSheet({
+  filters,
+  onFiltersChange,
+  filterOptions,
+  isLoadingOptions,
+  activeFilterCount,
 }: MobileFiltersSheetProps) {
   const [open, setOpen] = useState(false)
 
@@ -330,7 +351,12 @@ export function MobileFiltersSheet({
           <SheetTitle className="font-sans">Filtros</SheetTitle>
         </SheetHeader>
         <div className="mt-6">
-          <FilterContent filters={filters} onFiltersChange={onFiltersChange} />
+          <FilterContent
+            filters={filters}
+            onFiltersChange={onFiltersChange}
+            filterOptions={filterOptions}
+            isLoadingOptions={isLoadingOptions}
+          />
         </div>
         <SheetFooter className="mt-6">
           <Button
@@ -363,14 +389,19 @@ export function MobileFiltersSheet({
 interface ActiveFiltersProps {
   filters: FilterState
   onFiltersChange: (filters: FilterState) => void
+  filterOptions?: CatalogFilterOptions
 }
 
-export function ActiveFilters({ filters, onFiltersChange }: ActiveFiltersProps) {
+export function ActiveFilters({
+  filters,
+  onFiltersChange,
+  filterOptions = EMPTY_FILTER_OPTIONS,
+}: ActiveFiltersProps) {
   const activeFilters: { key: string; label: string; onRemove: () => void }[] = []
 
   // Categories
   filters.categories.forEach((cat) => {
-    const category = CATEGORIES.find((c) => c.id === cat)
+    const category = filterOptions.productTypes.find((c) => c.slug === cat)
     if (category) {
       activeFilters.push({
         key: `cat-${cat}`,
@@ -384,20 +415,21 @@ export function ActiveFilters({ filters, onFiltersChange }: ActiveFiltersProps) 
   })
 
   // Sizes
-  filters.sizes.forEach((size) => {
+  filters.sizes.forEach((sizeSlug) => {
+    const size = filterOptions.sizes.find((s) => s.slug === sizeSlug)
     activeFilters.push({
-      key: `size-${size}`,
-      label: `Talla ${size}`,
+      key: `size-${sizeSlug}`,
+      label: `Talla ${size?.label ?? sizeSlug.toUpperCase()}`,
       onRemove: () => onFiltersChange({
         ...filters,
-        sizes: filters.sizes.filter((s) => s !== size),
+        sizes: filters.sizes.filter((s) => s !== sizeSlug),
       }),
     })
   })
 
   // Colors
   filters.colors.forEach((color) => {
-    const colorObj = COLORS.find((c) => c.id === color)
+    const colorObj = filterOptions.colors.find((c) => c.slug === color)
     if (colorObj) {
       activeFilters.push({
         key: `color-${color}`,
@@ -460,5 +492,4 @@ export function ActiveFilters({ filters, onFiltersChange }: ActiveFiltersProps) 
   )
 }
 
-// Export filter constants for use elsewhere
-export { CATEGORIES, SIZES, COLORS, PRODUCTION_TIMES, MATERIALS }
+export { PRODUCTION_TIMES, MATERIALS }

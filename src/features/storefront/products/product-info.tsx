@@ -11,9 +11,10 @@ import { PriceDisplay } from '@/components/brand/product-components'
 interface ProductInfoProps {
   product: Product
   className?: string
+  onCustomize?: () => void
 }
 
-export function ProductInfo({ product, className }: ProductInfoProps) {
+export function ProductInfo({ product, className, onCustomize }: ProductInfoProps) {
   const [selectedColor, setSelectedColor] = useState<string>(product.colors[0]?.id || '')
   const [selectedSize, setSelectedSize] = useState<string>('')
   const [quantity, setQuantity] = useState(1)
@@ -32,9 +33,8 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
     })
   }
 
-  // TODO: Replace with navigation to customizer
   const handleCustomize = () => {
-    console.log('Open customizer for:', product.id)
+    onCustomize?.()
   }
 
   return (
