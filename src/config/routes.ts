@@ -9,6 +9,7 @@ export const routes = {
   productDetail: (slug: string) => `/products/${slug}`,
   cart: '/cart',
   checkout: '/checkout',
+  checkoutSuccess: '/checkout/success',
   login: '/login',
   register: '/register',
   account: '/account',

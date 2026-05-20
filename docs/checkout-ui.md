@@ -1,0 +1,74 @@
+# Checkout UI (storefront)
+
+## Overview
+
+`/checkout` uses the real cart from the Cart BFF (`myCart`) and creates orders via Checkout BFF v1 (`createCheckoutOrder`). Payment methods are placeholders until Conekta is integrated.
+
+## Flow
+
+1. **Cart load** — `useMyCartQuery` loads the active cart (guest or authenticated).
+2. **Steps** — Contact → shipping/billing → payment (no card capture).
+3. **Submit** — `useCreateCheckoutOrderMutation` sends customer and address data only (no totals, items, `userId`, or `guestSessionId`).
+4. **Success** — Redirect to `/checkout/success?orderNumber=...` with confirmation stored in `sessionStorage` (email not in URL).
+
+## GraphQL
+
+| Operation | Purpose |
+|-----------|---------|
+| `myCart` | Checkout summary (items, subtotal, customization, total) |
+| `createCheckoutOrder` | Creates `Order` with `PENDING_PAYMENT`, converts cart to `CONVERTED` |
+| `orderByNumber(orderNumber, email)` | Success page detail |
+
+## Payment methods (placeholder)
+
+UI tabs: Tarjeta, OXXO, SPEI → BFF: `CARD`, `OXXO`, `SPEI`.
+
+Copy shown to users: *Pago real pendiente de integración con Conekta.*
+
+No card number, CVV, or bank details are collected.
+
+## Guest checkout
+
+- Guest cart is tied to `chefroom_guest` cookie (created when adding to cart).
+- Checkout BFF resolves owner from session; does not create a new guest session at checkout.
+- Orders link to `GuestSession` when unauthenticated, or `userId` when logged in.
+
+## Success page
+
+`src/app/(storefront)/checkout/success/page.tsx`
+
+- Reads `orderNumber` from query string.
+- Reads email from `sessionStorage` (`chefroom_checkout_confirmation`) for `orderByNumber`.
+- Falls back to session payload if the query fails.
+- Shows order number, `PENDING_PAYMENT`, total, payment method, and items when available.
+
+**Pending:** secure public tracking token so email is not required in `orderByNumber`.
+
+## Validation
+
+Zod schema: `src/features/storefront/checkout/lib/checkout-form.validation.ts`
+
+Step helpers: `src/features/storefront/checkout/lib/checkout-step-validation.ts`
+
+## Files
+
+| Path | Role |
+|------|------|
+| `src/app/(storefront)/checkout/page.tsx` | Checkout flow |
+| `src/app/(storefront)/checkout/success/page.tsx` | Confirmation |
+| `src/features/storefront/checkout/mappers/checkout-ui.mapper.ts` | Cart → summary, form → mutation input |
+| `src/features/storefront/checkout/lib/checkout-session.ts` | Session storage for success |
+| `src/config/routes.ts` | `checkout`, `checkoutSuccess` |
+
+## Not in scope (v1)
+
+- Conekta charges, webhooks, real OXXO/SPEI references
+- Transactional emails
+- Coupons, real shipping/taxes, CFDI
+- Guest order claim
+- Advanced public tracking
+
+## Related docs
+
+- `docs/graphql-cart.md`
+- `docs/graphql-checkout.md`
