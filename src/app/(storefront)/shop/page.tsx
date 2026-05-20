@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { routes } from '@/src/config/routes'
 import {
@@ -15,11 +15,10 @@ import {
   type FilterState,
   type SortOption,
 } from '@/src/features/storefront/catalog'
-import { MOCK_PRODUCTS } from '@/lib/mock-data'
+import { getCatalogProducts } from '@/src/features/storefront/catalog/api/catalog.api'
+import { mapCatalogProductToCard } from '@/src/features/storefront/catalog/mappers/catalog-ui.mapper'
 import type { Product } from '@/lib/types'
-
-// TODO: Replace with TanStack Query useProductsQuery hook
-// import { useProductsQuery } from '@/hooks/use-products-query'
+import { GraphQLRequestError } from '@/src/lib/graphql/errors'
 
 const DEFAULT_FILTERS: FilterState = {
   categories: [],
@@ -34,18 +33,37 @@ const DEFAULT_FILTERS: FilterState = {
 export default function ShopPage() {
   const router = useRouter()
 
-  // Filter state
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
   const [sortBy, setSortBy] = useState<SortOption>('popular')
-  
-  // Loading and error states for future API integration
-  const [isLoading] = useState(false)
-  const [error] = useState<string | null>(null)
+  const [products, setProducts] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // TODO: Replace with TanStack Query
-  // const { data: products, isLoading, error } = useProductsQuery(filters, sortBy)
+  const loadProducts = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const { items } = await getCatalogProducts({ limit: 100 })
+      setProducts(items.map(mapCatalogProductToCard))
+    } catch (err) {
+      const message =
+        err instanceof GraphQLRequestError
+          ? err.message
+          : 'No se pudo cargar el catálogo'
+      setError(message)
+      setProducts([])
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
 
-  // Count active filters
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void loadProducts()
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [loadProducts])
+
   const activeFilterCount = useMemo(() => {
     let count = 0
     count += filters.categories.length
@@ -58,43 +76,35 @@ export default function ShopPage() {
     return count
   }, [filters])
 
-  // Filter and sort products (mock implementation)
   const filteredProducts = useMemo(() => {
-    let result = [...MOCK_PRODUCTS]
+    let result = [...products]
 
-    // Filter by category
     if (filters.categories.length > 0) {
       result = result.filter((p) => filters.categories.includes(p.category))
     }
 
-    // Filter by size
     if (filters.sizes.length > 0) {
       result = result.filter((p) =>
-        p.sizes.some((size) => filters.sizes.includes(size))
+        p.sizes.some((size) => filters.sizes.includes(size)),
       )
     }
 
-    // Filter by color
     if (filters.colors.length > 0) {
       result = result.filter((p) =>
-        p.colors.some((color) => filters.colors.includes(color.id))
+        p.colors.some((color) => filters.colors.includes(color.id)),
       )
     }
 
-    // Filter by price range
     result = result.filter(
-      (p) => p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1]
+      (p) => p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1],
     )
 
-    // Filter by customizable
     if (filters.customizable === true) {
       result = result.filter((p) => p.customizable)
     }
 
-    // Sort
     switch (sortBy) {
       case 'newest':
-        // In a real app, sort by createdAt
         result = [...result].reverse()
         break
       case 'price-asc':
@@ -108,12 +118,14 @@ export default function ShopPage() {
         break
       case 'popular':
       default:
-        result = [...result].sort((a, b) => b.reviewCount - a.reviewCount)
+        result = [...result].sort(
+          (a, b) => b.reviewCount - a.reviewCount || a.name.localeCompare(b.name),
+        )
         break
     }
 
     return result
-  }, [filters, sortBy])
+  }, [filters, sortBy, products])
 
   const handleClearFilters = () => {
     setFilters(DEFAULT_FILTERS)
@@ -123,41 +135,34 @@ export default function ShopPage() {
     <>
       <CatalogHero />
 
-      {/* Main Content */}
       <div className="mx-auto max-w-7xl px-4 py-8 md:px-6">
-        {/* Toolbar */}
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
-            {/* Mobile Filters */}
             <MobileFiltersSheet
               filters={filters}
               onFiltersChange={setFilters}
               activeFilterCount={activeFilterCount}
             />
-            
-            {/* Results count */}
+
             <p className="font-serif text-sm text-muted-foreground">
-              {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''}
+              {isLoading
+                ? 'Cargando productos…'
+                : `${filteredProducts.length} producto${filteredProducts.length !== 1 ? 's' : ''}`}
             </p>
           </div>
 
-          {/* Sort */}
           <SortSelect value={sortBy} onChange={setSortBy} />
         </div>
 
-        {/* Active Filters */}
         {activeFilterCount > 0 && (
           <div className="mb-6">
             <ActiveFilters filters={filters} onFiltersChange={setFilters} />
           </div>
         )}
 
-        {/* Content Area */}
         <div className="flex gap-8">
-          {/* Desktop Filters Sidebar */}
           <CatalogFilters filters={filters} onFiltersChange={setFilters} />
 
-          {/* Product Grid */}
           <div className="flex-1">
             {isLoading ? (
               <CatalogSkeleton count={8} />
@@ -165,8 +170,7 @@ export default function ShopPage() {
               <CatalogEmptyState
                 variant="error"
                 onRetry={() => {
-                  // TODO: Refetch with TanStack Query
-                  console.log('Retry fetch')
+                  void loadProducts()
                 }}
               />
             ) : filteredProducts.length === 0 ? (
@@ -183,8 +187,7 @@ export default function ShopPage() {
                     onView={() => router.push(routes.productDetail(product.slug))}
                     onCustomize={() => router.push(routes.customize)}
                     onQuickView={() => {
-                      // TODO: Open quick view modal
-                      console.log('Quick view:', product.slug)
+                      router.push(routes.productDetail(product.slug))
                     }}
                   />
                 ))}

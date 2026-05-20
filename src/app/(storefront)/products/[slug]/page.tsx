@@ -1,6 +1,7 @@
 'use client'
 
 import { use, useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   ProductGallery,
   ProductInfo,
@@ -20,11 +21,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { MOCK_PRODUCTS, fetchProductBySlug } from '@/lib/mock-data'
+import { getCatalogProducts } from '@/src/features/storefront/catalog/api/catalog.api'
+import { mapCatalogProductToCard } from '@/src/features/storefront/catalog/mappers/catalog-ui.mapper'
+import { getProductBySlug } from '@/src/features/storefront/products/api/products.api'
+import { mapProductDetailToUi } from '@/src/features/storefront/products/mappers/product-ui.mapper'
 import type { Product } from '@/lib/types'
 import { routes, shopCategoryUrl } from '@/src/config/routes'
+import { GraphQLRequestError } from '@/src/lib/graphql/errors'
 
-// Category name mapping
 const categoryNames: Record<string, string> = {
   filipinas: 'Filipinas',
   mandiles: 'Mandiles',
@@ -38,24 +42,41 @@ interface ProductPageProps {
 
 export default function ProductPage({ params }: ProductPageProps) {
   const resolvedParams = use(params)
+  const router = useRouter()
   const [product, setProduct] = useState<Product | null>(null)
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  // TODO: Replace with TanStack Query useQuery hook
-  // const { data: product, isLoading, error, refetch } = useQuery({
-  //   queryKey: ['product', slug],
-  //   queryFn: () => fetchProductBySlug(slug),
-  // })
 
   const loadProduct = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
-      const data = await fetchProductBySlug(resolvedParams.slug)
-      setProduct(data)
-    } catch {
-      setError('Failed to load product')
+      const [detail, catalog] = await Promise.all([
+        getProductBySlug(resolvedParams.slug),
+        getCatalogProducts({ limit: 100 }),
+      ])
+
+      if (!detail) {
+        setProduct(null)
+        setRelatedProducts([])
+        return
+      }
+
+      setProduct(mapProductDetailToUi(detail))
+      setRelatedProducts(
+        catalog.items
+          .filter((item) => item.slug !== resolvedParams.slug)
+          .map(mapCatalogProductToCard),
+      )
+    } catch (err) {
+      const message =
+        err instanceof GraphQLRequestError
+          ? err.message
+          : 'No se pudo cargar el producto'
+      setError(message)
+      setProduct(null)
+      setRelatedProducts([])
     } finally {
       setIsLoading(false)
     }
@@ -69,55 +90,50 @@ export default function ProductPage({ params }: ProductPageProps) {
   }, [loadProduct])
 
   const handleRetry = () => {
-    loadProduct()
+    void loadProduct()
   }
 
   const handleCustomize = () => {
-    // TODO: Navigate to customizer
-    console.log('Open customizer for:', product?.id)
+    router.push(routes.customize)
   }
 
-  // Loading state
   if (isLoading) {
-    return (
-      <ProductPageSkeleton />
-    )
+    return <ProductPageSkeleton />
   }
 
-  // Error state
   if (error) {
-    return (
-      <ProductError onRetry={handleRetry} />
-    )
+    return <ProductError onRetry={handleRetry} />
   }
 
-  // Not found state
   if (!product) {
-    return (
-      <ProductNotFound />
-    )
+    return <ProductNotFound />
   }
 
   return (
     <>
-    <div className="mx-auto max-w-7xl px-4 py-8 md:px-6">
-        {/* Breadcrumbs */}
+      <div className="mx-auto max-w-7xl px-4 py-8 md:px-6">
         <Breadcrumb className="mb-6">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href={routes.home} className="font-serif text-muted-foreground hover:text-foreground">
+              <BreadcrumbLink
+                href={routes.home}
+                className="font-serif text-muted-foreground hover:text-foreground"
+              >
                 Inicio
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href={routes.shop} className="font-serif text-muted-foreground hover:text-foreground">
+              <BreadcrumbLink
+                href={routes.shop}
+                className="font-serif text-muted-foreground hover:text-foreground"
+              >
                 Catálogo
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink 
+              <BreadcrumbLink
                 href={shopCategoryUrl(product.category)}
                 className="font-serif text-muted-foreground hover:text-foreground"
               >
@@ -133,9 +149,7 @@ export default function ProductPage({ params }: ProductPageProps) {
           </BreadcrumbList>
         </Breadcrumb>
 
-        {/* Main Product Section */}
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-          {/* Left Column - Gallery */}
           <ProductGallery
             images={product.images}
             productName={product.name}
@@ -146,38 +160,32 @@ export default function ProductPage({ params }: ProductPageProps) {
             }}
           />
 
-          {/* Right Column - Product Info */}
-          <ProductInfo product={product} />
+          <ProductInfo
+            product={product}
+            onCustomize={handleCustomize}
+          />
         </div>
 
-        {/* Customization Preview Card (for customizable products) */}
         {product.customizable && (
           <div className="mt-12">
             <CustomizationSummaryCard productId={product.id} />
           </div>
         )}
 
-        {/* Product Tabs */}
         <div className="mt-12 border-t border-border pt-12">
           <ProductTabs product={product} />
         </div>
 
-        {/* Related Products */}
         <div className="border-t border-border">
-          <RelatedProducts 
-            currentProductId={product.id} 
-            products={MOCK_PRODUCTS} 
+          <RelatedProducts
+            currentProductId={product.id}
+            products={relatedProducts}
           />
         </div>
       </div>
 
-      {/* Sticky Mobile Buy Bar */}
-      <StickyBuyBar 
-        price={product.price} 
-        onCustomize={handleCustomize} 
-      />
+      <StickyBuyBar price={product.price} onCustomize={handleCustomize} />
 
-      {/* Add padding at bottom for sticky bar on mobile */}
       <div className="h-24 md:hidden" />
     </>
   )
