@@ -1,14 +1,18 @@
 import { fetchGraphQL } from '@/src/lib/graphql/fetch-graphql'
 
 import { CREATE_CHECKOUT_ORDER_MUTATION } from '../graphql/checkout.mutations'
+import { CREATE_CONEKTA_CHECKOUT_MUTATION } from '../graphql/conekta.mutations'
 import { ORDER_BY_NUMBER_QUERY } from '../graphql/checkout.queries'
 import type {
   CheckoutOrderPayload,
+  ConektaCheckoutPayload,
   CreateCheckoutOrderInput,
+  CreateConektaCheckoutInput,
   PublicOrder,
 } from '../types'
 
 type CreateCheckoutOrderData = { createCheckoutOrder: CheckoutOrderPayload }
+type CreateConektaCheckoutData = { createConektaCheckout: ConektaCheckoutPayload }
 type OrderByNumberData = { orderByNumber: PublicOrder | null }
 
 /**
@@ -41,4 +45,20 @@ export async function getOrderByNumber(
     },
   )
   return data.orderByNumber
+}
+
+/**
+ * Starts Conekta HostedPayment checkout for an existing order (server-side Conekta call).
+ */
+export async function createConektaCheckout(
+  input: CreateConektaCheckoutInput,
+): Promise<ConektaCheckoutPayload> {
+  const data = await fetchGraphQL<
+    CreateConektaCheckoutData,
+    { input: CreateConektaCheckoutInput }
+  >({
+    query: CREATE_CONEKTA_CHECKOUT_MUTATION,
+    variables: { input },
+  })
+  return data.createConektaCheckout
 }

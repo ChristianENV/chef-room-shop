@@ -400,6 +400,25 @@ export const adminDashboardTypeDefs = /* GraphQL */ `
   }
 `
 
+export const paymentsTypeDefs = /* GraphQL */ `
+  input CreateConektaCheckoutInput {
+    orderNumber: String!
+    email: String
+  }
+
+  type ConektaCheckoutPayload {
+    orderId: ID!
+    orderNumber: String!
+    paymentId: ID!
+    providerOrderId: String
+    checkoutId: String
+    checkoutUrl: String
+    status: String!
+    amountCents: Int!
+    currency: String!
+  }
+`
+
 export const checkoutTypeDefs = /* GraphQL */ `
   input CheckoutAddressInput {
     firstName: String!
@@ -519,11 +538,13 @@ export const typeDefs = /* GraphQL */ `
     removeCartItem(itemId: ID!): Cart!
     clearCart: Cart!
     createCheckoutOrder(input: CreateCheckoutOrderInput!): CheckoutOrderPayload!
+    createConektaCheckout(input: CreateConektaCheckoutInput!): ConektaCheckoutPayload!
   }
 
   ${catalogTypeDefs}
   ${accountTypeDefs}
   ${cartTypeDefs}
   ${checkoutTypeDefs}
+  ${paymentsTypeDefs}
   ${adminDashboardTypeDefs}
 `

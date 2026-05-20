@@ -109,9 +109,14 @@ Use session cookies (`chefroom_guest` or Better Auth) on `POST /api/graphql`.
 - `src/features/storefront/checkout/api/*`
 - Hooks: `useCreateCheckoutOrderMutation`, `useOrderByNumberQuery`
 
+## Conekta (sandbox v1)
+
+After `createCheckoutOrder`, call `createConektaCheckout` to obtain a hosted `checkoutUrl`. Payment confirmation is applied via webhook (`POST /api/webhooks/conekta`), not in the mutation.
+
+See [conekta-sandbox.md](./conekta-sandbox.md).
+
 ## Not in v1
 
-- Conekta charges / webhooks
 - Transactional emails
 - Coupons, real tax/shipping
 - CFDI / RFC

@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useMemo, useSyncExternalStore } from 'react'
+import { Suspense, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { CheckoutLayout } from '@/src/features/storefront/layout/checkout-layout'
@@ -13,6 +13,7 @@ import {
   clearCheckoutConfirmation,
   type CheckoutConfirmationSession,
 } from '@/src/features/storefront/checkout/lib/checkout-session'
+import { CheckoutConektaPay } from '@/src/features/storefront/checkout/checkout-conekta-pay'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -116,13 +117,11 @@ function SessionFallbackSummary({ session }: { session: CheckoutConfirmationSess
         </div>
       </dl>
 
-      <Alert className="mt-6 border-primary/30 bg-primary/5">
-        <AlertCircle className="h-4 w-4 text-primary" />
-        <AlertDescription className="font-serif text-sm">
-          El pago se conectará en la siguiente fase. Tu pedido quedó registrado como pendiente de
-          pago.
-        </AlertDescription>
-      </Alert>
+      <CheckoutConektaPay
+        orderNumber={session.orderNumber}
+        email={session.email}
+        disabled={session.status !== 'PENDING_PAYMENT'}
+      />
     </div>
   )
 }
@@ -158,7 +157,8 @@ function CheckoutSuccessContent() {
     () => null as CheckoutConfirmationSession | null,
   )
 
-  const email = storedSession?.email ?? ''
+  const [guestEmail] = useState(() => readCheckoutConfirmation()?.email ?? '')
+  const email = guestEmail || storedSession?.email || ''
 
   const {
     data: order,
@@ -266,13 +266,22 @@ function CheckoutSuccessContent() {
             </div>
             <OrderItemsList order={order} />
 
-            <Alert className="mt-6 border-primary/30 bg-primary/5">
-              <AlertCircle className="h-4 w-4 text-primary" />
-              <AlertDescription className="font-serif text-sm">
-                El pago se conectará en la siguiente fase. Tu pedido quedó registrado como
-                pendiente de pago.
-              </AlertDescription>
-            </Alert>
+            {order.status === 'PENDING_PAYMENT' && (
+              <CheckoutConektaPay
+                orderNumber={order.orderNumber}
+                email={order.customerEmail}
+              />
+            )}
+
+            {order.status !== 'PENDING_PAYMENT' && (
+              <Alert className="mt-6 border-success/30 bg-success/5">
+                <AlertCircle className="h-4 w-4 text-success" />
+                <AlertDescription className="font-serif text-sm">
+                  El estado de tu pago se actualizará automáticamente cuando Conekta confirme el
+                  cobro.
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -342,5 +351,6 @@ function CheckoutSuccessContent() {
     </CheckoutLayout>
   )
 }
+
 
 

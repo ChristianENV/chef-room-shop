@@ -1,11 +1,14 @@
-export { createCheckoutOrder, getOrderByNumber } from './api/checkout.api'
+export { createCheckoutOrder, createConektaCheckout, getOrderByNumber } from './api/checkout.api'
 export { checkoutQueryKeys } from './api/checkout.query-keys'
 export { useCreateCheckoutOrderMutation } from './api/use-create-checkout-order-mutation'
+export { useCreateConektaCheckoutMutation } from './api/use-create-conekta-checkout-mutation'
 export { useOrderByNumberQuery } from './api/use-order-by-number-query'
 export type {
   CheckoutAddressInput,
   CheckoutOrderPayload,
   CreateCheckoutOrderInput,
+  CreateConektaCheckoutInput,
+  ConektaCheckoutPayload,
   PublicOrder,
 } from './types'
 export { CheckoutSteps, type CheckoutStep } from './checkout-steps'

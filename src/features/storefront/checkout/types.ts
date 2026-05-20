@@ -51,6 +51,23 @@ export type PublicOrderPayment = {
   currency: string
 }
 
+export type CreateConektaCheckoutInput = {
+  orderNumber: string
+  email?: string | null
+}
+
+export type ConektaCheckoutPayload = {
+  orderId: string
+  orderNumber: string
+  paymentId: string
+  providerOrderId: string | null
+  checkoutId: string | null
+  checkoutUrl: string | null
+  status: string
+  amountCents: number
+  currency: string
+}
+
 export type PublicOrder = {
   id: string
   orderNumber: string

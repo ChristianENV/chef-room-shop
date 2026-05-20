@@ -60,9 +60,14 @@ Step helpers: `src/features/storefront/checkout/lib/checkout-step-validation.ts`
 | `src/features/storefront/checkout/lib/checkout-session.ts` | Session storage for success |
 | `src/config/routes.ts` | `checkout`, `checkoutSuccess` |
 
+## Conekta payment (sandbox v1)
+
+On `/checkout/success`, `CheckoutConektaPay` calls `createConektaCheckout` and shows **Pagar ahora** → Conekta hosted checkout. See [conekta-sandbox.md](./conekta-sandbox.md).
+
 ## Not in scope (v1)
 
-- Conekta charges, webhooks, real OXXO/SPEI references
+- Card capture in Chef Room UI
+- Refunds, MSI, saved cards
 - Transactional emails
 - Coupons, real shipping/taxes, CFDI
 - Guest order claim
