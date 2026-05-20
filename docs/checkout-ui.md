@@ -64,6 +64,10 @@ Step helpers: `src/features/storefront/checkout/lib/checkout-step-validation.ts`
 
 On `/checkout/success`, `CheckoutConektaPay` calls `createConektaCheckout` and shows **Pagar ahora** → Conekta hosted checkout. See [conekta-sandbox.md](./conekta-sandbox.md).
 
+## Transactional email (v1)
+
+After `createCheckoutOrder` commits, the server sends `order_created` via `safeSendTransactionalEmail` (console/Resend). Failures do not roll back the order. See [emails.md](./emails.md).
+
 ## Payment Status UX (v1)
 
 - `getPaymentStatusUi` drives banner copy, badge, and when to poll.

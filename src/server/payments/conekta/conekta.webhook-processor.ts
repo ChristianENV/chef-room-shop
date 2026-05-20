@@ -15,6 +15,8 @@ import {
   type ConektaWebhookPayload,
 } from './conekta.client'
 import { sanitizeConektaPayload } from './conekta.sanitize'
+import { buildOrderEmailLinks } from '@/src/server/email/email.links'
+import { safeSendTransactionalEmailOnce } from '@/src/server/email/email.service'
 
 function extractConektaOrderId(payload: ConektaWebhookPayload): string | null {
   const object = payload.data?.object
@@ -200,6 +202,82 @@ export async function processConektaWebhook(
     eventType,
     paymentStatus,
   })
+
+  void sendPaymentStatusEmails(prisma, payment, paymentStatus)
+}
+
+function sendPaymentStatusEmails(
+  prisma: PrismaClient,
+  payment: {
+    id: string
+    orderId: string
+    amountCents: number
+    order: {
+      orderNumber: string
+      customerEmail: string
+      currency: string
+      userId: string | null
+      guestSessionId: string | null
+    }
+  },
+  paymentStatus: PaymentStatus,
+): void {
+  const { order } = payment
+  const basePayload = {
+    orderNumber: order.orderNumber,
+    totalCents: payment.amountCents,
+    currency: order.currency,
+    links: buildOrderEmailLinks(order.orderNumber),
+  }
+
+  if (paymentStatus === PaymentStatus.PAID) {
+    void safeSendTransactionalEmailOnce({
+      to: order.customerEmail,
+      templateKey: 'payment_confirmed',
+      subject: '',
+      orderId: payment.orderId,
+      userId: order.userId,
+      guestSessionId: order.guestSessionId,
+      payload: {
+        ...basePayload,
+        paymentStatus: 'PAID',
+        orderStatus: 'PAID',
+      },
+    })
+    return
+  }
+
+  if (paymentStatus === PaymentStatus.FAILED) {
+    void safeSendTransactionalEmailOnce({
+      to: order.customerEmail,
+      templateKey: 'payment_failed',
+      subject: '',
+      orderId: payment.orderId,
+      userId: order.userId,
+      guestSessionId: order.guestSessionId,
+      payload: {
+        ...basePayload,
+        paymentStatus: 'FAILED',
+        orderStatus: 'PAYMENT_FAILED',
+      },
+    })
+    return
+  }
+
+  if (paymentStatus === PaymentStatus.CANCELLED) {
+    void safeSendTransactionalEmailOnce({
+      to: order.customerEmail,
+      templateKey: 'payment_expired',
+      subject: '',
+      orderId: payment.orderId,
+      userId: order.userId,
+      guestSessionId: order.guestSessionId,
+      payload: {
+        ...basePayload,
+        paymentStatus: 'CANCELLED',
+      },
+    })
+  }
 }
 
 async function markWebhookProcessed(

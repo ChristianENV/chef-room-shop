@@ -30,6 +30,8 @@ import {
   createCheckoutOrderInputSchema,
   toPaymentMethod,
 } from './checkout.validation'
+import { buildOrderEmailLinks } from '@/src/server/email/email.links'
+import { safeSendTransactionalEmail } from '@/src/server/email/email.service'
 
 function parseConfigSnapshot(value: unknown): CartConfigSnapshotJson {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -252,7 +254,27 @@ export async function createCheckoutOrder(
     return { order, payments: [payment] }
   })
 
-  return mapOrderToCheckoutPayload(result.order, result.payments)
+  const { order, payments } = result
+
+  void safeSendTransactionalEmail({
+    to: parsed.email,
+    templateKey: 'order_created',
+    subject: '',
+    orderId: order.id,
+    userId: owner.userId,
+    guestSessionId: owner.guestSessionId,
+    payload: {
+      orderNumber: order.orderNumber,
+      totalCents: order.totalCents,
+      currency: order.currency,
+      paymentStatus: payments[0]?.status ?? PaymentStatus.PENDING,
+      orderStatus: order.status,
+      paymentMethod: payments[0]?.method ?? paymentMethod,
+      links: buildOrderEmailLinks(order.orderNumber),
+    },
+  })
+
+  return mapOrderToCheckoutPayload(order, payments)
 }
 
 /**

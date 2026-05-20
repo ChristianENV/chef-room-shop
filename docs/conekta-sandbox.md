@@ -139,6 +139,18 @@ curl -X POST http://localhost:3000/api/webhooks/conekta \
 
 Replace `ord_REPLACE` with the `Payment.providerOrderId` from Prisma.
 
+## Transactional emails
+
+After webhook processing, the server may send (idempotent):
+
+| Event | Email template |
+|-------|----------------|
+| Paid | `payment_confirmed` |
+| Failed | `payment_failed` |
+| Expired/cancelled | `payment_expired` |
+
+See [emails.md](./emails.md). Email failures do not block webhook `200` responses.
+
 ## Frontend
 
 - `useOrderByNumberQuery` with `pollWhilePending`
