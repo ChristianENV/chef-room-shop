@@ -8,20 +8,19 @@ import {
 } from '../graphql/catalog.queries'
 import type {
   CatalogFilters,
-  CatalogProduct,
   ColorsQueryData,
-  GetCatalogProductsInput,
   ProductTypesQueryData,
   ProductsQueryData,
   SizesQueryData,
 } from '../types'
+import type { ProductsQueryParams } from './catalog-query.types'
 
 /**
  * Fetches active products from the catalog BFF.
  */
 export async function getCatalogProducts(
-  input: GetCatalogProductsInput = {},
-): Promise<{ items: CatalogProduct[]; total: number }> {
+  input: ProductsQueryParams = {},
+): Promise<ProductsQueryData['products']> {
   const data = await fetchGraphQL<ProductsQueryData, Record<string, unknown>>({
     query: PRODUCTS_QUERY,
     variables: {

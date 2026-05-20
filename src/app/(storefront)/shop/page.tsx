@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { routes } from '@/src/config/routes'
 import {
@@ -12,13 +12,18 @@ import {
   CatalogProductCard,
   CatalogSkeleton,
   CatalogEmptyState,
+  toCatalogFilterOptions,
   type FilterState,
   type SortOption,
 } from '@/src/features/storefront/catalog'
-import { getCatalogProducts } from '@/src/features/storefront/catalog/api/catalog.api'
+import { getCatalogUserErrorMessage } from '@/src/features/storefront/catalog/api/catalog-errors'
+import {
+  applyClientFilters,
+  buildProductsQueryParams,
+} from '@/src/features/storefront/catalog/api/catalog-query.utils'
+import { useCatalogFiltersQuery } from '@/src/features/storefront/catalog/api/use-catalog-filters-query'
+import { useProductsQuery } from '@/src/features/storefront/catalog/api/use-products-query'
 import { mapCatalogProductToCard } from '@/src/features/storefront/catalog/mappers/catalog-ui.mapper'
-import type { Product } from '@/lib/types'
-import { GraphQLRequestError } from '@/src/lib/graphql/errors'
 
 const DEFAULT_FILTERS: FilterState = {
   categories: [],
@@ -32,37 +37,44 @@ const DEFAULT_FILTERS: FilterState = {
 
 export default function ShopPage() {
   const router = useRouter()
-
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
   const [sortBy, setSortBy] = useState<SortOption>('popular')
-  const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
-  const loadProducts = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const { items } = await getCatalogProducts({ limit: 100 })
-      setProducts(items.map(mapCatalogProductToCard))
-    } catch (err) {
-      const message =
-        err instanceof GraphQLRequestError
-          ? err.message
-          : 'No se pudo cargar el catálogo'
-      setError(message)
-      setProducts([])
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+  const productsQueryParams = useMemo(
+    () => buildProductsQueryParams(filters, sortBy),
+    [filters, sortBy],
+  )
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      void loadProducts()
-    }, 0)
-    return () => clearTimeout(timer)
-  }, [loadProducts])
+  const {
+    data: productsData,
+    isLoading: isProductsLoading,
+    isError: isProductsError,
+    error: productsError,
+    refetch: refetchProducts,
+  } = useProductsQuery(productsQueryParams)
+
+  const {
+    data: filtersData,
+    isLoading: isFiltersLoading,
+  } = useCatalogFiltersQuery()
+
+  const filterOptions = useMemo(
+    () => (filtersData ? toCatalogFilterOptions(filtersData) : undefined),
+    [filtersData],
+  )
+
+  const products = useMemo(() => {
+    const items = productsData?.items.map(mapCatalogProductToCard) ?? []
+    return applyClientFilters(items, filters, sortBy)
+  }, [productsData, filters, sortBy])
+
+  const isLoading = isProductsLoading || isFiltersLoading
+  const errorMessage = isProductsError
+    ? getCatalogUserErrorMessage(
+        productsError,
+        'No se pudo cargar el catálogo. Intenta de nuevo.',
+      )
+    : null
 
   const activeFilterCount = useMemo(() => {
     let count = 0
@@ -76,59 +88,15 @@ export default function ShopPage() {
     return count
   }, [filters])
 
-  const filteredProducts = useMemo(() => {
-    let result = [...products]
-
-    if (filters.categories.length > 0) {
-      result = result.filter((p) => filters.categories.includes(p.category))
-    }
-
-    if (filters.sizes.length > 0) {
-      result = result.filter((p) =>
-        p.sizes.some((size) => filters.sizes.includes(size)),
-      )
-    }
-
-    if (filters.colors.length > 0) {
-      result = result.filter((p) =>
-        p.colors.some((color) => filters.colors.includes(color.id)),
-      )
-    }
-
-    result = result.filter(
-      (p) => p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1],
-    )
-
-    if (filters.customizable === true) {
-      result = result.filter((p) => p.customizable)
-    }
-
-    switch (sortBy) {
-      case 'newest':
-        result = [...result].reverse()
-        break
-      case 'price-asc':
-        result = [...result].sort((a, b) => a.price - b.price)
-        break
-      case 'price-desc':
-        result = [...result].sort((a, b) => b.price - a.price)
-        break
-      case 'rating':
-        result = [...result].sort((a, b) => b.rating - a.rating)
-        break
-      case 'popular':
-      default:
-        result = [...result].sort(
-          (a, b) => b.reviewCount - a.reviewCount || a.name.localeCompare(b.name),
-        )
-        break
-    }
-
-    return result
-  }, [filters, sortBy, products])
-
   const handleClearFilters = () => {
     setFilters(DEFAULT_FILTERS)
+  }
+
+  const filterProps = {
+    filters,
+    onFiltersChange: setFilters,
+    filterOptions,
+    isLoadingOptions: isFiltersLoading,
   }
 
   return (
@@ -139,15 +107,14 @@ export default function ShopPage() {
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
             <MobileFiltersSheet
-              filters={filters}
-              onFiltersChange={setFilters}
+              {...filterProps}
               activeFilterCount={activeFilterCount}
             />
 
             <p className="font-serif text-sm text-muted-foreground">
               {isLoading
                 ? 'Cargando productos…'
-                : `${filteredProducts.length} producto${filteredProducts.length !== 1 ? 's' : ''}`}
+                : `${products.length} producto${products.length !== 1 ? 's' : ''}`}
             </p>
           </div>
 
@@ -156,31 +123,35 @@ export default function ShopPage() {
 
         {activeFilterCount > 0 && (
           <div className="mb-6">
-            <ActiveFilters filters={filters} onFiltersChange={setFilters} />
+            <ActiveFilters
+              filters={filters}
+              onFiltersChange={setFilters}
+              filterOptions={filterOptions}
+            />
           </div>
         )}
 
         <div className="flex gap-8">
-          <CatalogFilters filters={filters} onFiltersChange={setFilters} />
+          <CatalogFilters {...filterProps} />
 
           <div className="flex-1">
             {isLoading ? (
               <CatalogSkeleton count={8} />
-            ) : error ? (
+            ) : errorMessage ? (
               <CatalogEmptyState
                 variant="error"
                 onRetry={() => {
-                  void loadProducts()
+                  void refetchProducts()
                 }}
               />
-            ) : filteredProducts.length === 0 ? (
+            ) : products.length === 0 ? (
               <CatalogEmptyState
                 variant="no-results"
                 onClearFilters={handleClearFilters}
               />
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-                {filteredProducts.map((product) => (
+                {products.map((product) => (
                   <CatalogProductCard
                     key={product.id}
                     product={product}

@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState, useEffect, useCallback } from 'react'
+import { use, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   ProductGallery,
@@ -21,13 +21,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { getCatalogProducts } from '@/src/features/storefront/catalog/api/catalog.api'
+import { useProductsQuery } from '@/src/features/storefront/catalog/api/use-products-query'
 import { mapCatalogProductToCard } from '@/src/features/storefront/catalog/mappers/catalog-ui.mapper'
-import { getProductBySlug } from '@/src/features/storefront/products/api/products.api'
+import { useProductQuery } from '@/src/features/storefront/products/api/use-product-query'
 import { mapProductDetailToUi } from '@/src/features/storefront/products/mappers/product-ui.mapper'
-import type { Product } from '@/lib/types'
 import { routes, shopCategoryUrl } from '@/src/config/routes'
-import { GraphQLRequestError } from '@/src/lib/graphql/errors'
 
 const categoryNames: Record<string, string> = {
   filipinas: 'Filipinas',
@@ -43,66 +41,45 @@ interface ProductPageProps {
 export default function ProductPage({ params }: ProductPageProps) {
   const resolvedParams = use(params)
   const router = useRouter()
-  const [product, setProduct] = useState<Product | null>(null)
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const slug = resolvedParams.slug
 
-  const loadProduct = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const [detail, catalog] = await Promise.all([
-        getProductBySlug(resolvedParams.slug),
-        getCatalogProducts({ limit: 100 }),
-      ])
+  const {
+    data: detail,
+    isLoading: isProductLoading,
+    isError: isProductError,
+    refetch: refetchProduct,
+  } = useProductQuery(slug)
 
-      if (!detail) {
-        setProduct(null)
-        setRelatedProducts([])
-        return
-      }
+  const { data: catalogData } = useProductsQuery({ limit: 100 })
 
-      setProduct(mapProductDetailToUi(detail))
-      setRelatedProducts(
-        catalog.items
-          .filter((item) => item.slug !== resolvedParams.slug)
-          .map(mapCatalogProductToCard),
-      )
-    } catch (err) {
-      const message =
-        err instanceof GraphQLRequestError
-          ? err.message
-          : 'No se pudo cargar el producto'
-      setError(message)
-      setProduct(null)
-      setRelatedProducts([])
-    } finally {
-      setIsLoading(false)
-    }
-  }, [resolvedParams.slug])
+  const product = useMemo(
+    () => (detail ? mapProductDetailToUi(detail) : null),
+    [detail],
+  )
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      void loadProduct()
-    }, 0)
-    return () => clearTimeout(timer)
-  }, [loadProduct])
-
-  const handleRetry = () => {
-    void loadProduct()
-  }
+  const relatedProducts = useMemo(() => {
+    if (!catalogData) return []
+    return catalogData.items
+      .filter((item) => item.slug !== slug)
+      .map(mapCatalogProductToCard)
+  }, [catalogData, slug])
 
   const handleCustomize = () => {
     router.push(routes.customize)
   }
 
-  if (isLoading) {
+  if (isProductLoading) {
     return <ProductPageSkeleton />
   }
 
-  if (error) {
-    return <ProductError onRetry={handleRetry} />
+  if (isProductError) {
+    return (
+      <ProductError
+        onRetry={() => {
+          void refetchProduct()
+        }}
+      />
+    )
   }
 
   if (!product) {
@@ -160,10 +137,7 @@ export default function ProductPage({ params }: ProductPageProps) {
             }}
           />
 
-          <ProductInfo
-            product={product}
-            onCustomize={handleCustomize}
-          />
+          <ProductInfo product={product} onCustomize={handleCustomize} />
         </div>
 
         {product.customizable && (

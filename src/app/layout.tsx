@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Outfit, Roboto } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
-import { ThemeProvider } from '@/components/shared/theme-provider'
+import { AppProviders } from '@/src/providers/app-providers'
 import './globals.css'
 
 const outfit = Outfit({
@@ -60,9 +60,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="font-serif antialiased" suppressHydrationWarning>
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        <AppProviders>{children}</AppProviders>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

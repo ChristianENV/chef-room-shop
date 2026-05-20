@@ -2,28 +2,61 @@
 
 ## Data flow
 
-1. Client pages call `getCatalogProducts` / `getProductBySlug` in `src/features/storefront/catalog/api` and `products/api`.
-2. API modules use `fetchGraphQL` → `POST /api/graphql`.
+1. Client pages use TanStack Query hooks → `catalog.api` / `products.api`.
+2. API modules call `fetchGraphQL` → `POST /api/graphql`.
 3. Responses map to legacy `Product` UI type via `catalog-ui.mapper.ts` / `product-ui.mapper.ts`.
 
-## Pages connected
+## TanStack Query
 
-| Route | Source |
-|-------|--------|
-| `/shop` | `getCatalogProducts` + client-side filters |
-| `/products/[slug]` | `getProductBySlug` + related from catalog list |
+**Provider:** `src/providers/app-providers.tsx` wraps `ThemeProvider` + `QueryProvider` in root `layout.tsx`.
 
-Both are **client components** (`'use client'`) with loading / error / empty states.
+Defaults: `staleTime` 60s, `retry` 1, `refetchOnWindowFocus` false. Devtools in development only.
+
+### Query keys
+
+- `catalogQueryKeys` — `src/features/storefront/catalog/api/catalog.query-keys.ts`
+- `productQueryKeys` — `src/features/storefront/products/api/products.query-keys.ts`
+
+### Hooks
+
+| Hook | Purpose |
+|------|---------|
+| `useProductsQuery(params)` | Product list with BFF filters/sort |
+| `useCatalogFiltersQuery()` | `productTypes`, `colors`, `sizes` for sidebar |
+| `useProductQuery(slug)` | PDP by slug |
+
+## `/shop` filtering
+
+1. **Reference data** — `useCatalogFiltersQuery()` populates filter sidebar (Spanish labels from BFF `name`).
+2. **Products** — `useProductsQuery(buildProductsQueryParams(filters, sort))` calls BFF with:
+   - Single `productTypeSlug` when one category selected (`chef-jacket`, `apron`, `pants`)
+   - Single `colorSlug` / `sizeSlug` when one selected
+   - `isCustomizable` when checkbox active
+3. **Client-only** — Multi-select category/color/size, price range, popular/rating sort via `applyClientFilters`.
+
+Filter state stores **BFF slugs** in `categories`, `colors`, `sizes`.
+
+## Pages
+
+| Route | Data |
+|-------|------|
+| `/shop` | TanStack: filters + products |
+| `/products/[slug]` | TanStack: `useProductQuery` + related from `useProductsQuery` |
+
+Both are client components with loading / error / empty states. User-facing errors are generic (no GraphQL internals).
 
 ## Still on mocks
 
 - `lib/mock-data.ts` — cart, checkout, account, admin, landing featured, demos
-- `CustomizationSummaryCard` — static areas/options (rules from BFF not wired to card yet)
+- `CustomizationSummaryCard` — static areas/options
+- Production time / material filters — UI only (no BFF)
 
 ## Pendientes
 
-- TanStack Query hooks + `QueryProvider`
-- Server Components + `generateMetadata` for PDP SEO
-- Wire filter sidebar to `getCatalogFilters()` reference data
-- Real images in cards/gallery when Cloudinary URLs exist
-- `CustomizationSummaryCard` from `customizationRules`
+- Pagination real (cursor/offset UX)
+- URL query params for filters
+- Sorting avanzado server-side
+- GraphQL codegen
+- `generateMetadata` for PDP (server wrapper)
+- Wire `CustomizationSummaryCard` to `customizationRules`
+- Real images in cards/gallery
