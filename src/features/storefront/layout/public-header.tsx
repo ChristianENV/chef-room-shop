@@ -17,7 +17,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ChefRoomLogo } from '@/components/brand/chef-room-logo'
@@ -26,7 +25,6 @@ import { routes } from '@/src/config/routes'
 import { CartPopover } from '@/src/features/storefront/cart/components/cart-popover'
 import { MOCK_CART_PREVIEW } from '@/src/features/storefront/cart/mocks/cart.mock'
 import {
-  accountNav,
   authNav,
   ctaNav,
   isNavGroup,
@@ -64,15 +62,20 @@ function isLinkActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
+function getProfileInitials(name?: string): string {
+  if (!name?.trim()) return 'CR'
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) {
+    return `${parts[0]![0]}${parts[1]![0]}`.toUpperCase()
+  }
+  return name.slice(0, 2).toUpperCase()
+}
+
 function AccountMenu({
   isLoggedIn = false,
-  userName,
-  isAdmin = false,
   onSignOut,
 }: {
   isLoggedIn?: boolean
-  userName?: string
-  isAdmin?: boolean
   onSignOut?: () => void | Promise<void>
 }) {
   return (
@@ -86,32 +89,9 @@ function AccountMenu({
       <DropdownMenuContent align="end" className="w-48">
         {isLoggedIn ? (
           <>
-            <div className="px-3 py-2">
-              <p className="font-sans text-sm font-medium">{userName}</p>
-            </div>
-            <DropdownMenuSeparator />
-            {isAdmin && (
-              <DropdownMenuItem asChild>
-                <Link href={routes.adminDashboard}>Dashboard</Link>
-              </DropdownMenuItem>
-            )}
-            {!isAdmin && (
-              <>
             <DropdownMenuItem asChild>
-              <Link href={accountNav.profile.href}>{accountNav.profile.label}</Link>
+              <Link href={routes.account}>Perfil</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={accountNav.orders.href}>{accountNav.orders.label}</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={accountNav.designs.href}>{accountNav.designs.label}</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={accountNav.addresses.href}>{accountNav.addresses.label}</Link>
-            </DropdownMenuItem>
-              </>
-            )}
-            <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-destructive"
               onClick={() => {
@@ -133,6 +113,46 @@ function AccountMenu({
         )}
       </DropdownMenuContent>
     </DropdownMenu>
+  )
+}
+
+function MobileDrawerAccount({
+  userName,
+  onNavigate,
+  onSignOut,
+}: {
+  userName?: string
+  onNavigate: () => void
+  onSignOut?: () => void | Promise<void>
+}) {
+  const displayName = userName ?? 'Mi cuenta'
+
+  return (
+    <div className="mt-2 border-t border-border px-1 pt-4">
+      <Link
+        href={routes.account}
+        onClick={onNavigate}
+        className="flex items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-accent"
+      >
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+          {getProfileInitials(userName)}
+        </span>
+        <span className="font-sans text-sm font-medium text-foreground">{displayName}</span>
+      </Link>
+      <button
+        type="button"
+        onClick={() => {
+          void onSignOut?.()
+          onNavigate()
+        }}
+        className={cn(
+          mobileLinkClassName(false),
+          'w-full text-left text-destructive hover:bg-destructive/10'
+        )}
+      >
+        Cerrar sesión
+      </button>
+    </div>
   )
 }
 
@@ -160,7 +180,6 @@ export function PublicHeader({
   cartItemCount,
   isLoggedIn = false,
   userName,
-  isAdmin = false,
   onSignOut,
 }: PublicHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -219,12 +238,7 @@ export function PublicHeader({
 
           <div className="hidden items-center gap-1 lg:flex">
             <ThemeToggle />
-            <AccountMenu
-              isLoggedIn={isLoggedIn}
-              userName={userName}
-              isAdmin={isAdmin}
-              onSignOut={onSignOut}
-            />
+            <AccountMenu isLoggedIn={isLoggedIn} onSignOut={onSignOut} />
 
             <CartPopover cart={cartPreview} />
 
@@ -239,6 +253,10 @@ export function PublicHeader({
           </div>
 
           <div className="flex items-center gap-1 lg:hidden">
+            {isLoggedIn ? (
+              <AccountMenu isLoggedIn={isLoggedIn} onSignOut={onSignOut} />
+            ) : null}
+
             <Button variant="ghost" size="icon" className="relative h-9 w-9" asChild>
               <Link href={routes.cart}>
                 <ShoppingBag className="h-4 w-4" />
@@ -277,6 +295,14 @@ export function PublicHeader({
                     )
                   })}
 
+                  {isLoggedIn ? (
+                    <MobileDrawerAccount
+                      userName={userName}
+                      onNavigate={closeMobileMenu}
+                      onSignOut={onSignOut}
+                    />
+                  ) : null}
+
                   <div className="mt-2 border-t border-border pt-4">
                     <ThemeToggle showLabel variant="outline" className="border-border" />
                   </div>
@@ -292,18 +318,20 @@ export function PublicHeader({
                     </Link>
                   </Button>
 
-                  <div className="mt-4 flex gap-2">
-                    <Button variant="outline" className="w-full flex-1 font-sans text-sm" asChild>
-                      <Link href={authNav.login.href} onClick={closeMobileMenu}>
-                        {authNav.login.label}
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" className="w-full flex-1 font-sans text-sm" asChild>
-                      <Link href={authNav.register.href} onClick={closeMobileMenu}>
-                        {authNav.register.label}
-                      </Link>
-                    </Button>
-                  </div>
+                  {!isLoggedIn ? (
+                    <div className="mt-4 flex gap-2">
+                      <Button variant="outline" className="w-full flex-1 font-sans text-sm" asChild>
+                        <Link href={authNav.login.href} onClick={closeMobileMenu}>
+                          {authNav.login.label}
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" className="w-full flex-1 font-sans text-sm" asChild>
+                        <Link href={authNav.register.href} onClick={closeMobileMenu}>
+                          {authNav.register.label}
+                        </Link>
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
               </SheetContent>
             </Sheet>

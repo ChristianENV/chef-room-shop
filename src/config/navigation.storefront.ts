@@ -63,6 +63,14 @@ export const accountNav = {
   addresses: { label: 'Direcciones', href: `${routes.account}/addresses` },
 } as const
 
+/** Account links for mobile drawer and sidebars */
+export const accountNavLinks: NavLink[] = [
+  accountNav.profile,
+  accountNav.orders,
+  accountNav.designs,
+  accountNav.addresses,
+]
+
 /** Footer product column — reuses shop categories */
 export const footerProductLinks: NavLink[] = [
   ...shopNavChildren.filter((link) => link.href !== routes.shop),
