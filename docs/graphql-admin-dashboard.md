@@ -116,7 +116,30 @@ After `prisma db seed` (demo commerce):
 
 **Customer (must fail):** `cliente.demo+1@chefroom.test` / `12345678`
 
-## Frontend hooks (UI not wired yet)
+## UI conectada (`/admin/dashboard`)
+
+La página `src/app/(admin)/admin/(protected)/dashboard/page.tsx` usa `AdminDashboardContent` con:
+
+| Sección | Hook |
+|---------|------|
+| KPIs (6 tarjetas) | `useAdminDashboardMetricsQuery` |
+| Órdenes recientes | `useAdminRecentOrdersQuery(8)` |
+| Cola de producción | `useAdminProductionQueueQuery(8)` |
+| Diseños recientes | `useAdminRecentDesignsQuery(8)` |
+
+Mapeo UI: `src/features/admin/dashboard/mappers/admin-dashboard-ui.mapper.ts`
+
+**Sigue con placeholders (sin BFF):** gráficas (ventas, estados, top productos, colores).  
+**No conectado aún:** `adminRecentPayments`, `adminTopProducts` (sin sección en layout actual).
+
+### Cómo probar
+
+1. `npm run dev`
+2. Login admin: `cnoriega+2@gmail.com` / `12345678`
+3. Ir a `/admin/dashboard` — métricas y listas del seed demo
+4. Login cliente: `cliente.demo+1@chefroom.test` / `12345678` → `/admin/dashboard` redirige (layout `requireAdminSession`)
+
+## Frontend hooks
 
 - `useAdminDashboardMetricsQuery`
 - `useAdminRecentOrdersQuery`

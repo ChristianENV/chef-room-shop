@@ -58,6 +58,11 @@ export function ProductionQueue({ items, className }: ProductionQueueProps) {
         </Badge>
       </CardHeader>
       <CardContent className="space-y-3">
+        {items.length === 0 ? (
+          <p className="py-8 text-center font-serif text-sm text-muted-foreground">
+            No hay órdenes en producción por ahora.
+          </p>
+        ) : null}
         {items.map((item) => {
           const Icon = productTypeIcons[item.productType]
           const status = statusConfig[item.status]

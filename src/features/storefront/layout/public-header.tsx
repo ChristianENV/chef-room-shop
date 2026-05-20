@@ -71,13 +71,22 @@ function getProfileInitials(name?: string): string {
   return name.slice(0, 2).toUpperCase()
 }
 
+function getProfileDestination(isAdmin: boolean) {
+  return isAdmin ? routes.adminDashboard : routes.account
+}
+
 function AccountMenu({
   isLoggedIn = false,
+  isAdmin = false,
   onSignOut,
 }: {
   isLoggedIn?: boolean
+  isAdmin?: boolean
   onSignOut?: () => void | Promise<void>
 }) {
+  const profileHref = getProfileDestination(isAdmin)
+  const profileLabel = isAdmin ? 'Dashboard' : 'Perfil'
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -90,7 +99,7 @@ function AccountMenu({
         {isLoggedIn ? (
           <>
             <DropdownMenuItem asChild>
-              <Link href={routes.account}>Perfil</Link>
+              <Link href={profileHref}>{profileLabel}</Link>
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive"
@@ -118,19 +127,22 @@ function AccountMenu({
 
 function MobileDrawerAccount({
   userName,
+  isAdmin = false,
   onNavigate,
   onSignOut,
 }: {
   userName?: string
+  isAdmin?: boolean
   onNavigate: () => void
   onSignOut?: () => void | Promise<void>
 }) {
   const displayName = userName ?? 'Mi cuenta'
+  const profileHref = getProfileDestination(isAdmin)
 
   return (
     <div className="mt-2 border-t border-border px-1 pt-4">
       <Link
-        href={routes.account}
+        href={profileHref}
         onClick={onNavigate}
         className="flex items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-accent"
       >
@@ -180,6 +192,7 @@ export function PublicHeader({
   cartItemCount,
   isLoggedIn = false,
   userName,
+  isAdmin = false,
   onSignOut,
 }: PublicHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -238,7 +251,11 @@ export function PublicHeader({
 
           <div className="hidden items-center gap-1 lg:flex">
             <ThemeToggle />
-            <AccountMenu isLoggedIn={isLoggedIn} onSignOut={onSignOut} />
+            <AccountMenu
+              isLoggedIn={isLoggedIn}
+              isAdmin={isAdmin}
+              onSignOut={onSignOut}
+            />
 
             <CartPopover cart={cartPreview} />
 
@@ -254,7 +271,11 @@ export function PublicHeader({
 
           <div className="flex items-center gap-1 lg:hidden">
             {isLoggedIn ? (
-              <AccountMenu isLoggedIn={isLoggedIn} onSignOut={onSignOut} />
+              <AccountMenu
+              isLoggedIn={isLoggedIn}
+              isAdmin={isAdmin}
+              onSignOut={onSignOut}
+            />
             ) : null}
 
             <Button variant="ghost" size="icon" className="relative h-9 w-9" asChild>
@@ -298,6 +319,7 @@ export function PublicHeader({
                   {isLoggedIn ? (
                     <MobileDrawerAccount
                       userName={userName}
+                      isAdmin={isAdmin}
                       onNavigate={closeMobileMenu}
                       onSignOut={onSignOut}
                     />

@@ -59,6 +59,11 @@ export function RecentDesigns({ designs, className }: RecentDesignsProps) {
         </Button>
       </CardHeader>
       <CardContent>
+        {designs.length === 0 ? (
+          <p className="py-8 text-center font-serif text-sm text-muted-foreground">
+            No hay diseños recientes por ahora.
+          </p>
+        ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {designs.map((design) => {
             const status = statusConfig[design.status]
@@ -108,6 +113,7 @@ export function RecentDesigns({ designs, className }: RecentDesignsProps) {
             )
           })}
         </div>
+        )}
       </CardContent>
     </Card>
   )
