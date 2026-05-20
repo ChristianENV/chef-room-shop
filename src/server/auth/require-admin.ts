@@ -51,6 +51,7 @@ export async function requireAdminSession(): Promise<CurrentUser> {
     return {
       id: 'dev-bypass',
       email: 'dev@chefroom.local',
+      emailVerified: true,
       name: 'Dev Admin',
       firstName: 'Dev',
       lastName: 'Admin',

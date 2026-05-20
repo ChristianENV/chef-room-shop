@@ -39,6 +39,39 @@ function cta(href: string, label: string): string {
   </p>`
 }
 
+function resolveTrackingCta(payload: TransactionalEmailPayload): {
+  href: string
+  label: string
+  trackingNote: string
+} {
+  const claimUrl = payload.claimUrl ?? payload.links?.claimUrl
+  const accountOrderUrl = payload.accountOrderUrl ?? payload.links?.accountOrderUrl
+  const successUrl = payload.links?.checkoutSuccessUrl ?? '#'
+
+  if (claimUrl) {
+    return {
+      href: claimUrl,
+      label: 'Ver seguimiento de mi pedido',
+      trackingNote:
+        'Crea tu cuenta para consultar el estado y seguimiento de tu pedido.',
+    }
+  }
+
+  if (accountOrderUrl) {
+    return {
+      href: accountOrderUrl,
+      label: 'Ver mi pedido',
+      trackingNote: 'Consulta el estado de tu pedido desde tu cuenta.',
+    }
+  }
+
+  return {
+    href: successUrl,
+    label: 'Ver pedido',
+    trackingNote: '',
+  }
+}
+
 /**
  * Builds subject + HTML + plain text for a transactional template.
  */
@@ -49,19 +82,21 @@ export function renderTransactionalTemplate(
   const orderNumber = payload.orderNumber ?? '—'
   const total = formatMoney(payload.totalCents, payload.currency)
   const successUrl = payload.links?.checkoutSuccessUrl ?? '#'
-  const accountUrl = payload.links?.accountUrl ?? '#'
   const shopUrl = payload.links?.shopUrl ?? '#'
+  const tracking = resolveTrackingCta(payload)
 
   switch (templateKey) {
     case 'order_created': {
       const subject = `Recibimos tu pedido ${orderNumber}`
-      const text = `Hola,\n\nRecibimos tu pedido ${orderNumber}.\nTotal: ${total}\nEstado: pendiente de pago.\n\nCompleta tu pago aquí: ${successUrl}\n\nGracias por comprar en Chef Room.`
+      const text = `Hola,\n\nRecibimos tu pedido ${orderNumber}.\nTotal: ${total}\nEstado: pendiente de pago.\n\nCompleta tu pago aquí: ${successUrl}\n\n${tracking.trackingNote}\n${tracking.href}\n\nGracias por comprar en Chef Room.`
       const html = layoutHtml(`
         <p>Hola,</p>
         <p>Recibimos tu pedido <strong>${orderNumber}</strong>.</p>
         <p><strong>Total:</strong> ${total}<br><strong>Estado:</strong> pendiente de pago</p>
         <p>Para iniciar producción, completa el pago en el siguiente enlace.</p>
         ${cta(successUrl, 'Completar pago')}
+        ${tracking.trackingNote ? `<p style="font-size:14px;color:#6b7280;">${tracking.trackingNote}</p>` : ''}
+        ${cta(tracking.href, tracking.label)}
         <p style="font-size:14px;color:#6b7280;">Si ya pagaste, ignora este mensaje; actualizaremos tu pedido en breve.</p>
       `)
       return { subject, html, text }
@@ -69,13 +104,14 @@ export function renderTransactionalTemplate(
 
     case 'payment_confirmed': {
       const subject = `Pago confirmado para tu pedido ${orderNumber}`
-      const text = `Hola,\n\nConfirmamos el pago de tu pedido ${orderNumber}.\nTotal: ${total}\n\nTu pedido avanzará a producción. Revisa tu cuenta: ${accountUrl}\n\nChef Room`
+      const text = `Hola,\n\nConfirmamos el pago de tu pedido ${orderNumber}.\nTotal: ${total}\n\n${tracking.trackingNote}\n${tracking.href}\n\nChef Room`
       const html = layoutHtml(`
         <p>Hola,</p>
         <p>Confirmamos el pago de tu pedido <strong>${orderNumber}</strong>.</p>
         <p><strong>Total:</strong> ${total}</p>
         <p>Tu pedido avanzará a producción. Te avisaremos cuando haya novedades.</p>
-        ${cta(accountUrl, 'Ver mi cuenta')}
+        ${tracking.trackingNote ? `<p style="font-size:14px;color:#6b7280;">${tracking.trackingNote}</p>` : ''}
+        ${cta(tracking.href, tracking.label)}
         ${cta(shopUrl, 'Seguir comprando')}
       `)
       return { subject, html, text }
@@ -83,24 +119,41 @@ export function renderTransactionalTemplate(
 
     case 'payment_failed': {
       const subject = `No pudimos confirmar el pago de tu pedido ${orderNumber}`
-      const text = `Hola,\n\nNo pudimos confirmar el pago del pedido ${orderNumber}.\n\nPuedes intentar de nuevo aquí: ${successUrl}\n\nChef Room`
+      const text = `Hola,\n\nNo pudimos confirmar el pago del pedido ${orderNumber}.\n\nPuedes intentar de nuevo aquí: ${successUrl}\n\n${tracking.trackingNote}\n${tracking.href}\n\nChef Room`
       const html = layoutHtml(`
         <p>Hola,</p>
         <p>No pudimos confirmar el pago de tu pedido <strong>${orderNumber}</strong>.</p>
         <p>Puedes intentar nuevamente desde el enlace de tu pedido.</p>
         ${cta(successUrl, 'Reintentar pago')}
+        ${tracking.trackingNote ? `<p style="font-size:14px;color:#6b7280;">${tracking.trackingNote}</p>` : ''}
+        ${cta(tracking.href, tracking.label)}
       `)
       return { subject, html, text }
     }
 
     case 'payment_expired': {
       const subject = `Tu referencia de pago expiró para el pedido ${orderNumber}`
-      const text = `Hola,\n\nLa referencia o sesión de pago del pedido ${orderNumber} expiró.\n\nGenera un nuevo intento aquí: ${successUrl}\n\nChef Room`
+      const text = `Hola,\n\nLa referencia o sesión de pago del pedido ${orderNumber} expiró.\n\nGenera un nuevo intento aquí: ${successUrl}\n\n${tracking.trackingNote}\n${tracking.href}\n\nChef Room`
       const html = layoutHtml(`
         <p>Hola,</p>
         <p>La referencia o sesión de pago de tu pedido <strong>${orderNumber}</strong> expiró.</p>
         <p>Genera un nuevo intento de pago cuando estés listo.</p>
         ${cta(successUrl, 'Generar nuevo pago')}
+        ${tracking.trackingNote ? `<p style="font-size:14px;color:#6b7280;">${tracking.trackingNote}</p>` : ''}
+        ${cta(tracking.href, tracking.label)}
+      `)
+      return { subject, html, text }
+    }
+
+    case 'email_verification': {
+      const verifyUrl = payload.verificationUrl ?? '#'
+      const subject = 'Verifica tu correo en Chef Room'
+      const text = `Hola,\n\nNecesitamos confirmar tu correo para proteger la información de tus pedidos.\n\nVerifica aquí: ${verifyUrl}\n\nEste enlace expira en un tiempo limitado por seguridad.\n\nChef Room`
+      const html = layoutHtml(`
+        <p>Hola,</p>
+        <p>Necesitamos confirmar tu correo para proteger la información de tus pedidos.</p>
+        ${cta(verifyUrl, 'Verificar correo')}
+        <p style="font-size:14px;color:#6b7280;">Este enlace expira en un tiempo limitado por seguridad. Si no solicitaste esta verificación, puedes ignorar este mensaje.</p>
       `)
       return { subject, html, text }
     }

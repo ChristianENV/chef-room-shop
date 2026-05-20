@@ -3,6 +3,7 @@ import { adminDashboardResolvers } from './admin-dashboard.resolver'
 import { cartResolvers } from './cart.resolver'
 import { catalogResolvers } from './catalog.resolver'
 import { checkoutResolvers } from './checkout.resolver'
+import { orderClaimResolvers } from './order-claim.resolver'
 import { paymentsResolvers } from './payments.resolver'
 import { JSONScalar } from '../scalars/json.scalar'
 
@@ -15,11 +16,13 @@ export const resolvers = {
     ...adminDashboardResolvers.Query,
     ...cartResolvers.Query,
     ...checkoutResolvers.Query,
+    ...orderClaimResolvers.Query,
   },
   Mutation: {
     ...accountResolvers.Mutation,
     ...cartResolvers.Mutation,
     ...checkoutResolvers.Mutation,
     ...paymentsResolvers.Mutation,
+    ...orderClaimResolvers.Mutation,
   },
 }

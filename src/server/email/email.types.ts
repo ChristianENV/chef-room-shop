@@ -6,6 +6,7 @@ export type TransactionalEmailTemplate =
   | 'payment_confirmed'
   | 'payment_failed'
   | 'payment_expired'
+  | 'email_verification'
 
 /** Configured delivery channel (may map to Prisma `EmailProvider.OTHER`). */
 export type LogicalEmailProvider = 'console' | 'resend' | 'mailtrap'
@@ -33,7 +34,12 @@ export type TransactionalEmailPayload = {
     checkoutSuccessUrl?: string
     accountUrl?: string
     shopUrl?: string
+    claimUrl?: string
+    accountOrderUrl?: string
   }
+  claimUrl?: string
+  accountOrderUrl?: string
+  verificationUrl?: string
   userId?: string | null
   guestSessionId?: string | null
 }

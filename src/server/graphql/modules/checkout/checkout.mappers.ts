@@ -1,5 +1,7 @@
 import type { Order, OrderItem, Payment } from '@prisma/client'
 
+import { buildAccountOrderUrl } from '@/src/server/email/email.links'
+
 import type {
   CheckoutOrderPayloadGql,
   OrderWithCheckoutRelations,
@@ -92,6 +94,7 @@ export function mapOrderToPublicOrder(order: OrderWithCheckoutRelations): Public
 export function mapOrderToCheckoutPayload(
   order: Order,
   payments: Payment[],
+  tracking?: { claimUrl?: string | null; accountOrderUrl?: string | null },
 ): CheckoutOrderPayloadGql {
   return {
     orderNumber: order.orderNumber,
@@ -100,5 +103,9 @@ export function mapOrderToCheckoutPayload(
     paymentStatus: derivePaymentStatus(payments),
     totalCents: order.totalCents,
     currency: order.currency,
+    claimUrl: tracking?.claimUrl ?? null,
+    accountOrderUrl:
+      tracking?.accountOrderUrl ??
+      (order.userId ? buildAccountOrderUrl(order.orderNumber) : null),
   }
 }

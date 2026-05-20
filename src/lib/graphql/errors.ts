@@ -2,6 +2,9 @@
 export type GraphQLErrorPayload = {
   message: string
   path?: ReadonlyArray<string | number>
+  extensions?: {
+    code?: string
+  }
 }
 
 /**

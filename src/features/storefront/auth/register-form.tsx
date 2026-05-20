@@ -3,7 +3,7 @@ import { routes } from '@/src/config/routes'
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, Mail, Lock, User, Phone, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -44,6 +44,8 @@ export function RegisterForm({
   googleEnabled = false,
 }: RegisterFormProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackFromQuery = searchParams.get('callbackUrl')
   const [formData, setFormData] = useState<RegisterFormData>({
     firstName: '',
     lastName: '',
@@ -112,17 +114,35 @@ export function RegisterForm({
     await ensureCustomerRoleAction()
     await runPostAuthGuestMerge()
 
-    const redirectTo = await getPostLoginRedirectAction({
-      source: 'storefront-register',
-    })
+    const session = await authClient.getSession()
+    const emailVerified = session.data?.user?.emailVerified ?? false
 
     setIsLoading(false)
     setSuccess(true)
 
     setTimeout(() => {
       onSuccess?.()
-      router.push(redirectTo)
-      router.refresh()
+
+      if (!emailVerified) {
+        const verifyParams = new URLSearchParams()
+        if (callbackFromQuery?.startsWith('/')) {
+          verifyParams.set('callbackUrl', callbackFromQuery)
+        }
+        const verifyPath = verifyParams.toString()
+          ? `${routes.verifyEmail}?${verifyParams.toString()}`
+          : routes.verifyEmail
+        router.push(verifyPath)
+        router.refresh()
+        return
+      }
+
+      void getPostLoginRedirectAction({
+        source: 'storefront-register',
+        callbackUrl: callbackFromQuery,
+      }).then((redirectTo) => {
+        router.push(redirectTo)
+        router.refresh()
+      })
     }, 1200)
   }
 

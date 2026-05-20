@@ -30,6 +30,8 @@ export type CheckoutOrderPayload = {
   paymentStatus: string
   totalCents: number
   currency: string
+  claimUrl?: string | null
+  accountOrderUrl?: string | null
 }
 
 export type PublicOrderItem = {

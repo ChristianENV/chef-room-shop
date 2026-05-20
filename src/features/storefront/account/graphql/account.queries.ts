@@ -119,15 +119,20 @@ export const MY_ORDER_BY_NUMBER_QUERY = /* GraphQL */ `
         unitPriceCents
         customizationPriceCents
         totalPriceCents
+        productSnapshotJson
+        designSnapshotJson
       }
       payments {
+        id
         provider
         method
         status
         amountCents
+        currency
         paidAt
       }
       shipments {
+        id
         carrier
         trackingNumber
         status
@@ -135,6 +140,7 @@ export const MY_ORDER_BY_NUMBER_QUERY = /* GraphQL */ `
         deliveredAt
       }
       events {
+        id
         type
         message
         createdAt

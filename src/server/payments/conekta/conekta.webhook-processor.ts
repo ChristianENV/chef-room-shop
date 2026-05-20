@@ -15,7 +15,8 @@ import {
   type ConektaWebhookPayload,
 } from './conekta.client'
 import { sanitizeConektaPayload } from './conekta.sanitize'
-import { buildOrderEmailLinks } from '@/src/server/email/email.links'
+import { buildOrderEmailTrackingLinks } from '@/src/server/email/email.links'
+import { createOrderClaimToken } from '@/src/server/orders/order-claim-token'
 import { safeSendTransactionalEmailOnce } from '@/src/server/email/email.service'
 
 function extractConektaOrderId(payload: ConektaWebhookPayload): string | null {
@@ -203,11 +204,10 @@ export async function processConektaWebhook(
     paymentStatus,
   })
 
-  void sendPaymentStatusEmails(prisma, payment, paymentStatus)
+  void sendPaymentStatusEmails(payment, paymentStatus)
 }
 
-function sendPaymentStatusEmails(
-  prisma: PrismaClient,
+async function sendPaymentStatusEmails(
   payment: {
     id: string
     orderId: string
@@ -221,13 +221,35 @@ function sendPaymentStatusEmails(
     }
   },
   paymentStatus: PaymentStatus,
-): void {
+): Promise<void> {
   const { order } = payment
+
+  let claimToken: string | null = null
+  if (!order.userId) {
+    try {
+      const created = await createOrderClaimToken({
+        orderId: payment.orderId,
+        sentToEmail: order.customerEmail,
+      })
+      claimToken = created.token
+    } catch {
+      claimToken = null
+    }
+  }
+
+  const trackingLinks = buildOrderEmailTrackingLinks({
+    orderNumber: order.orderNumber,
+    userId: order.userId,
+    claimToken,
+  })
+
   const basePayload = {
     orderNumber: order.orderNumber,
     totalCents: payment.amountCents,
     currency: order.currency,
-    links: buildOrderEmailLinks(order.orderNumber),
+    links: trackingLinks,
+    claimUrl: trackingLinks.claimUrl,
+    accountOrderUrl: trackingLinks.accountOrderUrl,
   }
 
   if (paymentStatus === PaymentStatus.PAID) {

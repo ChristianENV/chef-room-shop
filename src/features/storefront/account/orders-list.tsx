@@ -33,7 +33,7 @@ export function OrderCard({ order }: OrderCardProps) {
   const StatusIcon = status.icon
 
   return (
-    <Card className="border-border bg-card overflow-hidden">
+    <Card className="overflow-hidden border-border bg-card transition-shadow duration-200 hover:border-primary/20 hover:shadow-md">
       <CardContent className="p-0">
         {/* Header */}
         <div className="flex flex-col gap-4 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -128,7 +128,7 @@ export function OrderCard({ order }: OrderCardProps) {
               )
             )}
             <Button variant="ghost" size="sm" asChild>
-              <Link href={`/account/orders/${order.id}`}>
+              <Link href={routes.accountOrderDetail(order.orderNumber)}>
                 Ver detalle
                 <ChevronRight className="ml-1 h-4 w-4" />
               </Link>

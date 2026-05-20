@@ -135,3 +135,43 @@ export async function getPostLoginRedirectAction(params?: {
     source: params?.source ?? 'storefront-login',
   })
 }
+
+const RESEND_VERIFICATION_GENERIC_MESSAGE =
+  'Si el correo existe, enviaremos un enlace de verificación.'
+
+/**
+ * Resends the Better Auth verification email (generic response; does not reveal if email exists).
+ */
+export async function resendVerificationEmailAction(params?: {
+  email?: string | null
+  callbackURL?: string | null
+}): Promise<{ ok: true; message: string }> {
+  try {
+    const requestHeaders = await headers()
+    const session = await auth.api.getSession({ headers: requestHeaders })
+    const targetEmail =
+      params?.email?.trim().toLowerCase() ?? session?.user?.email?.trim().toLowerCase()
+
+    if (!targetEmail) {
+      return { ok: true, message: RESEND_VERIFICATION_GENERIC_MESSAGE }
+    }
+
+    if (session?.user?.emailVerified) {
+      return { ok: true, message: RESEND_VERIFICATION_GENERIC_MESSAGE }
+    }
+
+    const callbackURL = params?.callbackURL?.trim() || routes.account
+
+    await auth.api.sendVerificationEmail({
+      body: {
+        email: targetEmail,
+        callbackURL,
+      },
+      headers: requestHeaders,
+    })
+  } catch {
+    // Do not reveal whether the email exists or send failed.
+  }
+
+  return { ok: true, message: RESEND_VERIFICATION_GENERIC_MESSAGE }
+}

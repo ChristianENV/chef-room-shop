@@ -6,6 +6,7 @@
 |------|-------|-------|
 | `/account` | `useMeProfileQuery`, `useAccountSummaryQuery` | Perfil, dirección default, pedidos y diseños recientes |
 | `/account/orders` | `useMyOrdersQuery`, `useMeProfileQuery` | Listado de pedidos con items y tracking |
+| `/account/orders/[orderNumber]` | `useMyOrderByNumberQuery`, `useMeProfileQuery` | Detalle premium del pedido (timeline, pago, envío, personalización) |
 | `/account/designs` | `useMyDesignsQuery`, `useMeProfileQuery` | Diseños guardados del usuario |
 | `/account/addresses` | `useMyAddressesQuery` + mutations | CRUD de direcciones |
 
@@ -29,13 +30,24 @@ Invalidan `meProfile`, `accountSummary` y/o `myAddresses` según corresponda.
 - `useAccountAuthRedirect` redirige a `routes.login?callbackUrl=...` si el BFF responde sin sesión.
 - Sin login, las páginas no muestran datos privados (redirección o mensaje genérico).
 
+## Detalle de pedido (`/account/orders/[orderNumber]`)
+
+- Datos vía `myOrderByNumber` (Account BFF), **sin** email en URL ni `orderByNumber` público.
+- Requiere sesión y **`emailVerified`** en backend (`EMAIL_NOT_VERIFIED` si no está verificado).
+- Tras guest claim, redirect a esta ruta.
+- Componentes en `src/features/storefront/account/order-detail/`.
+- Pago pendiente: reutiliza `CheckoutConektaPay` (Conekta hosted).
+
 ## Qué sigue mockeado
 
 - **Carrito / checkout** — sin cambios
 - **Admin dashboard** — mocks en `lib/mock-data.ts`
 - **Diseños — acciones:** agregar al carrito, duplicar y eliminar siguen como stub local (sin mutations BFF)
 - **Edición de perfil** — botón “Editar” en resumen sin formulario conectado a `updateMyProfile`
-- **Detalle de pedido** — no hay página/modal de detalle; solo listado
+- **Ver diseño** desde detalle — CTA deshabilitado (“próximamente”)
+- **Factura / CFDI** — no implementado
+- **Repetir pedido** — solo CTA a tienda en pedidos entregados
+- **Tracking URL real** — solo copiar guía; sin proveedor de rastreo
 
 ## Cómo probar
 

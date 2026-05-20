@@ -688,6 +688,7 @@ model Order {
   payments         Payment[]
   shipments        Shipment[]
   emailMessages    EmailMessage[]
+  claimTokens      OrderClaimToken[]
 
   @@index([userId])
   @@index([guestSessionId])
@@ -697,6 +698,24 @@ model Order {
   @@index([createdAt])
   @@index([deletedAt])
   @@map("orders")
+}
+
+model OrderClaimToken {
+  id           String    @id @default(uuid()) @db.Uuid
+  orderId      String    @db.Uuid
+  tokenHash    String    @unique
+  sentToEmail  String
+  expiresAt    DateTime
+  usedAt       DateTime?
+  createdAt    DateTime  @default(now())
+  metadataJson Json?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([expiresAt])
+  @@index([sentToEmail])
+  @@map("order_claim_tokens")
 }
 
 model OrderItem {
