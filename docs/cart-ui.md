@@ -40,7 +40,7 @@ Mobile cart icon links to `routes.cart` (no popover). Badge uses the same `useCa
 
 ## Pending
 
-- PDP “Agregar al carrito” (`product-info.tsx` still logs to console)
+- PDP add-to-cart with `designId` (customizer) — see [product-add-to-cart.md](./product-add-to-cart.md)
 - Checkout flow (still mock cart on `/checkout`)
 - Conekta payments
 - Guest → auth cart merge on login

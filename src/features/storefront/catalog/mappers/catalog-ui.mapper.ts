@@ -1,6 +1,8 @@
 import type { Product, ProductCategory, ProductColor, ProductImage } from '@/lib/types'
 import { centsToPesos } from '@/src/lib/formatters'
 
+import type { ProductVariantOption } from '@/src/features/storefront/products/types'
+
 import type { CatalogProduct, CatalogProductVariant } from '../types'
 
 const PRODUCT_TYPE_TO_CATEGORY: Record<string, ProductCategory> = {
@@ -78,6 +80,21 @@ function totalStock(variants: CatalogProductVariant[]): number {
 }
 
 /**
+ * Maps BFF variants to PDP cart selection options.
+ */
+export function mapVariantsForCart(variants: CatalogProductVariant[]): ProductVariantOption[] {
+  return variants
+    .filter((variant) => variant.isActive && variant.color && variant.size)
+    .map((variant) => ({
+      id: variant.id,
+      colorSlug: variant.color!.slug,
+      sizeName: variant.size!.name.toUpperCase(),
+      stockQty: variant.stockQty ?? 0,
+      isActive: variant.isActive,
+    }))
+}
+
+/**
  * Maps a catalog BFF product to the legacy `Product` shape used by storefront cards.
  */
 export function mapCatalogProductToCard(product: CatalogProduct): Product {
@@ -105,10 +122,13 @@ export function mapCatalogProductToCard(product: CatalogProduct): Product {
 /**
  * Maps a catalog BFF product to the legacy `Product` shape for product detail UI.
  */
-export function mapCatalogProductToDetail(product: CatalogProduct & { description?: string | null }): Product {
+export function mapCatalogProductToDetail(
+  product: CatalogProduct & { description?: string | null },
+): Product & { variants: ProductVariantOption[] } {
   const card = mapCatalogProductToCard(product)
   return {
     ...card,
     description: product.description ?? product.shortDescription ?? product.name,
+    variants: mapVariantsForCart(product.variants),
   }
 }

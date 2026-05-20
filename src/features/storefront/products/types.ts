@@ -1,3 +1,4 @@
+import type { Product } from '@/lib/types'
 import type {
   CatalogColor,
   CatalogProduct,
@@ -6,6 +7,20 @@ import type {
   CatalogProductVariant,
   CatalogSize,
 } from '@/src/features/storefront/catalog/types'
+
+/** Variant row used by PDP add-to-cart (color slug + size label). */
+export type ProductVariantOption = {
+  id: string
+  colorSlug: string
+  sizeName: string
+  stockQty: number
+  isActive: boolean
+}
+
+/** Legacy `Product` UI model plus BFF variants for cart mutations. */
+export type StorefrontProductDetail = Product & {
+  variants: ProductVariantOption[]
+}
 
 /** Customization area from product detail BFF. */
 export type ProductCustomizationArea = {
