@@ -42,6 +42,14 @@ export type AccountOrderItem = {
   totalPriceCents: number
 }
 
+export type AccountShipment = {
+  carrier: string | null
+  trackingNumber: string | null
+  status: string
+  shippedAt?: string | null
+  deliveredAt?: string | null
+}
+
 export type AccountOrder = {
   id: string
   orderNumber: string
@@ -52,7 +60,12 @@ export type AccountOrder = {
   currency: string
   placedAt: string | null
   createdAt: string
+  subtotalCents?: number
+  shippingCostCents?: number
+  discountTotalCents?: number
   items: AccountOrderItem[]
+  payments?: Array<{ method: string | null; status: string; amountCents: number }>
+  shipments?: AccountShipment[]
 }
 
 export type AccountDesign = {
@@ -64,6 +77,7 @@ export type AccountDesign = {
   currency: string
   createdAt: string
   updatedAt: string
+  configJson?: unknown
   product: { id: string; slug: string; name: string; basePriceCents: number } | null
 }
 

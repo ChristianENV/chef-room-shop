@@ -71,7 +71,7 @@ export function SavedDesignCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <Link href={`/customize?design=${design.id}`}>
+                <Link href={`${routes.customize}?design=${design.id}`}>
                   <Edit className="mr-2 h-4 w-4" />
                   Editar diseno
                 </Link>
@@ -136,7 +136,7 @@ export function SavedDesignCard({
         {/* Quick Actions */}
         <div className="mt-4 flex gap-2">
           <Button variant="outline" size="sm" className="flex-1" asChild>
-            <Link href={`/customize?design=${design.id}`}>
+            <Link href={`${routes.customize}?design=${design.id}`}>
               <Edit className="mr-2 h-4 w-4" />
               Editar
             </Link>

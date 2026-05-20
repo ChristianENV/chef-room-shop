@@ -1,69 +1,79 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
+
 import { AccountLayout } from '@/src/features/storefront/layout/account-layout'
 import { SavedDesignsGrid } from '@/src/features/storefront/account/saved-designs'
-import { MOCK_USER, MOCK_SAVED_DESIGNS } from '@/lib/mock-data'
-import type { SavedDesign } from '@/lib/types'
-
-// TODO: Replace with TanStack Query useQuery hooks
-// import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-// import { fetchSavedDesigns, addDesignToCart, duplicateDesign, deleteDesign } from '@/lib/api'
+import { AccountQueryError } from '@/src/features/storefront/account/components/account-query-error'
+import { useAccountAuthRedirect } from '@/src/features/storefront/account/api/use-account-auth-redirect'
+import { getAccountUserErrorMessage } from '@/src/features/storefront/account/api/account-errors'
+import { useMeProfileQuery } from '@/src/features/storefront/account/api/use-me-profile-query'
+import { useMyDesignsQuery } from '@/src/features/storefront/account/api/use-my-designs-query'
+import {
+  mapAccountDesignToUi,
+  mapAccountUserToProfile,
+} from '@/src/features/storefront/account/mappers/account-ui.mapper'
 
 export default function SavedDesignsPage() {
-  const [designs, setDesigns] = useState<SavedDesign[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const profileQuery = useMeProfileQuery()
+  const designsQuery = useMyDesignsQuery()
 
-  useEffect(() => {
-    // Simulate API fetch
-    const loadData = async () => {
-      await new Promise(resolve => setTimeout(resolve, 500))
-      setDesigns(MOCK_SAVED_DESIGNS)
-      setIsLoading(false)
+  const isError = profileQuery.isError || designsQuery.isError
+  const error = profileQuery.error ?? designsQuery.error
+
+  useAccountAuthRedirect(isError, error)
+
+  const userName = useMemo(() => {
+    if (profileQuery.data) {
+      return mapAccountUserToProfile(profileQuery.data).firstName
     }
-    loadData()
-  }, [])
+    return 'Cliente'
+  }, [profileQuery.data])
+
+  const designs = useMemo(
+    () => (designsQuery.data ?? []).map(mapAccountDesignToUi),
+    [designsQuery.data],
+  )
 
   const handleAddToCart = async (id: string) => {
-    // TODO: Implement with TanStack Query mutation
-    console.log('Add to cart:', id)
-    // Update local state optimistically
-    setDesigns(prev => 
-      prev.map(d => d.id === id ? { ...d, status: 'en-carrito' as const } : d)
-    )
+    console.log('Add to cart (pendiente integración carrito):', id)
   }
 
   const handleDuplicate = async (id: string) => {
-    // TODO: Implement with TanStack Query mutation
-    console.log('Duplicate:', id)
-    const original = designs.find(d => d.id === id)
-    if (original) {
-      const duplicate: SavedDesign = {
-        ...original,
-        id: `design-${Date.now()}`,
-        name: `${original.name} (copia)`,
-        status: 'borrador',
-        lastEdited: new Date().toISOString().split('T')[0],
-      }
-      setDesigns(prev => [duplicate, ...prev])
-    }
+    console.log('Duplicate (sin mutation BFF):', id)
   }
 
   const handleDelete = async (id: string) => {
-    // TODO: Implement with TanStack Query mutation
-    console.log('Delete:', id)
-    setDesigns(prev => prev.filter(d => d.id !== id))
+    console.log('Delete (sin mutation BFF):', id)
+  }
+
+  if (designsQuery.isError) {
+    return (
+      <AccountLayout
+        title="Diseños Guardados"
+        description="Tus personalizaciones guardadas"
+        userName={userName}
+      >
+        <AccountQueryError
+          message={getAccountUserErrorMessage(
+            error,
+            'No pudimos cargar tus diseños. Intenta de nuevo.',
+          )}
+          onRetry={() => void designsQuery.refetch()}
+        />
+      </AccountLayout>
+    )
   }
 
   return (
-    <AccountLayout 
-      title="Diseños Guardados" 
+    <AccountLayout
+      title="Diseños Guardados"
       description="Tus personalizaciones guardadas"
-      userName={MOCK_USER.firstName}
+      userName={userName}
     >
-      <SavedDesignsGrid 
-        designs={designs} 
-        isLoading={isLoading}
+      <SavedDesignsGrid
+        designs={designs}
+        isLoading={designsQuery.isLoading}
         onAddToCart={handleAddToCart}
         onDuplicate={handleDuplicate}
         onDelete={handleDelete}

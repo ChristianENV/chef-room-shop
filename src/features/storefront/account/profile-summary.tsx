@@ -134,7 +134,7 @@ export function ProfileSummary({
             <div className="flex flex-col items-center justify-center py-6 text-center">
               <MapPin className="mb-2 h-8 w-8 text-muted-foreground" />
               <p className="font-serif text-sm text-muted-foreground">
-                No tienes direcciones guardadas
+                Agrega una dirección para agilizar tus compras.
               </p>
               <Button variant="outline" size="sm" className="mt-3" asChild>
                 <Link href={`${routes.account}/addresses`}>Agregar direccion</Link>
@@ -184,7 +184,7 @@ export function ProfileSummary({
             <div className="flex flex-col items-center justify-center py-6 text-center">
               <Package className="mb-2 h-8 w-8 text-muted-foreground" />
               <p className="font-serif text-sm text-muted-foreground">
-                Aun no tienes pedidos
+                Aún no tienes pedidos.
               </p>
               <Button variant="outline" size="sm" className="mt-3" asChild>
                 <Link href={routes.shop}>Explorar productos</Link>
@@ -232,7 +232,7 @@ export function ProfileSummary({
             <div className="flex flex-col items-center justify-center py-6 text-center">
               <Palette className="mb-2 h-8 w-8 text-muted-foreground" />
               <p className="font-serif text-sm text-muted-foreground">
-                No tienes disenos guardados
+                Aún no tienes diseños guardados.
               </p>
               <Button variant="outline" size="sm" className="mt-3" asChild>
                 <Link href={routes.customize}>Crear diseno</Link>

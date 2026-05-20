@@ -27,9 +27,17 @@ export const MY_ACCOUNT_SUMMARY_QUERY = /* GraphQL */ `
       savedDesigns
       defaultShippingAddress {
         id
+        type
+        firstName
+        lastName
+        phone
         street
+        extNumber
+        intNumber
+        neighborhood
         city
         state
+        country
         postalCode
         isDefault
       }

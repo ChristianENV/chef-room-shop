@@ -112,14 +112,20 @@ export function OrderCard({ order }: OrderCardProps) {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            {order.trackingUrl && (order.status === 'enviado') && (
-              <Button variant="outline" size="sm" asChild>
-                <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer">
-                  <Truck className="mr-2 h-4 w-4" />
-                  Rastrear envio
-                  <ExternalLink className="ml-1 h-3 w-3" />
-                </a>
-              </Button>
+            {order.trackingNumber && (order.status === 'enviado' || order.status === 'entregado') && (
+              order.trackingUrl ? (
+                <Button variant="outline" size="sm" asChild>
+                  <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer">
+                    <Truck className="mr-2 h-4 w-4" />
+                    Rastrear envio
+                    <ExternalLink className="ml-1 h-3 w-3" />
+                  </a>
+                </Button>
+              ) : (
+                <span className="font-serif text-sm text-muted-foreground">
+                  Guía: {order.trackingNumber}
+                </span>
+              )
             )}
             <Button variant="ghost" size="sm" asChild>
               <Link href={`/account/orders/${order.id}`}>

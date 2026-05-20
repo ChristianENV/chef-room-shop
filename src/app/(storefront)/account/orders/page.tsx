@@ -1,36 +1,65 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
+
 import { AccountLayout } from '@/src/features/storefront/layout/account-layout'
 import { OrdersList } from '@/src/features/storefront/account/orders-list'
-import { MOCK_USER, MOCK_ORDERS } from '@/lib/mock-data'
-import type { Order } from '@/lib/types'
-
-// TODO: Replace with TanStack Query useQuery hooks
-// import { useQuery } from '@tanstack/react-query'
-// import { fetchUserOrders } from '@/lib/api'
+import { AccountQueryError } from '@/src/features/storefront/account/components/account-query-error'
+import { useAccountAuthRedirect } from '@/src/features/storefront/account/api/use-account-auth-redirect'
+import { getAccountUserErrorMessage } from '@/src/features/storefront/account/api/account-errors'
+import { useMeProfileQuery } from '@/src/features/storefront/account/api/use-me-profile-query'
+import { useMyOrdersQuery } from '@/src/features/storefront/account/api/use-my-orders-query'
+import {
+  mapAccountOrderToUi,
+  mapAccountUserToProfile,
+} from '@/src/features/storefront/account/mappers/account-ui.mapper'
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const profileQuery = useMeProfileQuery()
+  const ordersQuery = useMyOrdersQuery()
 
-  useEffect(() => {
-    // Simulate API fetch
-    const loadData = async () => {
-      await new Promise(resolve => setTimeout(resolve, 600))
-      setOrders(MOCK_ORDERS)
-      setIsLoading(false)
+  const isError = profileQuery.isError || ordersQuery.isError
+  const error = profileQuery.error ?? ordersQuery.error
+
+  useAccountAuthRedirect(isError, error)
+
+  const userName = useMemo(() => {
+    if (profileQuery.data) {
+      return mapAccountUserToProfile(profileQuery.data).firstName
     }
-    loadData()
-  }, [])
+    return 'Cliente'
+  }, [profileQuery.data])
+
+  const orders = useMemo(
+    () => (ordersQuery.data ?? []).map(mapAccountOrderToUi),
+    [ordersQuery.data],
+  )
+
+  if (ordersQuery.isError) {
+    return (
+      <AccountLayout
+        title="Mis Pedidos"
+        description="Historial y seguimiento de tus pedidos"
+        userName={userName}
+      >
+        <AccountQueryError
+          message={getAccountUserErrorMessage(
+            error,
+            'No pudimos cargar tus pedidos. Intenta de nuevo.',
+          )}
+          onRetry={() => void ordersQuery.refetch()}
+        />
+      </AccountLayout>
+    )
+  }
 
   return (
-    <AccountLayout 
-      title="Mis Pedidos" 
+    <AccountLayout
+      title="Mis Pedidos"
       description="Historial y seguimiento de tus pedidos"
-      userName={MOCK_USER.firstName}
+      userName={userName}
     >
-      <OrdersList orders={orders} isLoading={isLoading} />
+      <OrdersList orders={orders} isLoading={ordersQuery.isLoading} />
     </AccountLayout>
   )
 }
