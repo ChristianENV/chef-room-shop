@@ -457,6 +457,113 @@ export const adminProductsTypeDefs = /* GraphQL */ `
   }
 `
 
+export const adminCustomizationTypeDefs = /* GraphQL */ `
+  type AdminCustomizationArea {
+    id: ID!
+    slug: String!
+    name: String!
+    description: String
+    sortOrder: Int
+    isActive: Boolean!
+  }
+
+  type AdminCustomizationOption {
+    id: ID!
+    slug: String!
+    name: String!
+    basePriceCents: Int!
+    pricePerCmCents: Int
+    isActive: Boolean!
+  }
+
+  type AdminCustomizationProduct {
+    id: ID!
+    slug: String!
+    name: String!
+    productTypeName: String
+    status: String!
+    customizable: Boolean!
+  }
+
+  type AdminCustomizationRule {
+    id: ID!
+    productId: ID!
+    areaId: ID!
+    optionId: ID!
+    enabled: Boolean!
+    maxWidthCm: Float
+    maxHeightCm: Float
+    minQuantity: Int
+    basePriceCents: Int!
+    pricePerCmCents: Int
+    extraProductionDays: Int
+    allowedFileTypes: [String!]!
+    validationMessage: String
+    notes: String
+    metadataJson: JSON
+    product: AdminCustomizationProduct!
+    area: AdminCustomizationArea!
+    option: AdminCustomizationOption!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type AdminCustomizationRulesPayload {
+    items: [AdminCustomizationRule!]!
+    total: Int!
+  }
+
+  type AdminCustomizationPricingPreview {
+    basePriceCents: Int!
+    areaPriceCents: Int!
+    sizeFactorCents: Int!
+    extraProductionDays: Int!
+    totalExtraCents: Int!
+    formulaLabel: String!
+  }
+
+  input AdminCustomizationRulesFilterInput {
+    productId: ID
+    productSlug: String
+    areaSlug: String
+    optionSlug: String
+    enabled: Boolean
+    search: String
+  }
+
+  input AdminCustomizationRuleInput {
+    productId: ID!
+    areaId: ID!
+    optionId: ID!
+    enabled: Boolean
+    maxWidthCm: Float
+    maxHeightCm: Float
+    minQuantity: Int
+    basePriceCents: Int
+    pricePerCmCents: Int
+    extraProductionDays: Int
+    allowedFileTypes: [String!]
+    validationMessage: String
+    notes: String
+    metadataJson: JSON
+  }
+
+  input DuplicateCustomizationRulesInput {
+    fromProductId: ID!
+    toProductId: ID!
+    overwriteExisting: Boolean
+  }
+
+  input AdminCustomizationPricingPreviewInput {
+    productId: ID!
+    areaId: ID!
+    optionId: ID!
+    widthCm: Float
+    heightCm: Float
+    quantity: Int
+  }
+`
+
 export const adminOrdersTypeDefs = /* GraphQL */ `
   type AdminOrderCustomer {
     userId: ID
@@ -850,6 +957,19 @@ export const typeDefs = /* GraphQL */ `
     adminProductById(id: ID!): AdminProduct
     adminProductBySlug(slug: String!): AdminProduct
     adminProductFormOptions: AdminProductFormOptions!
+    adminCustomizationAreas: [AdminCustomizationArea!]!
+    adminCustomizationOptions: [AdminCustomizationOption!]!
+    adminCustomizationProducts(search: String, customizable: Boolean): [AdminCustomizationProduct!]!
+    adminCustomizationRules(
+      filter: AdminCustomizationRulesFilterInput
+      limit: Int
+      offset: Int
+    ): AdminCustomizationRulesPayload!
+    adminCustomizationRulesByProduct(productId: ID!): [AdminCustomizationRule!]!
+    adminCustomizationRuleById(id: ID!): AdminCustomizationRule
+    adminCustomizationPricingPreview(
+      input: AdminCustomizationPricingPreviewInput!
+    ): AdminCustomizationPricingPreview!
     myCart: Cart!
     orderByNumber(orderNumber: String!, email: String!): PublicOrder
     orderClaimPreview(token: String!): OrderClaimPreview
@@ -883,6 +1003,13 @@ export const typeDefs = /* GraphQL */ `
     deleteAdminProductVariant(id: ID!): Boolean!
     upsertAdminProductImage(input: AdminProductImageInput!): AdminProductImage!
     deleteAdminProductImage(id: ID!): Boolean!
+    createAdminCustomizationRule(input: AdminCustomizationRuleInput!): AdminCustomizationRule!
+    updateAdminCustomizationRule(id: ID!, input: AdminCustomizationRuleInput!): AdminCustomizationRule!
+    deleteAdminCustomizationRule(id: ID!): Boolean!
+    toggleAdminCustomizationRule(id: ID!, enabled: Boolean!): AdminCustomizationRule!
+    duplicateCustomizationRulesToProduct(
+      input: DuplicateCustomizationRulesInput!
+    ): [AdminCustomizationRule!]!
   }
 
   ${catalogTypeDefs}
@@ -894,4 +1021,5 @@ export const typeDefs = /* GraphQL */ `
   ${adminDashboardTypeDefs}
   ${adminOrdersTypeDefs}
   ${adminProductsTypeDefs}
+  ${adminCustomizationTypeDefs}
 `

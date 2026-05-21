@@ -1,5 +1,9 @@
 'use client'
 
+import { Search } from 'lucide-react'
+
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -8,77 +12,102 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { ProductCategory } from '@/lib/types'
-import { MOCK_ADMIN_PRODUCTS } from '@/lib/mock-data'
+import type { AdminCustomizationProduct } from './types'
 
-interface ProductSelectorProps {
-  selectedType: ProductCategory | 'all'
-  selectedProductId: string | null
-  onTypeChange: (type: ProductCategory | 'all') => void
-  onProductChange: (productId: string | null) => void
+const STATUS_LABELS: Record<string, string> = {
+  ACTIVE: 'Activo',
+  DRAFT: 'Borrador',
+  ARCHIVED: 'Archivado',
 }
 
-const productTypes: { value: ProductCategory | 'all'; label: string }[] = [
-  { value: 'all', label: 'Todos los tipos' },
-  { value: 'filipinas', label: 'Filipinas' },
-  { value: 'mandiles', label: 'Mandiles' },
-  { value: 'pantalones', label: 'Pantalones' },
-]
+type ProductSelectorProps = {
+  products: AdminCustomizationProduct[]
+  selectedProductId: string | null
+  search: string
+  onSearchChange: (value: string) => void
+  onProductChange: (productId: string | null) => void
+  isLoading?: boolean
+}
 
 export function ProductSelector({
-  selectedType,
+  products,
   selectedProductId,
-  onTypeChange,
+  search,
+  onSearchChange,
   onProductChange,
+  isLoading,
 }: ProductSelectorProps) {
-  // Filter products by type
-  const filteredProducts = selectedType === 'all'
-    ? MOCK_ADMIN_PRODUCTS.filter(p => p.customizable)
-    : MOCK_ADMIN_PRODUCTS.filter(p => p.category === selectedType && p.customizable)
+  const selected = products.find((p) => p.id === selectedProductId) ?? null
+
+  const filtered = search.trim()
+    ? products.filter((p) => {
+        const term = search.trim().toLowerCase()
+        return (
+          p.name.toLowerCase().includes(term) ||
+          p.slug.toLowerCase().includes(term) ||
+          (p.productTypeName?.toLowerCase().includes(term) ?? false)
+        )
+      })
+    : products
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4 sm:flex-row sm:items-end">
-      <div className="flex-1 space-y-2">
-        <Label className="font-sans text-sm font-medium">Tipo de Prenda</Label>
-        <Select
-          value={selectedType}
-          onValueChange={(value) => {
-            onTypeChange(value as ProductCategory | 'all')
-            onProductChange(null)
-          }}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Selecciona tipo" />
-          </SelectTrigger>
-          <SelectContent>
-            {productTypes.map((type) => (
-              <SelectItem key={type.value} value={type.value}>
-                {type.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    <div className="rounded-lg border border-border bg-card p-4 space-y-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
+        <div className="flex-1 space-y-2">
+          <Label className="font-sans text-sm font-medium">Buscar producto</Label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Nombre o slug..."
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="pl-9 font-sans"
+            />
+          </div>
+        </div>
+
+        <div className="flex-1 space-y-2">
+          <Label className="font-sans text-sm font-medium">Producto</Label>
+          <Select
+            value={selectedProductId ?? 'none'}
+            onValueChange={(v) => onProductChange(v === 'none' ? null : v)}
+            disabled={isLoading || filtered.length === 0}
+          >
+            <SelectTrigger className="w-full font-sans">
+              <SelectValue placeholder="Selecciona producto" />
+            </SelectTrigger>
+            <SelectContent>
+              {filtered.map((product) => (
+                <SelectItem key={product.id} value={product.id}>
+                  {product.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <div className="flex-1 space-y-2">
-        <Label className="font-sans text-sm font-medium">Producto Especifico</Label>
-        <Select
-          value={selectedProductId ?? 'none'}
-          onValueChange={(value) => onProductChange(value === 'none' ? null : value)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Selecciona producto" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">Todos los productos</SelectItem>
-            {filteredProducts.map((product) => (
-              <SelectItem key={product.id} value={product.id}>
-                {product.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {selected ? (
+        <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
+          <span className="font-sans text-sm font-medium text-foreground">{selected.name}</span>
+          {selected.productTypeName ? (
+            <Badge variant="outline" className="font-sans text-xs">
+              {selected.productTypeName}
+            </Badge>
+          ) : null}
+          <Badge variant="secondary" className="font-sans text-xs">
+            {STATUS_LABELS[selected.status] ?? selected.status}
+          </Badge>
+          {selected.customizable ? (
+            <Badge className="font-sans text-xs">Personalizable</Badge>
+          ) : (
+            <Badge variant="outline" className="font-sans text-xs">
+              No personalizable
+            </Badge>
+          )}
+        </div>
+      ) : null}
     </div>
   )
 }
