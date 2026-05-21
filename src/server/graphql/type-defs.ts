@@ -891,6 +891,51 @@ export const checkoutTypeDefs = /* GraphQL */ `
   }
 `
 
+const shippingTypeDefs = /* GraphQL */ `
+  type ShippingRate {
+    id: ID!
+    providerRateId: String!
+    carrier: String!
+    service: String
+    amountCents: Int!
+    currency: String!
+    estimatedDays: Int
+    estimatedDeliveryDate: String
+    expiresAt: String
+    selectedAt: String
+  }
+
+  type ShippingQuote {
+    id: ID!
+    provider: String!
+    providerQuoteId: String
+    originPostalCode: String!
+    destinationPostalCode: String!
+    isCompleted: Boolean!
+    expiresAt: String
+    packageJson: JSON!
+    rates: [ShippingRate!]!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type ShippingQuotePayload {
+    quote: ShippingQuote!
+    recommendedRate: ShippingRate
+  }
+
+  input ShippingAddressQuoteInput {
+    postalCode: String!
+    city: String
+    state: String
+    country: String
+  }
+
+  input CreateShippingQuoteInput {
+    destination: ShippingAddressQuoteInput!
+  }
+`
+
 const orderClaimTypeDefs = /* GraphQL */ `
   type OrderClaimPreview {
     orderNumber: String!
@@ -971,6 +1016,7 @@ export const typeDefs = /* GraphQL */ `
       input: AdminCustomizationPricingPreviewInput!
     ): AdminCustomizationPricingPreview!
     myCart: Cart!
+    shippingQuoteById(id: ID!): ShippingQuote
     orderByNumber(orderNumber: String!, email: String!): PublicOrder
     orderClaimPreview(token: String!): OrderClaimPreview
   }
@@ -985,6 +1031,9 @@ export const typeDefs = /* GraphQL */ `
     updateCartItemQuantity(input: UpdateCartItemQuantityInput!): Cart!
     removeCartItem(itemId: ID!): Cart!
     clearCart: Cart!
+    createShippingQuote(input: CreateShippingQuoteInput!): ShippingQuotePayload!
+    refreshShippingQuote(id: ID!): ShippingQuotePayload!
+    selectShippingRate(rateId: ID!): ShippingQuotePayload!
     createCheckoutOrder(input: CreateCheckoutOrderInput!): CheckoutOrderPayload!
     createConektaCheckout(input: CreateConektaCheckoutInput!): ConektaCheckoutPayload!
     claimOrder(token: String!): OrderClaimPayload!
@@ -1016,6 +1065,7 @@ export const typeDefs = /* GraphQL */ `
   ${accountTypeDefs}
   ${cartTypeDefs}
   ${checkoutTypeDefs}
+  ${shippingTypeDefs}
   ${orderClaimTypeDefs}
   ${paymentsTypeDefs}
   ${adminDashboardTypeDefs}

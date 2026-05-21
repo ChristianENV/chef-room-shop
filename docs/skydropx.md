@@ -1,6 +1,6 @@
 # Skydropx PRO — Shipping integration (Chef Room)
 
-Chef Room uses **Skydropx PRO** (`api-pro.skydropx.com`) as the logistics aggregator for economical nationwide shipping in Mexico. This document covers the foundation layer; checkout UI and admin label flows are separate PRs.
+Chef Room uses **Skydropx PRO** (`api-pro.skydropx.com`) as the logistics aggregator for economical nationwide shipping in Mexico. This document covers the foundation layer and links to the **Shipping Quote GraphQL BFF** (`docs/graphql-shipping.md`). Checkout UI and admin label flows are separate PRs.
 
 ## Credentials
 
@@ -106,16 +106,25 @@ src/config/shipping.ts   # non-secret constants
 
 All Skydropx modules use `import 'server-only'`.
 
+## GraphQL BFF (v1)
+
+Implemented in `src/server/graphql/modules/shipping/`:
+
+- `createShippingQuote`, `shippingQuoteById`, `refreshShippingQuote`, `selectShippingRate`
+- Hooks: `src/features/storefront/shipping/api/*` (UI not connected)
+
+See `docs/graphql-shipping.md` for ownership, idempotency, and `recommendedRate` rules.
+
 ## v1 decisions
 
-- No checkout or admin UI changes in this PR
-- Checkout still uses `shippingCents = 0` until quote BFF
+- No checkout or admin UI changes yet
+- Checkout still uses `shippingCents = 0` until checkout wires `selectShippingRate`
 - Mappers use defensive parsing (`unknown`) until we store real API payloads
 - Webhook route not implemented; table ready for idempotency
 
 ## Pending (next PRs)
 
-- [ ] Checkout shipping quote BFF (GraphQL mutation + persist `ShippingQuote`/`ShippingRate`)
+- [x] Checkout shipping quote BFF — `docs/graphql-shipping.md`
 - [ ] Admin label generation from selected rate
 - [ ] Extend `Shipment` with provider/label fields
 - [ ] Skydropx webhook handler + `ShippingWebhookEvent` processing

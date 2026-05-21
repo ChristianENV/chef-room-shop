@@ -60,6 +60,32 @@ function readNumber(record: Record<string, unknown>, key: string): number | null
   return typeof value === 'number' && Number.isFinite(value) ? value : null
 }
 
+function readBoolean(record: Record<string, unknown>, key: string): boolean | null {
+  const value = record[key]
+  return typeof value === 'boolean' ? value : null
+}
+
+/** Parses Skydropx monetary fields (often strings in MXN pesos). */
+function parseAmountToCents(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return Math.round(value * 100)
+  }
+  if (typeof value === 'string' && value.trim().length > 0) {
+    const parsed = Number.parseFloat(value.replace(/,/g, ''))
+    if (Number.isFinite(parsed)) {
+      return Math.round(parsed * 100)
+    }
+  }
+  return null
+}
+
+/** Skydropx PRO rates are valid for 24 hours from quotation time. */
+export const SKYDROPX_RATE_VALIDITY_MS = 24 * 60 * 60 * 1000
+
+export function skydropxRateExpiresAt(from: Date = new Date()): Date {
+  return new Date(from.getTime() + SKYDROPX_RATE_VALIDITY_MS)
+}
+
 /**
  * Maps Chef Room warehouse origin (env) to Skydropx address_from.
  */
@@ -121,6 +147,15 @@ export type MapCartToQuotationPayloadInput = {
 }
 
 /**
+ * Builds POST /api/v1/quotations body from cart + destination (BFF entry point).
+ */
+export function mapShippingQuoteToSkydropxQuotationPayload(
+  input: MapCartToQuotationPayloadInput,
+): SkydropxCreateQuotationRequest {
+  return mapCartToQuotationPayload(input)
+}
+
+/**
  * Builds POST /api/v1/quotations body from cart + destination.
  */
 export function mapCartToQuotationPayload(
@@ -149,6 +184,9 @@ export function mapSkydropxRateToShippingRate(raw: unknown): MappedShippingRate 
   const record = asRecord(raw)
   if (!record) return null
 
+  const success = readBoolean(record, 'success')
+  if (success === false) return null
+
   const id =
     readString(record, 'id') ??
     readString(record, 'rate_id') ??
@@ -156,21 +194,24 @@ export function mapSkydropxRateToShippingRate(raw: unknown): MappedShippingRate 
   if (!id) return null
 
   const carrier =
+    readString(record, 'provider_name') ??
+    readString(record, 'provider_display_name') ??
     readString(record, 'carrier') ??
     readString(record, 'carrier_name') ??
     readString(record, 'provider') ??
     'unknown'
 
   const service =
+    readString(record, 'provider_service_name') ??
     readString(record, 'service') ??
     readString(record, 'service_name') ??
     readString(record, 'service_level')
 
   const amount =
     readNumber(record, 'amount_cents') ??
-    (readNumber(record, 'total') !== null
-      ? Math.round((readNumber(record, 'total') ?? 0) * 100)
-      : null) ??
+    parseAmountToCents(record.total) ??
+    parseAmountToCents(record.amount) ??
+    parseAmountToCents(record.total_value_with_protection) ??
     (readNumber(record, 'price') !== null
       ? Math.round((readNumber(record, 'price') ?? 0) * 100)
       : null)
@@ -191,7 +232,10 @@ export function mapSkydropxRateToShippingRate(raw: unknown): MappedShippingRate 
     carrier,
     service,
     amountCents: amount,
-    currency: readString(record, 'currency') ?? SHIPPING_CURRENCY_MX,
+    currency:
+      readString(record, 'currency_code') ??
+      readString(record, 'currency') ??
+      SHIPPING_CURRENCY_MX,
     estimatedDays: days,
     estimatedDeliveryDate:
       estimatedDeliveryDate && !Number.isNaN(estimatedDeliveryDate.getTime())
@@ -231,6 +275,35 @@ export function mapSkydropxShipmentToShipmentData(raw: unknown): MappedShipmentD
     labelUrl,
     carrier,
     rawJson: shipment,
+  }
+}
+
+export type ParsedSkydropxQuotation = {
+  providerQuoteId: string | null
+  isCompleted: boolean
+  rates: MappedShippingRate[]
+}
+
+/**
+ * Parses quotation id, completion flag, and rates from Skydropx PRO responses.
+ */
+export function parseSkydropxQuotationResponse(raw: unknown): ParsedSkydropxQuotation {
+  const root = asRecord(raw) ?? {}
+  const data = asRecord(root.data) ?? root
+  const quotation = asRecord(data.quotation) ?? data
+
+  const providerQuoteId =
+    readString(quotation, 'id') ?? readString(data, 'id') ?? readString(root, 'id')
+
+  const isCompleted =
+    quotation.is_completed === true ||
+    data.is_completed === true ||
+    root.is_completed === true
+
+  return {
+    providerQuoteId,
+    isCompleted,
+    rates: extractRatesFromQuotationResponse(raw),
   }
 }
 
