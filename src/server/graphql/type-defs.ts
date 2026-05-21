@@ -327,6 +327,136 @@ export const cartTypeDefs = /* GraphQL */ `
   }
 `
 
+export const adminProductsTypeDefs = /* GraphQL */ `
+  type AdminProductType {
+    id: ID!
+    slug: String!
+    name: String!
+    description: String
+    sortOrder: Int
+    isActive: Boolean
+  }
+
+  type AdminColor {
+    id: ID!
+    name: String!
+    slug: String!
+    hexCode: String!
+    isActive: Boolean
+    sortOrder: Int
+  }
+
+  type AdminSize {
+    id: ID!
+    name: String!
+    slug: String!
+    sortOrder: Int
+    isActive: Boolean
+  }
+
+  type AdminProductImage {
+    id: ID!
+    url: String!
+    publicId: String
+    alt: String
+    sortOrder: Int
+    isPrimary: Boolean!
+  }
+
+  type AdminProductVariant {
+    id: ID!
+    sku: String!
+    variantName: String
+    priceCents: Int!
+    stockQty: Int
+    color: AdminColor!
+    size: AdminSize!
+    isActive: Boolean!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type AdminProduct {
+    id: ID!
+    slug: String!
+    name: String!
+    shortDescription: String
+    description: String
+    basePriceCents: Int!
+    currency: String!
+    customizable: Boolean!
+    status: String!
+    seoTitle: String
+    seoDescription: String
+    deletedAt: String
+    createdAt: String!
+    updatedAt: String!
+    productType: AdminProductType!
+    images: [AdminProductImage!]!
+    variants: [AdminProductVariant!]!
+  }
+
+  type AdminProductsPayload {
+    items: [AdminProduct!]!
+    total: Int!
+  }
+
+  type AdminProductFormOptions {
+    productTypes: [AdminProductType!]!
+    colors: [AdminColor!]!
+    sizes: [AdminSize!]!
+  }
+
+  input AdminProductsFilterInput {
+    search: String
+    productTypeSlug: String
+    status: String
+    customizable: Boolean
+    includeArchived: Boolean
+  }
+
+  input AdminProductsSortInput {
+    field: String
+    direction: String
+  }
+
+  input AdminProductInput {
+    name: String!
+    slug: String
+    shortDescription: String
+    description: String
+    productTypeId: ID!
+    basePriceCents: Int!
+    currency: String
+    customizable: Boolean
+    status: String
+    seoTitle: String
+    seoDescription: String
+  }
+
+  input AdminProductVariantInput {
+    id: ID
+    productId: ID!
+    sku: String
+    variantName: String
+    colorId: ID
+    sizeId: ID
+    priceCents: Int
+    stockQty: Int
+    isActive: Boolean
+  }
+
+  input AdminProductImageInput {
+    id: ID
+    productId: ID!
+    url: String!
+    publicId: String
+    alt: String
+    sortOrder: Int
+    isPrimary: Boolean
+  }
+`
+
 export const adminOrdersTypeDefs = /* GraphQL */ `
   type AdminOrderCustomer {
     userId: ID
@@ -711,6 +841,15 @@ export const typeDefs = /* GraphQL */ `
     adminOrderStatusSummary: AdminOrderStatusSummary!
     adminOrderProductionQueue(limit: Int): [AdminOrder!]!
     adminOrderProductionSheet(orderNumber: String!): AdminProductionSheet
+    adminProducts(
+      filter: AdminProductsFilterInput
+      sort: AdminProductsSortInput
+      limit: Int
+      offset: Int
+    ): AdminProductsPayload!
+    adminProductById(id: ID!): AdminProduct
+    adminProductBySlug(slug: String!): AdminProduct
+    adminProductFormOptions: AdminProductFormOptions!
     myCart: Cart!
     orderByNumber(orderNumber: String!, email: String!): PublicOrder
     orderClaimPreview(token: String!): OrderClaimPreview
@@ -735,6 +874,15 @@ export const typeDefs = /* GraphQL */ `
     addAdminOrderTracking(input: AddAdminOrderTrackingInput!): AdminOrder!
     cancelAdminOrder(orderNumber: String!, reason: String): AdminOrder!
     addAdminOrderNote(input: AddAdminOrderNoteInput!): AdminOrder!
+    createAdminProduct(input: AdminProductInput!): AdminProduct!
+    updateAdminProduct(id: ID!, input: AdminProductInput!): AdminProduct!
+    archiveAdminProduct(id: ID!): AdminProduct!
+    duplicateAdminProduct(id: ID!): AdminProduct!
+    updateAdminProductStatus(id: ID!, status: String!): AdminProduct!
+    upsertAdminProductVariant(input: AdminProductVariantInput!): AdminProductVariant!
+    deleteAdminProductVariant(id: ID!): Boolean!
+    upsertAdminProductImage(input: AdminProductImageInput!): AdminProductImage!
+    deleteAdminProductImage(id: ID!): Boolean!
   }
 
   ${catalogTypeDefs}
@@ -745,4 +893,5 @@ export const typeDefs = /* GraphQL */ `
   ${paymentsTypeDefs}
   ${adminDashboardTypeDefs}
   ${adminOrdersTypeDefs}
+  ${adminProductsTypeDefs}
 `
