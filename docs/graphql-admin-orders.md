@@ -138,11 +138,45 @@ No tiene `IN_PRODUCTION` / `READY_TO_SHIP`. El BFF mapea producción a `PROCESSI
 2. `markAdminOrderReadyToShip`: desde PAID, IN_PRODUCTION o READY_TO_SHIP.
 3. `addAdminOrderTracking`: no en CANCELLED / REFUNDED; actualiza primera shipment o crea una nueva.
 
-## Frontend (hooks listos, UI pendiente)
+## UI conectada (`/admin/orders`)
 
-- `src/features/admin/orders/api/*` — TanStack Query
-- `src/features/admin/orders/graphql/*` — documentos GraphQL
-- `/admin/orders` sigue usando `lib/mock-data.ts` hasta conectar UI
+La página admin de órdenes consume el BFF vía TanStack Query. Ver también `docs/admin-orders-ui.md`.
+
+### Hooks usados
+
+| Hook | Uso en UI |
+|------|-----------|
+| `useAdminOrdersQuery` | Tabla principal + filtros |
+| `useAdminOrderStatusSummaryQuery` | Tarjetas de resumen |
+| `useAdminOrderByNumberQuery` | Drawer de detalle |
+| `useAdminOrderProductionSheetQuery` | Pestaña ficha de producción |
+| `useMoveAdminOrderToProductionMutation` | Tabla + drawer |
+| `useMarkAdminOrderReadyToShipMutation` | Tabla + drawer |
+| `useAddAdminOrderTrackingMutation` | Drawer (diálogo guía) |
+| `useCancelAdminOrderMutation` | Tabla + drawer |
+| `useAddAdminOrderNoteMutation` | Drawer |
+
+### Acciones disponibles en UI
+
+- Ver listado y detalle reales
+- Filtrar por búsqueda, estado, pago, pipeline de producción
+- Mover a producción, marcar lista para envío, agregar tracking, cancelar (sin refund), agregar nota
+- Ver ficha de producción e imprimir (`window.print`)
+
+### Qué sigue mockeado / deshabilitado
+
+- `lib/mock-data.ts` — otras páginas admin si aplica; **no** `/admin/orders`
+- Exportar CSV — botón deshabilitado
+- Crear orden manual — botón deshabilitado
+- Rango de fechas — no expuesto aún
+- `updateAdminOrderStatus` genérico — no en UI (se usan mutations específicas)
+
+### Prueba manual
+
+1. Login admin: `cnoriega+2@gmail.com` / `12345678`
+2. Ir a `/admin/orders`
+3. Verificar tarjetas, tabla, drawer, mutations
+4. Login customer `cliente.demo+1@chefroom.test` → layout admin debe bloquear acceso
 
 ## Pendientes (fuera de v1)
 

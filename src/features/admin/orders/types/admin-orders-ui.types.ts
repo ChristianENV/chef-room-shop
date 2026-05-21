@@ -1,0 +1,161 @@
+/** UI filter slug for order status (cards / toolbar). */
+export type AdminOrderStatusFilter =
+  | 'pendiente-pago'
+  | 'pagado'
+  | 'en-produccion'
+  | 'listo-envio'
+  | 'enviado'
+  | 'entregado'
+  | 'cancelado'
+
+/** UI filter slug for payment status. */
+export type AdminPaymentStatusFilter =
+  | 'pendiente'
+  | 'completado'
+  | 'fallido'
+  | 'reembolsado'
+
+export type StatusBadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline'
+
+export type AdminOrdersUiAddress = {
+  id: string
+  label: string
+  firstName: string
+  lastName: string
+  street: string
+  exteriorNumber: string
+  interiorNumber?: string
+  neighborhood: string
+  city: string
+  state: string
+  postalCode: string
+  country: string
+  phone: string
+  isDefaultShipping: boolean
+  isDefaultBilling: boolean
+}
+
+export type AdminOrdersUiCustomizationArea = {
+  areaId: string
+  areaName: string
+  type: string
+  text?: string
+  logoUrl?: string
+  font?: string
+  color?: string
+  width: number
+  height: number
+  price: number
+}
+
+export type AdminOrdersUiCustomization = {
+  designId: string
+  previewUrl: string
+  areas: AdminOrdersUiCustomizationArea[]
+  productionNotes?: string
+  summaryLines?: string[]
+}
+
+export type AdminOrdersUiItem = {
+  id: string
+  productId: string
+  productName: string
+  productImage: string
+  sku: string
+  color: string
+  colorHex: string
+  size: string
+  quantity: number
+  unitPrice: number
+  totalPrice: number
+  hasCustomization: boolean
+  customization?: AdminOrdersUiCustomization
+}
+
+export type AdminOrdersUiTimelineEvent = {
+  id: string
+  event: string
+  status: AdminOrderStatusFilter
+  timestamp: string
+  user?: string
+  notes?: string
+}
+
+export type AdminOrdersUiCustomer = {
+  id: string
+  name: string
+  email: string
+  phone: string
+  totalOrders: number
+  customerSince: string
+}
+
+export type AdminOrdersUiOrder = {
+  id: string
+  orderNumber: string
+  createdAt: string
+  updatedAt: string
+  status: AdminOrderStatusFilter
+  statusLabel: string
+  paymentStatus: AdminPaymentStatusFilter
+  paymentStatusLabel: string
+  productionStatus: string
+  productionStatusLabel: string
+  fulfillmentStatus: string
+  fulfillmentStatusLabel: string
+  customer: AdminOrdersUiCustomer
+  shippingAddress: AdminOrdersUiAddress
+  billingAddress?: AdminOrdersUiAddress
+  items: AdminOrdersUiItem[]
+  subtotal: number
+  shipping: number
+  discount: number
+  tax: number
+  customizationTotal: number
+  total: number
+  paymentMethod?: string
+  paymentReference?: string
+  trackingNumber?: string
+  trackingUrl?: string
+  estimatedDelivery?: string
+  notes?: string
+  timeline: AdminOrdersUiTimelineEvent[]
+  canMoveToProduction: boolean
+  canMarkReadyToShip: boolean
+  canAddTracking: boolean
+  canCancel: boolean
+}
+
+export type AdminOrdersUiTableRow = {
+  id: string
+  orderNumber: string
+  customerName: string
+  customerEmail: string
+  itemCount: number
+  hasCustomization: boolean
+  paymentStatus: AdminPaymentStatusFilter
+  paymentStatusLabel: string
+  status: AdminOrderStatusFilter
+  statusLabel: string
+  statusBadgeVariant: StatusBadgeVariant
+  productionStatusLabel: string
+  total: number
+  totalFormatted: string
+  createdAt: string
+  createdAtFormatted: string
+  order: AdminOrdersUiOrder
+}
+
+export type AdminOrdersStatusCardCounts = Record<AdminOrderStatusFilter, number> & {
+  cancelado: number
+}
+
+export type AdminOrdersProductionSheetUi = {
+  orderNumber: string
+  customerName: string
+  customerEmail: string
+  notes: string | null
+  generatedAt: string
+  generatedAtFormatted: string
+  items: AdminOrdersUiItem[]
+}
