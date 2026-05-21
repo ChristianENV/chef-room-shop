@@ -1,115 +1,319 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
-import { Plus } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Copy, Plus } from 'lucide-react'
+
 import { AdminPageConfig } from '@/src/features/admin/layout/admin-page-config'
 import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   ProductSelector,
   GarmentAreaMap,
   CustomizationAreaCard,
   RuleEditorDrawer,
-  PricingPreview,
-  UnsavedChangesBar,
+  PricingPreviewCard,
+  DeleteRuleDialog,
+  DuplicateRulesDialog,
 } from '@/src/features/admin/customization'
-import type { ProductCategory, GarmentAreaId, CustomizationAreaRule } from '@/lib/types'
-import { MOCK_CUSTOMIZATION_RULES, saveAllCustomizationRules } from '@/lib/mock-data'
+import { useAdminCustomizationProductsQuery } from '@/src/features/admin/customization/api/use-admin-customization-products-query'
+import { useAdminCustomizationAreasQuery } from '@/src/features/admin/customization/api/use-admin-customization-areas-query'
+import { useAdminCustomizationOptionsQuery } from '@/src/features/admin/customization/api/use-admin-customization-options-query'
+import { useAdminCustomizationRulesByProductQuery } from '@/src/features/admin/customization/api/use-admin-customization-rules-by-product-query'
+import { useAdminCustomizationPricingPreviewQuery } from '@/src/features/admin/customization/api/use-admin-customization-pricing-preview-query'
+import { useToggleAdminCustomizationRuleMutation } from '@/src/features/admin/customization/api/use-toggle-admin-customization-rule-mutation'
+import { useDeleteAdminCustomizationRuleMutation } from '@/src/features/admin/customization/api/use-delete-admin-customization-rule-mutation'
+import { useDuplicateCustomizationRulesToProductMutation } from '@/src/features/admin/customization/api/use-duplicate-customization-rules-to-product-mutation'
+import { AdminCustomizationPageSkeleton } from '@/src/features/admin/customization/components/admin-customization-loading'
+import { AdminCustomizationError } from '@/src/features/admin/customization/components/admin-customization-error'
+import { AdminCustomizationEmpty } from '@/src/features/admin/customization/components/admin-customization-empty'
+import {
+  groupRulesByArea,
+  mapAdminCustomizationRuleToCard,
+  mapPricingPreviewToUi,
+  mapProductToGarmentMapType,
+} from '@/src/features/admin/customization/mappers/admin-customization-ui.mapper'
+import type { CustomizationRuleCardUi } from '@/src/features/admin/customization/types/admin-customization-ui.types'
+import type { AdminCustomizationRule } from '@/src/features/admin/customization/types'
 
 export default function CustomizationRulesPage() {
-  // State
-  const [selectedType, setSelectedType] = useState<ProductCategory | 'all'>('filipinas')
-  const [selectedProductId, setSelectedProductId] = useState<string | null>('admin-1')
-  const [selectedArea, setSelectedArea] = useState<GarmentAreaId | null>(null)
-  const [rules, setRules] = useState<CustomizationAreaRule[]>([])
-  const [originalRules, setOriginalRules] = useState<CustomizationAreaRule[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
+  const [productSearch, setProductSearch] = useState('')
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
+  const [selectedAreaSlug, setSelectedAreaSlug] = useState<string | null>(null)
+  const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null)
+  const [previewWidth, setPreviewWidth] = useState(8)
+  const [previewHeight, setPreviewHeight] = useState(8)
+  const [mobileTab, setMobileTab] = useState('zonas')
+
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [editingRule, setEditingRule] = useState<CustomizationAreaRule | null>(null)
+  const [editingRule, setEditingRule] = useState<AdminCustomizationRule | null>(null)
+  const [presetAreaId, setPresetAreaId] = useState<string | null>(null)
 
-  // Load rules
-  // TODO: Replace with TanStack Query useQuery
-  useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      const filteredRules = selectedProductId
-        ? MOCK_CUSTOMIZATION_RULES.filter((r) => r.productId === selectedProductId)
-        : MOCK_CUSTOMIZATION_RULES.filter((r) => 
-            selectedType === 'all' || r.productType === selectedType
-          )
-      setRules(filteredRules)
-      setOriginalRules(JSON.parse(JSON.stringify(filteredRules)))
-      setIsLoading(false)
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [selectedProductId, selectedType])
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deletingRule, setDeletingRule] = useState<CustomizationRuleCardUi | null>(null)
 
-  // Check for unsaved changes
-  const hasChanges = useMemo(() => {
-    return JSON.stringify(rules) !== JSON.stringify(originalRules)
-  }, [rules, originalRules])
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false)
+  const [feedback, setFeedback] = useState<string | null>(null)
+  const [togglingRuleId, setTogglingRuleId] = useState<string | null>(null)
 
-  // Get area states for the map
-  const areaStates = useMemo(() => {
-    const states: Record<GarmentAreaId, { enabled: boolean; hasRules: boolean }> = {
-      pecho: { enabled: false, hasRules: false },
-      espalda: { enabled: false, hasRules: false },
-      'manga-izquierda': { enabled: false, hasRules: false },
-      'manga-derecha': { enabled: false, hasRules: false },
-      bolsillo: { enabled: false, hasRules: false },
-      cuello: { enabled: false, hasRules: false },
+  const productsQuery = useAdminCustomizationProductsQuery({ customizable: true })
+  const areasQuery = useAdminCustomizationAreasQuery()
+  const optionsQuery = useAdminCustomizationOptionsQuery()
+
+  const products = productsQuery.data ?? []
+
+  const activeProductId = useMemo(() => {
+    if (selectedProductId && products.some((p) => p.id === selectedProductId)) {
+      return selectedProductId
     }
-    
-    rules.forEach((rule) => {
-      states[rule.areaId] = { enabled: rule.enabled, hasRules: true }
-    })
-    
+    return products[0]?.id ?? null
+  }, [selectedProductId, products])
+
+  const selectedProduct = products.find((p) => p.id === activeProductId) ?? null
+
+  const rulesQuery = useAdminCustomizationRulesByProductQuery(
+    activeProductId ?? '',
+    !!activeProductId,
+  )
+
+  const ruleCards = useMemo(
+    () => (rulesQuery.data ?? []).map(mapAdminCustomizationRuleToCard),
+    [rulesQuery.data],
+  )
+
+  const areaGroups = useMemo(() => {
+    if (!areasQuery.data) return []
+    return groupRulesByArea(rulesQuery.data ?? [], areasQuery.data)
+  }, [rulesQuery.data, areasQuery.data])
+
+  const filteredGroups = useMemo(() => {
+    if (!selectedAreaSlug) return areaGroups
+    return areaGroups.filter((g) => g.areaSlug === selectedAreaSlug)
+  }, [areaGroups, selectedAreaSlug])
+
+  const garmentType = selectedProduct
+    ? mapProductToGarmentMapType(selectedProduct)
+    : 'filipinas'
+
+  const areaStates = useMemo(() => {
+    const states: Record<string, { enabled: boolean; hasRules: boolean }> = {}
+    for (const group of areaGroups) {
+      states[group.areaSlug] = {
+        hasRules: group.ruleCount > 0,
+        enabled: group.hasAnyEnabled,
+      }
+    }
     return states
-  }, [rules])
+  }, [areaGroups])
 
-  // Get selected rule
-  const selectedRule = useMemo(() => {
-    return rules.find((r) => r.areaId === selectedArea) ?? null
-  }, [rules, selectedArea])
+  const selectedRule = ruleCards.find((r) => r.id === selectedRuleId) ?? null
 
-  // Handlers
-  const handleToggleEnabled = (ruleId: string, enabled: boolean) => {
-    setRules((prev) =>
-      prev.map((r) => (r.id === ruleId ? { ...r, enabled } : r))
-    )
-  }
+  const pricingInput =
+    selectedRule && activeProductId
+      ? {
+          productId: activeProductId,
+          areaId: selectedRule.areaId,
+          optionId: selectedRule.optionId,
+          widthCm: previewWidth,
+          heightCm: previewHeight,
+        }
+      : null
 
-  const handleEditRule = (rule: CustomizationAreaRule) => {
-    setEditingRule(rule)
+  const pricingQuery = useAdminCustomizationPricingPreviewQuery(pricingInput, !!pricingInput)
+
+  const pricingUi = useMemo(() => {
+    if (!pricingQuery.data) return null
+    return mapPricingPreviewToUi(pricingQuery.data, previewWidth, previewHeight)
+  }, [pricingQuery.data, previewWidth, previewHeight])
+
+  const toggleMutation = useToggleAdminCustomizationRuleMutation()
+  const deleteMutation = useDeleteAdminCustomizationRuleMutation()
+  const duplicateMutation = useDuplicateCustomizationRulesToProductMutation()
+
+  const openCreateRule = (areaId?: string) => {
+    setEditingRule(null)
+    setPresetAreaId(areaId ?? null)
     setDrawerOpen(true)
   }
 
-  const handleSaveRule = (updatedRule: CustomizationAreaRule) => {
-    setRules((prev) =>
-      prev.map((r) => (r.id === updatedRule.id ? updatedRule : r))
-    )
+  const openEditRule = (card: CustomizationRuleCardUi) => {
+    setEditingRule(card.rule)
+    setPresetAreaId(null)
+    setDrawerOpen(true)
   }
 
-  const handleSaveAllChanges = async () => {
-    setIsSaving(true)
-    try {
-      // TODO: Replace with GraphQL mutation
-      await saveAllCustomizationRules(rules)
-      setOriginalRules(JSON.parse(JSON.stringify(rules)))
-    } catch (error) {
-      console.error('Error saving rules:', error)
-    } finally {
-      setIsSaving(false)
+  const handleMapAreaSelect = (areaSlug: string) => {
+    setSelectedAreaSlug((prev) => (prev === areaSlug ? null : areaSlug))
+    const group = areaGroups.find((g) => g.areaSlug === areaSlug)
+    if (group?.rules[0]) {
+      setSelectedRuleId(group.rules[0]!.id)
     }
   }
 
-  const handleDiscardChanges = () => {
-    setRules(JSON.parse(JSON.stringify(originalRules)))
+  const handleToggleRule = async (card: CustomizationRuleCardUi, enabled: boolean) => {
+    setTogglingRuleId(card.id)
+    setFeedback(null)
+    try {
+      await toggleMutation.mutateAsync({ id: card.id, enabled })
+      setFeedback(enabled ? 'Regla activada.' : 'Regla desactivada.')
+    } catch (error) {
+      setFeedback('No pudimos cambiar el estado de la regla.')
+      if (process.env.NODE_ENV === 'development') console.error(error)
+    } finally {
+      setTogglingRuleId(null)
+    }
   }
 
-  const handleCreateRule = () => {
-    // TODO: Implement create new rule dialog
-    console.log('Create new rule')
+  const handleDeleteConfirm = async () => {
+    if (!deletingRule) return
+    try {
+      await deleteMutation.mutateAsync({
+        id: deletingRule.id,
+        productId: deletingRule.productId,
+      })
+      setFeedback('Regla eliminada.')
+      if (selectedRuleId === deletingRule.id) setSelectedRuleId(null)
+      setDeleteDialogOpen(false)
+      setDeletingRule(null)
+    } catch (error) {
+      setFeedback('No pudimos eliminar la regla.')
+      if (process.env.NODE_ENV === 'development') console.error(error)
+    }
+  }
+
+  const handleDuplicate = async (toProductId: string, overwriteExisting: boolean) => {
+    if (!activeProductId) return
+    try {
+      const created = await duplicateMutation.mutateAsync({
+        fromProductId: activeProductId,
+        toProductId,
+        overwriteExisting,
+      })
+      setFeedback(
+        created.length > 0
+          ? `Se copiaron ${created.length} reglas al producto destino.`
+          : 'No se crearon reglas nuevas (ya existían en destino).',
+      )
+      setDuplicateDialogOpen(false)
+      setSelectedProductId(toProductId)
+    } catch (error) {
+      setFeedback('No pudimos duplicar las reglas.')
+      if (process.env.NODE_ENV === 'development') console.error(error)
+    }
+  }
+
+  const catalogError = areasQuery.isError || optionsQuery.isError
+  const initialLoading =
+    productsQuery.isPending || areasQuery.isPending || optionsQuery.isPending
+
+  const rulesContent = () => {
+    if (rulesQuery.isError) {
+      return (
+        <AdminCustomizationError
+          message="No pudimos cargar las reglas de este producto."
+          onRetry={() => void rulesQuery.refetch()}
+        />
+      )
+    }
+    if (rulesQuery.isPending) {
+      return (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-48 animate-pulse rounded-lg border border-border bg-card" />
+          ))}
+        </div>
+      )
+    }
+    if (ruleCards.length === 0) {
+      return (
+        <AdminCustomizationEmpty onAction={() => openCreateRule()} />
+      )
+    }
+    return (
+      <div className="grid gap-4 sm:grid-cols-2">
+        {filteredGroups.map((group) => (
+          <CustomizationAreaCard
+            key={group.areaId}
+            group={group}
+            isSelected={selectedAreaSlug === group.areaSlug}
+            onSelectArea={() =>
+              setSelectedAreaSlug((prev) =>
+                prev === group.areaSlug ? null : group.areaSlug,
+              )
+            }
+            onAddRule={() => openCreateRule(group.areaId)}
+            onEditRule={openEditRule}
+            onToggleRule={handleToggleRule}
+            onDeleteRule={(card) => {
+              setDeletingRule(card)
+              setDeleteDialogOpen(true)
+            }}
+            togglingRuleId={togglingRuleId}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  const mapSection = (
+    <GarmentAreaMap
+      garmentType={garmentType}
+      selectedAreaSlug={selectedAreaSlug}
+      onAreaSelect={handleMapAreaSelect}
+      areaStates={areaStates}
+    />
+  )
+
+  const pricingSection = (
+    <PricingPreviewCard
+      rules={ruleCards}
+      selectedRuleId={selectedRuleId}
+      onSelectRule={setSelectedRuleId}
+      widthCm={previewWidth}
+      heightCm={previewHeight}
+      onWidthChange={setPreviewWidth}
+      onHeightChange={setPreviewHeight}
+      preview={pricingUi}
+      isLoading={pricingQuery.isFetching}
+      isError={pricingQuery.isError}
+    />
+  )
+
+  if (initialLoading) {
+    return (
+      <AdminPageConfig
+        breadcrumb={[{ label: 'Personalización' }, { label: 'Reglas' }]}
+        environment="DEV"
+      >
+        <AdminCustomizationPageSkeleton />
+      </AdminPageConfig>
+    )
+  }
+
+  if (productsQuery.isError) {
+    return (
+      <AdminPageConfig
+        breadcrumb={[{ label: 'Personalización' }, { label: 'Reglas' }]}
+        environment="DEV"
+      >
+        <AdminCustomizationError onRetry={() => void productsQuery.refetch()} />
+      </AdminPageConfig>
+    )
+  }
+
+  if (products.length === 0) {
+    return (
+      <AdminPageConfig
+        breadcrumb={[{ label: 'Personalización' }, { label: 'Reglas' }]}
+        environment="DEV"
+      >
+        <AdminCustomizationEmpty
+          title="Sin productos personalizables"
+          description="No hay productos disponibles para configurar. Marca productos como personalizables en el catálogo."
+          actionLabel={undefined}
+        />
+      </AdminPageConfig>
+    )
   }
 
   return (
@@ -117,111 +321,142 @@ export default function CustomizationRulesPage() {
       breadcrumb={[{ label: 'Personalización' }, { label: 'Reglas' }]}
       environment="DEV"
     >
-      <div className="space-y-6 pb-20">
-        {/* Page Header */}
+      <div className="space-y-6 pb-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="font-sans text-2xl font-bold text-foreground">
-              Reglas de Personalización
+              Reglas de personalización
             </h1>
-            <p className="mt-1 font-serif text-muted-foreground">
-              Define que zonas, tecnicas y restricciones estaran disponibles en cada prenda.
+            <p className="mt-1 font-serif text-sm text-muted-foreground">
+              Define qué zonas, técnicas y restricciones estarán disponibles en cada prenda.
             </p>
           </div>
-          <Button onClick={handleCreateRule}>
-            <Plus className="mr-2 h-4 w-4" />
-            Nueva Regla
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              disabled={!activeProductId || ruleCards.length === 0}
+              onClick={() => setDuplicateDialogOpen(true)}
+            >
+              <Copy className="mr-2 h-4 w-4" />
+              Duplicar reglas
+            </Button>
+            <Button onClick={() => openCreateRule()} disabled={catalogError}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nueva regla
+            </Button>
+          </div>
         </div>
 
-        {/* Product Selector */}
+        {feedback ? (
+          <Alert>
+            <AlertDescription className="font-serif">{feedback}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {catalogError ? (
+          <Alert variant="destructive">
+            <AlertDescription className="font-serif">
+              Error al cargar catálogo de áreas u opciones. Recarga la página.
+            </AlertDescription>
+          </Alert>
+        ) : null}
+
         <ProductSelector
-          selectedType={selectedType}
+          products={products}
           selectedProductId={selectedProductId}
-          onTypeChange={setSelectedType}
-          onProductChange={setSelectedProductId}
+          search={productSearch}
+          onSearchChange={setProductSearch}
+          onProductChange={(id) => {
+            setSelectedProductId(id)
+            setSelectedAreaSlug(null)
+            setSelectedRuleId(null)
+          }}
         />
 
-        {/* Main Content Grid */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Left: Garment Map + Area Cards */}
+        {/* Desktop layout */}
+        <div className="hidden lg:grid lg:grid-cols-3 lg:gap-6">
           <div className="space-y-6 lg:col-span-2">
-            {/* Garment Area Map */}
-            <GarmentAreaMap
-              productType={selectedType === 'all' ? 'filipinas' : selectedType}
-              selectedArea={selectedArea}
-              onAreaSelect={setSelectedArea}
-              areaStates={areaStates}
-            />
-
-            {/* Area Cards Grid */}
+            {mapSection}
             <div>
               <h2 className="mb-4 font-sans text-lg font-semibold text-foreground">
-                Zonas Configuradas
-              </h2>
-              
-              {isLoading ? (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className="h-48 animate-pulse rounded-lg border border-border bg-card"
-                    />
-                  ))}
-                </div>
-              ) : rules.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-border bg-card p-8 text-center">
-                  <p className="font-serif text-muted-foreground">
-                    No hay reglas configuradas para este producto.
-                  </p>
-                  <Button variant="outline" className="mt-4" onClick={handleCreateRule}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Crear Primera Regla
+                Reglas por zona
+                {selectedAreaSlug ? (
+                  <Button
+                    variant="link"
+                    className="ml-2 h-auto p-0 font-sans text-sm"
+                    onClick={() => setSelectedAreaSlug(null)}
+                  >
+                    Ver todas
                   </Button>
-                </div>
-              ) : (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {rules.map((rule) => (
-                    <CustomizationAreaCard
-                      key={rule.id}
-                      rule={rule}
-                      isSelected={selectedArea === rule.areaId}
-                      onSelect={() => setSelectedArea(rule.areaId)}
-                      onToggleEnabled={(enabled) => handleToggleEnabled(rule.id, enabled)}
-                      onEdit={() => handleEditRule(rule)}
-                    />
-                  ))}
-                </div>
-              )}
+                ) : null}
+              </h2>
+              {rulesContent()}
             </div>
           </div>
-
-          {/* Right: Pricing Preview */}
           <div className="lg:col-span-1">
-            <div className="sticky top-20">
-              <PricingPreview rule={selectedRule} />
-            </div>
+            <div className="sticky top-20">{pricingSection}</div>
           </div>
+        </div>
+
+        {/* Mobile tabs */}
+        <div className="lg:hidden">
+          <Tabs value={mobileTab} onValueChange={setMobileTab}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="zonas" className="font-sans text-xs">
+                Zonas
+              </TabsTrigger>
+              <TabsTrigger value="reglas" className="font-sans text-xs">
+                Reglas
+              </TabsTrigger>
+              <TabsTrigger value="precio" className="font-sans text-xs">
+                Precio
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="zonas" className="mt-4">
+              {mapSection}
+            </TabsContent>
+            <TabsContent value="reglas" className="mt-4">
+              {rulesContent()}
+            </TabsContent>
+            <TabsContent value="precio" className="mt-4">
+              {pricingSection}
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
-      {/* Rule Editor Drawer */}
-      <RuleEditorDrawer
-        open={drawerOpen}
-        onClose={() => {
-          setDrawerOpen(false)
-          setEditingRule(null)
-        }}
-        rule={editingRule}
-        onSave={handleSaveRule}
+      {activeProductId && selectedProduct && areasQuery.data && optionsQuery.data ? (
+        <RuleEditorDrawer
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+          productId={activeProductId}
+          productName={selectedProduct.name}
+          rule={editingRule}
+          areas={areasQuery.data}
+          options={optionsQuery.data}
+          presetAreaId={presetAreaId}
+          existingRules={rulesQuery.data ?? []}
+          onSaved={() => setFeedback('Regla guardada correctamente.')}
+        />
+      ) : null}
+
+      <DeleteRuleDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        ruleLabel={
+          deletingRule ? `${deletingRule.areaName} · ${deletingRule.optionName}` : null
+        }
+        onConfirm={() => void handleDeleteConfirm()}
+        isDeleting={deleteMutation.isPending}
       />
 
-      {/* Unsaved Changes Bar */}
-      <UnsavedChangesBar
-        hasChanges={hasChanges}
-        onSave={handleSaveAllChanges}
-        onDiscard={handleDiscardChanges}
-        isSaving={isSaving}
+      <DuplicateRulesDialog
+        open={duplicateDialogOpen}
+        onOpenChange={setDuplicateDialogOpen}
+        sourceProduct={selectedProduct}
+        targetProducts={products}
+        onConfirm={(toId, overwrite) => void handleDuplicate(toId, overwrite)}
+        isDuplicating={duplicateMutation.isPending}
       />
     </AdminPageConfig>
   )

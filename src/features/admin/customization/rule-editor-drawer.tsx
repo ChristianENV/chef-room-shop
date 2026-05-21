@@ -1,6 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { Loader2 } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Sheet,
   SheetContent,
@@ -9,277 +25,383 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
-import type { CustomizationAreaRule, CustomizationType } from '@/lib/types'
+import { Separator } from '@/components/ui/separator'
+import { useCreateAdminCustomizationRuleMutation } from './api/use-create-admin-customization-rule-mutation'
+import { useUpdateAdminCustomizationRuleMutation } from './api/use-update-admin-customization-rule-mutation'
+import {
+  mapAdminCustomizationAreaToUi,
+  mapAdminCustomizationOptionToUi,
+  mapAdminCustomizationRuleToFormValues,
+  mapRuleFormValuesToInput,
+} from './mappers/admin-customization-ui.mapper'
+import type { AdminCustomizationArea, AdminCustomizationOption, AdminCustomizationRule } from './types'
+import type { RuleFormValues } from './types/admin-customization-ui.types'
+import { KNOWN_FILE_TYPES } from './types/admin-customization-ui.types'
 
-interface RuleEditorDrawerProps {
+type RuleEditorDrawerProps = {
   open: boolean
-  onClose: () => void
-  rule: CustomizationAreaRule | null
-  onSave: (rule: CustomizationAreaRule) => void
+  onOpenChange: (open: boolean) => void
+  productId: string
+  productName: string
+  rule: AdminCustomizationRule | null
+  areas: AdminCustomizationArea[]
+  options: AdminCustomizationOption[]
+  presetAreaId?: string | null
+  existingRules: AdminCustomizationRule[]
+  onSaved?: () => void
 }
 
-const customizationTypes: { id: CustomizationType; label: string }[] = [
-  { id: 'bordado', label: 'Bordado' },
-  { id: 'estampado', label: 'Estampado' },
-  { id: 'patch', label: 'Patch' },
-  { id: 'logo', label: 'Logo' },
-  { id: 'texto', label: 'Texto' },
-]
+function RuleEditorForm({
+  initialValues,
+  productName,
+  isEditing,
+  areas,
+  options,
+  existingRules,
+  editingRuleId,
+  onOpenChange,
+  onSaved,
+}: {
+  initialValues: RuleFormValues
+  productName: string
+  isEditing: boolean
+  areas: AdminCustomizationArea[]
+  options: AdminCustomizationOption[]
+  existingRules: AdminCustomizationRule[]
+  editingRuleId: string | null
+  onOpenChange: (open: boolean) => void
+  onSaved?: () => void
+}) {
+  const createMutation = useCreateAdminCustomizationRuleMutation()
+  const updateMutation = useUpdateAdminCustomizationRuleMutation()
 
-const fileTypes = ['png', 'jpg', 'svg', 'ai', 'eps', 'pdf']
+  const [values, setValues] = useState<RuleFormValues>(initialValues)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
-export function RuleEditorDrawer({
-  open,
-  onClose,
-  rule,
-  onSave,
-}: RuleEditorDrawerProps) {
-  const [formData, setFormData] = useState<CustomizationAreaRule | null>(rule)
+  const areaOptions = useMemo(() => areas.map(mapAdminCustomizationAreaToUi), [areas])
+  const optionOptions = useMemo(() => options.map(mapAdminCustomizationOptionToUi), [options])
 
-  // Update form data when rule changes
-  useState(() => {
-    setFormData(rule)
-  })
+  const takenOptionIdsForArea = useMemo(() => {
+    const set = new Set<string>()
+    for (const r of existingRules) {
+      if (r.areaId === values.areaId && r.id !== editingRuleId) {
+        set.add(r.optionId)
+      }
+    }
+    return set
+  }, [existingRules, values.areaId, editingRuleId])
 
-  if (!formData) return null
+  const update = <K extends keyof RuleFormValues>(key: K, val: RuleFormValues[K]) => {
+    setValues((prev) => ({ ...prev, [key]: val }))
+  }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (formData) {
-      onSave(formData)
-      onClose()
+  const toggleFileType = (ft: string) => {
+    setValues((prev) => {
+      const has = prev.allowedFileTypes.includes(ft)
+      return {
+        ...prev,
+        allowedFileTypes: has
+          ? prev.allowedFileTypes.filter((t) => t !== ft)
+          : [...prev.allowedFileTypes, ft],
+      }
+    })
+  }
+
+  const handleOptionChange = (optionId: string) => {
+    const opt = options.find((o) => o.id === optionId)
+    update('optionId', optionId)
+    if (opt && !isEditing) {
+      update('basePricePesos', Math.round(opt.basePriceCents / 100))
     }
   }
 
-  const toggleCustomizationType = (type: CustomizationType) => {
-    setFormData((prev) => {
-      if (!prev) return prev
-      const types = prev.allowedTypes.includes(type)
-        ? prev.allowedTypes.filter((t) => t !== type)
-        : [...prev.allowedTypes, type]
-      return { ...prev, allowedTypes: types }
-    })
+  const handleSubmit = async () => {
+    if (!values.areaId) {
+      setSaveError('Selecciona un área.')
+      return
+    }
+    if (!values.optionId) {
+      setSaveError('Selecciona una técnica.')
+      return
+    }
+    if (values.basePricePesos < 0 || values.pricePerCmPesos < 0) {
+      setSaveError('Los precios no pueden ser negativos.')
+      return
+    }
+
+    setSaveError(null)
+
+    try {
+      const input = mapRuleFormValuesToInput(values)
+      if (isEditing && editingRuleId) {
+        await updateMutation.mutateAsync({ id: editingRuleId, input })
+      } else {
+        await createMutation.mutateAsync(input)
+      }
+      onSaved?.()
+      onOpenChange(false)
+    } catch (error) {
+      const msg =
+        error instanceof Error && /combinaci|duplicate|CONFLICT/i.test(error.message)
+          ? 'Ya existe una regla para esta zona y técnica.'
+          : 'No pudimos guardar la regla. Intenta de nuevo.'
+      setSaveError(msg)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[admin-customization-form]', error)
+      }
+    }
   }
 
-  const toggleFileType = (type: string) => {
-    setFormData((prev) => {
-      if (!prev) return prev
-      const types = prev.allowedFileTypes || []
-      const newTypes = types.includes(type)
-        ? types.filter((t) => t !== type)
-        : [...types, type]
-      return { ...prev, allowedFileTypes: newTypes }
-    })
-  }
+  const isSaving = createMutation.isPending || updateMutation.isPending
 
   return (
-    <Sheet open={open} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
+    <>
+      <div className="mt-6 space-y-6">
+        <section className="space-y-3">
+          <h4 className="font-sans text-sm font-semibold">Producto y zona</h4>
+          <p className="font-serif text-sm text-muted-foreground">{productName}</p>
+          <div className="space-y-2">
+            <Label className="font-sans">Área *</Label>
+            <Select value={values.areaId} onValueChange={(v) => update('areaId', v)}>
+              <SelectTrigger className="font-sans">
+                <SelectValue placeholder="Seleccionar área" />
+              </SelectTrigger>
+              <SelectContent>
+                {areaOptions.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label className="font-sans">Técnica *</Label>
+            <Select value={values.optionId} onValueChange={handleOptionChange}>
+              <SelectTrigger className="font-sans">
+                <SelectValue placeholder="Seleccionar técnica" />
+              </SelectTrigger>
+              <SelectContent>
+                {optionOptions.map((o) => (
+                  <SelectItem
+                    key={o.id}
+                    value={o.id}
+                    disabled={!isEditing && takenOptionIdsForArea.has(o.id)}
+                  >
+                    {o.name}
+                    {!isEditing && takenOptionIdsForArea.has(o.id) ? ' (ya existe)' : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-between rounded-lg border border-border p-3">
+            <Label className="font-sans">Regla activa</Label>
+            <Switch checked={values.enabled} onCheckedChange={(c) => update('enabled', c)} />
+          </div>
+        </section>
+
+        <Separator />
+
+        <section className="space-y-3">
+          <h4 className="font-sans text-sm font-semibold">Dimensiones y restricciones</h4>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="font-sans text-xs">Ancho máx. (cm)</Label>
+              <Input
+                type="number"
+                min={0}
+                value={values.maxWidthCm}
+                onChange={(e) => update('maxWidthCm', Math.max(0, Number(e.target.value)))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="font-sans text-xs">Alto máx. (cm)</Label>
+              <Input
+                type="number"
+                min={0}
+                value={values.maxHeightCm}
+                onChange={(e) => update('maxHeightCm', Math.max(0, Number(e.target.value)))}
+              />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label className="font-sans text-xs">Cantidad mínima</Label>
+            <Input
+              type="number"
+              min={1}
+              value={values.minQuantity}
+              onChange={(e) => update('minQuantity', Math.max(1, Number(e.target.value)))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="font-sans text-xs">Tipos de archivo</Label>
+            <div className="flex flex-wrap gap-2">
+              {KNOWN_FILE_TYPES.map((ft) => (
+                <label
+                  key={ft}
+                  className="flex cursor-pointer items-center gap-1.5 rounded-md border border-border px-2 py-1"
+                >
+                  <Checkbox
+                    checked={values.allowedFileTypes.includes(ft)}
+                    onCheckedChange={() => toggleFileType(ft)}
+                  />
+                  <span className="font-mono text-xs uppercase">{ft}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label className="font-sans text-xs">Mensaje de validación</Label>
+            <Textarea
+              rows={2}
+              value={values.validationMessage}
+              onChange={(e) => update('validationMessage', e.target.value)}
+              className="font-serif"
+            />
+          </div>
+        </section>
+
+        <Separator />
+
+        <section className="space-y-3">
+          <h4 className="font-sans text-sm font-semibold">Precio y producción</h4>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="font-sans text-xs">Precio base (MXN)</Label>
+              <Input
+                type="number"
+                min={0}
+                value={values.basePricePesos}
+                onChange={(e) => update('basePricePesos', Math.max(0, Number(e.target.value)))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="font-sans text-xs">Precio por cm² (MXN)</Label>
+              <Input
+                type="number"
+                min={0}
+                step={0.01}
+                value={values.pricePerCmPesos}
+                onChange={(e) => update('pricePerCmPesos', Math.max(0, Number(e.target.value)))}
+              />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label className="font-sans text-xs">Días extra de producción</Label>
+            <Input
+              type="number"
+              min={0}
+              value={values.extraProductionDays}
+              onChange={(e) =>
+                update('extraProductionDays', Math.max(0, Number(e.target.value)))
+              }
+            />
+          </div>
+        </section>
+
+        <Separator />
+
+        <section className="space-y-2">
+          <h4 className="font-sans text-sm font-semibold">Notas</h4>
+          <Textarea
+            rows={2}
+            placeholder="Notas internas para el equipo..."
+            value={values.notes}
+            onChange={(e) => update('notes', e.target.value)}
+            className="font-serif"
+          />
+        </section>
+
+        {saveError ? (
+          <Alert variant="destructive">
+            <AlertDescription className="font-serif">{saveError}</AlertDescription>
+          </Alert>
+        ) : null}
+      </div>
+
+      <SheetFooter className="mt-6 gap-2">
+        <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
+          Cancelar
+        </Button>
+        <Button onClick={() => void handleSubmit()} disabled={isSaving}>
+          {isSaving ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Guardando…
+            </>
+          ) : isEditing ? (
+            'Guardar cambios'
+          ) : (
+            'Crear regla'
+          )}
+        </Button>
+      </SheetFooter>
+    </>
+  )
+}
+
+export function RuleEditorDrawer({
+  open,
+  onOpenChange,
+  productId,
+  productName,
+  rule,
+  areas,
+  options,
+  presetAreaId,
+  existingRules,
+  onSaved,
+}: RuleEditorDrawerProps) {
+  const isEditing = !!rule
+
+  const presetOption = options[0]
+  const initialValues = useMemo(
+    () =>
+      mapAdminCustomizationRuleToFormValues(rule, productId, {
+        areaId: presetAreaId ?? rule?.areaId,
+        optionId: rule?.optionId,
+        optionBasePriceCents: presetOption?.basePriceCents,
+      }),
+    [rule, productId, presetAreaId, presetOption?.basePriceCents],
+  )
+
+  const formKey = isEditing ? rule!.id : `new-${presetAreaId ?? 'x'}-${open}`
+
+  const catalogReady = areas.length > 0 && options.length > 0
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="flex w-full flex-col overflow-y-auto sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle className="font-sans">Editar Regla: {formData.areaName}</SheetTitle>
+          <SheetTitle className="font-sans">
+            {isEditing ? 'Editar regla' : 'Nueva regla'}
+          </SheetTitle>
           <SheetDescription className="font-serif">
-            Configura las opciones de personalizacion para esta zona.
+            Define zona, técnica, precios y restricciones para el customizador.
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-6">
-          {/* Enabled toggle */}
-          <div className="flex items-center justify-between">
-            <Label htmlFor="enabled" className="font-sans">Zona Habilitada</Label>
-            <Switch
-              id="enabled"
-              checked={formData.enabled}
-              onCheckedChange={(checked) =>
-                setFormData((prev) => (prev ? { ...prev, enabled: checked } : prev))
-              }
-            />
-          </div>
-
-          {/* Allowed customization types */}
-          <div className="space-y-3">
-            <Label className="font-sans">Tipos de Personalizacion Permitidos</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {customizationTypes.map((type) => (
-                <label
-                  key={type.id}
-                  className="flex cursor-pointer items-center gap-2 rounded-md border border-border p-2 hover:bg-secondary"
-                >
-                  <Checkbox
-                    checked={formData.allowedTypes.includes(type.id)}
-                    onCheckedChange={() => toggleCustomizationType(type.id)}
-                  />
-                  <span className="font-sans text-sm">{type.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Dimensions */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="maxWidth" className="font-sans">Max Ancho (cm)</Label>
-              <Input
-                id="maxWidth"
-                type="number"
-                min={1}
-                max={50}
-                value={formData.maxWidth}
-                onChange={(e) =>
-                  setFormData((prev) =>
-                    prev ? { ...prev, maxWidth: parseInt(e.target.value) || 0 } : prev
-                  )
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="maxHeight" className="font-sans">Max Alto (cm)</Label>
-              <Input
-                id="maxHeight"
-                type="number"
-                min={1}
-                max={50}
-                value={formData.maxHeight}
-                onChange={(e) =>
-                  setFormData((prev) =>
-                    prev ? { ...prev, maxHeight: parseInt(e.target.value) || 0 } : prev
-                  )
-                }
-              />
-            </div>
-          </div>
-
-          {/* Pricing */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="basePrice" className="font-sans">Precio Base ($)</Label>
-              <Input
-                id="basePrice"
-                type="number"
-                min={0}
-                value={formData.basePrice}
-                onChange={(e) =>
-                  setFormData((prev) =>
-                    prev ? { ...prev, basePrice: parseInt(e.target.value) || 0 } : prev
-                  )
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="pricePerCm" className="font-sans">Precio por cm ($)</Label>
-              <Input
-                id="pricePerCm"
-                type="number"
-                min={0}
-                step={0.5}
-                value={formData.pricePerCm}
-                onChange={(e) =>
-                  setFormData((prev) =>
-                    prev ? { ...prev, pricePerCm: parseFloat(e.target.value) || 0 } : prev
-                  )
-                }
-              />
-            </div>
-          </div>
-
-          {/* Production */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="productionDays" className="font-sans">Dias Extra Produccion</Label>
-              <Input
-                id="productionDays"
-                type="number"
-                min={0}
-                max={30}
-                value={formData.productionExtraDays}
-                onChange={(e) =>
-                  setFormData((prev) =>
-                    prev ? { ...prev, productionExtraDays: parseInt(e.target.value) || 0 } : prev
-                  )
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="minQuantity" className="font-sans">Cantidad Minima</Label>
-              <Input
-                id="minQuantity"
-                type="number"
-                min={1}
-                value={formData.minQuantity || 1}
-                onChange={(e) =>
-                  setFormData((prev) =>
-                    prev ? { ...prev, minQuantity: parseInt(e.target.value) || 1 } : prev
-                  )
-                }
-              />
-            </div>
-          </div>
-
-          {/* Allowed file types */}
-          <div className="space-y-3">
-            <Label className="font-sans">Tipos de Archivo Permitidos</Label>
-            <div className="flex flex-wrap gap-2">
-              {fileTypes.map((type) => (
-                <label
-                  key={type}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-md border border-border px-2 py-1 hover:bg-secondary"
-                >
-                  <Checkbox
-                    checked={(formData.allowedFileTypes || []).includes(type)}
-                    onCheckedChange={() => toggleFileType(type)}
-                  />
-                  <span className="font-mono text-xs uppercase">{type}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Validation message */}
-          <div className="space-y-2">
-            <Label htmlFor="validationMessage" className="font-sans">
-              Mensaje de Validacion
-            </Label>
-            <Textarea
-              id="validationMessage"
-              placeholder="Mensaje que se mostrara al usuario..."
-              value={formData.validationMessage || ''}
-              onChange={(e) =>
-                setFormData((prev) =>
-                  prev ? { ...prev, validationMessage: e.target.value } : prev
-                )
-              }
-              rows={2}
-            />
-          </div>
-
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="notes" className="font-sans">Notas Internas</Label>
-            <Textarea
-              id="notes"
-              placeholder="Notas para el equipo..."
-              value={formData.notes || ''}
-              onChange={(e) =>
-                setFormData((prev) =>
-                  prev ? { ...prev, notes: e.target.value } : prev
-                )
-              }
-              rows={2}
-            />
-          </div>
-
-          <SheetFooter className="gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button type="submit">Guardar Cambios</Button>
-          </SheetFooter>
-        </form>
+        {!catalogReady ? (
+          <Alert variant="destructive" className="mt-4">
+            <AlertDescription className="font-serif">
+              No pudimos cargar áreas u opciones. Cierra y vuelve a intentar.
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <RuleEditorForm
+            key={formKey}
+            initialValues={initialValues}
+            productName={productName}
+            isEditing={isEditing}
+            areas={areas}
+            options={options}
+            existingRules={existingRules}
+            editingRuleId={rule?.id ?? null}
+            onOpenChange={onOpenChange}
+            onSaved={onSaved}
+          />
+        )}
       </SheetContent>
     </Sheet>
   )
