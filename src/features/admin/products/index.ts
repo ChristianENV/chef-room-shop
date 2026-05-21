@@ -10,6 +10,11 @@ export type {
   AdminProductVariant,
   AdminProductVariantInput,
 } from './types'
+export type {
+  AdminProductTableRow,
+  AdminProductStatusUi,
+  ProductFormValues,
+} from './types/admin-products-ui.types'
 export { useAdminProductsQuery } from './api/use-admin-products-query'
 export { useAdminProductByIdQuery } from './api/use-admin-product-by-id-query'
 export { useAdminProductBySlugQuery } from './api/use-admin-product-by-slug-query'
@@ -24,7 +29,9 @@ export { useDeleteAdminProductVariantMutation } from './api/use-delete-admin-pro
 export { useUpsertAdminProductImageMutation } from './api/use-upsert-admin-product-image-mutation'
 export { useDeleteAdminProductImageMutation } from './api/use-delete-admin-product-image-mutation'
 export { ProductsToolbar } from './products-toolbar'
-export { ProductsTable, ProductsTableSkeleton } from './products-table'
+export { ProductsTable } from './products-table'
 export { ProductFormDrawer } from './product-form-drawer'
-export { DeleteProductDialog } from './delete-product-dialog'
-export { ProductsEmptyState, ProductsErrorState } from './products-states'
+export { ArchiveProductDialog } from './archive-product-dialog'
+export { AdminProductsTableSkeleton } from './components/admin-products-loading'
+export { AdminProductsError } from './components/admin-products-error'
+export { AdminProductsEmpty } from './components/admin-products-empty'

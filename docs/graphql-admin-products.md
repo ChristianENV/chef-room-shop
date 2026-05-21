@@ -87,13 +87,38 @@ Orden default: `updatedAt desc`. Límite default 20, máx 100.
 - `Color.hex` → GraphQL `hexCode`
 - `currency` en GraphQL siempre `MXN` (no hay columna en BD)
 
-## Frontend (hooks listos, UI pendiente)
+## UI conectada (`/admin/products`)
 
-- `src/features/admin/products/api/*`
-- `src/features/admin/products/graphql/*`
-- `/admin/products` sigue usando `lib/mock-data.ts`
+La pantalla admin de productos ya consume el BFF (sin `lib/mock-data`).
 
-## Pendientes (v1)
+| Capa | Ruta |
+|------|------|
+| Página | `src/app/(admin)/admin/(protected)/products/page.tsx` |
+| Mapper | `src/features/admin/products/mappers/admin-products-ui.mapper.ts` |
+| Docs UI | `docs/admin-products-ui.md` |
+
+### Hooks en UI
+
+- `useAdminProductsQuery` — listado + filtros + orden
+- `useAdminProductByIdQuery` — drawer edición
+- `useAdminProductFormOptionsQuery` — tipos, colores, tallas
+- `useCreateAdminProductMutation` / `useUpdateAdminProductMutation`
+- `useArchiveAdminProductMutation` / `useDuplicateAdminProductMutation`
+- `useUpdateAdminProductStatusMutation`
+- `useUpsertAdminProductVariantMutation` / `useDeleteAdminProductVariantMutation`
+- `useUpsertAdminProductImageMutation` / `useDeleteAdminProductImageMutation`
+
+### Acciones disponibles en UI
+
+Crear, editar, archivar, duplicar, cambiar estado, variantes (color/talla/precio/stock), imágenes por URL, búsqueda y filtros por tipo/estado/personalizable.
+
+### Pendiente en UI (siguiente fase)
+
+- Upload Cloudinary real
+- CRUD ProductType / Color / Size
+- Inventario avanzado y reglas de personalización en esta pantalla
+
+## Pendientes (BFF / producto)
 
 - Upload Cloudinary real
 - CRUD de ProductType / Color / Size
