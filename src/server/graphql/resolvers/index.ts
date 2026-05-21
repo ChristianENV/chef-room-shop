@@ -1,6 +1,7 @@
 import { accountResolvers } from './account.resolver'
 import { adminDashboardResolvers } from './admin-dashboard.resolver'
 import { adminOrdersResolvers } from './admin-orders.resolver'
+import { adminCustomizationResolvers } from './admin-customization.resolver'
 import { adminProductsResolvers } from './admin-products.resolver'
 import { cartResolvers } from './cart.resolver'
 import { catalogResolvers } from './catalog.resolver'
@@ -18,6 +19,7 @@ export const resolvers = {
     ...adminDashboardResolvers.Query,
     ...adminOrdersResolvers.Query,
     ...adminProductsResolvers.Query,
+    ...adminCustomizationResolvers.Query,
     ...cartResolvers.Query,
     ...checkoutResolvers.Query,
     ...orderClaimResolvers.Query,
@@ -30,5 +32,6 @@ export const resolvers = {
     ...orderClaimResolvers.Mutation,
     ...adminOrdersResolvers.Mutation,
     ...adminProductsResolvers.Mutation,
+    ...adminCustomizationResolvers.Mutation,
   },
 }
