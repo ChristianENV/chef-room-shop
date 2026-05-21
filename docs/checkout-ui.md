@@ -83,6 +83,7 @@ After `createCheckoutOrder` commits, the server sends `order_created` via `safeS
 - Refunds, MSI, saved cards
 - Transactional emails
 - Coupons, real shipping/taxes, CFDI
+- **Real shipping quotes** — Skydropx foundation is in place (`docs/skydropx.md`); checkout still uses `shippingCents = 0` until the quote BFF PR
 - Guest order claim
 - Advanced public tracking
 
