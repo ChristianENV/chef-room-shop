@@ -34,22 +34,34 @@ Operación de pedidos en `/admin/orders` conectada al BFF GraphQL (v1).
 
 - **Mover a producción** — Solo si pagada y no cancelada/entregada.
 - **Lista para envío** — Desde pagada, en producción o ya lista.
-- **Agregar guía** — Carrier + tracking; marca orden como enviada en BFF.
+- **Guía Skydropx** — En drawer: generar etiqueta, abrir/imprimir PDF, refresh tracking, cancelar (ver `docs/admin-shipping-ui.md`).
 - **Cancelar** — Diálogo con motivo opcional; mensaje: sin reembolso automático.
 - **Nota interna** — `addAdminOrderNote` + append en `order.notes`.
 
 ## Limitaciones (v1)
 
 - Sin reembolsos Conekta desde UI
-- Sin integración paquetería real (carriers son texto libre / select fijo)
+- Guías vía Skydropx en drawer (sin paquetería manual en v1)
 - Sin export CSV
 - Sin PDF avanzado de ficha
 - Sin email automático al agregar tracking
 - Sin filtro por rango de fechas en toolbar
 - Sin `updateAdminOrderStatus` genérico en UI
 
+## Hooks de envío (drawer)
+
+| Hook | Uso |
+|------|-----|
+| `useAdminShipmentByOrderNumberQuery` | Carga guía Skydropx |
+| `useAdminCreateShippingLabelMutation` | Generar guía |
+| `useAdminRefreshShipmentTrackingMutation` | Actualizar tracking |
+| `useAdminCancelShippingLabelMutation` | Cancelar guía |
+
+Ver `docs/admin-shipping-ui.md`.
+
 ## Archivos clave
 
 - `src/app/(admin)/admin/(protected)/orders/page.tsx`
 - `src/features/admin/orders/*`
+- `src/features/admin/shipping/components/admin-shipment-card.tsx`
 - `docs/graphql-admin-orders.md`

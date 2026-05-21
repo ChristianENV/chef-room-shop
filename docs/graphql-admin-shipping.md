@@ -109,19 +109,18 @@ Consulta `GET /api/v1/shipments/tracking` con `trackingNumber` + `carrier` del `
 | Tarifa expirada | `BAD_REQUEST` |
 | Error Skydropx | `SKYDROPX_API_ERROR` |
 
-## Frontend (hooks, sin UI)
+## Frontend UI
+
+Conectado en el drawer de `/admin/orders` (`AdminShipmentCard`). Ver `docs/admin-shipping-ui.md`.
 
 ```
 src/features/admin/shipping/
+  components/admin-shipment-card.tsx
   api/use-admin-shipment-by-order-number-query.ts
   api/use-admin-create-shipping-label-mutation.ts
+  api/use-admin-cancel-shipping-label-mutation.ts
+  api/use-admin-refresh-shipment-tracking-mutation.ts
 ```
-
-**Integración futura** en `/admin/orders` (drawer):
-
-- `useAdminShipmentByOrderNumberQuery(orderNumber)`
-- Botón "Generar guía" → `useAdminCreateShippingLabelMutation`
-- Invalidar: `adminOrdersQueryKeys.all`, `adminShippingQueryKeys.all`
 
 ## Prueba manual (sandbox)
 

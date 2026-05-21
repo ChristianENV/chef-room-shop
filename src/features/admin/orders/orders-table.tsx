@@ -201,7 +201,7 @@ export function OrdersTable({
                           }}
                         >
                           <Truck className="mr-2 h-4 w-4" />
-                          Agregar guía
+                          Guía Skydropx
                         </DropdownMenuItem>
                       )}
                       {row.hasCustomization && (

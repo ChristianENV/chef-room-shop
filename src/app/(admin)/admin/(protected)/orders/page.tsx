@@ -29,7 +29,6 @@ export default function AdminOrdersPage() {
   const [drawerInitialTab, setDrawerInitialTab] = useState<
     'details' | 'items' | 'timeline' | 'production'
   >('details')
-  const [drawerTrackingOnOpen, setDrawerTrackingOnOpen] = useState(false)
   const [drawerCancelOnOpen, setDrawerCancelOnOpen] = useState(false)
   const [actionOrderNumber, setActionOrderNumber] = useState<string | null>(null)
 
@@ -74,13 +73,11 @@ export default function AdminOrdersPage() {
     orderNumber: string,
     options?: {
       tab?: typeof drawerInitialTab
-      tracking?: boolean
       cancel?: boolean
     },
   ) => {
     setSelectedOrderNumber(orderNumber)
     setDrawerInitialTab(options?.tab ?? 'details')
-    setDrawerTrackingOnOpen(!!options?.tracking)
     setDrawerCancelOnOpen(!!options?.cancel)
     setDrawerOpen(true)
   }
@@ -88,7 +85,6 @@ export default function AdminOrdersPage() {
   const handleDrawerOpenChange = (open: boolean) => {
     setDrawerOpen(open)
     if (!open) {
-      setDrawerTrackingOnOpen(false)
       setDrawerCancelOnOpen(false)
     }
   }
@@ -160,9 +156,7 @@ export default function AdminOrdersPage() {
             onMarkReadyToShip={(orderNumber) =>
               void runTableAction(orderNumber, () => markReadyToShip.mutateAsync(orderNumber))
             }
-            onAddTracking={(orderNumber) =>
-              openDrawer(orderNumber, { tracking: true })
-            }
+            onAddTracking={(orderNumber) => openDrawer(orderNumber)}
             onCancelOrder={(orderNumber) =>
               openDrawer(orderNumber, { cancel: true })
             }
@@ -178,7 +172,6 @@ export default function AdminOrdersPage() {
           open={drawerOpen}
           onOpenChange={handleDrawerOpenChange}
           initialTab={drawerInitialTab}
-          onOpenTrackingDialog={drawerTrackingOnOpen}
           onOpenCancelDialog={drawerCancelOnOpen}
         />
       </div>

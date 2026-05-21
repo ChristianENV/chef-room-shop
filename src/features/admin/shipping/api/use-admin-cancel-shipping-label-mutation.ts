@@ -5,19 +5,19 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminDashboardQueryKeys } from '@/src/features/admin/dashboard/api/admin-dashboard.query-keys'
 import { adminOrdersQueryKeys } from '@/src/features/admin/orders/api/admin-orders.query-keys'
 
-import { createAdminShippingLabel } from './admin-shipping.api'
+import { cancelAdminShippingLabel } from './admin-shipping.api'
 import { adminShippingQueryKeys } from './admin-shipping.query-keys'
-import type { AdminCreateShippingLabelInput } from '../types'
+import type { AdminCancelShippingLabelInput } from '../types'
 
 /**
- * Creates a Skydropx label and invalidates admin order/shipping queries.
+ * Cancels a Skydropx label and invalidates admin order/shipping queries.
  */
-export function useAdminCreateShippingLabelMutation() {
+export function useAdminCancelShippingLabelMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (input: AdminCreateShippingLabelInput) =>
-      createAdminShippingLabel(input),
+    mutationFn: (input: AdminCancelShippingLabelInput) =>
+      cancelAdminShippingLabel(input),
     onSuccess: (shipment) => {
       void queryClient.invalidateQueries({ queryKey: adminOrdersQueryKeys.all })
       void queryClient.invalidateQueries({ queryKey: adminShippingQueryKeys.all })

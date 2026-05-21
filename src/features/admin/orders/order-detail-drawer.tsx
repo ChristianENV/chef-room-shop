@@ -10,16 +10,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   Dialog,
   DialogContent,
@@ -36,7 +27,6 @@ import {
   CreditCard,
   Package,
   Factory,
-  Truck,
   XCircle,
   FileText,
   Copy,
@@ -44,12 +34,13 @@ import {
 import { cn } from '@/lib/utils'
 import { formatCurrencyMXN } from '@/src/lib/formatters'
 
+import type { AdminOrder } from './types'
 import { useAdminOrderByNumberQuery } from './api/use-admin-order-by-number-query'
 import { useAdminOrderProductionSheetQuery } from './api/use-admin-order-production-sheet-query'
 import { useMoveAdminOrderToProductionMutation } from './api/use-move-admin-order-to-production-mutation'
 import { useMarkAdminOrderReadyToShipMutation } from './api/use-mark-admin-order-ready-to-ship-mutation'
-import { useAddAdminOrderTrackingMutation } from './api/use-add-admin-order-tracking-mutation'
 import { useCancelAdminOrderMutation } from './api/use-cancel-admin-order-mutation'
+import { AdminShipmentCard } from '@/src/features/admin/shipping/components/admin-shipment-card'
 import { useAddAdminOrderNoteMutation } from './api/use-add-admin-order-note-mutation'
 import { AdminOrderDetailSkeleton } from './components/admin-orders-loading'
 import { AdminOrdersError } from './components/admin-orders-error'
@@ -68,7 +59,6 @@ interface OrderDetailDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   initialTab?: 'details' | 'items' | 'timeline' | 'production'
-  onOpenTrackingDialog?: boolean
   onOpenCancelDialog?: boolean
 }
 
@@ -77,15 +67,10 @@ export function OrderDetailDrawer({
   open,
   onOpenChange,
   initialTab = 'details',
-  onOpenTrackingDialog,
   onOpenCancelDialog,
 }: OrderDetailDrawerProps) {
-  const [trackingDialogDismissed, setTrackingDialogDismissed] = useState(false)
-  const [trackingDialogExplicit, setTrackingDialogExplicit] = useState(false)
   const [cancelDialogDismissed, setCancelDialogDismissed] = useState(false)
   const [cancelDialogExplicit, setCancelDialogExplicit] = useState(false)
-  const [trackingNumber, setTrackingNumber] = useState('')
-  const [carrier, setCarrier] = useState('Estafeta')
   const [cancelReason, setCancelReason] = useState('')
   const [internalNote, setInternalNote] = useState('')
   const [actionMessage, setActionMessage] = useState<string | null>(null)
@@ -99,7 +84,6 @@ export function OrderDetailDrawer({
 
   const moveToProduction = useMoveAdminOrderToProductionMutation()
   const markReady = useMarkAdminOrderReadyToShipMutation()
-  const addTracking = useAddAdminOrderTrackingMutation()
   const cancelOrder = useCancelAdminOrderMutation()
   const addNote = useAddAdminOrderNoteMutation()
 
@@ -112,14 +96,9 @@ export function OrderDetailDrawer({
   const isMutating =
     moveToProduction.isPending ||
     markReady.isPending ||
-    addTracking.isPending ||
     cancelOrder.isPending ||
     addNote.isPending
 
-  const trackingDialogOpen =
-    open &&
-    !trackingDialogDismissed &&
-    (onOpenTrackingDialog || trackingDialogExplicit)
   const cancelDialogOpen =
     open && !cancelDialogDismissed && (onOpenCancelDialog || cancelDialogExplicit)
 
@@ -149,24 +128,6 @@ export function OrderDetailDrawer({
     try {
       await markReady.mutateAsync(orderNumber)
       setActionMessage('Pedido marcado como listo para envío.')
-    } catch (e) {
-      handleMutationError(e)
-    }
-  }
-
-  const handleAddTracking = async () => {
-    if (!orderNumber || !trackingNumber.trim()) return
-    setActionError(null)
-    try {
-      await addTracking.mutateAsync({
-        orderNumber,
-        carrier,
-        trackingNumber: trackingNumber.trim(),
-      })
-      setTrackingDialogDismissed(true)
-      setTrackingDialogExplicit(false)
-      setTrackingNumber('')
-      setActionMessage('Guía de envío registrada.')
     } catch (e) {
       handleMutationError(e)
     }
@@ -218,8 +179,6 @@ export function OrderDetailDrawer({
         open={open}
         onOpenChange={(next) => {
           if (!next) {
-            setTrackingDialogDismissed(false)
-            setTrackingDialogExplicit(false)
             setCancelDialogDismissed(false)
             setCancelDialogExplicit(false)
             setActionMessage(null)
@@ -268,6 +227,8 @@ export function OrderDetailDrawer({
                 key={`${orderNumber}-${initialTab}`}
                 initialTab={initialTab}
                 order={order}
+                bffOrder={bffOrder!}
+                drawerOpen={open}
                 paymentStatusColor={paymentStatusColor}
                 isMutating={isMutating}
                 internalNote={internalNote}
@@ -275,15 +236,13 @@ export function OrderDetailDrawer({
                 onAddNote={() => void handleAddNote()}
                 onMoveToProduction={() => void handleMoveToProduction()}
                 onMarkReady={() => void handleMarkReady()}
-                onOpenTracking={() => {
-                  setTrackingDialogDismissed(false)
-                  setTrackingDialogExplicit(true)
-                }}
                 onOpenCancel={() => {
                   setCancelDialogDismissed(false)
                   setCancelDialogExplicit(true)
                 }}
                 onCopy={copyToClipboard}
+                onShippingSuccess={setActionMessage}
+                onShippingError={setActionError}
                 productionSheet={productionSheet}
                 productionSheetLoading={productionSheetQuery.isLoading}
                 productionSheetError={productionSheetQuery.isError}
@@ -293,69 +252,6 @@ export function OrderDetailDrawer({
           )}
         </SheetContent>
       </Sheet>
-
-      <Dialog
-        open={trackingDialogOpen}
-        onOpenChange={(next) => {
-          if (!next) {
-            setTrackingDialogDismissed(true)
-            setTrackingDialogExplicit(false)
-          }
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="font-sans">Agregar guía de envío</DialogTitle>
-            <DialogDescription className="font-serif">
-              Registra la paquetería y el número de seguimiento.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="tracking">Número de guía</Label>
-              <Input
-                id="tracking"
-                value={trackingNumber}
-                onChange={(e) => setTrackingNumber(e.target.value)}
-                placeholder="Ej: 1234567890"
-                className="font-mono"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="carrier">Paquetería</Label>
-              <Select value={carrier} onValueChange={setCarrier}>
-                <SelectTrigger id="carrier">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Estafeta">Estafeta</SelectItem>
-                  <SelectItem value="FedEx">FedEx</SelectItem>
-                  <SelectItem value="DHL">DHL</SelectItem>
-                  <SelectItem value="UPS">UPS</SelectItem>
-                  <SelectItem value="Redpack">Redpack</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setTrackingDialogDismissed(true)
-                setTrackingDialogExplicit(false)
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={() => void handleAddTracking()}
-              disabled={!trackingNumber.trim() || isMutating}
-            >
-              Guardar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <Dialog
         open={cancelDialogOpen}
@@ -400,6 +296,8 @@ export function OrderDetailDrawer({
 type OrderDetailDrawerTabsProps = {
   initialTab: 'details' | 'items' | 'timeline' | 'production'
   order: NonNullable<ReturnType<typeof mapAdminOrderToDetail>>
+  bffOrder: AdminOrder
+  drawerOpen: boolean
   paymentStatusColor: Record<string, string>
   isMutating: boolean
   internalNote: string
@@ -407,9 +305,10 @@ type OrderDetailDrawerTabsProps = {
   onAddNote: () => void
   onMoveToProduction: () => void
   onMarkReady: () => void
-  onOpenTracking: () => void
   onOpenCancel: () => void
   onCopy: (text: string) => void
+  onShippingSuccess: (message: string | null) => void
+  onShippingError: (message: string | null) => void
   productionSheet: ReturnType<typeof mapAdminOrderToProductionSheet> | undefined
   productionSheetLoading: boolean
   productionSheetError: boolean
@@ -419,6 +318,8 @@ type OrderDetailDrawerTabsProps = {
 function OrderDetailDrawerTabs({
   initialTab,
   order,
+  bffOrder,
+  drawerOpen,
   paymentStatusColor,
   isMutating,
   internalNote,
@@ -426,9 +327,10 @@ function OrderDetailDrawerTabs({
   onAddNote,
   onMoveToProduction,
   onMarkReady,
-  onOpenTracking,
   onOpenCancel,
   onCopy,
+  onShippingSuccess,
+  onShippingError,
   productionSheet,
   productionSheetLoading,
   productionSheetError,
@@ -463,7 +365,7 @@ function OrderDetailDrawerTabs({
                       <div>
                         <h3 className="mb-3 flex items-center gap-2 font-sans text-sm font-semibold">
                           <MapPin className="h-4 w-4" />
-                          Envío
+                          Dirección de envío
                         </h3>
                         <div className="rounded-lg border border-border p-4 font-serif text-sm text-muted-foreground">
                           <p className="font-sans font-medium text-foreground">
@@ -543,17 +445,19 @@ function OrderDetailDrawerTabs({
                       </div>
                     </div>
 
-                    {order.trackingNumber ? (
-                      <div>
-                        <h3 className="mb-3 flex items-center gap-2 font-sans text-sm font-semibold">
-                          <Truck className="h-4 w-4" />
-                          Envío
-                        </h3>
-                        <div className="rounded-lg border border-border p-4">
-                          <p className="font-mono text-sm">{order.trackingNumber}</p>
-                        </div>
-                      </div>
-                    ) : null}
+                    <AdminShipmentCard
+                      orderNumber={order.orderNumber}
+                      order={bffOrder}
+                      enabled={drawerOpen}
+                      onSuccessMessage={(msg) => {
+                        onShippingSuccess(msg)
+                        onShippingError(null)
+                      }}
+                      onErrorMessage={(msg) => {
+                        onShippingError(msg)
+                        onShippingSuccess(null)
+                      }}
+                    />
 
                     <div>
                       <h3 className="mb-3 font-sans text-sm font-semibold">Desglose</h3>
@@ -636,17 +540,6 @@ function OrderDetailDrawerTabs({
                           >
                             <Package className="mr-2 h-4 w-4" />
                             Lista para envío
-                          </Button>
-                        ) : null}
-                        {order.canAddTracking ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={isMutating}
-                            onClick={onOpenTracking}
-                          >
-                            <Truck className="mr-2 h-4 w-4" />
-                            Agregar guía
                           </Button>
                         ) : null}
                         <Button
