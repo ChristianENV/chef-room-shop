@@ -1,7 +1,15 @@
 'use client'
 
 import Image from 'next/image'
-import { MoreHorizontal, Eye, Pencil, Copy, Archive, Trash2, Check, Palette } from 'lucide-react'
+import {
+  MoreHorizontal,
+  Eye,
+  Pencil,
+  Copy,
+  Archive,
+  Palette,
+  CheckCircle2,
+} from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +20,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
@@ -22,50 +33,56 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Skeleton } from '@/components/ui/skeleton'
-import type { AdminProduct, AdminProductStatus } from '@/lib/types'
-
-const statusConfig: Record<AdminProductStatus, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
-  activo: { label: 'Activo', variant: 'default' },
-  borrador: { label: 'Borrador', variant: 'secondary' },
-  archivado: { label: 'Archivado', variant: 'outline' },
-}
-
-const categoryLabels: Record<string, string> = {
-  filipinas: 'Filipinas',
-  mandiles: 'Mandiles',
-  pantalones: 'Pantalones',
-  accesorios: 'Accesorios',
-}
+import type { AdminProductTableRow } from './types/admin-products-ui.types'
+import { STATUS_LABELS } from './mappers/admin-products-ui.mapper'
+import type { AdminProductStatusUi } from './types/admin-products-ui.types'
 
 interface ProductsTableProps {
-  products: AdminProduct[]
+  rows: AdminProductTableRow[]
   selectedIds: string[]
   onSelectAll: (checked: boolean) => void
   onSelectOne: (id: string, checked: boolean) => void
-  onView: (product: AdminProduct) => void
-  onEdit: (product: AdminProduct) => void
-  onDuplicate: (product: AdminProduct) => void
-  onArchive: (product: AdminProduct) => void
-  onDelete: (product: AdminProduct) => void
+  onEdit: (row: AdminProductTableRow) => void
+  onDuplicate: (row: AdminProductTableRow) => void
+  onArchive: (row: AdminProductTableRow) => void
+  onStatusChange: (row: AdminProductTableRow, status: AdminProductStatusUi) => void
+  actionProductId?: string | null
+}
+
+const STATUS_OPTIONS: AdminProductStatusUi[] = ['DRAFT', 'ACTIVE', 'ARCHIVED']
+
+function ProductThumbnail({ url, alt }: { url: string | null; alt: string }) {
+  if (!url) {
+    return (
+      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-secondary">
+        <span className="font-serif text-[10px] text-muted-foreground">Sin img</span>
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative h-10 w-10 overflow-hidden rounded-md bg-secondary">
+      <Image src={url} alt={alt} fill className="object-cover" sizes="40px" />
+    </div>
+  )
 }
 
 export function ProductsTable({
-  products,
+  rows,
   selectedIds,
   onSelectAll,
   onSelectOne,
-  onView,
   onEdit,
   onDuplicate,
   onArchive,
-  onDelete,
+  onStatusChange,
+  actionProductId,
 }: ProductsTableProps) {
-  const allSelected = products.length > 0 && selectedIds.length === products.length
-  const someSelected = selectedIds.length > 0 && selectedIds.length < products.length
+  const allSelected = rows.length > 0 && selectedIds.length === rows.length
+  const someSelected = selectedIds.length > 0 && selectedIds.length < rows.length
 
   return (
-    <div className="rounded-lg border border-border bg-card">
+    <div className="overflow-x-auto rounded-lg border border-border bg-card">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
@@ -78,185 +95,134 @@ export function ProductsTable({
             </TableHead>
             <TableHead className="w-16">Imagen</TableHead>
             <TableHead>Nombre</TableHead>
-            <TableHead className="hidden md:table-cell">SKU</TableHead>
-            <TableHead className="hidden lg:table-cell">Categoria</TableHead>
+            <TableHead className="hidden md:table-cell">Identificador</TableHead>
+            <TableHead className="hidden lg:table-cell">Tipo</TableHead>
             <TableHead className="text-right">Precio</TableHead>
+            <TableHead className="hidden md:table-cell text-center">Variantes</TableHead>
             <TableHead className="hidden md:table-cell text-center">Personalizable</TableHead>
-            <TableHead className="hidden lg:table-cell text-center">Produccion</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead className="hidden lg:table-cell">Actualizado</TableHead>
-            <TableHead className="w-12"></TableHead>
+            <TableHead className="w-12" />
           </TableRow>
         </TableHeader>
         <TableBody>
-          {products.map((product) => {
-            const status = statusConfig[product.status]
-            const isSelected = selectedIds.includes(product.id)
+          {rows.map((row) => {
+            const isSelected = selectedIds.includes(row.id)
+            const isBusy = actionProductId === row.id
 
             return (
               <TableRow
-                key={product.id}
-                className={cn(isSelected && 'bg-muted/50')}
+                key={row.id}
+                className={cn(
+                  'transition-colors hover:bg-muted/40',
+                  isSelected && 'bg-muted/50',
+                  isBusy && 'opacity-60',
+                )}
               >
                 <TableCell>
                   <Checkbox
                     checked={isSelected}
-                    onCheckedChange={(checked) => onSelectOne(product.id, checked === true)}
-                    aria-label={`Seleccionar ${product.name}`}
+                    onCheckedChange={(checked) => onSelectOne(row.id, checked === true)}
+                    aria-label={`Seleccionar ${row.name}`}
                   />
                 </TableCell>
                 <TableCell>
-                  <div className="relative h-10 w-10 overflow-hidden rounded-md bg-secondary">
-                    {product.images[0] ? (
-                      <Image
-                        src={product.images[0].url}
-                        alt={product.images[0].alt}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <span className="text-xs text-muted-foreground">N/A</span>
-                      </div>
-                    )}
-                  </div>
+                  <ProductThumbnail url={row.imageUrl} alt={row.imageAlt} />
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-col">
-                    <span className="font-sans font-medium text-foreground">
-                      {product.name}
-                    </span>
+                    <span className="font-sans font-medium text-foreground">{row.name}</span>
                     <span className="font-serif text-xs text-muted-foreground md:hidden">
-                      {product.sku}
+                      {row.identifier}
                     </span>
                   </div>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  <span className="font-mono text-sm text-muted-foreground">
-                    {product.sku}
-                  </span>
+                  <span className="font-mono text-sm text-muted-foreground">{row.identifier}</span>
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">
-                  <span className="font-sans text-sm">
-                    {categoryLabels[product.category]}
-                  </span>
+                  <span className="font-sans text-sm">{row.productTypeLabel}</span>
                 </TableCell>
                 <TableCell className="text-right">
-                  <span className="font-sans font-medium">
-                    ${product.basePrice.toLocaleString()}
-                  </span>
+                  <span className="font-sans font-medium">{row.basePriceFormatted}</span>
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-center">
-                  {product.customizable ? (
-                    <div className="flex justify-center">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-success/10">
-                        <Palette className="h-3.5 w-3.5 text-success" />
-                      </div>
-                    </div>
+                  <span className="font-sans text-sm text-muted-foreground">{row.variantCount}</span>
+                </TableCell>
+                <TableCell className="hidden md:table-cell text-center">
+                  {row.customizable ? (
+                    <Badge variant="outline" className="gap-1 font-sans text-xs">
+                      <Palette className="h-3 w-3" />
+                      Sí
+                    </Badge>
                   ) : (
-                    <span className="text-muted-foreground">-</span>
+                    <span className="text-muted-foreground">—</span>
                   )}
                 </TableCell>
-                <TableCell className="hidden lg:table-cell text-center">
-                  <span className="font-sans text-sm">
-                    {product.productionDays} dias
-                  </span>
-                </TableCell>
                 <TableCell>
-                  <Badge variant={status.variant} className="font-sans">
-                    {status.label}
+                  <Badge variant={row.statusBadgeVariant} className="font-sans">
+                    {row.statusLabel}
                   </Badge>
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">
                   <span className="font-serif text-sm text-muted-foreground">
-                    {new Date(product.updatedAt).toLocaleDateString('es-MX', {
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
+                    {row.updatedAtFormatted}
                   </span>
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isBusy}>
                         <MoreHorizontal className="h-4 w-4" />
                         <span className="sr-only">Acciones</span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-40">
-                      <DropdownMenuItem onClick={() => onView(product)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        Ver
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEdit(product)}>
+                    <DropdownMenuContent align="end" className="w-44">
+                      <DropdownMenuItem onClick={() => onEdit(row)}>
                         <Pencil className="mr-2 h-4 w-4" />
                         Editar
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onDuplicate(product)}>
+                      <DropdownMenuItem onClick={() => onDuplicate(row)}>
                         <Copy className="mr-2 h-4 w-4" />
                         Duplicar
                       </DropdownMenuItem>
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                          Cambiar estado
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuSubContent>
+                          {STATUS_OPTIONS.map((status) => (
+                            <DropdownMenuItem
+                              key={status}
+                              disabled={row.status === status}
+                              onClick={() => onStatusChange(row, status)}
+                            >
+                              {STATUS_LABELS[status]}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuSubContent>
+                      </DropdownMenuSub>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => onArchive(product)}>
-                        <Archive className="mr-2 h-4 w-4" />
-                        {product.status === 'archivado' ? 'Activar' : 'Archivar'}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onDelete(product)}
-                        className="text-destructive focus:text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Eliminar
-                      </DropdownMenuItem>
+                      {row.status !== 'ARCHIVED' ? (
+                        <DropdownMenuItem onClick={() => onArchive(row)}>
+                          <Archive className="mr-2 h-4 w-4" />
+                          Archivar
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem
+                          onClick={() => onStatusChange(row, 'ACTIVE')}
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          Reactivar
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
             )
           })}
-        </TableBody>
-      </Table>
-    </div>
-  )
-}
-
-// Loading Skeleton
-export function ProductsTableSkeleton() {
-  return (
-    <div className="rounded-lg border border-border bg-card">
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="w-12"><Skeleton className="h-4 w-4" /></TableHead>
-            <TableHead className="w-16"><Skeleton className="h-4 w-12" /></TableHead>
-            <TableHead><Skeleton className="h-4 w-24" /></TableHead>
-            <TableHead className="hidden md:table-cell"><Skeleton className="h-4 w-20" /></TableHead>
-            <TableHead className="hidden lg:table-cell"><Skeleton className="h-4 w-16" /></TableHead>
-            <TableHead><Skeleton className="h-4 w-16" /></TableHead>
-            <TableHead className="hidden md:table-cell"><Skeleton className="h-4 w-12" /></TableHead>
-            <TableHead className="hidden lg:table-cell"><Skeleton className="h-4 w-12" /></TableHead>
-            <TableHead><Skeleton className="h-4 w-16" /></TableHead>
-            <TableHead className="hidden lg:table-cell"><Skeleton className="h-4 w-20" /></TableHead>
-            <TableHead className="w-12"></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Array.from({ length: 5 }).map((_, i) => (
-            <TableRow key={i}>
-              <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-              <TableCell><Skeleton className="h-10 w-10 rounded-md" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-              <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
-              <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-              <TableCell className="hidden md:table-cell"><Skeleton className="h-6 w-6 rounded-full" /></TableCell>
-              <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-12" /></TableCell>
-              <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
-              <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
-              <TableCell><Skeleton className="h-8 w-8" /></TableCell>
-            </TableRow>
-          ))}
         </TableBody>
       </Table>
     </div>

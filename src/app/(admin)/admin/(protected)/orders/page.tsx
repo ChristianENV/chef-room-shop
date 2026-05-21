@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useDeferredValue, useMemo, useState } from 'react'
 import { AdminPageConfig } from '@/src/features/admin/layout/admin-page-config'
 import {
   OrdersStatusCards,
@@ -8,270 +8,178 @@ import {
   OrdersTable,
   OrderDetailDrawer,
 } from '@/src/features/admin/orders'
+import { useAdminOrdersQuery } from '@/src/features/admin/orders/api/use-admin-orders-query'
+import { useAdminOrderStatusSummaryQuery } from '@/src/features/admin/orders/api/use-admin-order-status-summary-query'
+import { useMoveAdminOrderToProductionMutation } from '@/src/features/admin/orders/api/use-move-admin-order-to-production-mutation'
+import { useMarkAdminOrderReadyToShipMutation } from '@/src/features/admin/orders/api/use-mark-admin-order-ready-to-ship-mutation'
+import { AdminOrdersError } from '@/src/features/admin/orders/components/admin-orders-error'
 import {
-  fetchAdminOrders,
-  updateAdminOrderStatus,
-  addTrackingNumber,
-} from '@/lib/mock-data'
+  buildAdminOrdersListVariables,
+  mapAdminOrderToTableRow,
+  mapAdminStatusSummaryToCards,
+} from '@/src/features/admin/orders/mappers/admin-orders-ui.mapper'
 import type {
-  AdminOrder,
-  AdminOrderStatus,
-  AdminPaymentStatus,
-  AdminProductionStatus,
-} from '@/lib/types'
+  AdminOrderStatusFilter,
+  AdminPaymentStatusFilter,
+} from '@/src/features/admin/orders/types/admin-orders-ui.types'
 
 export default function AdminOrdersPage() {
-  // State
-  const [orders, setOrders] = useState<AdminOrder[]>([])
-  const [loading, setLoading] = useState(true)
-  const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null)
+  const [selectedOrderNumber, setSelectedOrderNumber] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerInitialTab, setDrawerInitialTab] = useState<
+    'details' | 'items' | 'timeline' | 'production'
+  >('details')
+  const [drawerTrackingOnOpen, setDrawerTrackingOnOpen] = useState(false)
+  const [drawerCancelOnOpen, setDrawerCancelOnOpen] = useState(false)
+  const [actionOrderNumber, setActionOrderNumber] = useState<string | null>(null)
 
-  // Filters
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<AdminOrderStatus | 'all'>('all')
-  const [paymentFilter, setPaymentFilter] = useState<AdminPaymentStatus | 'all'>('all')
-  const [productionFilter, setProductionFilter] = useState<AdminProductionStatus | 'all'>('all')
-  const [cardStatusFilter, setCardStatusFilter] = useState<AdminOrderStatus | null>(null)
+  const deferredSearch = useDeferredValue(searchQuery)
+  const [statusFilter, setStatusFilter] = useState<AdminOrderStatusFilter | 'all'>('all')
+  const [paymentFilter, setPaymentFilter] = useState<AdminPaymentStatusFilter | 'all'>('all')
+  const [productionOnly, setProductionOnly] = useState(false)
+  const [cardStatusFilter, setCardStatusFilter] = useState<AdminOrderStatusFilter | null>(null)
 
-  // Fetch orders
-  // TODO: Replace with TanStack Query useQuery
-  useEffect(() => {
-    async function loadOrders() {
-      setLoading(true)
-      try {
-        const data = await fetchAdminOrders()
-        setOrders(data)
-      } catch (error) {
-        console.error('Failed to fetch orders:', error)
-      } finally {
-        setLoading(false)
+  const listVariables = useMemo(
+    () =>
+      buildAdminOrdersListVariables({
+        search: deferredSearch,
+        statusFilter,
+        paymentFilter,
+        cardStatusFilter,
+        productionOnly,
+        limit: 50,
+        offset: 0,
+      }),
+    [deferredSearch, statusFilter, paymentFilter, cardStatusFilter, productionOnly],
+  )
+
+  const ordersQuery = useAdminOrdersQuery(listVariables)
+  const summaryQuery = useAdminOrderStatusSummaryQuery()
+  const moveToProduction = useMoveAdminOrderToProductionMutation()
+  const markReadyToShip = useMarkAdminOrderReadyToShipMutation()
+
+  const statusCounts = useMemo(
+    () =>
+      summaryQuery.data ? mapAdminStatusSummaryToCards(summaryQuery.data) : undefined,
+    [summaryQuery.data],
+  )
+
+  const tableRows = useMemo(
+    () => (ordersQuery.data?.items ?? []).map(mapAdminOrderToTableRow),
+    [ordersQuery.data?.items],
+  )
+
+  const openDrawer = (
+    orderNumber: string,
+    options?: {
+      tab?: typeof drawerInitialTab
+      tracking?: boolean
+      cancel?: boolean
+    },
+  ) => {
+    setSelectedOrderNumber(orderNumber)
+    setDrawerInitialTab(options?.tab ?? 'details')
+    setDrawerTrackingOnOpen(!!options?.tracking)
+    setDrawerCancelOnOpen(!!options?.cancel)
+    setDrawerOpen(true)
+  }
+
+  const handleDrawerOpenChange = (open: boolean) => {
+    setDrawerOpen(open)
+    if (!open) {
+      setDrawerTrackingOnOpen(false)
+      setDrawerCancelOnOpen(false)
+    }
+  }
+
+  const runTableAction = async (orderNumber: string, action: () => Promise<unknown>) => {
+    setActionOrderNumber(orderNumber)
+    try {
+      await action()
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[admin-orders]', error)
       }
-    }
-    loadOrders()
-  }, [])
-
-  // Calculate status counts
-  const statusCounts = useMemo(() => {
-    const counts: Record<AdminOrderStatus, number> = {
-      'pendiente-pago': 0,
-      'pagado': 0,
-      'en-produccion': 0,
-      'listo-envio': 0,
-      'enviado': 0,
-      'entregado': 0,
-      'cancelado': 0,
-    }
-    orders.forEach((order) => {
-      counts[order.status]++
-    })
-    return counts
-  }, [orders])
-
-  // Filter orders
-  const filteredOrders = useMemo(() => {
-    let result = [...orders]
-
-    // Card status filter takes precedence
-    if (cardStatusFilter) {
-      result = result.filter((o) => o.status === cardStatusFilter)
-    } else if (statusFilter !== 'all') {
-      result = result.filter((o) => o.status === statusFilter)
-    }
-
-    if (paymentFilter !== 'all') {
-      result = result.filter((o) => o.paymentStatus === paymentFilter)
-    }
-
-    if (productionFilter !== 'all') {
-      result = result.filter((o) => o.productionStatus === productionFilter)
-    }
-
-    if (searchQuery) {
-      const search = searchQuery.toLowerCase()
-      result = result.filter(
-        (o) =>
-          o.orderNumber.toLowerCase().includes(search) ||
-          o.customer.name.toLowerCase().includes(search) ||
-          o.customer.email.toLowerCase().includes(search)
-      )
-    }
-
-    return result
-  }, [orders, cardStatusFilter, statusFilter, paymentFilter, productionFilter, searchQuery])
-
-  // Handlers
-  const handleViewOrder = (order: AdminOrder) => {
-    setSelectedOrder(order)
-    setDrawerOpen(true)
-  }
-
-  const handleStatusChange = async (status: AdminOrderStatus) => {
-    if (!selectedOrder) return
-
-    // TODO: Replace with TanStack Query useMutation
-    try {
-      const updated = await updateAdminOrderStatus(selectedOrder.id, status)
-      setOrders((prev) =>
-        prev.map((o) => (o.id === selectedOrder.id ? { ...o, status: updated.status } : o))
-      )
-      setSelectedOrder((prev) => (prev ? { ...prev, status: updated.status } : null))
-    } catch (error) {
-      console.error('Failed to update order status:', error)
-    }
-  }
-
-  const handleAddTracking = async (trackingNumber: string, carrier: string) => {
-    if (!selectedOrder) return
-
-    // TODO: Replace with TanStack Query useMutation
-    try {
-      const updated = await addTrackingNumber(selectedOrder.id, trackingNumber, carrier)
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.id === selectedOrder.id
-            ? { ...o, trackingNumber: updated.trackingNumber, trackingUrl: updated.trackingUrl, status: updated.status }
-            : o
-        )
-      )
-      setSelectedOrder((prev) =>
-        prev
-          ? { ...prev, trackingNumber: updated.trackingNumber, trackingUrl: updated.trackingUrl, status: updated.status }
-          : null
-      )
-    } catch (error) {
-      console.error('Failed to add tracking:', error)
-    }
-  }
-
-  const handleCancelOrder = async () => {
-    if (!selectedOrder) return
-
-    // TODO: Replace with TanStack Query useMutation
-    try {
-      await updateAdminOrderStatus(selectedOrder.id, 'cancelado')
-      setOrders((prev) =>
-        prev.map((o) => (o.id === selectedOrder.id ? { ...o, status: 'cancelado' } : o))
-      )
-      setSelectedOrder((prev) => (prev ? { ...prev, status: 'cancelado' } : null))
-    } catch (error) {
-      console.error('Failed to cancel order:', error)
-    }
-  }
-
-  const handleMoveToProduction = async (order: AdminOrder) => {
-    // TODO: Replace with TanStack Query useMutation
-    try {
-      const updated = await updateAdminOrderStatus(order.id, 'en-produccion')
-      setOrders((prev) =>
-        prev.map((o) => (o.id === order.id ? { ...o, status: updated.status, productionStatus: 'en-cola' } : o))
-      )
-    } catch (error) {
-      console.error('Failed to move to production:', error)
-    }
-  }
-
-  const handleMarkReadyToShip = async (order: AdminOrder) => {
-    // TODO: Replace with TanStack Query useMutation
-    try {
-      const updated = await updateAdminOrderStatus(order.id, 'listo-envio')
-      setOrders((prev) =>
-        prev.map((o) => (o.id === order.id ? { ...o, status: updated.status, productionStatus: 'completado' } : o))
-      )
-    } catch (error) {
-      console.error('Failed to mark ready to ship:', error)
-    }
-  }
-
-  const handleAddTrackingFromTable = (order: AdminOrder) => {
-    setSelectedOrder(order)
-    setDrawerOpen(true)
-  }
-
-  const handleExport = () => {
-    // TODO: Implement CSV/Excel export
-    console.log('Exporting orders...', filteredOrders)
-  }
-
-  const handleCreateManual = () => {
-    // TODO: Implement manual order creation dialog
-    console.log('Creating manual order...')
-  }
-
-  const handleDownloadProductionSheet = (order: AdminOrder) => {
-    setSelectedOrder(order)
-    setDrawerOpen(true)
-  }
-
-  const handleCardStatusSelect = (status: AdminOrderStatus | null) => {
-    setCardStatusFilter(status)
-    // Reset dropdown filter when using cards
-    if (status) {
-      setStatusFilter('all')
+    } finally {
+      setActionOrderNumber(null)
     }
   }
 
   return (
     <AdminPageConfig
       breadcrumb={[{ label: 'Órdenes' }]}
-      notificationCount={statusCounts['pendiente-pago']}
+      notificationCount={statusCounts?.['pendiente-pago']}
     >
       <div className="space-y-6">
-        {/* Page Header */}
         <div>
           <h1 className="font-sans text-2xl font-bold text-foreground">Órdenes</h1>
           <p className="mt-1 font-serif text-muted-foreground">
-            Gestiona pagos, produccion, personalizaciones y envios.
+            Gestiona pagos, producción, personalizaciones y envíos.
           </p>
         </div>
 
-        {/* Status Summary Cards */}
         <OrdersStatusCards
           counts={statusCounts}
           selectedStatus={cardStatusFilter}
-          onStatusSelect={handleCardStatusSelect}
+          onStatusSelect={(status) => {
+            setCardStatusFilter(status)
+            if (status) setStatusFilter('all')
+          }}
+          isLoading={summaryQuery.isLoading}
+          isError={summaryQuery.isError}
+          onRetry={() => void summaryQuery.refetch()}
         />
 
-        {/* Toolbar */}
         <OrdersToolbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           statusFilter={statusFilter}
-          onStatusFilterChange={(v) => {
-            setStatusFilter(v)
+          onStatusFilterChange={(value) => {
+            setStatusFilter(value)
             setCardStatusFilter(null)
           }}
           paymentFilter={paymentFilter}
           onPaymentFilterChange={setPaymentFilter}
-          productionFilter={productionFilter}
-          onProductionFilterChange={setProductionFilter}
-          onExport={handleExport}
-          onCreateManual={handleCreateManual}
+          productionOnly={productionOnly}
+          onProductionOnlyChange={setProductionOnly}
         />
 
-        {/* Orders Table */}
-        <OrdersTable
-          orders={filteredOrders}
-          loading={loading}
-          onViewOrder={handleViewOrder}
-          onMoveToProduction={handleMoveToProduction}
-          onMarkReadyToShip={handleMarkReadyToShip}
-          onAddTracking={handleAddTrackingFromTable}
-          onCancelOrder={(order) => {
-            setSelectedOrder(order)
-            handleCancelOrder()
-          }}
-          onDownloadProductionSheet={handleDownloadProductionSheet}
-        />
+        {ordersQuery.isError ? (
+          <AdminOrdersError onRetry={() => void ordersQuery.refetch()} />
+        ) : (
+          <OrdersTable
+            rows={tableRows}
+            loading={ordersQuery.isPending}
+            onViewOrder={(orderNumber) => openDrawer(orderNumber)}
+            onMoveToProduction={(orderNumber) =>
+              void runTableAction(orderNumber, () =>
+                moveToProduction.mutateAsync(orderNumber),
+              )
+            }
+            onMarkReadyToShip={(orderNumber) =>
+              void runTableAction(orderNumber, () => markReadyToShip.mutateAsync(orderNumber))
+            }
+            onAddTracking={(orderNumber) =>
+              openDrawer(orderNumber, { tracking: true })
+            }
+            onCancelOrder={(orderNumber) =>
+              openDrawer(orderNumber, { cancel: true })
+            }
+            onOpenProductionSheet={(orderNumber) =>
+              openDrawer(orderNumber, { tab: 'production' })
+            }
+            actionOrderNumber={actionOrderNumber}
+          />
+        )}
 
-        {/* Order Detail Drawer */}
         <OrderDetailDrawer
-          order={selectedOrder}
+          orderNumber={selectedOrderNumber}
           open={drawerOpen}
-          onOpenChange={setDrawerOpen}
-          onStatusChange={handleStatusChange}
-          onAddTracking={handleAddTracking}
-          onCancel={handleCancelOrder}
+          onOpenChange={handleDrawerOpenChange}
+          initialTab={drawerInitialTab}
+          onOpenTrackingDialog={drawerTrackingOnOpen}
+          onOpenCancelDialog={drawerCancelOnOpen}
         />
       </div>
     </AdminPageConfig>

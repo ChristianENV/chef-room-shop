@@ -327,6 +327,294 @@ export const cartTypeDefs = /* GraphQL */ `
   }
 `
 
+export const adminProductsTypeDefs = /* GraphQL */ `
+  type AdminProductType {
+    id: ID!
+    slug: String!
+    name: String!
+    description: String
+    sortOrder: Int
+    isActive: Boolean
+  }
+
+  type AdminColor {
+    id: ID!
+    name: String!
+    slug: String!
+    hexCode: String!
+    isActive: Boolean
+    sortOrder: Int
+  }
+
+  type AdminSize {
+    id: ID!
+    name: String!
+    slug: String!
+    sortOrder: Int
+    isActive: Boolean
+  }
+
+  type AdminProductImage {
+    id: ID!
+    url: String!
+    publicId: String
+    alt: String
+    sortOrder: Int
+    isPrimary: Boolean!
+  }
+
+  type AdminProductVariant {
+    id: ID!
+    sku: String!
+    variantName: String
+    priceCents: Int!
+    stockQty: Int
+    color: AdminColor!
+    size: AdminSize!
+    isActive: Boolean!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type AdminProduct {
+    id: ID!
+    slug: String!
+    name: String!
+    shortDescription: String
+    description: String
+    basePriceCents: Int!
+    currency: String!
+    customizable: Boolean!
+    status: String!
+    seoTitle: String
+    seoDescription: String
+    deletedAt: String
+    createdAt: String!
+    updatedAt: String!
+    productType: AdminProductType!
+    images: [AdminProductImage!]!
+    variants: [AdminProductVariant!]!
+  }
+
+  type AdminProductsPayload {
+    items: [AdminProduct!]!
+    total: Int!
+  }
+
+  type AdminProductFormOptions {
+    productTypes: [AdminProductType!]!
+    colors: [AdminColor!]!
+    sizes: [AdminSize!]!
+  }
+
+  input AdminProductsFilterInput {
+    search: String
+    productTypeSlug: String
+    status: String
+    customizable: Boolean
+    includeArchived: Boolean
+  }
+
+  input AdminProductsSortInput {
+    field: String
+    direction: String
+  }
+
+  input AdminProductInput {
+    name: String!
+    slug: String
+    shortDescription: String
+    description: String
+    productTypeId: ID!
+    basePriceCents: Int!
+    currency: String
+    customizable: Boolean
+    status: String
+    seoTitle: String
+    seoDescription: String
+  }
+
+  input AdminProductVariantInput {
+    id: ID
+    productId: ID!
+    sku: String
+    variantName: String
+    colorId: ID
+    sizeId: ID
+    priceCents: Int
+    stockQty: Int
+    isActive: Boolean
+  }
+
+  input AdminProductImageInput {
+    id: ID
+    productId: ID!
+    url: String!
+    publicId: String
+    alt: String
+    sortOrder: Int
+    isPrimary: Boolean
+  }
+`
+
+export const adminOrdersTypeDefs = /* GraphQL */ `
+  type AdminOrderCustomer {
+    userId: ID
+    name: String
+    email: String!
+    phone: String
+  }
+
+  type AdminOrderAddress {
+    id: ID!
+    type: String!
+    firstName: String
+    lastName: String
+    phone: String
+    line1: String!
+    line2: String
+    label: String
+    city: String!
+    state: String!
+    country: String!
+    postalCode: String!
+  }
+
+  type AdminOrderItem {
+    id: ID!
+    productId: ID
+    productVariantId: ID
+    designId: ID
+    name: String!
+    sku: String
+    quantity: Int!
+    unitPriceCents: Int!
+    customizationPriceCents: Int!
+    lineTotalCents: Int!
+    productSnapshotJson: JSON
+    designSnapshotJson: JSON
+    productionNotes: String
+    hasCustomDesign: Boolean!
+  }
+
+  type AdminOrderPayment {
+    id: ID!
+    provider: String!
+    providerOrderId: String
+    method: String!
+    status: String!
+    amountCents: Int!
+    currency: String!
+    paidAt: String
+    expiresAt: String
+    createdAt: String!
+  }
+
+  type AdminOrderShipment {
+    id: ID!
+    carrier: String
+    trackingNumber: String
+    status: String!
+    shippedAt: String
+    deliveredAt: String
+    createdAt: String!
+  }
+
+  type AdminOrderEvent {
+    id: ID!
+    type: String!
+    message: String
+    createdAt: String!
+    actorName: String
+  }
+
+  type AdminOrder {
+    id: ID!
+    orderNumber: String!
+    customer: AdminOrderCustomer!
+    status: String!
+    paymentStatus: String!
+    fulfillmentStatus: String!
+    currency: String!
+    subtotalCents: Int!
+    customizationTotalCents: Int!
+    shippingCents: Int!
+    discountCents: Int!
+    taxCents: Int!
+    totalCents: Int!
+    notes: String
+    placedAt: String
+    createdAt: String!
+    updatedAt: String!
+    shippingAddress: AdminOrderAddress
+    billingAddress: AdminOrderAddress
+    items: [AdminOrderItem!]!
+    payments: [AdminOrderPayment!]!
+    shipments: [AdminOrderShipment!]!
+    events: [AdminOrderEvent!]!
+    hasCustomDesign: Boolean!
+  }
+
+  type AdminOrdersPayload {
+    items: [AdminOrder!]!
+    total: Int!
+  }
+
+  type AdminOrderStatusSummary {
+    pendingPayment: Int!
+    paid: Int!
+    inProduction: Int!
+    readyToShip: Int!
+    shipped: Int!
+    delivered: Int!
+    cancelled: Int!
+  }
+
+  type AdminProductionSheet {
+    orderNumber: String!
+    customerName: String
+    customerEmail: String!
+    items: [AdminOrderItem!]!
+    notes: String
+    generatedAt: String!
+  }
+
+  input AdminOrdersFilterInput {
+    search: String
+    status: String
+    paymentStatus: String
+    fulfillmentStatus: String
+    productionOnly: Boolean
+    hasCustomDesign: Boolean
+    dateFrom: String
+    dateTo: String
+  }
+
+  input AdminOrdersSortInput {
+    field: String
+    direction: String
+  }
+
+  input UpdateAdminOrderStatusInput {
+    orderNumber: String!
+    status: String!
+    message: String
+  }
+
+  input AddAdminOrderTrackingInput {
+    orderNumber: String!
+    carrier: String!
+    trackingNumber: String!
+    status: String
+    shippedAt: String
+  }
+
+  input AddAdminOrderNoteInput {
+    orderNumber: String!
+    note: String!
+  }
+`
+
 export const adminDashboardTypeDefs = /* GraphQL */ `
   type AdminDashboardMetrics {
     salesTodayCents: Int!
@@ -543,6 +831,25 @@ export const typeDefs = /* GraphQL */ `
     adminRecentDesigns(limit: Int): [AdminRecentDesign!]!
     adminRecentPayments(limit: Int): [AdminRecentPayment!]!
     adminTopProducts(limit: Int): [AdminTopProduct!]!
+    adminOrders(
+      filter: AdminOrdersFilterInput
+      sort: AdminOrdersSortInput
+      limit: Int
+      offset: Int
+    ): AdminOrdersPayload!
+    adminOrderByNumber(orderNumber: String!): AdminOrder
+    adminOrderStatusSummary: AdminOrderStatusSummary!
+    adminOrderProductionQueue(limit: Int): [AdminOrder!]!
+    adminOrderProductionSheet(orderNumber: String!): AdminProductionSheet
+    adminProducts(
+      filter: AdminProductsFilterInput
+      sort: AdminProductsSortInput
+      limit: Int
+      offset: Int
+    ): AdminProductsPayload!
+    adminProductById(id: ID!): AdminProduct
+    adminProductBySlug(slug: String!): AdminProduct
+    adminProductFormOptions: AdminProductFormOptions!
     myCart: Cart!
     orderByNumber(orderNumber: String!, email: String!): PublicOrder
     orderClaimPreview(token: String!): OrderClaimPreview
@@ -561,6 +868,21 @@ export const typeDefs = /* GraphQL */ `
     createCheckoutOrder(input: CreateCheckoutOrderInput!): CheckoutOrderPayload!
     createConektaCheckout(input: CreateConektaCheckoutInput!): ConektaCheckoutPayload!
     claimOrder(token: String!): OrderClaimPayload!
+    updateAdminOrderStatus(input: UpdateAdminOrderStatusInput!): AdminOrder!
+    moveAdminOrderToProduction(orderNumber: String!): AdminOrder!
+    markAdminOrderReadyToShip(orderNumber: String!): AdminOrder!
+    addAdminOrderTracking(input: AddAdminOrderTrackingInput!): AdminOrder!
+    cancelAdminOrder(orderNumber: String!, reason: String): AdminOrder!
+    addAdminOrderNote(input: AddAdminOrderNoteInput!): AdminOrder!
+    createAdminProduct(input: AdminProductInput!): AdminProduct!
+    updateAdminProduct(id: ID!, input: AdminProductInput!): AdminProduct!
+    archiveAdminProduct(id: ID!): AdminProduct!
+    duplicateAdminProduct(id: ID!): AdminProduct!
+    updateAdminProductStatus(id: ID!, status: String!): AdminProduct!
+    upsertAdminProductVariant(input: AdminProductVariantInput!): AdminProductVariant!
+    deleteAdminProductVariant(id: ID!): Boolean!
+    upsertAdminProductImage(input: AdminProductImageInput!): AdminProductImage!
+    deleteAdminProductImage(id: ID!): Boolean!
   }
 
   ${catalogTypeDefs}
@@ -570,4 +892,6 @@ export const typeDefs = /* GraphQL */ `
   ${orderClaimTypeDefs}
   ${paymentsTypeDefs}
   ${adminDashboardTypeDefs}
+  ${adminOrdersTypeDefs}
+  ${adminProductsTypeDefs}
 `

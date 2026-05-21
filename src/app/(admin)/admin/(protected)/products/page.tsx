@@ -1,214 +1,176 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useDeferredValue, useMemo, useState } from 'react'
 import { Plus } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AdminPageConfig } from '@/src/features/admin/layout/admin-page-config'
 import {
   ProductsToolbar,
   ProductsTable,
-  ProductsTableSkeleton,
   ProductFormDrawer,
-  DeleteProductDialog,
-  ProductsEmptyState,
-  ProductsErrorState,
+  ArchiveProductDialog,
 } from '@/src/features/admin/products'
-import type { ProductFormData } from '@/src/features/admin/products/product-form-drawer'
-import { fetchAdminProducts, createAdminProduct, updateAdminProduct, deleteAdminProduct } from '@/lib/mock-data'
-import type { AdminProduct, AdminProductStatus } from '@/lib/types'
+import { AdminProductsTableSkeleton } from '@/src/features/admin/products/components/admin-products-loading'
+import { AdminProductsError } from '@/src/features/admin/products/components/admin-products-error'
+import { AdminProductsEmpty } from '@/src/features/admin/products/components/admin-products-empty'
+import { useAdminProductsQuery } from '@/src/features/admin/products/api/use-admin-products-query'
+import { useAdminProductFormOptionsQuery } from '@/src/features/admin/products/api/use-admin-product-form-options-query'
+import { useArchiveAdminProductMutation } from '@/src/features/admin/products/api/use-archive-admin-product-mutation'
+import { useDuplicateAdminProductMutation } from '@/src/features/admin/products/api/use-duplicate-admin-product-mutation'
+import { useUpdateAdminProductStatusMutation } from '@/src/features/admin/products/api/use-update-admin-product-status-mutation'
+import {
+  buildAdminProductsListVariables,
+  mapAdminProductToTableRow,
+  mapFormOptionsToProductTypeSlugOptions,
+} from '@/src/features/admin/products/mappers/admin-products-ui.mapper'
+import type { AdminProductTableRow } from '@/src/features/admin/products/types/admin-products-ui.types'
+import type { AdminProductStatusUi } from '@/src/features/admin/products/types/admin-products-ui.types'
 
 export default function AdminProductsPage() {
-  // State
-  const [products, setProducts] = useState<AdminProduct[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
-
-  // Filters
   const [search, setSearch] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('all')
+  const deferredSearch = useDeferredValue(search)
+  const [productTypeSlug, setProductTypeSlug] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [customizableOnly, setCustomizableOnly] = useState(false)
   const [sortBy, setSortBy] = useState('updated')
 
-  // Drawer state
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(null)
+  const [editingProductId, setEditingProductId] = useState<string | null>(null)
 
-  // Delete dialog state
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [deletingProduct, setDeletingProduct] = useState<AdminProduct | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false)
+  const [archivingRow, setArchivingRow] = useState<AdminProductTableRow | null>(null)
 
-  const loadProducts = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await fetchAdminProducts()
-      setProducts(data)
-    } catch (err) {
-      setError('Error loading products')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const [actionProductId, setActionProductId] = useState<string | null>(null)
+  const [feedback, setFeedback] = useState<string | null>(null)
 
-  // Fetch products
-  // TODO: Replace with TanStack Query useQuery
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      void loadProducts()
-    }, 0)
-    return () => clearTimeout(timer)
-  }, [])
+  const listVariables = useMemo(
+    () =>
+      buildAdminProductsListVariables({
+        search: deferredSearch,
+        productTypeSlug,
+        statusFilter,
+        customizableOnly,
+        includeArchived: false,
+        sortBy,
+      }),
+    [deferredSearch, productTypeSlug, statusFilter, customizableOnly, sortBy],
+  )
 
-  // Filtered and sorted products
-  const filteredProducts = useMemo(() => {
-    let result = [...products]
+  const productsQuery = useAdminProductsQuery(listVariables)
+  const formOptionsQuery = useAdminProductFormOptionsQuery()
+  const archiveMutation = useArchiveAdminProductMutation()
+  const duplicateMutation = useDuplicateAdminProductMutation()
+  const updateStatusMutation = useUpdateAdminProductStatusMutation()
 
-    // Search filter
-    if (search) {
-      const searchLower = search.toLowerCase()
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(searchLower) ||
-          p.sku.toLowerCase().includes(searchLower)
-      )
-    }
+  const productTypeFilterOptions = useMemo(
+    () =>
+      formOptionsQuery.data
+        ? mapFormOptionsToProductTypeSlugOptions(formOptionsQuery.data)
+        : [],
+    [formOptionsQuery.data],
+  )
 
-    // Category filter
-    if (categoryFilter !== 'all') {
-      result = result.filter((p) => p.category === categoryFilter)
-    }
+  const tableRows = useMemo(
+    () => (productsQuery.data?.items ?? []).map(mapAdminProductToTableRow),
+    [productsQuery.data?.items],
+  )
 
-    // Status filter
-    if (statusFilter !== 'all') {
-      result = result.filter((p) => p.status === statusFilter)
-    }
+  const hasActiveFilters =
+    search.trim().length > 0 ||
+    productTypeSlug !== 'all' ||
+    statusFilter !== 'all' ||
+    customizableOnly
 
-    // Customizable filter
-    if (customizableOnly) {
-      result = result.filter((p) => p.customizable)
-    }
-
-    // Sort
-    switch (sortBy) {
-      case 'name':
-        result.sort((a, b) => a.name.localeCompare(b.name))
-        break
-      case 'name-desc':
-        result.sort((a, b) => b.name.localeCompare(a.name))
-        break
-      case 'price':
-        result.sort((a, b) => a.basePrice - b.basePrice)
-        break
-      case 'price-desc':
-        result.sort((a, b) => b.basePrice - a.basePrice)
-        break
-      case 'updated':
-      default:
-        result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-        break
-    }
-
-    return result
-  }, [products, search, categoryFilter, statusFilter, customizableOnly, sortBy])
-
-  // Handlers
-  const handleSelectAll = (checked: boolean) => {
-    setSelectedIds(checked ? filteredProducts.map((p) => p.id) : [])
-  }
-
-  const handleSelectOne = (id: string, checked: boolean) => {
-    setSelectedIds((prev) =>
-      checked ? [...prev, id] : prev.filter((i) => i !== id)
-    )
+  const clearFilters = () => {
+    setSearch('')
+    setProductTypeSlug('all')
+    setStatusFilter('all')
+    setCustomizableOnly(false)
   }
 
   const handleCreateNew = () => {
-    setEditingProduct(null)
+    setEditingProductId(null)
     setDrawerOpen(true)
   }
 
-  const handleView = (product: AdminProduct) => {
-    // TODO: Navigate to product detail view
-    console.log('View product:', product.id)
-  }
-
-  const handleEdit = (product: AdminProduct) => {
-    setEditingProduct(product)
+  const handleEdit = (row: AdminProductTableRow) => {
+    setEditingProductId(row.id)
     setDrawerOpen(true)
   }
 
-  const handleDuplicate = async (product: AdminProduct) => {
-    // TODO: Replace with GraphQL mutation
-    const duplicated = await createAdminProduct({
-      ...product,
-      name: `${product.name} (Copia)`,
-      slug: `${product.slug}-copia`,
-      sku: `${product.sku}-CPY`,
-      status: 'borrador' as AdminProductStatus,
-      sizes: product.sizes,
-      colors: product.colors.map((c) => c.id),
-      seoTitle: product.seoTitle || '',
-      seoDescription: product.seoDescription || '',
+  const runAction = async (productId: string, action: () => Promise<unknown>) => {
+    setActionProductId(productId)
+    setFeedback(null)
+    try {
+      await action()
+    } catch (error) {
+      setFeedback('No pudimos completar la acción. Intenta de nuevo.')
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[admin-products]', error)
+      }
+    } finally {
+      setActionProductId(null)
+    }
+  }
+
+  const handleDuplicate = (row: AdminProductTableRow) => {
+    const confirmed = window.confirm(
+      'Se creará una copia en estado borrador. ¿Continuar?',
+    )
+    if (!confirmed) return
+
+    void runAction(row.id, async () => {
+      const duplicated = await duplicateMutation.mutateAsync(row.id)
+      setFeedback(`Producto duplicado: ${duplicated.name}`)
+      setEditingProductId(duplicated.id)
+      setDrawerOpen(true)
     })
-    setProducts((prev) => [duplicated, ...prev])
   }
 
-  const handleArchive = async (product: AdminProduct) => {
-    // TODO: Replace with GraphQL mutation
-    const newStatus: AdminProductStatus = product.status === 'archivado' ? 'activo' : 'archivado'
-    const updated = await updateAdminProduct(product.id, { status: newStatus })
-    setProducts((prev) =>
-      prev.map((p) => (p.id === product.id ? updated : p))
+  const handleArchiveClick = (row: AdminProductTableRow) => {
+    setArchivingRow(row)
+    setArchiveDialogOpen(true)
+  }
+
+  const handleArchiveConfirm = async () => {
+    if (!archivingRow) return
+    try {
+      await archiveMutation.mutateAsync(archivingRow.id)
+      setFeedback(`"${archivingRow.name}" archivado.`)
+      setArchiveDialogOpen(false)
+      setArchivingRow(null)
+    } catch (error) {
+      setFeedback('No pudimos archivar el producto.')
+      if (process.env.NODE_ENV === 'development') console.error(error)
+    }
+  }
+
+  const handleStatusChange = (row: AdminProductTableRow, status: AdminProductStatusUi) => {
+    void runAction(row.id, () =>
+      updateStatusMutation.mutateAsync({ id: row.id, status }),
     )
   }
 
-  const handleDeleteClick = (product: AdminProduct) => {
-    setDeletingProduct(product)
-    setDeleteDialogOpen(true)
+  const handleSelectAll = (checked: boolean) => {
+    setSelectedIds(checked ? tableRows.map((r) => r.id) : [])
   }
 
-  const handleDeleteConfirm = async () => {
-    if (!deletingProduct) return
-    setIsDeleting(true)
-    try {
-      // TODO: Replace with GraphQL mutation
-      await deleteAdminProduct(deletingProduct.id)
-      setProducts((prev) => prev.filter((p) => p.id !== deletingProduct.id))
-      setDeleteDialogOpen(false)
-      setDeletingProduct(null)
-    } catch (err) {
-      console.error('Error deleting product:', err)
-    } finally {
-      setIsDeleting(false)
-    }
+  const handleSelectOne = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => (checked ? [...prev, id] : prev.filter((i) => i !== id)))
   }
 
-  const handleSaveProduct = async (data: ProductFormData) => {
-    // TODO: Replace with GraphQL mutation
-    if (editingProduct) {
-      const updated = await updateAdminProduct(editingProduct.id, data)
-      setProducts((prev) =>
-        prev.map((p) => (p.id === editingProduct.id ? updated : p))
-      )
-    } else {
-      const created = await createAdminProduct(data)
-      setProducts((prev) => [created, ...prev])
-    }
-  }
+  const total = productsQuery.data?.total ?? 0
+  const isEmptyCatalog = !productsQuery.isPending && total === 0 && !hasActiveFilters
 
   return (
     <AdminPageConfig breadcrumb={[{ label: 'Productos' }]} environment="DEV">
       <div className="space-y-6">
-        {/* Page Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="font-sans text-2xl font-bold text-foreground">
-              Productos
-            </h1>
+            <h1 className="font-sans text-2xl font-bold text-foreground">Productos</h1>
             <p className="mt-1 font-serif text-sm text-muted-foreground">
               Gestiona filipinas, mandiles, pantalones y sus opciones comerciales.
             </p>
@@ -219,99 +181,85 @@ export default function AdminProductsPage() {
           </Button>
         </div>
 
-        {/* Toolbar */}
+        {feedback ? (
+          <Alert>
+            <AlertDescription className="font-serif">{feedback}</AlertDescription>
+          </Alert>
+        ) : null}
+
         <ProductsToolbar
           search={search}
           onSearchChange={setSearch}
-          categoryFilter={categoryFilter}
-          onCategoryChange={setCategoryFilter}
+          productTypeSlug={productTypeSlug}
+          onProductTypeChange={setProductTypeSlug}
+          productTypeOptions={productTypeFilterOptions}
           statusFilter={statusFilter}
           onStatusChange={setStatusFilter}
           customizableOnly={customizableOnly}
           onCustomizableChange={setCustomizableOnly}
           sortBy={sortBy}
           onSortChange={setSortBy}
+          onClearFilters={clearFilters}
+          hasActiveFilters={hasActiveFilters}
         />
 
-        {/* Content */}
-        {isLoading ? (
-          <ProductsTableSkeleton />
-        ) : error ? (
-          <ProductsErrorState onRetry={loadProducts} />
-        ) : filteredProducts.length === 0 && products.length === 0 ? (
-          <ProductsEmptyState onCreateClick={handleCreateNew} />
-        ) : filteredProducts.length === 0 ? (
-          <div className="rounded-lg border border-border bg-card p-8 text-center">
-            <p className="font-serif text-muted-foreground">
-              No se encontraron productos con los filtros aplicados.
-            </p>
-            <Button
-              variant="link"
-              onClick={() => {
-                setSearch('')
-                setCategoryFilter('all')
-                setStatusFilter('all')
-                setCustomizableOnly(false)
-              }}
-              className="mt-2"
-            >
-              Limpiar filtros
-            </Button>
-          </div>
+        {productsQuery.isError ? (
+          <AdminProductsError onRetry={() => void productsQuery.refetch()} />
+        ) : productsQuery.isPending ? (
+          <AdminProductsTableSkeleton />
+        ) : isEmptyCatalog ? (
+          <AdminProductsEmpty onCreateClick={handleCreateNew} />
+        ) : tableRows.length === 0 ? (
+          <AdminProductsEmpty
+            title="Sin resultados"
+            description="No encontramos productos con estos filtros."
+          />
         ) : (
           <>
-            {/* Selection count */}
-            {selectedIds.length > 0 && (
+            {selectedIds.length > 0 ? (
               <div className="flex items-center gap-4 rounded-lg bg-primary/10 px-4 py-2">
                 <span className="font-sans text-sm font-medium text-primary">
-                  {selectedIds.length} producto{selectedIds.length > 1 ? 's' : ''} seleccionado{selectedIds.length > 1 ? 's' : ''}
+                  {selectedIds.length} producto{selectedIds.length > 1 ? 's' : ''} seleccionado
+                  {selectedIds.length > 1 ? 's' : ''}
                 </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedIds([])}
-                >
+                <Button variant="outline" size="sm" onClick={() => setSelectedIds([])}>
                   Deseleccionar
                 </Button>
               </div>
-            )}
+            ) : null}
 
-            {/* Table */}
             <ProductsTable
-              products={filteredProducts}
+              rows={tableRows}
               selectedIds={selectedIds}
               onSelectAll={handleSelectAll}
               onSelectOne={handleSelectOne}
-              onView={handleView}
               onEdit={handleEdit}
               onDuplicate={handleDuplicate}
-              onArchive={handleArchive}
-              onDelete={handleDeleteClick}
+              onArchive={handleArchiveClick}
+              onStatusChange={handleStatusChange}
+              actionProductId={actionProductId}
             />
 
-            {/* Results count */}
             <p className="font-serif text-sm text-muted-foreground">
-              Mostrando {filteredProducts.length} de {products.length} productos
+              Mostrando {tableRows.length} de {total} productos
             </p>
           </>
         )}
       </div>
 
-      {/* Form Drawer */}
       <ProductFormDrawer
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
-        product={editingProduct}
-        onSave={handleSaveProduct}
+        productId={editingProductId}
+        onSaved={() => setFeedback('Producto guardado correctamente.')}
       />
 
-      {/* Delete Dialog */}
-      <DeleteProductDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        product={deletingProduct}
-        onConfirm={handleDeleteConfirm}
-        isDeleting={isDeleting}
+      <ArchiveProductDialog
+        open={archiveDialogOpen}
+        onOpenChange={setArchiveDialogOpen}
+        productName={archivingRow?.name ?? null}
+        onConfirm={() => void handleArchiveConfirm()}
+        isArchiving={archiveMutation.isPending}
       />
     </AdminPageConfig>
   )
