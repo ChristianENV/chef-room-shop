@@ -12,6 +12,12 @@ export type {
   AdminCustomizationProductsVariables,
   DuplicateCustomizationRulesInput,
 } from './types'
+export type {
+  CustomizationAreaGroupUi,
+  CustomizationRuleCardUi,
+  RuleFormValues,
+  GarmentMapType,
+} from './types/admin-customization-ui.types'
 export { useAdminCustomizationAreasQuery } from './api/use-admin-customization-areas-query'
 export { useAdminCustomizationOptionsQuery } from './api/use-admin-customization-options-query'
 export { useAdminCustomizationProductsQuery } from './api/use-admin-customization-products-query'
@@ -28,5 +34,9 @@ export { ProductSelector } from './product-selector'
 export { GarmentAreaMap } from './garment-area-map'
 export { CustomizationAreaCard } from './customization-area-card'
 export { RuleEditorDrawer } from './rule-editor-drawer'
-export { PricingPreview } from './pricing-preview'
-export { UnsavedChangesBar } from './unsaved-changes-bar'
+export { PricingPreviewCard } from './pricing-preview'
+export { DeleteRuleDialog } from './delete-rule-dialog'
+export { DuplicateRulesDialog } from './duplicate-rules-dialog'
+export { AdminCustomizationPageSkeleton } from './components/admin-customization-loading'
+export { AdminCustomizationError } from './components/admin-customization-error'
+export { AdminCustomizationEmpty } from './components/admin-customization-empty'

@@ -1,125 +1,177 @@
 'use client'
 
+import { MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
+
 import { cn } from '@/lib/utils'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Pencil } from 'lucide-react'
-import type { CustomizationAreaRule, CustomizationType } from '@/lib/types'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Switch } from '@/components/ui/switch'
+import type { CustomizationAreaGroupUi, CustomizationRuleCardUi } from './types/admin-customization-ui.types'
 
-interface CustomizationAreaCardProps {
-  rule: CustomizationAreaRule
+type CustomizationAreaCardProps = {
+  group: CustomizationAreaGroupUi
   isSelected: boolean
-  onSelect: () => void
-  onToggleEnabled: (enabled: boolean) => void
-  onEdit: () => void
+  onSelectArea: () => void
+  onAddRule: () => void
+  onEditRule: (rule: CustomizationRuleCardUi) => void
+  onToggleRule: (rule: CustomizationRuleCardUi, enabled: boolean) => void
+  onDeleteRule: (rule: CustomizationRuleCardUi) => void
+  togglingRuleId?: string | null
 }
 
-const customizationTypeLabels: Record<CustomizationType, string> = {
-  bordado: 'Bordado',
-  estampado: 'Estampado',
-  patch: 'Patch',
-  logo: 'Logo',
-  texto: 'Texto',
-}
-
-export function CustomizationAreaCard({
+function RuleRow({
   rule,
-  isSelected,
-  onSelect,
-  onToggleEnabled,
   onEdit,
-}: CustomizationAreaCardProps) {
+  onToggle,
+  onDelete,
+  isToggling,
+}: {
+  rule: CustomizationRuleCardUi
+  onEdit: () => void
+  onToggle: (enabled: boolean) => void
+  onDelete: () => void
+  isToggling?: boolean
+}) {
   return (
-    <Card
+    <div
       className={cn(
-        'cursor-pointer transition-all',
-        isSelected && 'ring-2 ring-primary',
-        !rule.enabled && 'opacity-60'
+        'flex items-start justify-between gap-2 rounded-md border border-border bg-secondary/30 p-3',
+        !rule.enabled && 'opacity-70',
       )}
-      onClick={onSelect}
     >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="font-sans text-base font-semibold">
-          {rule.areaName}
-        </CardTitle>
-        <div className="flex items-center gap-2">
-          <Switch
-            checked={rule.enabled}
-            onCheckedChange={(checked) => {
-              onToggleEnabled(checked)
-            }}
-            onClick={(e) => e.stopPropagation()}
-            aria-label={`${rule.enabled ? 'Desactivar' : 'Activar'} ${rule.areaName}`}
-          />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={(e) => {
-              e.stopPropagation()
-              onEdit()
-            }}
-          >
-            <Pencil className="h-4 w-4" />
-            <span className="sr-only">Editar regla</span>
-          </Button>
+      <div className="min-w-0 flex-1 space-y-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-sans text-sm font-medium">{rule.optionName}</span>
+          <Badge variant={rule.statusBadgeVariant} className="text-xs">
+            {rule.statusLabel}
+          </Badge>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {/* Allowed types */}
-        <div>
-          <p className="mb-1.5 font-sans text-xs font-medium text-muted-foreground">
-            Opciones permitidas
-          </p>
+        <p className="font-mono text-xs text-muted-foreground">
+          {rule.basePriceFormatted}
+          {rule.dimensionsLabel ? ` · ${rule.dimensionsLabel}` : ''}
+        </p>
+        {rule.allowedFileTypes.length > 0 ? (
           <div className="flex flex-wrap gap-1">
-            {rule.allowedTypes.map((type) => (
-              <Badge key={type} variant="secondary" className="text-xs">
-                {customizationTypeLabels[type]}
+            {rule.allowedFileTypes.map((ft) => (
+              <Badge key={ft} variant="outline" className="font-mono text-[10px] uppercase">
+                {ft}
               </Badge>
             ))}
           </div>
-        </div>
+        ) : null}
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
+        <Switch
+          checked={rule.enabled}
+          disabled={isToggling}
+          onCheckedChange={onToggle}
+          aria-label={`Activar ${rule.optionName}`}
+        />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onEdit}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Editar
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onDelete} className="text-destructive focus:text-destructive">
+              <Trash2 className="mr-2 h-4 w-4" />
+              Eliminar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  )
+}
 
-        {/* Dimensions */}
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          <div>
-            <p className="font-sans text-xs text-muted-foreground">Max Ancho</p>
-            <p className="font-mono text-foreground">{rule.maxWidth} cm</p>
-          </div>
-          <div>
-            <p className="font-sans text-xs text-muted-foreground">Max Alto</p>
-            <p className="font-mono text-foreground">{rule.maxHeight} cm</p>
-          </div>
-        </div>
+export function CustomizationAreaCard({
+  group,
+  isSelected,
+  onSelectArea,
+  onAddRule,
+  onEditRule,
+  onToggleRule,
+  onDeleteRule,
+  togglingRuleId,
+}: CustomizationAreaCardProps) {
+  const isEmpty = group.ruleCount === 0
 
-        {/* Pricing */}
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          <div>
-            <p className="font-sans text-xs text-muted-foreground">Precio Base</p>
-            <p className="font-mono font-semibold text-foreground">${rule.basePrice}</p>
-          </div>
-          <div>
-            <p className="font-sans text-xs text-muted-foreground">Precio/cm</p>
-            <p className="font-mono text-foreground">${rule.pricePerCm}</p>
-          </div>
-        </div>
-
-        {/* Production time */}
+  return (
+    <Card
+      className={cn(
+        'transition-all',
+        isSelected && 'ring-2 ring-primary',
+        isEmpty && 'border-dashed',
+      )}
+    >
+      <CardHeader
+        className="cursor-pointer flex-row items-start justify-between space-y-0 pb-2"
+        onClick={onSelectArea}
+      >
         <div>
-          <p className="font-sans text-xs text-muted-foreground">Dias extra produccion</p>
-          <p className="font-mono text-foreground">+{rule.productionExtraDays} dias</p>
+          <CardTitle className="font-sans text-base font-semibold">{group.areaName}</CardTitle>
+          <p className="mt-1 font-serif text-xs text-muted-foreground">
+            {isEmpty
+              ? 'Sin reglas configuradas'
+              : `${group.ruleCount} regla${group.ruleCount > 1 ? 's' : ''} · ${group.activeCount} activa${group.activeCount !== 1 ? 's' : ''}`}
+          </p>
         </div>
-
-        {/* Notes */}
-        {rule.notes && (
-          <div className="border-t border-border pt-2">
-            <p className="font-serif text-xs italic text-muted-foreground">
-              {rule.notes}
+        {group.hasAnyEnabled ? (
+          <Badge className="shrink-0 font-sans text-xs">Activa</Badge>
+        ) : group.ruleCount > 0 ? (
+          <Badge variant="secondary" className="shrink-0 font-sans text-xs">
+            Inactiva
+          </Badge>
+        ) : null}
+      </CardHeader>
+      <CardContent className="space-y-3" onClick={(e) => e.stopPropagation()}>
+        {!isEmpty ? (
+          <>
+            <div className="flex flex-wrap gap-1">
+              {group.optionLabels.map((label) => (
+                <Badge key={label} variant="secondary" className="text-xs">
+                  {label}
+                </Badge>
+              ))}
+            </div>
+            <p className="font-sans text-sm text-muted-foreground">
+              {group.minPriceFormatted}
+              {group.dimensionsSummary ? ` · ${group.dimensionsSummary}` : ''}
             </p>
-          </div>
+            <div className="space-y-2">
+              {group.rules.map((rule) => (
+                <RuleRow
+                  key={rule.id}
+                  rule={rule}
+                  onEdit={() => onEditRule(rule)}
+                  onToggle={(enabled) => onToggleRule(rule, enabled)}
+                  onDelete={() => onDeleteRule(rule)}
+                  isToggling={togglingRuleId === rule.id}
+                />
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="font-serif text-sm text-muted-foreground text-center py-2">
+            Configura técnicas y precios para esta zona.
+          </p>
         )}
+        <Button variant="outline" size="sm" className="w-full" onClick={onAddRule}>
+          <Plus className="mr-1 h-4 w-4" />
+          Agregar regla
+        </Button>
       </CardContent>
     </Card>
   )

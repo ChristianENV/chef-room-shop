@@ -151,15 +151,29 @@ Requiere regla existente para la terna producto/área/opción.
 - CUSTOMER → `FORBIDDEN`
 - No se acepta `userId` del cliente para autorización
 
-## Frontend (hooks listos, UI pendiente)
+## UI conectada (`/admin/customization`)
 
-- `src/features/admin/customization/api/*`
-- `src/features/admin/customization/graphql/*`
-- `/admin/customization` sigue usando `lib/mock-data.ts`
+| Capa | Ruta |
+|------|------|
+| Página | `src/app/(admin)/admin/(protected)/customization/page.tsx` |
+| Mapper | `src/features/admin/customization/mappers/admin-customization-ui.mapper.ts` |
+| Docs UI | `docs/admin-customization-ui.md` |
+
+### Hooks en UI
+
+- `useAdminCustomizationProductsQuery` — selector de producto
+- `useAdminCustomizationAreasQuery` / `useAdminCustomizationOptionsQuery` — catálogo
+- `useAdminCustomizationRulesByProductQuery` — reglas por producto
+- `useAdminCustomizationPricingPreviewQuery` — preview lateral
+- Mutations: create, update, delete, toggle, duplicate
+
+### Acciones en UI
+
+Selección de producto, mapa de zonas (SVG admin), cards por área, crear/editar regla (drawer), activar/desactivar, eliminar con confirmación, duplicar reglas entre productos, pricing preview v1.
 
 ## Pendientes
 
-- UI admin conectada al BFF
+- UI avanzada del customizador en storefront
 - Customizador visual (canvas / Fabric / Three.js)
 - Upload Cloudinary real
 - Motor de precios avanzado (cantidad, matrices)
