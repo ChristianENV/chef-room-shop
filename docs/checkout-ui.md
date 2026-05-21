@@ -83,7 +83,7 @@ After `createCheckoutOrder` commits, the server sends `order_created` via `safeS
 - Refunds, MSI, saved cards
 - Transactional emails
 - Coupons, real shipping/taxes, CFDI
-- **Shipping rate selector** — GraphQL BFF ready (`docs/graphql-shipping.md`, hooks in `src/features/storefront/shipping/`); checkout still uses `shippingCents = 0` until UI + `createCheckoutOrder` integration
+- **Shipping on order** — Checkout UI quotes and selects Skydropx rates (`docs/checkout-shipping-ui.md`); `createCheckoutOrder` still saves `shippingCents = 0` until `shippingRateId` is wired
 - Guest order claim
 - Advanced public tracking
 
@@ -92,3 +92,4 @@ After `createCheckoutOrder` commits, the server sends `order_created` via `safeS
 - `docs/graphql-cart.md`
 - `docs/graphql-checkout.md`
 - `docs/graphql-shipping.md`
+- `docs/checkout-shipping-ui.md`

@@ -18,6 +18,7 @@ export function useSelectShippingRateMutation() {
         shippingQueryKeys.quoteById(payload.quote.id),
         payload.quote,
       )
+      void queryClient.invalidateQueries({ queryKey: shippingQueryKeys.all })
     },
   })
 }

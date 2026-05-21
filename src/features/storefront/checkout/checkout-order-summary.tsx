@@ -4,24 +4,35 @@ import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
 import { ShieldCheck, CreditCard, Building2, Banknote, Palette } from 'lucide-react'
-import { formatCurrencyMXN } from '@/src/lib/formatters'
+import { centsToPesos, formatCurrencyMXN } from '@/src/lib/formatters'
 
+import type { SelectedShippingRateSummary } from './types/checkout-shipping.types'
 import type { CheckoutSummaryData } from './mappers/checkout-ui.mapper'
 
 interface CheckoutOrderSummaryProps {
   summary: CheckoutSummaryData
+  selectedShipping?: SelectedShippingRateSummary | null
   className?: string
 }
 
-export function CheckoutOrderSummary({ summary, className }: CheckoutOrderSummaryProps) {
+export function CheckoutOrderSummary({
+  summary,
+  selectedShipping,
+  className,
+}: CheckoutOrderSummaryProps) {
   const {
     items,
     subtotalPesos,
     customizationTotalPesos,
-    shippingPesos,
     discountPesos,
-    totalPesos,
   } = summary
+
+  const shippingPesos = selectedShipping
+    ? centsToPesos(selectedShipping.amountCents)
+    : summary.shippingPesos
+
+  const estimatedTotalPesos =
+    subtotalPesos + customizationTotalPesos + shippingPesos - discountPesos
 
   return (
     <div className={cn('rounded-lg border border-border bg-card', className)}>
@@ -98,15 +109,26 @@ export function CheckoutOrderSummary({ summary, className }: CheckoutOrderSummar
           )}
 
           <div className="flex items-center justify-between font-serif text-sm">
-            <span className="text-muted-foreground">Envío</span>
+            <span className="text-muted-foreground">
+              {selectedShipping ? 'Envío seleccionado' : 'Envío'}
+            </span>
             <span className="font-sans text-foreground">
-              {shippingPesos === 0 ? (
-                <span className="text-success">Gratis</span>
+              {selectedShipping ? (
+                formatCurrencyMXN(shippingPesos)
+              ) : shippingPesos === 0 ? (
+                <span className="text-muted-foreground">Por cotizar</span>
               ) : (
                 formatCurrencyMXN(shippingPesos)
               )}
             </span>
           </div>
+
+          {selectedShipping && (
+            <p className="font-serif text-xs text-muted-foreground">
+              {selectedShipping.carrier}
+              {selectedShipping.service ? ` · ${selectedShipping.service}` : ''}
+            </p>
+          )}
 
           {discountPesos > 0 && (
             <div className="flex items-center justify-between font-serif text-sm">
@@ -126,15 +148,21 @@ export function CheckoutOrderSummary({ summary, className }: CheckoutOrderSummar
         <Separator className="my-4" />
 
         <div className="flex items-center justify-between">
-          <span className="font-sans text-lg font-semibold text-foreground">Total a pagar</span>
+          <span className="font-sans text-lg font-semibold text-foreground">
+            Total estimado
+          </span>
           <span className="font-sans text-2xl font-bold text-foreground">
-            {formatCurrencyMXN(totalPesos)}
+            {formatCurrencyMXN(estimatedTotalPesos)}
           </span>
         </div>
 
         <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
           <ShieldCheck className="h-4 w-4 text-success" />
-          <span className="font-serif">Los totales se confirman al crear el pedido</span>
+          <span className="font-serif text-center">
+            {selectedShipping
+              ? 'Envío seleccionado para la orden. Se aplicará al confirmar el pedido en la siguiente fase.'
+              : 'El total final se confirmará al crear el pedido.'}
+          </span>
         </div>
 
         <div className="mt-4">

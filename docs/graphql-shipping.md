@@ -1,6 +1,6 @@
 # GraphQL — Shipping Quote BFF v1
 
-Server-only Skydropx integration for quoting outbound shipping from the **active cart**. Checkout UI is not wired yet; hooks live under `src/features/storefront/shipping/`.
+Server-only Skydropx integration for quoting outbound shipping from the **active cart**. Checkout UI uses these operations in step Envío — see `docs/checkout-shipping-ui.md`. Hooks: `src/features/storefront/shipping/`.
 
 ## Operations
 
@@ -101,7 +101,7 @@ Requires items in cart and guest cookie from `addCartItem`.
 
 ## Pending
 
-- [ ] Checkout UI — rate selector + CP field
+- [x] Checkout UI — rate selector (`docs/checkout-shipping-ui.md`)
 - [ ] `createCheckoutOrder` — apply `selectedAt` rate → `shippingCents`
 - [ ] Admin label generation
 - [ ] Skydropx webhooks

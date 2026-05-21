@@ -3,6 +3,7 @@ import type { ZodError } from 'zod'
 import type { BillingAddressData } from '../billing-address-form'
 import type { ContactFormData } from '../contact-form'
 import type { ShippingAddressData } from '../shipping-address-form'
+import { isCheckoutShippingOptional, isCheckoutShippingRequired } from './checkout-shipping-config'
 import { checkoutFormSchema } from './checkout-form.validation'
 
 const contactStepSchema = checkoutFormSchema.pick({ email: true, phone: true })
@@ -94,6 +95,38 @@ export function validateBillingStep(data: BillingAddressData): {
  */
 export function validatePaymentStep(paymentMethod: string): boolean {
   return paymentStepSchema.safeParse({ paymentMethod }).success
+}
+
+/**
+ * Validates that a Skydropx shipping rate was selected before payment step.
+ */
+export function validateShippingRateStep(
+  selectedRateId: string | null | undefined,
+  options?: { skydropxUnavailable?: boolean },
+): { success: boolean; message?: string } {
+  if (!isCheckoutShippingRequired()) {
+    return { success: true }
+  }
+
+  if (options?.skydropxUnavailable && isCheckoutShippingOptional()) {
+    return { success: true }
+  }
+
+  if (options?.skydropxUnavailable) {
+    return {
+      success: false,
+      message: 'La cotización de envío no está disponible en este momento.',
+    }
+  }
+
+  if (!selectedRateId) {
+    return {
+      success: false,
+      message: 'Selecciona una opción de envío para continuar.',
+    }
+  }
+
+  return { success: true }
 }
 
 /**

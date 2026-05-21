@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { CheckoutLayout } from '@/src/features/storefront/layout/checkout-layout'
@@ -9,14 +9,12 @@ import {
   ContactForm,
   ShippingAddressForm,
   BillingAddressForm,
-  ShippingMethodSelector,
   PaymentMethodTabs,
   CheckoutOrderSummary,
   type CheckoutStep,
   type ContactFormData,
   type ShippingAddressData,
   type BillingAddressData,
-  type ShippingMethod,
   type PaymentMethod,
   useCreateCheckoutOrderMutation,
 } from '@/src/features/storefront/checkout'
@@ -33,9 +31,17 @@ import {
   validateBillingStep,
   validateContactStep,
   validatePaymentStep,
+  validateShippingRateStep,
   validateShippingStep,
 } from '@/src/features/storefront/checkout/lib/checkout-step-validation'
+import {
+  clearCheckoutShippingDraft,
+  readCheckoutShippingDraft,
+  saveCheckoutShippingDraft,
+} from '@/src/features/storefront/checkout/lib/checkout-shipping-session'
 import { saveCheckoutConfirmation } from '@/src/features/storefront/checkout/lib/checkout-session'
+import type { SelectedShippingRateSummary } from '@/src/features/storefront/checkout/types/checkout-shipping.types'
+import { ShippingRateSelector } from '@/src/features/storefront/shipping'
 import { checkoutSuccessUrl } from '@/src/features/storefront/checkout/lib/checkout-routes'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -60,6 +66,17 @@ const initialShippingData: ShippingAddressData = {
   postalCode: '',
   country: 'Mexico',
   saveAddress: false,
+}
+
+function readInitialShippingFromSession(): {
+  selectedShipping: SelectedShippingRateSummary | null
+  quoteId: string | null
+} {
+  const draft = readCheckoutShippingDraft()
+  return {
+    selectedShipping: draft?.selectedShipping ?? null,
+    quoteId: draft?.quoteId ?? null,
+  }
 }
 
 const initialBillingData: BillingAddressData = {
@@ -87,13 +104,45 @@ export default function CheckoutPage() {
   const [contactData, setContactData] = useState<ContactFormData>(initialContactData)
   const [shippingData, setShippingData] = useState<ShippingAddressData>(initialShippingData)
   const [billingData, setBillingData] = useState<BillingAddressData>(initialBillingData)
-  const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('standard')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card')
   const [orderNotes, setOrderNotes] = useState('')
+  const initialShippingSession = readInitialShippingFromSession()
+  const [selectedShipping, setSelectedShipping] = useState<SelectedShippingRateSummary | null>(
+    initialShippingSession.selectedShipping,
+  )
+  const [shippingQuoteId, setShippingQuoteId] = useState<string | null>(
+    initialShippingSession.quoteId,
+  )
+  const [skydropxUnavailable, setSkydropxUnavailable] = useState(false)
 
   const [contactErrors, setContactErrors] = useState<Partial<Record<keyof ContactFormData, string>>>({})
   const [shippingErrors, setShippingErrors] = useState<Partial<Record<keyof ShippingAddressData, string>>>({})
+  const [shippingRateError, setShippingRateError] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!selectedShipping && !shippingQuoteId) {
+      clearCheckoutShippingDraft()
+      return
+    }
+    saveCheckoutShippingDraft({
+      quoteId: shippingQuoteId,
+      selectedRateId: selectedShipping?.rateId ?? null,
+      selectedShipping,
+      destinationPostalCode: shippingData.postalCode.trim(),
+    })
+  }, [selectedShipping, shippingQuoteId, shippingData.postalCode])
+
+  const handleShippingAddressChange = useCallback((data: ShippingAddressData) => {
+    setShippingData((prev) => {
+      if (prev.postalCode.trim() !== data.postalCode.trim()) {
+        setSelectedShipping(null)
+        setShippingQuoteId(null)
+        clearCheckoutShippingDraft()
+      }
+      return data
+    })
+  }, [])
 
   const summary = useMemo(
     () => (cart ? mapBffCartToCheckoutSummary(cart) : null),
@@ -129,8 +178,14 @@ export default function CheckoutPage() {
     if (currentStep === 'envio') {
       const shippingResult = validateShippingStep(shippingData)
       const billingResult = validateBillingStep(billingData)
+      const rateResult = validateShippingRateStep(selectedShipping?.rateId, {
+        skydropxUnavailable,
+      })
       setShippingErrors(shippingResult.errors)
-      if (!shippingResult.success || !billingResult.success) return
+      setShippingRateError(rateResult.message ?? null)
+      if (!shippingResult.success || !billingResult.success || !rateResult.success) {
+        return
+      }
       setCompletedSteps((prev) => [...prev, 'envio'])
       setCurrentStep('pago')
       return
@@ -160,6 +215,7 @@ export default function CheckoutPage() {
       paymentMethod,
       notes: orderNotes || undefined,
     })
+    // TODO(next PR): pass shippingRateId: selectedShipping?.rateId on createCheckoutOrder
 
     try {
       const payload = await createOrder.mutateAsync(input)
@@ -244,7 +300,7 @@ export default function CheckoutPage() {
             <div className="rounded-lg border border-border bg-card p-4 md:p-6">
               <ShippingAddressForm
                 data={shippingData}
-                onChange={setShippingData}
+                onChange={handleShippingAddressChange}
                 errors={shippingErrors}
               />
 
@@ -254,16 +310,28 @@ export default function CheckoutPage() {
 
               <Separator className="my-6" />
 
-              <ShippingMethodSelector
-                selectedMethod={shippingMethod}
-                onMethodChange={setShippingMethod}
+              <ShippingRateSelector
+                key={shippingData.postalCode.trim()}
+                destinationPostalCode={shippingData.postalCode}
+                destinationCity={shippingData.city}
+                destinationState={shippingData.state}
+                destinationCountry={shippingData.country}
+                selectedRateId={selectedShipping?.rateId}
+                onRateSelected={setSelectedShipping}
+                onQuoteIdChange={setShippingQuoteId}
+                onUnavailableChange={setSkydropxUnavailable}
                 hasCustomization={hasCustomization}
+                disabled={isSubmitting || isFetching}
               />
 
-              <p className="mt-4 font-serif text-xs text-muted-foreground">
-                El costo de envío se calculará en una fase posterior. Por ahora el pedido se crea
-                con envío en $0.
-              </p>
+              {shippingRateError && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="font-serif">
+                    {shippingRateError}
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
           )}
 
@@ -316,7 +384,7 @@ export default function CheckoutPage() {
         </div>
 
         <div className="lg:sticky lg:top-4 lg:self-start">
-          <CheckoutOrderSummary summary={summary} />
+          <CheckoutOrderSummary summary={summary} selectedShipping={selectedShipping} />
         </div>
       </div>
     </CheckoutLayout>
