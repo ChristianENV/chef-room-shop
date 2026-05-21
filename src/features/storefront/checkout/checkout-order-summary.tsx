@@ -148,9 +148,7 @@ export function CheckoutOrderSummary({
         <Separator className="my-4" />
 
         <div className="flex items-center justify-between">
-          <span className="font-sans text-lg font-semibold text-foreground">
-            Total estimado
-          </span>
+          <span className="font-sans text-lg font-semibold text-foreground">Total</span>
           <span className="font-sans text-2xl font-bold text-foreground">
             {formatCurrencyMXN(estimatedTotalPesos)}
           </span>
@@ -160,8 +158,8 @@ export function CheckoutOrderSummary({
           <ShieldCheck className="h-4 w-4 text-success" />
           <span className="font-serif text-center">
             {selectedShipping
-              ? 'Envío seleccionado para la orden. Se aplicará al confirmar el pedido en la siguiente fase.'
-              : 'El total final se confirmará al crear el pedido.'}
+              ? 'El total incluye el envío seleccionado y se confirmará al crear el pedido.'
+              : 'Selecciona un envío para ver el total con paquetería.'}
           </span>
         </div>
 

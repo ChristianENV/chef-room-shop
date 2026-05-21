@@ -39,6 +39,7 @@ import {
   readCheckoutShippingDraft,
   saveCheckoutShippingDraft,
 } from '@/src/features/storefront/checkout/lib/checkout-shipping-session'
+import { isCheckoutShippingOptional } from '@/src/features/storefront/checkout/lib/checkout-shipping-config'
 import { saveCheckoutConfirmation } from '@/src/features/storefront/checkout/lib/checkout-session'
 import type { SelectedShippingRateSummary } from '@/src/features/storefront/checkout/types/checkout-shipping.types'
 import { ShippingRateSelector } from '@/src/features/storefront/shipping'
@@ -193,6 +194,13 @@ export default function CheckoutPage() {
 
     if (currentStep === 'pago') {
       if (!validatePaymentStep(paymentMethod)) return
+      const rateResult = validateShippingRateStep(selectedShipping?.rateId, {
+        skydropxUnavailable,
+      })
+      if (!rateResult.success) {
+        setShippingRateError(rateResult.message ?? null)
+        return
+      }
       void handleSubmitOrder()
     }
   }
@@ -214,15 +222,20 @@ export default function CheckoutPage() {
       billing: billingData,
       paymentMethod,
       notes: orderNotes || undefined,
+      selectedShipping,
     })
-    // TODO(next PR): pass shippingRateId: selectedShipping?.rateId on createCheckoutOrder
 
     try {
       const payload = await createOrder.mutateAsync(input)
+      clearCheckoutShippingDraft()
+      setSelectedShipping(null)
+      setShippingQuoteId(null)
       saveCheckoutConfirmation({
         ...payload,
         email: contactData.email.trim(),
         paymentMethod,
+        shippingCarrier: selectedShipping?.carrier ?? null,
+        shippingService: selectedShipping?.service ?? null,
       })
       router.push(checkoutSuccessUrl(payload.orderNumber))
     } catch (error) {
@@ -329,6 +342,15 @@ export default function CheckoutPage() {
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription className="font-serif">
                     {shippingRateError}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {isCheckoutShippingOptional() && skydropxUnavailable && (
+                <Alert className="mt-4">
+                  <AlertDescription className="font-serif text-sm">
+                    Modo desarrollo: puedes continuar sin cotizar envío. La orden se creará con
+                    envío en $0.
                   </AlertDescription>
                 </Alert>
               )}

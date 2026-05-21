@@ -16,6 +16,7 @@ import {
 import type { CartConfigSnapshotJson, CartItemWithRelations } from '../cart/cart.types'
 import type { GraphQLContext } from '../../context'
 import { getActiveCartForCheckout, resolveCheckoutOwner } from './checkout.auth'
+import { resolveCheckoutShippingRate } from './checkout-shipping'
 import {
   mapOrderToCheckoutPayload,
   mapOrderToPublicOrder,
@@ -59,6 +60,7 @@ function parseConfigSnapshot(value: unknown): CartConfigSnapshotJson {
  */
 export function computeCheckoutTotalsFromCartItems(
   items: CartItemWithRelations[],
+  shippingCents = 0,
 ): {
   subtotalCents: number
   customizationTotalCents: number
@@ -74,8 +76,6 @@ export function computeCheckoutTotalsFromCartItems(
     subtotalCents += item.unitPriceCents * item.quantity
     customizationTotalCents += item.customizationPriceCents * item.quantity
   }
-
-  const shippingCents = 0
   const discountCents = 0
   const taxCents = 0
   const totalCents =
@@ -125,9 +125,26 @@ export async function createCheckoutOrder(
   const parsed = createCheckoutOrderInputSchema.parse(input)
   const owner = await resolveCheckoutOwner(context)
   const cart = await getActiveCartForCheckout(context, owner)
-  const totals = computeCheckoutTotalsFromCartItems(cart.items)
+
+  const resolvedShipping = await resolveCheckoutShippingRate(
+    context,
+    owner,
+    cart.id,
+    parsed.shippingRateId,
+  )
+
+  const totals = computeCheckoutTotalsFromCartItems(
+    cart.items,
+    resolvedShipping?.shippingCents ?? 0,
+  )
   const paymentMethod = toPaymentMethod(parsed.paymentMethod)
   const useSameBilling = parsed.useSameBillingAddress ?? true
+
+  const orderEventMessage = resolvedShipping
+    ? `Orden creada con envío seleccionado (${resolvedShipping.rate.carrier}${
+        resolvedShipping.rate.service ? ` · ${resolvedShipping.rate.service}` : ''
+      }).`
+    : 'Orden creada desde checkout.'
 
   const result = await context.prisma.$transaction(async (tx) => {
     const orderNumber = await generateOrderNumberWithRetry(tx)
@@ -244,10 +261,28 @@ export async function createCheckoutOrder(
       data: {
         orderId: order.id,
         type: OrderEventType.CREATED,
-        message: 'Orden creada desde checkout.',
-        metadataJson: { source: 'checkout_bff_v1' },
+        message: orderEventMessage,
+        metadataJson: {
+          source: 'checkout_bff_v1',
+          ...(resolvedShipping
+            ? {
+                shippingRateId: resolvedShipping.rate.id,
+                providerRateId: resolvedShipping.rate.providerRateId,
+                carrier: resolvedShipping.rate.carrier,
+                service: resolvedShipping.rate.service,
+                shippingCents: resolvedShipping.shippingCents,
+              }
+            : {}),
+        },
       },
     })
+
+    if (resolvedShipping) {
+      await tx.shippingQuote.update({
+        where: { id: resolvedShipping.quoteId },
+        data: { orderId: order.id },
+      })
+    }
 
     await tx.cart.update({
       where: { id: cart.id },

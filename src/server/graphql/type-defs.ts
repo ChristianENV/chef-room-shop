@@ -838,6 +838,11 @@ export const checkoutTypeDefs = /* GraphQL */ `
     useSameBillingAddress: Boolean
     notes: String
     paymentMethod: String!
+    """
+    Selected ShippingRate id from Skydropx quote BFF.
+    Required in production; optional only when ALLOW_CHECKOUT_WITHOUT_SHIPPING=true on server.
+    """
+    shippingRateId: ID
   }
 
   type CheckoutOrderPayload {
@@ -846,6 +851,7 @@ export const checkoutTypeDefs = /* GraphQL */ `
     status: String!
     paymentStatus: String!
     totalCents: Int!
+    shippingCents: Int!
     currency: String!
     claimUrl: String
     accountOrderUrl: String

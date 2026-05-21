@@ -10,6 +10,7 @@ Integrates Skydropx shipping quotes into `/checkout` (step **Envío**) without c
 4. Selecting a rate calls `selectShippingRate` → `selectedAt` in DB.
 5. If `isCompleted === false`, the UI polls with `refreshShippingQuote` (~2.5s, max 12 attempts).
 6. Customer cannot advance to **Pago** without a selected rate (unless dev override below).
+7. **Create order** sends `shippingRateId` only — server reads `amountCents` from DB.
 
 ## Components
 
@@ -24,7 +25,7 @@ Session draft: `checkout-shipping-session.ts` (`quoteId`, `selectedRateId`, summ
 
 ## Order summary
 
-Shows **Envío seleccionado** + **Total estimado** including selected rate cents. Copy explains the amount applies on order confirmation in the next backend PR.
+Shows **Envío seleccionado** + **Total** including selected rate. `createCheckoutOrder` persists `Order.shippingCents` and `Order.totalCents` with shipping included.
 
 ## Dev override
 
@@ -47,7 +48,7 @@ Allows skipping rate selection when Skydropx returns `SERVICE_UNAVAILABLE`. **Do
 
 ## Pending
 
-- [ ] `createCheckoutOrder(input: { shippingRateId })` → persist `shippingCents` on order
+- [x] `createCheckoutOrder` with `shippingRateId` → real `shippingCents` on order
 - [ ] Admin label generation
 - [ ] Webhooks / tracking UI
 - [ ] Fallback UX when Skydropx is down in production (hold order vs manual quote)

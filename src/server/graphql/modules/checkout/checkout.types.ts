@@ -29,6 +29,8 @@ export type CreateCheckoutOrderInput = {
   useSameBillingAddress?: boolean
   notes?: string | null
   paymentMethod: string
+  /** Selected ShippingRate id from quote BFF — amount is read server-side from DB. */
+  shippingRateId?: string | null
 }
 
 export type CheckoutOrderPayloadGql = {
@@ -37,6 +39,7 @@ export type CheckoutOrderPayloadGql = {
   status: string
   paymentStatus: string
   totalCents: number
+  shippingCents: number
   currency: string
   claimUrl: string | null
   accountOrderUrl: string | null

@@ -102,6 +102,7 @@ export function mapOrderToCheckoutPayload(
     status: order.status,
     paymentStatus: derivePaymentStatus(payments),
     totalCents: order.totalCents,
+    shippingCents: order.shippingCents,
     currency: order.currency,
     claimUrl: tracking?.claimUrl ?? null,
     accountOrderUrl:

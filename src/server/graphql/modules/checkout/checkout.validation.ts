@@ -1,6 +1,8 @@
 import { PaymentMethod } from '@prisma/client'
 import { z } from 'zod'
 
+import { isCheckoutShippingOptionalOnServer } from './checkout-shipping-config'
+
 const checkoutAddressSchema = z.object({
   firstName: z.string().trim().min(1, 'Nombre requerido'),
   lastName: z.string().trim().min(1, 'Apellido requerido'),
@@ -16,17 +18,28 @@ const checkoutAddressSchema = z.object({
   references: z.string().trim().optional().nullable(),
 })
 
-export const createCheckoutOrderInputSchema = z.object({
-  email: z.string().trim().email('Correo electrónico inválido'),
-  phone: z.string().trim().min(8, 'Teléfono requerido'),
-  shippingAddress: checkoutAddressSchema,
-  billingAddress: checkoutAddressSchema.optional().nullable(),
-  useSameBillingAddress: z.boolean().optional().default(true),
-  notes: z.string().trim().optional().nullable(),
-  paymentMethod: z.enum(['CARD', 'OXXO', 'SPEI'], {
-    message: 'Método de pago inválido',
-  }),
-})
+export const createCheckoutOrderInputSchema = z
+  .object({
+    email: z.string().trim().email('Correo electrónico inválido'),
+    phone: z.string().trim().min(8, 'Teléfono requerido'),
+    shippingAddress: checkoutAddressSchema,
+    billingAddress: checkoutAddressSchema.optional().nullable(),
+    useSameBillingAddress: z.boolean().optional().default(true),
+    notes: z.string().trim().optional().nullable(),
+    paymentMethod: z.enum(['CARD', 'OXXO', 'SPEI'], {
+      message: 'Método de pago inválido',
+    }),
+    shippingRateId: z.string().trim().uuid('ID de tarifa de envío inválido').optional().nullable(),
+  })
+  .superRefine((data, ctx) => {
+    if (!isCheckoutShippingOptionalOnServer() && !data.shippingRateId) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Selecciona una opción de envío para continuar.',
+        path: ['shippingRateId'],
+      })
+    }
+  })
 
 export type ParsedCreateCheckoutOrderInput = z.infer<
   typeof createCheckoutOrderInputSchema

@@ -11,6 +11,7 @@ import type { ContactFormData } from '../contact-form'
 import type { ShippingAddressData } from '../shipping-address-form'
 import type { BillingAddressData } from '../billing-address-form'
 import type { PaymentMethod } from '../payment-method-tabs'
+import type { SelectedShippingRateSummary } from '../types/checkout-shipping.types'
 import { mapPaymentMethodToBff, normalizeCountryCode } from '../lib/checkout-form.validation'
 
 export type CheckoutSummaryItem = {
@@ -114,6 +115,7 @@ export function buildCreateCheckoutOrderInput(params: {
   billing: BillingAddressData
   paymentMethod: PaymentMethod
   notes?: string
+  selectedShipping?: SelectedShippingRateSummary | null
 }): CreateCheckoutOrderInput {
   const shippingAddress = mapAddressToBffInput(params.shipping, params.contact.phone)
 
@@ -124,6 +126,7 @@ export function buildCreateCheckoutOrderInput(params: {
     useSameBillingAddress: params.billing.sameAsShipping,
     paymentMethod: mapPaymentMethodToBff(params.paymentMethod),
     notes: params.notes?.trim() || null,
+    shippingRateId: params.selectedShipping?.rateId ?? null,
   }
 
   if (!params.billing.sameAsShipping) {

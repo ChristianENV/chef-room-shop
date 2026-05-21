@@ -21,6 +21,7 @@ export type CreateCheckoutOrderInput = {
   useSameBillingAddress?: boolean
   notes?: string | null
   paymentMethod: string
+  shippingRateId?: string | null
 }
 
 export type CheckoutOrderPayload = {
@@ -29,6 +30,7 @@ export type CheckoutOrderPayload = {
   status: string
   paymentStatus: string
   totalCents: number
+  shippingCents: number
   currency: string
   claimUrl?: string | null
   accountOrderUrl?: string | null

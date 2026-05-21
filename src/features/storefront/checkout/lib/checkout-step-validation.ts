@@ -1,5 +1,7 @@
 import type { ZodError } from 'zod'
 
+import { GraphQLRequestError } from '@/src/lib/graphql/errors'
+
 import type { BillingAddressData } from '../billing-address-form'
 import type { ContactFormData } from '../contact-form'
 import type { ShippingAddressData } from '../shipping-address-form'
@@ -133,6 +135,11 @@ export function validateShippingRateStep(
  * Maps GraphQL/checkout failures to a user-facing message.
  */
 export function getCheckoutErrorMessage(error: unknown): string {
+  if (error instanceof GraphQLRequestError) {
+    const serverMessage = error.errors[0]?.message?.trim()
+    if (serverMessage) return serverMessage
+  }
+
   const message = error instanceof Error ? error.message.toLowerCase() : ''
 
   if (
@@ -144,6 +151,20 @@ export function getCheckoutErrorMessage(error: unknown): string {
 
   if (message.includes('guest') && message.includes('session')) {
     return 'Tu sesión de invitado expiró. Agrega productos de nuevo e intenta otra vez.'
+  }
+
+  if (
+    message.includes('envío') ||
+    message.includes('tarifa') ||
+    message.includes('cotiza')
+  ) {
+    return error instanceof Error
+      ? error.message
+      : 'Revisa la opción de envío e intenta de nuevo.'
+  }
+
+  if (message.includes('forbidden') || message.includes('acceso')) {
+    return 'No pudimos validar la tarifa de envío. Cotiza de nuevo.'
   }
 
   return 'No pudimos crear tu pedido. Revisa tus datos e intenta de nuevo.'

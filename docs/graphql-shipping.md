@@ -102,7 +102,7 @@ Requires items in cart and guest cookie from `addCartItem`.
 ## Pending
 
 - [x] Checkout UI — rate selector (`docs/checkout-shipping-ui.md`)
-- [ ] `createCheckoutOrder` — apply `selectedAt` rate → `shippingCents`
+- [x] `createCheckoutOrder` — `shippingRateId` → `shippingCents` on order (`docs/graphql-checkout.md`)
 - [ ] Admin label generation
 - [ ] Skydropx webhooks
 - [ ] Tracking UI

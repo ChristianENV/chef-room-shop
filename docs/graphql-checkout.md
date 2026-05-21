@@ -14,6 +14,7 @@ mutation CreateCheckoutOrder($input: CreateCheckoutOrderInput!) {
     status
     paymentStatus
     totalCents
+    shippingCents
     currency
     claimUrl
     accountOrderUrl
@@ -29,7 +30,19 @@ Guest checkout returns `claimUrl`; authenticated returns `accountOrderUrl`. See 
 - `shippingAddress` — mapped to Prisma `Address` (`line1` = street, `line2` = ext/int, `label` = neighborhood/references)
 - `billingAddress` — optional when `useSameBillingAddress: false`
 - `paymentMethod` — `CARD` | `OXXO` | `SPEI` (placeholder only)
-- Totals are **never** accepted from the client
+- `shippingRateId` — id of selected `ShippingRate` from quote BFF (required unless `ALLOW_CHECKOUT_WITHOUT_SHIPPING=true` on server)
+- Totals and shipping amounts are **never** accepted from the client — `shippingCents` comes from `ShippingRate.amountCents` in DB
+
+### Shipping rate validation
+
+`resolveCheckoutShippingRate` (see `checkout-shipping.ts`):
+
+- Rate must belong to quote linked to the **same ACTIVE cart**
+- Quote `userId` / `guestSessionId` must match checkout owner
+- Rate must not be expired (`expiresAt`)
+- Sets `selectedAt` on the rate if not already selected
+- Links `ShippingQuote.orderId` after order creation
+- Does **not** call Skydropx shipments / labels
 
 ### Query: `orderByNumber`
 
@@ -62,14 +75,27 @@ If there is no active guest session: *Tu carrito está vacío o expiró.*
 
 1. Resolve owner (auth user or existing guest session).
 2. Load ACTIVE cart with items.
-3. Recompute totals from line items (`shipping` / `tax` / `discount` = 0 in v1).
-4. Create shipping (+ billing) `Address` rows.
-5. Create `Order` (`CR-YYYY-######`, `PENDING_PAYMENT`, `UNFULFILLED`).
-6. Create `OrderItem` rows with `productSnapshotJson` / `designSnapshotJson` from cart snapshots.
-7. Create `Payment` placeholder (`CONEKTA`, `PENDING`, `providerOrderId`: `checkout_pending_{orderId}`).
-8. Create `PaymentAttempt` with sanitized placeholder JSON (no card data).
-9. `OrderEvent` type `CREATED`.
-10. Set cart `status` → `CONVERTED` (items kept).
+3. Resolve `shippingRateId` → `shippingCents` from DB (or 0 if dev override).
+4. Recompute totals: subtotal + customization + shipping − discount + tax (tax/discount = 0).
+5. Create shipping (+ billing) `Address` rows.
+6. Create `Order` with real `shippingCents` and `totalCents`.
+7. Create `OrderItem` rows with snapshots from cart.
+8. Create `Payment` placeholder with `amountCents = totalCents`.
+9. `PaymentAttempt` + `OrderEvent` (includes carrier/service when rate present).
+10. `ShippingQuote.orderId` ← order id.
+11. Cart → `CONVERTED`.
+
+## Server env
+
+| Variable | Purpose |
+|----------|---------|
+| `ALLOW_CHECKOUT_WITHOUT_SHIPPING` | If `true`, `shippingRateId` optional and `shippingCents = 0`. **Not for production MVP.** |
+
+Client dev flag `NEXT_PUBLIC_ALLOW_CHECKOUT_WITHOUT_SHIPPING` only affects UI validation — server always enforces `ALLOW_CHECKOUT_WITHOUT_SHIPPING`.
+
+## Conekta
+
+`createConektaCheckout` uses `Order.totalCents` and `Order.shippingCents` via `shipping_lines` — no Conekta changes required when shipping is on the order.
 
 ## Manual smoke (GraphQL Playground / curl)
 
