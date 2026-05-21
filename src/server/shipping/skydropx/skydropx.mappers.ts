@@ -9,6 +9,7 @@ import { getPackageForCartItems } from '../shipping.package'
 import type {
   SkydropxAddressInput,
   SkydropxCreateQuotationRequest,
+  SkydropxCreateShipmentRequest,
   SkydropxParcelInput,
 } from './skydropx.types'
 
@@ -38,10 +39,35 @@ export type MappedShippingRate = {
 
 export type MappedShipmentData = {
   providerShipmentId: string | null
+  providerLabelId: string | null
   trackingNumber: string | null
   labelUrl: string | null
   carrier: string | null
+  service: string | null
+  costCents: number | null
+  labelFormat: string | null
   rawJson: Record<string, unknown>
+}
+
+export type OrderShippingAddressInput = {
+  fullName: string
+  line1: string
+  line2?: string | null
+  city: string
+  state: string
+  postalCode: string
+  country: string
+  phone?: string | null
+  email?: string
+}
+
+export type MapOrderToSkydropxShipmentInput = {
+  providerRateId: string
+  printingFormat?: 'standard' | 'thermal'
+  packageJson: unknown
+  shippingAddress: OrderShippingAddressInput
+  orderNumber: string
+  customerEmail: string
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -245,37 +271,186 @@ export function mapSkydropxRateToShippingRate(raw: unknown): MappedShippingRate 
   }
 }
 
+function mapOrderAddressToSkydropx(
+  address: OrderShippingAddressInput,
+  email: string,
+): SkydropxAddressInput & {
+  street1: string
+  name: string
+  company?: string
+  phone?: string
+  email?: string
+} {
+  const street1 = [address.line1, address.line2].filter(Boolean).join(', ')
+  return {
+    country_code: address.country.length === 2 ? address.country : 'MX',
+    postal_code: address.postalCode,
+    area_level1: address.state,
+    area_level2: address.city,
+    area_level3: address.city,
+    street1: street1 || address.line1,
+    name: address.fullName,
+    phone: address.phone ?? undefined,
+    email: address.email ?? email,
+  }
+}
+
 /**
- * Extracts shipment identifiers from Skydropx shipment response.
- * TODO: align with documented response once label generation is wired.
+ * Maps Chef Room label format hint to Skydropx printing_format.
  */
-export function mapSkydropxShipmentToShipmentData(raw: unknown): MappedShipmentData {
+export function mapLabelFormatToSkydropx(
+  labelFormat?: string | null,
+): 'standard' | 'thermal' {
+  const normalized = labelFormat?.trim().toUpperCase()
+  if (normalized === 'ZPL' || normalized === 'EPL' || normalized === 'THERMAL') {
+    return 'thermal'
+  }
+  return 'standard'
+}
+
+/**
+ * Builds POST /api/v1/shipments body from order, quote package, and selected rate.
+ */
+export function mapOrderToSkydropxShipmentPayload(
+  input: MapOrderToSkydropxShipmentInput,
+): SkydropxCreateShipmentRequest {
+  return {
+    shipment: {
+      rate_id: input.providerRateId,
+      printing_format: input.printingFormat ?? 'standard',
+      address_from: mapOriginToSkydropxAddress(),
+      address_to: mapOrderAddressToSkydropx(input.shippingAddress, input.customerEmail),
+    },
+  }
+}
+
+function extractLabelUrlFromShipmentNode(shipment: Record<string, unknown>): string | null {
+  const direct =
+    readString(shipment, 'label_url') ??
+    readString(shipment, 'label_pdf') ??
+    readString(shipment, 'tracking_url_provider')
+
+  if (direct) return direct
+
+  const labelUrls = shipment.label_urls
+  if (Array.isArray(labelUrls) && labelUrls.length > 0) {
+    const first = labelUrls[0]
+    if (typeof first === 'string') return first
+    const firstRecord = asRecord(first)
+    if (firstRecord) {
+      return readString(firstRecord, 'url') ?? readString(firstRecord, 'label_url')
+    }
+  }
+
+  const packages = shipment.packages
+  if (Array.isArray(packages)) {
+    for (const pkg of packages) {
+      const pkgRecord = asRecord(pkg)
+      if (!pkgRecord) continue
+      const url =
+        readString(pkgRecord, 'label_url') ?? readString(pkgRecord, 'label_pdf')
+      if (url) return url
+    }
+  }
+
+  return null
+}
+
+function extractShipmentNode(raw: unknown): Record<string, unknown> {
   const root = asRecord(raw) ?? {}
   const data = asRecord(root.data) ?? root
-  const shipment = asRecord(data.shipment) ?? data
+
+  const shipment = asRecord(data.shipment)
+  if (shipment) return shipment
+
+  if (Array.isArray(data)) {
+    const first = asRecord(data[0])
+    if (first) return first
+  }
+
+  if (Array.isArray(data.shipments)) {
+    const first = asRecord((data.shipments as unknown[])[0])
+    if (first) return first
+  }
+
+  return data
+}
+
+/**
+ * Parses Skydropx shipment create/GET response into DB-ready fields.
+ */
+export function parseSkydropxShipmentResponse(raw: unknown): MappedShipmentData {
+  const shipment = extractShipmentNode(raw)
+
+  const rateNode = asRecord(shipment.rate) ?? shipment
 
   const providerShipmentId =
     readString(shipment, 'id') ?? readString(shipment, 'shipment_id')
+
+  const providerLabelId =
+    readString(shipment, 'label_id') ??
+    readString(shipment, 'provider_label_id') ??
+    readString(rateNode, 'id')
 
   const trackingNumber =
     readString(shipment, 'tracking_number') ??
     readString(shipment, 'master_tracking_number')
 
-  const labelUrl =
-    readString(shipment, 'label_url') ??
-    readString(shipment, 'label_pdf') ??
-    readString(shipment, 'tracking_url_provider')
+  const labelUrl = extractLabelUrlFromShipmentNode(shipment)
 
   const carrier =
-    readString(shipment, 'carrier') ?? readString(shipment, 'carrier_name')
+    readString(shipment, 'carrier') ??
+    readString(shipment, 'carrier_name') ??
+    readString(rateNode, 'provider_name') ??
+    readString(rateNode, 'provider_display_name')
+
+  const service =
+    readString(shipment, 'service') ??
+    readString(rateNode, 'provider_service_name') ??
+    readString(rateNode, 'service_name')
+
+  const costCents =
+    parseAmountToCents(rateNode.total) ??
+    parseAmountToCents(rateNode.amount) ??
+    parseAmountToCents(shipment.total) ??
+    parseAmountToCents(shipment.amount)
+
+  const labelFormat =
+    readString(shipment, 'printing_format') ??
+    readString(shipment, 'label_format')
 
   return {
     providerShipmentId,
+    providerLabelId,
     trackingNumber,
     labelUrl,
     carrier,
+    service,
+    costCents,
+    labelFormat,
     rawJson: shipment,
   }
+}
+
+/** @deprecated Use parseSkydropxShipmentResponse */
+export function mapSkydropxShipmentToShipmentData(raw: unknown): MappedShipmentData {
+  return parseSkydropxShipmentResponse(raw)
+}
+
+export function extractProviderShipmentId(raw: unknown): string | null {
+  return parseSkydropxShipmentResponse(raw).providerShipmentId
+}
+
+export function extractTrackingNumber(raw: unknown): string | null {
+  return parseSkydropxShipmentResponse(raw).trackingNumber
+}
+
+export function extractLabelUrl(raw: unknown): string | null {
+  return parseSkydropxShipmentResponse(raw).labelUrl
+}
+
+export function extractProviderLabelId(raw: unknown): string | null {
+  return parseSkydropxShipmentResponse(raw).providerLabelId
 }
 
 export type ParsedSkydropxQuotation = {

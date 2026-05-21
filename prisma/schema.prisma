@@ -848,6 +848,7 @@ model ShippingQuote {
   cart         Cart?         @relation(fields: [cartId], references: [id], onDelete: SetNull)
   order        Order?        @relation(fields: [orderId], references: [id], onDelete: SetNull)
   rates        ShippingRate[]
+  shipments    Shipment[]
 
   @@index([userId])
   @@index([guestSessionId])
@@ -872,7 +873,8 @@ model ShippingRate {
   selectedAt            DateTime?
   createdAt             DateTime  @default(now())
 
-  quote ShippingQuote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  quote     ShippingQuote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  shipments Shipment[]
 
   @@index([quoteId])
   @@index([providerRateId])
@@ -901,22 +903,38 @@ model ShippingWebhookEvent {
 }
 
 model Shipment {
-  id             String         @id @default(uuid()) @db.Uuid
-  orderId        String         @db.Uuid
-  status         ShipmentStatus @default(PENDING)
-  carrier        String?
-  trackingNumber String?
-  shippedAt      DateTime?
-  deliveredAt    DateTime?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id                 String            @id @default(uuid()) @db.Uuid
+  orderId            String            @db.Uuid
+  status             ShipmentStatus    @default(PENDING)
+  provider           ShippingProvider  @default(SKYDROPX)
+  providerShipmentId String?
+  providerLabelId    String?
+  labelUrl           String?
+  labelFormat        String?
+  quoteId            String?           @db.Uuid
+  rateId             String?           @db.Uuid
+  carrier            String?
+  service            String?
+  costCents          Int?
+  currency           String            @default("MXN")
+  trackingNumber     String?
+  shippedAt          DateTime?
+  deliveredAt        DateTime?
+  rawResponseJson    Json?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
 
   order  Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  quote  ShippingQuote?  @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+  rate   ShippingRate?   @relation(fields: [rateId], references: [id], onDelete: SetNull)
   events ShipmentEvent[]
 
   @@index([orderId])
   @@index([status])
   @@index([trackingNumber])
+  @@index([providerShipmentId])
+  @@index([quoteId])
+  @@index([rateId])
   @@map("shipments")
 }
 

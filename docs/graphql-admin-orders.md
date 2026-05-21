@@ -77,7 +77,7 @@ Hoja de producción: items, snapshots, notas, cliente.
 | `updateAdminOrderStatus` | Cambia `Order.status` + `OrderEvent` STATUS_CHANGED |
 | `moveAdminOrderToProduction` | Requiere pago; `status` → IN_PRODUCTION, `fulfillmentStatus` → PROCESSING |
 | `markAdminOrderReadyToShip` | `status` → READY_TO_SHIP, `fulfillmentStatus` → PROCESSING |
-| `addAdminOrderTracking` | Crea/actualiza `Shipment`, `ShipmentEvent`, `status` → SHIPPED |
+| `addAdminOrderTracking` | Crea/actualiza `Shipment` manual (sin Skydropx), `status` → SHIPPED |
 | `cancelAdminOrder` | No si DELIVERED; sin reembolso automático |
 | `addAdminOrderNote` | `OrderEvent` NOTE_ADDED + append en `order.notes` |
 
@@ -178,10 +178,20 @@ La página admin de órdenes consume el BFF vía TanStack Query. Ver también `d
 3. Verificar tarjetas, tabla, drawer, mutations
 4. Login customer `cliente.demo+1@chefroom.test` → layout admin debe bloquear acceso
 
+## Guías Skydropx (BFF separado)
+
+La generación de etiquetas **no** usa `addAdminOrderTracking`. Ver `docs/graphql-admin-shipping.md`:
+
+- `adminCreateShippingLabel` — cotización/tarifa de DB, `POST /api/v1/shipments/`
+- `adminShipmentByOrderNumber` — consulta guía existente
+- Hooks: `useAdminShipmentByOrderNumberQuery`, `useAdminCreateShippingLabelMutation` en `src/features/admin/shipping/`
+
+El drawer de pedidos conectará estos hooks en un PR de UI (invalidar `adminOrdersQueryKeys` + `adminShippingQueryKeys` tras crear guía).
+
 ## Pendientes (fuera de v1)
 
 - Reembolsos reales / Conekta
-- Labels y paquetería real
-- Email `shipping_update` al agregar tracking
+- UI admin "Generar guía" (BFF listo)
+- Email `shipping_update` (webhooks / tracking PR)
 - Export CSV, realtime, permisos finos por acción
 - `updateAdminOrderStatus` hook en UI (mutation expuesta en API; hook opcional si se necesita en UI)

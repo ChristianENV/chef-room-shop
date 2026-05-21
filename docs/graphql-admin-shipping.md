@@ -1,0 +1,139 @@
+# Admin Shipping Label GraphQL BFF (v1)
+
+Generación de guías **Skydropx PRO** desde el panel admin. Requiere sesión **ADMIN** o **SUPERADMIN**. **CUSTOMER** → `FORBIDDEN`.
+
+No incluye en v1: UI admin, webhooks Skydropx, pickups, tracking público, generación automática al pagar.
+
+## Autenticación
+
+`requireAdminGraphQL(context)` en todas las operaciones. No se aceptan montos, `rate_id` de Skydropx ni credenciales desde el cliente.
+
+## Modelo `Shipment` (ampliado)
+
+Tras migración `skydropx_shipments`, cada guía guarda:
+
+| Campo | Uso |
+|-------|-----|
+| `provider` | `SKYDROPX` |
+| `providerShipmentId` | ID envío Skydropx |
+| `providerLabelId` | ID etiqueta (si aplica) |
+| `labelUrl` | URL PDF/ZPL para imprimir |
+| `labelFormat` | `PDF`, `ZPL`, `EPL` |
+| `quoteId` / `rateId` | Cotización y tarifa usadas |
+| `costCents` | Desde `ShippingRate.amountCents` (DB) |
+| `carrier`, `service`, `trackingNumber` | Respuesta Skydropx |
+| `rawResponseJson` | Solo servidor; no expuesto en GraphQL |
+
+## Query
+
+### `adminShipmentByOrderNumber`
+
+```graphql
+query AdminShipment($orderNumber: String!) {
+  adminShipmentByOrderNumber(orderNumber: $orderNumber) {
+    id
+    orderNumber
+    carrier
+    trackingNumber
+    labelUrl
+    status
+    costCents
+    events {
+      status
+      message
+      createdAt
+    }
+  }
+}
+```
+
+Retorna `null` si no hay envío.
+
+## Mutations
+
+### `adminCreateShippingLabel`
+
+```graphql
+mutation CreateLabel {
+  adminCreateShippingLabel(
+    input: { orderNumber: "CR-20260520-0001", labelFormat: "PDF" }
+  ) {
+    trackingNumber
+    labelUrl
+    carrier
+    service
+    status
+    costCents
+  }
+}
+```
+
+**Flujo servidor:**
+
+1. Orden existe y `paymentStatus` = `PAID`.
+2. `Order.status` ∈ `PAID`, `IN_PRODUCTION`, `READY_TO_SHIP`.
+3. No existe guía activa (`providerShipmentId` o `labelUrl`) → si existe: `CONFLICT` *"La guía ya fue generada."*
+4. `ShippingQuote` vinculada por `orderId`.
+5. Tarifa: `rateId` del input (debe pertenecer a la quote) o tarifa con `selectedAt` en checkout.
+6. Tarifa no expirada (`expiresAt`).
+7. Dirección de envío de la orden.
+8. `POST /api/v1/shipments/` con `rate_id` = `ShippingRate.providerRateId`.
+9. Transacción Prisma: `Shipment`, `ShipmentEvent`, `OrderEvent`, actualización de orden.
+
+**Estado de orden tras crear guía:**
+
+| Condición | `Order.status` | `fulfillmentStatus` |
+|-----------|----------------|---------------------|
+| Hay `trackingNumber` | `SHIPPED` | `SHIPPED` |
+| Solo `labelUrl` | `READY_TO_SHIP` | `PROCESSING` |
+
+**`labelFormat`:** `PDF` (default) → `standard`; `ZPL` / `EPL` → `thermal` en Skydropx.
+
+### `adminCancelShippingLabel`
+
+Cancela en Skydropx (`POST .../cancellations`) si hay `providerShipmentId`. Motivo opcional solo en `OrderEvent` local.
+
+### `adminRefreshShipmentTracking`
+
+Consulta `GET /api/v1/shipments/tracking` con `trackingNumber` + `carrier` del `Shipment` guardado.
+
+## Validaciones de error
+
+| Caso | Código |
+|------|--------|
+| Sin sesión admin | `UNAUTHENTICATED` / `FORBIDDEN` |
+| Pedido no pagado | `BAD_REQUEST` |
+| Pedido cancelado / entregado | `BAD_REQUEST` |
+| Guía ya generada | `CONFLICT` |
+| Sin quote o sin tarifa seleccionada | `BAD_REQUEST` |
+| Tarifa expirada | `BAD_REQUEST` |
+| Error Skydropx | `SKYDROPX_API_ERROR` |
+
+## Frontend (hooks, sin UI)
+
+```
+src/features/admin/shipping/
+  api/use-admin-shipment-by-order-number-query.ts
+  api/use-admin-create-shipping-label-mutation.ts
+```
+
+**Integración futura** en `/admin/orders` (drawer):
+
+- `useAdminShipmentByOrderNumberQuery(orderNumber)`
+- Botón "Generar guía" → `useAdminCreateShippingLabelMutation`
+- Invalidar: `adminOrdersQueryKeys.all`, `adminShippingQueryKeys.all`
+
+## Prueba manual (sandbox)
+
+1. Checkout con cotización y tarifa seleccionada; pagar orden (o `paymentStatus` PAID en dev).
+2. `markAdminOrderReadyToShip` si aplica.
+3. Ejecutar `adminCreateShippingLabel`.
+4. Verificar en DB: `shipments`, `shipment_events`, `order_events`, segunda llamada → `CONFLICT`.
+
+## Archivos
+
+| Área | Ruta |
+|------|------|
+| Service | `src/server/graphql/modules/admin-shipping/admin-shipping.service.ts` |
+| Resolver | `src/server/graphql/resolvers/admin-shipping.resolver.ts` |
+| Mappers Skydropx | `src/server/shipping/skydropx/skydropx.mappers.ts` |

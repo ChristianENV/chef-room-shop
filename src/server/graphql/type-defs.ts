@@ -722,6 +722,48 @@ export const adminOrdersTypeDefs = /* GraphQL */ `
   }
 `
 
+export const adminShippingTypeDefs = /* GraphQL */ `
+  type AdminShipmentEvent {
+    id: ID!
+    status: String!
+    message: String
+    rawPayloadJson: JSON
+    createdAt: String!
+  }
+
+  type AdminShipment {
+    id: ID!
+    orderNumber: String!
+    provider: String
+    providerShipmentId: String
+    providerLabelId: String
+    carrier: String
+    service: String
+    trackingNumber: String
+    status: String!
+    labelUrl: String
+    labelFormat: String
+    costCents: Int
+    currency: String
+    shippedAt: String
+    deliveredAt: String
+    createdAt: String!
+    updatedAt: String!
+    events: [AdminShipmentEvent!]!
+  }
+
+  input AdminCreateShippingLabelInput {
+    orderNumber: String!
+    rateId: ID
+    labelFormat: String
+  }
+
+  input AdminCancelShippingLabelInput {
+    orderNumber: String!
+    reason: String
+  }
+`
+
 export const adminDashboardTypeDefs = /* GraphQL */ `
   type AdminDashboardMetrics {
     salesTodayCents: Int!
@@ -999,6 +1041,7 @@ export const typeDefs = /* GraphQL */ `
     adminOrderStatusSummary: AdminOrderStatusSummary!
     adminOrderProductionQueue(limit: Int): [AdminOrder!]!
     adminOrderProductionSheet(orderNumber: String!): AdminProductionSheet
+    adminShipmentByOrderNumber(orderNumber: String!): AdminShipment
     adminProducts(
       filter: AdminProductsFilterInput
       sort: AdminProductsSortInput
@@ -1049,6 +1092,9 @@ export const typeDefs = /* GraphQL */ `
     addAdminOrderTracking(input: AddAdminOrderTrackingInput!): AdminOrder!
     cancelAdminOrder(orderNumber: String!, reason: String): AdminOrder!
     addAdminOrderNote(input: AddAdminOrderNoteInput!): AdminOrder!
+    adminCreateShippingLabel(input: AdminCreateShippingLabelInput!): AdminShipment!
+    adminCancelShippingLabel(input: AdminCancelShippingLabelInput!): AdminShipment!
+    adminRefreshShipmentTracking(orderNumber: String!): AdminShipment!
     createAdminProduct(input: AdminProductInput!): AdminProduct!
     updateAdminProduct(id: ID!, input: AdminProductInput!): AdminProduct!
     archiveAdminProduct(id: ID!): AdminProduct!
@@ -1076,6 +1122,7 @@ export const typeDefs = /* GraphQL */ `
   ${paymentsTypeDefs}
   ${adminDashboardTypeDefs}
   ${adminOrdersTypeDefs}
+  ${adminShippingTypeDefs}
   ${adminProductsTypeDefs}
   ${adminCustomizationTypeDefs}
 `

@@ -1,6 +1,6 @@
 # Skydropx PRO — Shipping integration (Chef Room)
 
-Chef Room uses **Skydropx PRO** (`api-pro.skydropx.com`) as the logistics aggregator for economical nationwide shipping in Mexico. This document covers the foundation layer and links to the **Shipping Quote GraphQL BFF** (`docs/graphql-shipping.md`). Checkout UI and admin label flows are separate PRs.
+Chef Room uses **Skydropx PRO** (`api-pro.skydropx.com`) as the logistics aggregator for economical nationwide shipping in Mexico. This document covers the foundation layer, **Shipping Quote BFF** (`docs/graphql-shipping.md`), and **Admin Label BFF** (`docs/graphql-admin-shipping.md`). Admin UI for labels is a separate PR.
 
 ## Credentials
 
@@ -44,7 +44,7 @@ sequenceDiagram
   Note over BFF,SP: Customer selects rate at checkout
   BFF->>SP: POST /shipments/ (rate_id)
   SP-->>BFF: label + tracking
-  BFF->>DB: Shipment (future PR)
+  BFF->>DB: Shipment + label fields
   SP-->>BFF: webhooks (future)
 ```
 
@@ -85,7 +85,7 @@ Env defaults (`SHIPPING_DEFAULT_PACKAGE_*`) match the single-garment tier.
 - `ShippingRate` — carrier options for a quote
 - `ShippingWebhookEvent` — idempotent webhook inbox (not wired yet)
 - `ShippingProvider.SKYDROPX`
-- `Shipment` model unchanged in this PR (label fields deferred)
+- `Shipment` — provider, `providerShipmentId`, `labelUrl`, `quoteId`, `rateId`, `costCents`, `rawResponseJson` (migración `skydropx_shipments`)
 
 ## Code layout
 
@@ -115,18 +115,25 @@ Implemented in `src/server/graphql/modules/shipping/`:
 
 See `docs/graphql-shipping.md` for ownership, idempotency, and `recommendedRate` rules.
 
+## Shipment mappers
+
+`skydropx.mappers.ts`:
+
+- `mapOrderToSkydropxShipmentPayload` — `rate_id`, origin, destination, `printing_format`
+- `parseSkydropxShipmentResponse` — tracking, label URL, carrier, cost (defensivo)
+
 ## v1 decisions
 
-- No checkout or admin UI changes yet
-- Checkout still uses `shippingCents = 0` until checkout wires `selectShippingRate`
-- Mappers use defensive parsing (`unknown`) until we store real API payloads
+- Checkout usa `shippingRateId` y `shippingCents` desde DB
+- Admin genera guía **después de producción**, no al pagar
+- Mappers usan parsing defensivo (`unknown`) en respuestas Skydropx
 - Webhook route not implemented; table ready for idempotency
 
 ## Pending (next PRs)
 
 - [x] Checkout shipping quote BFF — `docs/graphql-shipping.md`
-- [ ] Admin label generation from selected rate
-- [ ] Extend `Shipment` with provider/label fields
+- [x] Admin label BFF — `docs/graphql-admin-shipping.md`
+- [ ] Admin UI: botón "Generar guía" en drawer de pedidos
 - [ ] Skydropx webhook handler + `ShippingWebhookEvent` processing
 - [ ] Pickups API
 - [ ] Tracking UI for customers and admin
