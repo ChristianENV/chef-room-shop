@@ -71,7 +71,10 @@ export function OrdersTable({
   }
 
   return (
-    <div className="rounded-lg border border-border overflow-x-auto">
+    <div
+      className="rounded-lg border border-border overflow-x-auto"
+      data-testid="admin-orders-table"
+    >
       <Table className="min-w-[960px]">
         <TableHeader>
           <TableRow>

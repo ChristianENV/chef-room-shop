@@ -12,7 +12,13 @@
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed",
     "db:seed:demo": "tsx prisma/seed-demo.ts",
-    "db:seed:all": "tsx prisma/seed.ts && tsx prisma/seed-demo.ts"
+    "db:seed:all": "tsx prisma/seed.ts && tsx prisma/seed-demo.ts",
+    "test": "npm run test:e2e",
+    "test:unit": "node -e \"console.log('Unit tests: not configured yet. See docs/qa-e2e.md.')\"",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:qa": "npm run test:e2e && npx tsx scripts/qa-skydropx-webhook-smoke.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -81,6 +87,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4.2.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22",

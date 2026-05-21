@@ -36,6 +36,7 @@ export function ShippingRateCard({
       type="button"
       onClick={onSelect}
       disabled={disabled}
+      data-testid="shipping-rate-card"
       className={cn(
         'relative flex w-full items-start gap-4 rounded-lg border p-4 text-left transition-colors',
         selected

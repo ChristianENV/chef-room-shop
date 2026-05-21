@@ -395,6 +395,7 @@ export default function CheckoutPage() {
               onClick={goToNextStep}
               disabled={isSubmitting || isFetching}
               className="bg-primary font-sans font-semibold hover:bg-primary/90"
+              data-testid="checkout-submit"
             >
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {getButtonText()}

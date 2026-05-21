@@ -47,6 +47,7 @@ export function OrdersToolbar({
           <Input
             type="search"
             placeholder="Buscar por número, cliente o email..."
+            data-testid="admin-orders-search"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-9 font-sans"

@@ -336,6 +336,7 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
           onClick={() => void handleAddToCart()}
           disabled={isAddDisabled}
           className="w-full font-sans text-base"
+          data-testid="add-to-cart-button"
         >
           {addToCart.isPending ? (
             <>
