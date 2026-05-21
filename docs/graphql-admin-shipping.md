@@ -2,7 +2,7 @@
 
 Generación de guías **Skydropx PRO** desde el panel admin. Requiere sesión **ADMIN** o **SUPERADMIN**. **CUSTOMER** → `FORBIDDEN`.
 
-No incluye en v1: UI admin, webhooks Skydropx, pickups, tracking público, generación automática al pagar.
+No incluye en v1: pickups, tracking público, generación automática al pagar. Actualización de estados vía webhooks: `docs/skydropx-webhooks.md`.
 
 ## Autenticación
 

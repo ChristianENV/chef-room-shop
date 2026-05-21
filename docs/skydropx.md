@@ -14,7 +14,7 @@ Chef Room uses **Skydropx PRO** (`api-pro.skydropx.com`) as the logistics aggreg
 | `SKYDROPX_API_BASE_URL` | Default `https://api-pro.skydropx.com` |
 | `SKYDROPX_CLIENT_ID` | OAuth client id |
 | `SKYDROPX_CLIENT_SECRET` | OAuth secret — never expose to the browser |
-| `SKYDROPX_WEBHOOK_SECRET` | Future webhook signature verification |
+| `SKYDROPX_WEBHOOK_SECRET` | Webhook HMAC/Bearer/header (required in production) |
 
 Missing credentials **do not** break `npm run build`. Any server call into the Skydropx client throws `SkydropxConfigError` at runtime.
 
@@ -127,14 +127,14 @@ See `docs/graphql-shipping.md` for ownership, idempotency, and `recommendedRate`
 - Checkout usa `shippingRateId` y `shippingCents` desde DB
 - Admin genera guía **después de producción**, no al pagar
 - Mappers usan parsing defensivo (`unknown`) en respuestas Skydropx
-- Webhook route not implemented; table ready for idempotency
+- Webhook route: `POST /api/webhooks/skydropx` — see `docs/skydropx-webhooks.md`
 
 ## Pending (next PRs)
 
 - [x] Checkout shipping quote BFF — `docs/graphql-shipping.md`
 - [x] Admin label BFF — `docs/graphql-admin-shipping.md`
 - [ ] Admin UI: botón "Generar guía" en drawer de pedidos
-- [ ] Skydropx webhook handler + `ShippingWebhookEvent` processing
+- [x] Skydropx webhooks — `docs/skydropx-webhooks.md`
 - [ ] Pickups API
 - [ ] Tracking UI for customers and admin
 - [ ] Redis-backed OAuth token cache

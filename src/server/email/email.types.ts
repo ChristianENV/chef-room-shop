@@ -7,6 +7,8 @@ export type TransactionalEmailTemplate =
   | 'payment_failed'
   | 'payment_expired'
   | 'email_verification'
+  | 'shipping_update'
+  | 'delivered'
 
 /** Configured delivery channel (may map to Prisma `EmailProvider.OTHER`). */
 export type LogicalEmailProvider = 'console' | 'resend' | 'mailtrap'
@@ -19,6 +21,8 @@ export type SendTransactionalEmailInput = {
   userId?: string | null
   guestSessionId?: string | null
   orderId?: string | null
+  /** Optional idempotency key stored in metadata (e.g. shipped, delivered). */
+  dedupeKey?: string | null
 }
 
 /** Safe subset stored in `EmailMessage.metadataJson` (no Conekta/raw card data). */
@@ -40,6 +44,9 @@ export type TransactionalEmailPayload = {
   claimUrl?: string
   accountOrderUrl?: string
   verificationUrl?: string
+  carrier?: string
+  trackingNumber?: string
+  shipmentStatus?: string
   userId?: string | null
   guestSessionId?: string | null
 }

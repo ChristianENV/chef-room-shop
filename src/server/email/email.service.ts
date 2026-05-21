@@ -33,6 +33,7 @@ function buildMetadata(
 
   return {
     logicalProvider,
+    emailDedupeKey: input.dedupeKey ?? null,
     ...payload,
     ...extra,
   } as Prisma.InputJsonValue
@@ -45,16 +46,28 @@ export async function hasSentTransactionalEmail(
   db: PrismaClient,
   orderId: string,
   templateKey: TransactionalEmailTemplate,
+  dedupeKey?: string | null,
 ): Promise<boolean> {
-  const existing = await db.emailMessage.findFirst({
+  const existing = await db.emailMessage.findMany({
     where: {
       orderId,
       templateKey,
       status: EmailStatus.SENT,
     },
-    select: { id: true },
+    select: { id: true, metadataJson: true },
   })
-  return Boolean(existing)
+
+  if (existing.length === 0) return false
+
+  if (!dedupeKey?.trim()) {
+    return true
+  }
+
+  return existing.some((row) => {
+    const meta = row.metadataJson
+    if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return false
+    return (meta as Record<string, unknown>).emailDedupeKey === dedupeKey
+  })
 }
 
 /**
@@ -151,7 +164,12 @@ export async function safeSendTransactionalEmailOnce(
   db: PrismaClient = prisma,
 ): Promise<SendTransactionalEmailResult | null> {
   if (input.orderId) {
-    const alreadySent = await hasSentTransactionalEmail(db, input.orderId, input.templateKey)
+    const alreadySent = await hasSentTransactionalEmail(
+      db,
+      input.orderId,
+      input.templateKey,
+      input.dedupeKey,
+    )
     if (alreadySent) return null
   }
   return safeSendTransactionalEmail(input, db)

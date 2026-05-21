@@ -145,6 +145,35 @@ export function renderTransactionalTemplate(
       return { subject, html, text }
     }
 
+    case 'shipping_update': {
+      const carrier = payload.carrier ?? 'tu paquetería'
+      const trackingNumber = payload.trackingNumber ?? '—'
+      const subject = `Tu pedido ${orderNumber} va en camino`
+      const text = `Hola,\n\nActualizamos el estado de envío de tu pedido ${orderNumber}.\n\nPaquetería: ${carrier}\nGuía: ${trackingNumber}\n\n${tracking.trackingNote}\n${tracking.href}\n\nChef Room`
+      const html = layoutHtml(`
+        <p>Hola,</p>
+        <p>Actualizamos el estado de envío de tu pedido <strong>${orderNumber}</strong>.</p>
+        <p><strong>Paquetería:</strong> ${carrier}<br><strong>Número de guía:</strong> <span style="font-family:monospace;">${trackingNumber}</span></p>
+        ${tracking.trackingNote ? `<p style="font-size:14px;color:#6b7280;">${tracking.trackingNote}</p>` : ''}
+        ${cta(tracking.href, tracking.label)}
+      `)
+      return { subject, html, text }
+    }
+
+    case 'delivered': {
+      const subject = `Tu pedido ${orderNumber} fue entregado`
+      const text = `Hola,\n\nTu pedido ${orderNumber} fue marcado como entregado.\n\n${tracking.trackingNote}\n${tracking.href}\n\nSi tienes dudas, contáctanos desde tu cuenta.\n\nChef Room`
+      const html = layoutHtml(`
+        <p>Hola,</p>
+        <p>Tu pedido <strong>${orderNumber}</strong> fue marcado como entregado.</p>
+        <p>Gracias por confiar en Chef Room.</p>
+        ${tracking.trackingNote ? `<p style="font-size:14px;color:#6b7280;">${tracking.trackingNote}</p>` : ''}
+        ${cta(tracking.href, tracking.label)}
+        ${cta(shopUrl, 'Seguir comprando')}
+      `)
+      return { subject, html, text }
+    }
+
     case 'email_verification': {
       const verifyUrl = payload.verificationUrl ?? '#'
       const subject = 'Verifica tu correo en Chef Room'
