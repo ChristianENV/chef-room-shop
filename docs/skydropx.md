@@ -6,7 +6,7 @@ Chef Room uses **Skydropx PRO** (`api-pro.skydropx.com`) as the logistics aggreg
 
 1. In Skydropx PRO: **Conexiones → API**
 2. Copy **Client ID** and **Client Secret** (server-only)
-3. Set in `.env.local` (see `.env.example`):
+3. Set in `.env.local`:
 
 | Variable | Purpose |
 |----------|---------|

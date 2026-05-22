@@ -186,7 +186,7 @@ Assigned automatically via `databaseHooks.user.create.after` in `build-auth.ts`,
 
 ## Adding more social providers
 
-1. Add env vars in `.env.example`.
+1. Add env vars in `.env.local`.
 2. Register provider in `src/server/auth/build-auth.ts` under `socialProviders`.
 3. Configure redirect URLs in the provider console → Better Auth callback paths.
 

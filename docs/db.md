@@ -4,13 +4,9 @@ Chef Room uses **Prisma** against **Neon PostgreSQL**. Migrations and seeds run 
 
 ## Configure `DATABASE_URL`
 
-1. Copy the example file:
+1. Create **`.env.local`** at the repo root (Next.js and local scripts load it automatically).
 
-   ```bash
-   cp .env.example .env.local
-   ```
-
-2. Set `DATABASE_URL` in **`.env.local`** (Next.js and local scripts):
+2. Set `DATABASE_URL`:
 
    ```env
    DATABASE_URL="postgresql://USER:PASSWORD@HOST/DB?sslmode=require"

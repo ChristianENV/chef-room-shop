@@ -13,7 +13,7 @@ Hosted checkout (redirect) for Chef Room orders. No PAN/CVV is collected or stor
 | `CONEKTA_API_VERSION` | Server | Default `2.2.0` |
 | `CONEKTA_ENV` | Server | `sandbox` or `production` (informational) |
 
-Copy from `.env.example` into `.env.local`. **Build passes without keys**; payment operations fail at runtime with a controlled GraphQL error.
+Set these in `.env.local`. **Build passes without keys**; payment operations fail at runtime with a controlled GraphQL error.
 
 ## Sandbox keys
 
