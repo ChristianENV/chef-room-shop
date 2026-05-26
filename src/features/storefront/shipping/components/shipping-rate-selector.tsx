@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Loader2, Truck } from 'lucide-react'
+import { ChevronDown, ChevronUp, Loader2, Package, Truck } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,17 @@ import {
   getShippingQuoteErrorMessage,
   isSkydropxUnavailableError,
 } from '../lib/shipping-quote-errors'
+import {
+  OTHER_RATES_PAGE_SIZE,
+  OTHER_RATES_PREVIEW_COUNT,
+  buildOtherShippingRates,
+  buildShippingRateHighlights,
+  dedupeShippingRates,
+  formatQuoteExpiresAt,
+  paginateOtherRates,
+  sortShippingRates,
+  type ShippingRateViewMode,
+} from '../lib/shipping-rate-ranking'
 import type { ShippingQuotePayload, ShippingRate } from '../types'
 import { ShippingQuoteEmpty } from './shipping-quote-empty'
 import { ShippingQuoteError } from './shipping-quote-error'
@@ -24,6 +35,17 @@ import { ShippingRateCard } from './shipping-rate-card'
 const MX_POSTAL_REGEX = /^\d{5}$/
 const POLL_INTERVAL_MS = 2500
 const MAX_POLL_ATTEMPTS = 12
+
+const SELECT_RATE_ERROR =
+  'No pudimos guardar esta tarifa. Intenta de nuevo.'
+
+const VIEW_MODE_LABELS: Record<ShippingRateViewMode, string> = {
+  highlights: 'Destacadas',
+  all: 'Todas',
+  cheapest: 'Económicas',
+  fastest: 'Rápidas',
+  carrier: 'Por paquetería',
+}
 
 export type ShippingRateSelectorProps = {
   destinationPostalCode: string
@@ -53,6 +75,24 @@ function toSelection(
   }
 }
 
+function formatPackageHint(packageJson: unknown): string | null {
+  if (!packageJson || typeof packageJson !== 'object') return null
+  const pkg = packageJson as Record<string, unknown>
+  const length = pkg.lengthCm ?? pkg.length
+  const width = pkg.widthCm ?? pkg.width
+  const height = pkg.heightCm ?? pkg.height
+  const weight = pkg.weightKg ?? pkg.weight
+  if (
+    typeof length === 'number' &&
+    typeof width === 'number' &&
+    typeof height === 'number' &&
+    typeof weight === 'number'
+  ) {
+    return `Paquete estimado: ${length}×${width}×${height} cm · ${weight} kg`
+  }
+  return 'Paquete estimado según tu carrito'
+}
+
 export function ShippingRateSelector({
   destinationPostalCode,
   destinationCity,
@@ -70,6 +110,10 @@ export function ShippingRateSelector({
   const [userError, setUserError] = useState<string | null>(null)
   const [skydropxUnavailable, setSkydropxUnavailable] = useState(false)
   const [pollAttempts, setPollAttempts] = useState(0)
+  const [showOtherOptions, setShowOtherOptions] = useState(false)
+  const [otherVisibleCount, setOtherVisibleCount] = useState(OTHER_RATES_PAGE_SIZE)
+  const [otherViewMode, setOtherViewMode] = useState<ShippingRateViewMode>('all')
+  const [selectingRateId, setSelectingRateId] = useState<string | null>(null)
 
   const createQuote = useCreateShippingQuoteMutation()
   const refreshQuote = useRefreshShippingQuoteMutation()
@@ -82,16 +126,58 @@ export function ShippingRateSelector({
     Boolean(destinationState?.trim()) &&
     !disabled
 
-  const isBusy =
-    createQuote.isPending || refreshQuote.isPending || selectRate.isPending
+  const isQuoting = createQuote.isPending || refreshQuote.isPending
+  const isSelecting = selectRate.isPending
+  const isBusy = isQuoting || isSelecting
 
-  const rates = useMemo(() => payload?.quote.rates ?? [], [payload?.quote.rates])
-  const recommendedId = payload?.recommendedRate?.id ?? null
+  const rawRates = useMemo(
+    () => payload?.quote.rates ?? [],
+    [payload?.quote.rates],
+  )
+  const recommendedRate = payload?.recommendedRate ?? null
 
-  const cheapestAmount = useMemo(() => {
-    if (rates.length === 0) return null
-    return Math.min(...rates.map((r) => r.amountCents))
-  }, [rates])
+  const dedupedRates = useMemo(
+    () => dedupeShippingRates(rawRates, recommendedRate),
+    [rawRates, recommendedRate],
+  )
+
+  const highlights = useMemo(
+    () =>
+      buildShippingRateHighlights(
+        rawRates,
+        recommendedRate,
+        selectedRateId ?? null,
+      ),
+    [rawRates, recommendedRate, selectedRateId],
+  )
+
+  const otherRatesBase = useMemo(
+    () =>
+      buildOtherShippingRates(
+        rawRates,
+        highlights.cards.map((c) => c.rate),
+        recommendedRate,
+      ),
+    [rawRates, highlights.cards, recommendedRate],
+  )
+
+  const otherRatesSorted = useMemo(
+    () => sortShippingRates(otherRatesBase, otherViewMode),
+    [otherRatesBase, otherViewMode],
+  )
+
+  const otherPaginated = useMemo(
+    () => paginateOtherRates(otherRatesSorted, otherVisibleCount),
+    [otherRatesSorted, otherVisibleCount],
+  )
+
+  const otherRatesPreview = useMemo(
+    () => otherRatesSorted.slice(0, OTHER_RATES_PREVIEW_COUNT),
+    [otherRatesSorted],
+  )
+
+  const quoteExpiresLabel = formatQuoteExpiresAt(payload?.quote.expiresAt ?? null)
+  const packageHint = formatPackageHint(payload?.quote.packageJson ?? null)
 
   const applyPayload = useCallback(
     (next: ShippingQuotePayload) => {
@@ -110,6 +196,8 @@ export function ShippingRateSelector({
     if (!canQuote) return
     setUserError(null)
     setPollAttempts(0)
+    setShowOtherOptions(false)
+    setOtherVisibleCount(OTHER_RATES_PAGE_SIZE)
     onUnavailableChange?.(false)
     setSkydropxUnavailable(false)
 
@@ -150,19 +238,24 @@ export function ShippingRateSelector({
 
   const handleSelectRate = useCallback(
     async (rate: ShippingRate) => {
-      if (!payload || disabled) return
+      if (!payload || disabled || isSelecting) return
       setUserError(null)
+      setSelectingRateId(rate.id)
       try {
         const result = await selectRate.mutateAsync(rate.id)
         applyPayload(result)
-        const selected =
-          result.quote.rates.find((r) => r.id === rate.id) ?? rate
-        onRateSelected(toSelection(selected, result.quote.id))
-      } catch (error) {
-        setUserError(getShippingQuoteErrorMessage(error))
+        const fromBff =
+          result.quote.rates.find((r) => r.selectedAt) ??
+          result.quote.rates.find((r) => r.id === rate.id) ??
+          rate
+        onRateSelected(toSelection(fromBff, result.quote.id))
+      } catch {
+        setUserError(SELECT_RATE_ERROR)
+      } finally {
+        setSelectingRateId(null)
       }
     },
-    [applyPayload, disabled, onRateSelected, payload, selectRate],
+    [applyPayload, disabled, isSelecting, onRateSelected, payload, selectRate],
   )
 
   useEffect(() => {
@@ -191,15 +284,41 @@ export function ShippingRateSelector({
   ])
 
   const showPollingMessage =
-    Boolean(payload) && !payload?.quote.isCompleted && rates.length === 0
+    Boolean(payload) && !payload?.quote.isCompleted && dedupedRates.length === 0
+
+  const totalOtherCount = otherRatesBase.length
+  const hiddenOtherCount = Math.max(
+    0,
+    totalOtherCount - OTHER_RATES_PREVIEW_COUNT,
+  )
+  const visibleOtherRates = showOtherOptions
+    ? otherPaginated.visible
+    : otherRatesPreview
+  const hasRates = dedupedRates.length > 0
 
   return (
     <div className={cn('space-y-4', className)}>
-      <div className="flex items-center gap-2">
-        <Truck className="h-5 w-5 text-primary" />
-        <h2 className="font-sans text-lg font-semibold text-foreground">
-          Opciones de envío
-        </h2>
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <Truck className="h-5 w-5 text-primary" />
+          <h2 className="font-sans text-lg font-semibold text-foreground">
+            Elige tu envío
+          </h2>
+        </div>
+        {payload && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-serif text-sm text-muted-foreground">
+            <span>CP destino: {payload.quote.destinationPostalCode}</span>
+            {packageHint && (
+              <span className="inline-flex items-center gap-1">
+                <Package className="h-3.5 w-3.5" />
+                {packageHint}
+              </span>
+            )}
+            {quoteExpiresLabel && (
+              <span>Tarifas vigentes hasta {quoteExpiresLabel}</span>
+            )}
+          </div>
+        )}
       </div>
 
       {hasCustomization && (
@@ -211,10 +330,12 @@ export function ShippingRateSelector({
         </div>
       )}
 
-      <p className="font-serif text-sm text-muted-foreground">
-        Cotizamos el envío con el contenido actual de tu carrito. No necesitas indicar
-        peso ni medidas del paquete.
-      </p>
+      {!payload && (
+        <p className="font-serif text-sm text-muted-foreground">
+          Cotizamos el envío con el contenido actual de tu carrito. No necesitas
+          indicar peso ni medidas del paquete.
+        </p>
+      )}
 
       {!canQuote && (
         <Alert>
@@ -239,12 +360,14 @@ export function ShippingRateSelector({
         <ShippingQuoteError
           message={userError}
           onRetry={
-            canQuote && !skydropxUnavailable ? () => void handleQuote() : undefined
+            canQuote && !skydropxUnavailable && !isSelecting
+              ? () => void handleQuote()
+              : undefined
           }
         />
       )}
 
-      {isBusy && !payload && <ShippingQuoteLoading />}
+      {isQuoting && !payload && <ShippingQuoteLoading />}
 
       {showPollingMessage && (
         <div className="flex items-center gap-2 rounded-lg bg-secondary/50 px-4 py-3">
@@ -255,25 +378,124 @@ export function ShippingRateSelector({
         </div>
       )}
 
-      {payload && rates.length === 0 && payload.quote.isCompleted && !isBusy && (
+      {payload && dedupedRates.length === 0 && payload.quote.isCompleted && !isBusy && (
         <ShippingQuoteEmpty />
       )}
 
-      {rates.length > 0 && (
-        <div className="space-y-3">
-          {rates.map((rate) => (
-            <ShippingRateCard
-              key={rate.id}
-              rate={rate}
-              selected={selectedRateId === rate.id}
-              isRecommended={rate.id === recommendedId}
-              isCheapest={
-                cheapestAmount !== null && rate.amountCents === cheapestAmount
-              }
-              disabled={disabled || isBusy}
-              onSelect={() => void handleSelectRate(rate)}
-            />
-          ))}
+      {hasRates && (
+        <div className="space-y-6">
+          <section className="space-y-3" aria-labelledby="shipping-highlights-heading">
+            <h3
+              id="shipping-highlights-heading"
+              className="font-sans text-sm font-semibold uppercase tracking-wide text-foreground"
+            >
+              Opciones destacadas
+            </h3>
+            <div className="space-y-3">
+              {highlights.cards.map(({ rate, badges }) => (
+                <ShippingRateCard
+                  key={rate.id}
+                  rate={rate}
+                  badges={badges}
+                  selected={selectedRateId === rate.id}
+                  isSelecting={selectingRateId === rate.id}
+                  disabled={disabled || isQuoting}
+                  onSelect={() => void handleSelectRate(rate)}
+                />
+              ))}
+            </div>
+          </section>
+
+          {totalOtherCount > 0 && (
+            <section className="space-y-3" aria-labelledby="shipping-other-heading">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3
+                  id="shipping-other-heading"
+                  className="font-sans text-sm font-semibold text-foreground"
+                >
+                  Más opciones de envío
+                </h3>
+                {hiddenOtherCount > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="font-sans text-primary"
+                    onClick={() => {
+                      setShowOtherOptions((open) => !open)
+                      if (showOtherOptions) {
+                        setOtherVisibleCount(OTHER_RATES_PAGE_SIZE)
+                      }
+                    }}
+                  >
+                    {showOtherOptions ? (
+                      <>
+                        <ChevronUp className="mr-1 h-4 w-4" />
+                        Ocultar tarifas adicionales
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="mr-1 h-4 w-4" />
+                        Ver más tarifas ({hiddenOtherCount})
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+
+              <div
+                className="flex flex-wrap gap-2"
+                role="tablist"
+                aria-label="Filtrar tarifas de envío"
+              >
+                {(
+                  ['all', 'cheapest', 'fastest', 'carrier'] as ShippingRateViewMode[]
+                ).map((mode) => (
+                  <Button
+                    key={mode}
+                    type="button"
+                    size="sm"
+                    variant={otherViewMode === mode ? 'default' : 'outline'}
+                    className="font-sans"
+                    role="tab"
+                    aria-selected={otherViewMode === mode}
+                    onClick={() => {
+                      setOtherViewMode(mode)
+                      setOtherVisibleCount(OTHER_RATES_PAGE_SIZE)
+                    }}
+                  >
+                    {VIEW_MODE_LABELS[mode]}
+                  </Button>
+                ))}
+              </div>
+
+              <div className="space-y-3">
+                {visibleOtherRates.map((rate) => (
+                  <ShippingRateCard
+                    key={rate.id}
+                    rate={rate}
+                    selected={selectedRateId === rate.id}
+                    isSelecting={selectingRateId === rate.id}
+                    disabled={disabled || isQuoting}
+                    onSelect={() => void handleSelectRate(rate)}
+                  />
+                ))}
+              </div>
+
+              {showOtherOptions && otherPaginated.hasMore && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full font-sans"
+                  onClick={() =>
+                    setOtherVisibleCount((n) => n + OTHER_RATES_PAGE_SIZE)
+                  }
+                >
+                  Mostrar más ({otherPaginated.remaining} restantes)
+                </Button>
+              )}
+            </section>
+          )}
         </div>
       )}
 

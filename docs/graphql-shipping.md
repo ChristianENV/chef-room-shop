@@ -59,6 +59,12 @@ Otherwise a new Skydropx quotation is created.
 
 After `createShippingQuote`, if `quote.isCompleted === false`, the client should call `refreshShippingQuote` until completed or rates stabilize (hooks: `useRefreshShippingQuoteMutation`).
 
+## Checkout UI (rate selection)
+
+- The storefront **deduplicates** `quote.rates` before display (see `shipping-rate-ranking.ts`).
+- **`selectShippingRate`** is called when the customer picks a rate; **`createShippingQuote`** is not called again on selection.
+- `recommendedRate` from the payload is preferred for the “Recomendado” highlight; if absent, the UI picks a balanced score (65% price / 35% days).
+
 ## Errors
 
 | Code | When |

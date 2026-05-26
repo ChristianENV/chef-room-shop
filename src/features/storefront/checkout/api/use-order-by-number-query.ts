@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
 import { getPaymentStatusUi } from '../lib/payment-status-ui'
@@ -26,37 +26,43 @@ export function useOrderByNumberQuery(options: UseOrderByNumberQueryOptions) {
   const { orderNumber, email, enabled = true, pollWhilePending = false } = options
   const pollAttemptsRef = useRef(0)
 
+  const query = useQuery<PublicOrder | null>({
+    queryKey: checkoutQueryKeys.orderByNumber(orderNumber, email),
+    queryFn: () => getOrderByNumber(orderNumber, email),
+    enabled: enabled && orderNumber.length > 0 && email.length > 0,
+    staleTime: 15_000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+    refetchInterval: false,
+  })
+
+  const shouldPoll = useMemo(() => {
+    if (!pollWhilePending || !query.data) return false
+    const ui = getPaymentStatusUi({
+      orderStatus: query.data.status,
+      paymentStatus: query.data.paymentStatus,
+    })
+    return ui.shouldPoll
+  }, [pollWhilePending, query.data])
+
   useEffect(() => {
     pollAttemptsRef.current = 0
   }, [orderNumber, email, pollWhilePending])
 
-  return useQuery<PublicOrder | null>({
-    queryKey: checkoutQueryKeys.orderByNumber(orderNumber, email),
-    queryFn: () => getOrderByNumber(orderNumber, email),
-    enabled: enabled && orderNumber.length > 0 && email.length > 0,
-    refetchIntervalInBackground: false,
-    refetchOnWindowFocus: true,
-    refetchInterval: pollWhilePending
-      ? (query) => {
-          const order = query.state.data
-          if (order) {
-            const ui = getPaymentStatusUi({
-              orderStatus: order.status,
-              paymentStatus: order.paymentStatus,
-            })
-            if (!ui.shouldPoll) {
-              pollAttemptsRef.current = 0
-              return false
-            }
-          }
+  useEffect(() => {
+    if (!shouldPoll) return
 
-          pollAttemptsRef.current += 1
-          if (pollAttemptsRef.current > MAX_POLL_ATTEMPTS) {
-            return false
-          }
+    const intervalId = window.setInterval(() => {
+      pollAttemptsRef.current += 1
+      if (pollAttemptsRef.current > MAX_POLL_ATTEMPTS) {
+        window.clearInterval(intervalId)
+        return
+      }
+      void query.refetch()
+    }, POLL_INTERVAL_MS)
 
-          return POLL_INTERVAL_MS
-        }
-      : false,
-  })
+    return () => window.clearInterval(intervalId)
+  }, [shouldPoll, query.refetch])
+
+  return query
 }

@@ -1,6 +1,13 @@
 'use client'
 
-import { Suspense, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import {
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { CheckoutLayout } from '@/src/features/storefront/layout/checkout-layout'
@@ -269,6 +276,14 @@ function CheckoutSuccessContent() {
     enabled: orderNumber.length > 0 && email.length > 0,
     pollWhilePending: true,
   })
+
+  const paymentReturnRefetchDone = useRef(false)
+  useEffect(() => {
+    if (!paymentReturnHint || paymentReturnRefetchDone.current) return
+    if (!orderNumber || !email) return
+    paymentReturnRefetchDone.current = true
+    void refetch()
+  }, [paymentReturnHint, orderNumber, email, refetch])
 
   const statusUi = useMemo(() => {
     if (order) {

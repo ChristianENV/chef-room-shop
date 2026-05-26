@@ -1,95 +1,141 @@
 'use client'
 
+import { Check, Loader2 } from 'lucide-react'
+
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
-import { formatCurrencyMXN, centsToPesos } from '@/src/lib/formatters'
+import { centsToPesos, formatCurrencyMXN } from '@/src/lib/formatters'
 
+import {
+  capitalizeCarrierName,
+  formatShippingEstimatedDays,
+  type ShippingRateBadge,
+} from '../lib/shipping-rate-ranking'
 import type { ShippingRate } from '../types'
+
+const BADGE_LABELS: Record<ShippingRateBadge, string> = {
+  recommended: 'Recomendado',
+  cheapest: 'Más económico',
+  fastest: 'Más rápido',
+  selected: 'Seleccionado',
+}
+
+const BADGE_ORDER: ShippingRateBadge[] = [
+  'recommended',
+  'cheapest',
+  'fastest',
+  'selected',
+]
 
 type ShippingRateCardProps = {
   rate: ShippingRate
   selected: boolean
-  isRecommended: boolean
-  isCheapest: boolean
+  badges?: ShippingRateBadge[]
   disabled?: boolean
+  isSelecting?: boolean
   onSelect: () => void
 }
 
-function formatEstimatedDays(days: number | null): string {
-  if (days == null) return 'Tiempo por confirmar'
-  if (days <= 1) return '1 día hábil estimado'
-  return `${days} días hábiles estimados`
+function sortBadges(badges: ShippingRateBadge[]): ShippingRateBadge[] {
+  return BADGE_ORDER.filter((b) => badges.includes(b))
 }
 
 export function ShippingRateCard({
   rate,
   selected,
-  isRecommended,
-  isCheapest,
+  badges = [],
   disabled,
+  isSelecting,
   onSelect,
 }: ShippingRateCardProps) {
   const pricePesos = centsToPesos(rate.amountCents)
+  const displayBadges = sortBadges(
+    selected && !badges.includes('selected')
+      ? [...badges, 'selected']
+      : badges,
+  )
+  const isDisabled = disabled || isSelecting
 
   return (
     <button
       type="button"
       onClick={onSelect}
-      disabled={disabled}
+      disabled={isDisabled}
+      aria-pressed={selected}
+      aria-busy={isSelecting}
+      data-testid="shipping-rate-card"
       className={cn(
-        'relative flex w-full items-start gap-4 rounded-lg border p-4 text-left transition-colors',
+        'relative flex w-full flex-col gap-3 rounded-lg border p-4 text-left transition-colors sm:flex-row sm:items-start',
         selected
-          ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-          : 'border-border bg-card hover:border-primary/50',
-        disabled && 'cursor-not-allowed opacity-60',
+          ? 'border-primary bg-primary/5 ring-1 ring-primary/25'
+          : 'border-border bg-card hover:border-primary/40',
+        isDisabled && 'cursor-not-allowed opacity-60',
       )}
     >
-      <div
-        className={cn(
-          'mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2',
-          selected ? 'border-primary bg-primary' : 'border-muted-foreground',
-        )}
-      >
-        {selected && <div className="h-2 w-2 rounded-full bg-white" />}
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-sans text-base font-semibold text-foreground">
-            {rate.carrier}
-          </span>
-          {isRecommended && (
-            <Badge className="bg-primary font-sans text-xs hover:bg-primary/90">
-              Recomendado
-            </Badge>
+      <div className="flex min-w-0 flex-1 items-start gap-3">
+        <div
+          className={cn(
+            'mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2',
+            selected ? 'border-primary bg-primary text-white' : 'border-muted-foreground',
           )}
-          {isCheapest && !isRecommended && (
-            <Badge variant="secondary" className="font-sans text-xs">
-              Más económico
-            </Badge>
-          )}
-          {selected && (
-            <Badge variant="outline" className="border-primary font-sans text-xs text-primary">
-              Seleccionado
-            </Badge>
+          aria-hidden
+        >
+          {selected && !isSelecting && <Check className="h-3 w-3" strokeWidth={3} />}
+          {isSelecting && (
+            <Loader2 className="h-3 w-3 animate-spin text-primary-foreground" />
           )}
         </div>
 
-        {rate.service && (
-          <p className="mt-1 font-serif text-sm text-muted-foreground">{rate.service}</p>
-        )}
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-sans text-base font-semibold text-foreground">
+              {capitalizeCarrierName(rate.carrier)}
+            </span>
+            {displayBadges.map((badge) => (
+              <Badge
+                key={badge}
+                variant={badge === 'recommended' ? 'default' : 'secondary'}
+                className={cn(
+                  'font-sans text-xs',
+                  badge === 'recommended' && 'bg-primary hover:bg-primary/90',
+                  badge === 'selected' &&
+                    'border-primary bg-transparent text-primary',
+                )}
+              >
+                {BADGE_LABELS[badge]}
+              </Badge>
+            ))}
+          </div>
 
-        <p className="mt-2 font-serif text-xs text-muted-foreground">
-          {formatEstimatedDays(rate.estimatedDays)}
-        </p>
+          {rate.service && (
+            <p className="mt-1 font-serif text-sm text-muted-foreground">{rate.service}</p>
+          )}
 
-        <p className="mt-2 font-serif text-xs text-muted-foreground">
-          Tarifa calculada con tu carrito actual.
-        </p>
+          <p className="mt-2 font-serif text-sm text-muted-foreground">
+            {formatShippingEstimatedDays(rate.estimatedDays)}
+          </p>
+
+          <p className="mt-1 font-serif text-xs text-muted-foreground">
+            Tarifa calculada con tu carrito actual.
+          </p>
+
+          <p
+            className={cn(
+              'mt-2 font-sans text-xs font-medium',
+              selected ? 'text-primary' : 'text-muted-foreground',
+            )}
+          >
+            {isSelecting
+              ? 'Guardando selección…'
+              : selected
+                ? 'Seleccionado'
+                : 'Seleccionar'}
+          </p>
+        </div>
       </div>
 
-      <div className="flex-shrink-0 text-right">
-        <span className="font-sans text-lg font-bold text-foreground">
+      <div className="flex-shrink-0 sm:text-right">
+        <span className="font-sans text-xl font-bold text-foreground">
           {formatCurrencyMXN(pricePesos)}
         </span>
       </div>
