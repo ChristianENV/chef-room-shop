@@ -52,6 +52,26 @@ export type AccountOrderPayment = {
   amountCents: number
   currency: string
   paidAt: string | null
+  expiresAt?: string | null
+}
+
+export type AccountOrderPaymentActions = {
+  canVerifyPayment: boolean
+  canContinuePayment: boolean
+  canRetryPayment: boolean
+  paymentRedirectUrl: string | null
+}
+
+export type AccountPaymentStatusPayload = {
+  orderNumber: string
+  orderStatus: string
+  paymentStatus: string
+  paymentMethod: string | null
+  canRetryPayment: boolean
+  canContinuePayment: boolean
+  paymentRedirectUrl: string | null
+  checkedAt: string
+  message: string
 }
 
 export type AccountShipment = {
@@ -91,6 +111,7 @@ export type AccountOrder = {
   payments: AccountOrderPayment[]
   shipments: AccountShipment[]
   events: AccountOrderEvent[]
+  paymentActions?: AccountOrderPaymentActions
 }
 
 export type AccountDesign = {

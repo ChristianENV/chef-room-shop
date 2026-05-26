@@ -5,6 +5,7 @@ import {
   type OrderEvent,
   type OrderItem,
   type Payment,
+  type PaymentAttempt,
   type Shipment,
   type User,
   DesignStatus,
@@ -13,6 +14,8 @@ import {
 
 import { mapProductToGql } from '../catalog/catalog.mappers'
 import type { CatalogProductGql } from '../catalog/catalog.types'
+import { getCashPaymentDetailsFromAttempts } from '../payments/payments.mappers'
+import { resolveAccountPaymentActions } from './account-payment-actions'
 import type {
   AccountAddressGql,
   AccountDesignGql,
@@ -30,7 +33,7 @@ type UserWithRoles = User & {
 
 type OrderWithRelations = Order & {
   items: OrderItem[]
-  payments: Payment[]
+  payments: Array<Payment & { attempts?: PaymentAttempt[] }>
   shipments: Shipment[]
   events: OrderEvent[]
 }
@@ -188,7 +191,11 @@ function derivePaymentStatus(order: OrderWithRelations): string {
   return order.status
 }
 
-function mapPaymentToGql(payment: Payment): AccountPaymentGql {
+function mapPaymentToGql(
+  payment: Payment & { attempts?: PaymentAttempt[] },
+): AccountPaymentGql {
+  const cashDetails = getCashPaymentDetailsFromAttempts(payment.attempts ?? [])
+
   return {
     id: payment.id,
     provider: payment.provider,
@@ -197,7 +204,7 @@ function mapPaymentToGql(payment: Payment): AccountPaymentGql {
     amountCents: payment.amountCents,
     currency: payment.currency,
     paidAt: toIso(payment.paidAt),
-    expiresAt: null,
+    expiresAt: cashDetails?.expiresAt ?? null,
   }
 }
 
@@ -246,6 +253,11 @@ export function mapOrderToGql(order: OrderWithRelations): AccountOrderGql {
     payments: order.payments.map(mapPaymentToGql),
     shipments: order.shipments.map(mapShipmentToGql),
     events: order.events.map(mapOrderEventToGql),
+    paymentActions: resolveAccountPaymentActions(
+      order as OrderWithRelations & {
+        payments: Array<Payment & { attempts: PaymentAttempt[] }>
+      },
+    ),
   }
 }
 

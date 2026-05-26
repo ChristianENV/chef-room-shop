@@ -18,6 +18,8 @@ One-step checkout with Conekta HostedPayment and token-based success page.
 | `completeCheckout` | Order + Conekta + `returnToken` + `paymentRedirectUrl` |
 | `checkoutResultByToken(token)` | Public order summary (no session/email) |
 | `retryCheckoutPayment({ token })` | New Conekta attempt for same order |
+| `verifyMyOrderPayment(orderNumber)` | Account: manual Conekta sync (fallback to webhook) |
+| `retryMyOrderPayment(orderNumber)` | Account: retry payment for owned order |
 | `createCheckoutOrder` | Legacy: order only (cart converted immediately) |
 | `createConektaCheckout` | Legacy: Conekta for existing order by `orderNumber` |
 
@@ -40,6 +42,22 @@ Cash reference/expiry (when available) stored in `PaymentAttempt.rawResponseJson
 ## Source of truth
 
 Conekta **webhook** updates `Payment.status` and `Order.status` → `PAID`. Success page polling reflects webhook updates.
+
+**Manual verification** (`verifyMyOrderPayment` from `/account/orders`) calls Conekta `GET /orders/{ord_*}` when the webhook is delayed or missing. It uses the same `applyConektaPaymentStatusUpdate` helper as the webhook processor. It does **not** replace webhooks.
+
+## Account payment actions
+
+| Action | When shown | Backend |
+|--------|------------|---------|
+| Verificar pago | Pending / authorized / failed / cancelled | `verifyMyOrderPayment` |
+| Continuar pago | Pending + cached `checkoutUrl` in attempts | Opens URL from BFF `paymentActions.paymentRedirectUrl` |
+| Reintentar pago | Failed / expired / no valid URL | `retryMyOrderPayment` → `startConektaCheckoutForOrder` |
+
+Limitations:
+
+- Requires authenticated session; order must belong to user.
+- Does not expose Conekta raw responses to the client.
+- Does not mark paid from frontend or query params.
 
 ## Failure handling
 

@@ -48,6 +48,25 @@ export type AccountOrderItemGql = {
   productionNotes: string | null
 }
 
+export type AccountOrderPaymentActionsGql = {
+  canVerifyPayment: boolean
+  canContinuePayment: boolean
+  canRetryPayment: boolean
+  paymentRedirectUrl: string | null
+}
+
+export type AccountPaymentStatusPayloadGql = {
+  orderNumber: string
+  orderStatus: string
+  paymentStatus: string
+  paymentMethod: string | null
+  canRetryPayment: boolean
+  canContinuePayment: boolean
+  paymentRedirectUrl: string | null
+  checkedAt: string
+  message: string
+}
+
 export type AccountPaymentGql = {
   id: string
   provider: string
@@ -96,6 +115,7 @@ export type AccountOrderGql = {
   payments: AccountPaymentGql[]
   shipments: AccountShipmentGql[]
   events: AccountOrderEventGql[]
+  paymentActions: AccountOrderPaymentActionsGql
 }
 
 export type AccountDesignGql = {

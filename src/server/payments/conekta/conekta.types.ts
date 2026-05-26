@@ -50,6 +50,7 @@ export type ConektaOrderResponse = {
     data?: Array<{
       id?: string
       status?: string
+      payment_status?: string
       payment_method?: { type?: string }
     }>
   }

@@ -1,8 +1,10 @@
 'use client'
+
+import { useState } from 'react'
 import { routes } from '@/src/config/routes'
 
 import Link from 'next/link'
-import { 
+import {
   ChevronRight,
   ExternalLink,
   Package,
@@ -13,42 +15,82 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import type { Order, OrderStatus } from '@/lib/types'
+import { OrderPaymentActions } from '@/src/features/storefront/account/components/order-payment-actions'
+import { resolvePaymentActionsForOrder } from '@/src/features/storefront/account/lib/resolve-payment-actions'
+import type { AccountOrder, AccountPaymentStatusPayload } from '@/src/features/storefront/account/types'
+import { centsToPesos } from '@/src/lib/formatters'
 
 interface OrderCardProps {
-  order: Order
+  order: AccountOrder
+}
+
+const STATUS_LABELS: Record<string, { label: string; className: string }> = {
+  PENDING_PAYMENT: {
+    label: 'Pendiente',
+    className: 'bg-warning/10 text-warning border-warning/30',
+  },
+  PAYMENT_FAILED: {
+    label: 'Pendiente',
+    className: 'bg-warning/10 text-warning border-warning/30',
+  },
+  PAID: { label: 'Pagado', className: 'bg-success/10 text-success border-success/30' },
+  IN_PRODUCTION: {
+    label: 'En produccion',
+    className: 'bg-primary/10 text-primary border-primary/30',
+  },
+  READY_TO_SHIP: {
+    label: 'En produccion',
+    className: 'bg-primary/10 text-primary border-primary/30',
+  },
+  SHIPPED: { label: 'Enviado', className: 'bg-accent/10 text-accent border-accent/30' },
+  DELIVERED: { label: 'Entregado', className: 'bg-success/10 text-success border-success/30' },
+  CANCELLED: {
+    label: 'Cancelado',
+    className: 'bg-destructive/10 text-destructive border-destructive/30',
+  },
+  REFUNDED: {
+    label: 'Cancelado',
+    className: 'bg-destructive/10 text-destructive border-destructive/30',
+  },
 }
 
 export function OrderCard({ order }: OrderCardProps) {
-  const statusConfig: Record<OrderStatus, { label: string; className: string; icon?: typeof Package }> = {
-    'pendiente': { label: 'Pendiente', className: 'bg-warning/10 text-warning border-warning/30' },
-    'pagado': { label: 'Pagado', className: 'bg-success/10 text-success border-success/30' },
-    'en-produccion': { label: 'En produccion', className: 'bg-primary/10 text-primary border-primary/30', icon: Package },
-    'enviado': { label: 'Enviado', className: 'bg-accent/10 text-accent border-accent/30', icon: Truck },
-    'entregado': { label: 'Entregado', className: 'bg-success/10 text-success border-success/30' },
-    'cancelado': { label: 'Cancelado', className: 'bg-destructive/10 text-destructive border-destructive/30' },
-  }
+  const [verified, setVerified] = useState<AccountPaymentStatusPayload | null>(null)
 
-  const status = statusConfig[order.status]
-  const StatusIcon = status.icon
+  const displayStatus = verified?.orderStatus ?? order.status
+  const displayPaymentStatus = verified?.paymentStatus ?? order.paymentStatus
+  const status = STATUS_LABELS[displayStatus] ?? STATUS_LABELS.PENDING_PAYMENT
+  const paymentActions = resolvePaymentActionsForOrder({
+    ...order,
+    status: displayStatus,
+    paymentStatus: displayPaymentStatus,
+  })
+
+  const date = order.placedAt ?? order.createdAt
+  const shipment = order.shipments?.[0]
+  const trackingNumber = shipment?.trackingNumber ?? undefined
+
+  const showPaymentActions =
+    paymentActions.canVerifyPayment ||
+    paymentActions.canContinuePayment ||
+    paymentActions.canRetryPayment
+
+  const paidMessage =
+    verified?.paymentStatus === 'PAID' ? verified.message : null
 
   return (
     <Card className="overflow-hidden border-border bg-card transition-shadow duration-200 hover:border-primary/20 hover:shadow-md">
       <CardContent className="p-0">
-        {/* Header */}
         <div className="flex flex-col gap-4 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-              <p className="font-sans font-semibold text-foreground">
-                {order.orderNumber}
-              </p>
+              <p className="font-sans font-semibold text-foreground">{order.orderNumber}</p>
               <Badge variant="outline" className={cn('text-xs border', status.className)}>
-                {StatusIcon && <StatusIcon className="mr-1 h-3 w-3" />}
                 {status.label}
               </Badge>
             </div>
             <p className="font-serif text-sm text-muted-foreground">
-              {new Date(order.date).toLocaleDateString('es-MX', {
+              {new Date(date).toLocaleDateString('es-MX', {
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric',
@@ -57,82 +99,77 @@ export function OrderCard({ order }: OrderCardProps) {
           </div>
           <div className="flex items-center gap-2">
             <p className="font-sans text-lg font-bold text-foreground">
-              ${order.total.toLocaleString('es-MX')} MXN
+              ${centsToPesos(order.totalCents).toLocaleString('es-MX')} MXN
             </p>
           </div>
         </div>
 
-        {/* Items Preview */}
         <div className="flex flex-wrap gap-3 p-4">
           {order.items.map((item) => (
-            <div 
-              key={item.id} 
+            <div
+              key={item.id}
               className="flex items-center gap-3 rounded-lg border border-border bg-secondary/30 p-2"
             >
-              <div className="h-12 w-12 rounded-md bg-secondary flex items-center justify-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-md bg-secondary">
                 <Package className="h-5 w-5 text-muted-foreground" />
               </div>
               <div className="min-w-0">
-                <p className="font-sans text-sm font-medium text-foreground truncate max-w-[150px]">
-                  {item.productName}
+                <p className="max-w-[150px] truncate font-sans text-sm font-medium text-foreground">
+                  {item.name}
                 </p>
                 <p className="font-serif text-xs text-muted-foreground">
-                  {item.size} / {item.color} x{item.quantity}
+                  Cantidad: {item.quantity}
                 </p>
-                {item.hasCustomization && (
-                  <Badge variant="secondary" className="mt-1 text-xs">
-                    Personalizado
-                  </Badge>
-                )}
               </div>
             </div>
           ))}
         </div>
 
-        {/* Footer Actions */}
         <div className="flex flex-col gap-3 border-t border-border bg-secondary/20 p-4 sm:flex-row sm:items-center sm:justify-between">
-          {/* Delivery Info */}
-          {order.estimatedDelivery && order.status !== 'entregado' && order.status !== 'cancelado' && (
-            <p className="font-serif text-sm text-muted-foreground">
-              Entrega estimada:{' '}
-              <span className="font-medium text-foreground">
-                {new Date(order.estimatedDelivery).toLocaleDateString('es-MX', {
-                  day: 'numeric',
-                  month: 'long',
-                })}
-              </span>
-            </p>
-          )}
-          
-          {order.status === 'entregado' && (
-            <p className="font-serif text-sm text-success">
-              Entregado el {new Date(order.date).toLocaleDateString('es-MX')}
-            </p>
+          {trackingNumber && (
+            <span className="font-serif text-sm text-muted-foreground">
+              Guía: {trackingNumber}
+            </span>
           )}
 
-          {/* Actions */}
-          <div className="flex items-center gap-2">
-            {order.trackingNumber && (order.status === 'enviado' || order.status === 'entregado') && (
-              order.trackingUrl ? (
+          <div className="flex flex-col gap-3 sm:items-end">
+            {paidMessage && (
+              <p className="font-serif text-sm text-success" role="status">
+                {paidMessage}
+              </p>
+            )}
+            {showPaymentActions && (
+              <OrderPaymentActions
+                orderNumber={order.orderNumber}
+                paymentActions={paymentActions}
+                paymentStatus={displayPaymentStatus}
+                orderStatus={displayStatus}
+                variant="list"
+                onVerified={setVerified}
+              />
+            )}
+
+            <div className="flex items-center gap-2">
+              {trackingNumber && (
                 <Button variant="outline" size="sm" asChild>
-                  <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={`https://www.google.com/search?q=${encodeURIComponent(trackingNumber)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <Truck className="mr-2 h-4 w-4" />
                     Rastrear envio
                     <ExternalLink className="ml-1 h-3 w-3" />
                   </a>
                 </Button>
-              ) : (
-                <span className="font-serif text-sm text-muted-foreground">
-                  Guía: {order.trackingNumber}
-                </span>
-              )
-            )}
-            <Button variant="ghost" size="sm" asChild>
-              <Link href={routes.accountOrderDetail(order.orderNumber)}>
-                Ver detalle
-                <ChevronRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
+              )}
+              <Button variant="ghost" size="sm" asChild>
+                <Link href={routes.accountOrderDetail(order.orderNumber)}>
+                  Ver detalle
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>
@@ -141,7 +178,7 @@ export function OrderCard({ order }: OrderCardProps) {
 }
 
 interface OrdersListProps {
-  orders: Order[]
+  orders: AccountOrder[]
   isLoading?: boolean
 }
 
@@ -196,9 +233,7 @@ function OrdersEmptyState() {
         <div className="mb-4 rounded-full bg-secondary p-4">
           <Package className="h-8 w-8 text-muted-foreground" />
         </div>
-        <h3 className="font-sans text-lg font-semibold text-foreground">
-          No tienes pedidos
-        </h3>
+        <h3 className="font-sans text-lg font-semibold text-foreground">No tienes pedidos</h3>
         <p className="mt-1 max-w-sm font-serif text-muted-foreground">
           Cuando realices tu primer pedido, aparecera aqui para que puedas darle seguimiento.
         </p>

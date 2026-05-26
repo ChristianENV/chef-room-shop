@@ -1,23 +1,16 @@
 import 'server-only'
 
 import {
-  AuditAction,
-  OrderEventType,
-  OrderStatus,
-  PaymentStatus,
-  type Prisma,
-  type PrismaClient,
-} from '@prisma/client'
-
-import {
   mapConektaPaymentMethod,
   mapConektaStatusToPaymentStatus,
   type ConektaWebhookPayload,
 } from './conekta.client'
 import { sanitizeConektaPayload } from './conekta.sanitize'
-import { buildOrderEmailTrackingLinks } from '@/src/server/email/email.links'
-import { createOrderClaimToken } from '@/src/server/orders/order-claim-token'
-import { safeSendTransactionalEmailOnce } from '@/src/server/email/email.service'
+import {
+  applyConektaPaymentStatusUpdate,
+  sendConektaPaymentStatusEmails,
+} from './conekta-payment-apply'
+import type { Prisma, PrismaClient } from '@prisma/client'
 
 function extractConektaOrderId(payload: ConektaWebhookPayload): string | null {
   const object = payload.data?.object
@@ -113,89 +106,19 @@ export async function processConektaWebhook(
   const chargeId = extractChargeId(payload)
   const methodType = extractPaymentMethodType(payload)
 
-  await prisma.$transaction(async (tx) => {
-    const now = new Date()
-
-    if (paymentStatus === PaymentStatus.PAID) {
-      await tx.payment.update({
-        where: { id: payment.id },
-        data: {
-          status: PaymentStatus.PAID,
-          paidAt: now,
-          ...(methodType ? { method: mapConektaPaymentMethod(methodType) } : {}),
-        },
-      })
-
-      await tx.order.update({
-        where: { id: payment.orderId },
-        data: {
-          status: OrderStatus.PAID,
-          placedAt: payment.order.placedAt ?? now,
-        },
-      })
-
-      await tx.orderEvent.create({
-        data: {
-          orderId: payment.orderId,
-          type: OrderEventType.PAYMENT_UPDATED,
-          message: 'Pago confirmado vía Conekta.',
-          metadataJson: { eventType, conektaOrderId, chargeId },
-        },
-      })
-
-      await tx.auditLog.create({
-        data: {
-          action: AuditAction.PAYMENT_RECEIVED,
-          entityType: 'order',
-          entityId: payment.orderId,
-          metadataJson: { eventType, conektaOrderId, chargeId },
-        },
-      })
-    } else if (paymentStatus === PaymentStatus.FAILED) {
-      await tx.payment.update({
-        where: { id: payment.id },
-        data: { status: PaymentStatus.FAILED },
-      })
-
-      await tx.order.update({
-        where: { id: payment.orderId },
-        data: { status: OrderStatus.PAYMENT_FAILED },
-      })
-
-      await tx.orderEvent.create({
-        data: {
-          orderId: payment.orderId,
-          type: OrderEventType.PAYMENT_UPDATED,
-          message: 'Pago fallido en Conekta.',
-          metadataJson: { eventType, conektaOrderId, chargeId },
-        },
-      })
-    } else if (paymentStatus === PaymentStatus.CANCELLED) {
-      await tx.payment.update({
-        where: { id: payment.id },
-        data: { status: PaymentStatus.CANCELLED },
-      })
-
-      await tx.orderEvent.create({
-        data: {
-          orderId: payment.orderId,
-          type: OrderEventType.PAYMENT_UPDATED,
-          message: 'Pago expirado o cancelado en Conekta.',
-          metadataJson: { eventType, conektaOrderId, chargeId },
-        },
-      })
-    }
-
-    await tx.paymentAttempt.create({
-      data: {
-        paymentId: payment.id,
-        providerChargeId: chargeId,
-        status: paymentStatus,
-        amountCents: payment.amountCents,
-        rawResponseJson: sanitizedPayload as Prisma.InputJsonValue,
-      },
-    })
-  })
+  const { previousPaymentStatus } = await prisma.$transaction(async (tx) =>
+    applyConektaPaymentStatusUpdate(tx, {
+      payment,
+      paymentStatus,
+      source: 'webhook',
+      eventType,
+      chargeId,
+      conektaOrderId,
+      paymentMethod: methodType ? mapConektaPaymentMethod(methodType) : undefined,
+      sanitizedPayload,
+      forceAttempt: true,
+    }),
+  )
 
   await markWebhookProcessed(prisma, eventId, {
     processed: true,
@@ -204,102 +127,7 @@ export async function processConektaWebhook(
     paymentStatus,
   })
 
-  void sendPaymentStatusEmails(payment, paymentStatus)
-}
-
-async function sendPaymentStatusEmails(
-  payment: {
-    id: string
-    orderId: string
-    amountCents: number
-    order: {
-      orderNumber: string
-      customerEmail: string
-      currency: string
-      userId: string | null
-      guestSessionId: string | null
-    }
-  },
-  paymentStatus: PaymentStatus,
-): Promise<void> {
-  const { order } = payment
-
-  let claimToken: string | null = null
-  if (!order.userId) {
-    try {
-      const created = await createOrderClaimToken({
-        orderId: payment.orderId,
-        sentToEmail: order.customerEmail,
-      })
-      claimToken = created.token
-    } catch {
-      claimToken = null
-    }
-  }
-
-  const trackingLinks = buildOrderEmailTrackingLinks({
-    orderNumber: order.orderNumber,
-    userId: order.userId,
-    claimToken,
-  })
-
-  const basePayload = {
-    orderNumber: order.orderNumber,
-    totalCents: payment.amountCents,
-    currency: order.currency,
-    links: trackingLinks,
-    claimUrl: trackingLinks.claimUrl,
-    accountOrderUrl: trackingLinks.accountOrderUrl,
-  }
-
-  if (paymentStatus === PaymentStatus.PAID) {
-    void safeSendTransactionalEmailOnce({
-      to: order.customerEmail,
-      templateKey: 'payment_confirmed',
-      subject: '',
-      orderId: payment.orderId,
-      userId: order.userId,
-      guestSessionId: order.guestSessionId,
-      payload: {
-        ...basePayload,
-        paymentStatus: 'PAID',
-        orderStatus: 'PAID',
-      },
-    })
-    return
-  }
-
-  if (paymentStatus === PaymentStatus.FAILED) {
-    void safeSendTransactionalEmailOnce({
-      to: order.customerEmail,
-      templateKey: 'payment_failed',
-      subject: '',
-      orderId: payment.orderId,
-      userId: order.userId,
-      guestSessionId: order.guestSessionId,
-      payload: {
-        ...basePayload,
-        paymentStatus: 'FAILED',
-        orderStatus: 'PAYMENT_FAILED',
-      },
-    })
-    return
-  }
-
-  if (paymentStatus === PaymentStatus.CANCELLED) {
-    void safeSendTransactionalEmailOnce({
-      to: order.customerEmail,
-      templateKey: 'payment_expired',
-      subject: '',
-      orderId: payment.orderId,
-      userId: order.userId,
-      guestSessionId: order.guestSessionId,
-      payload: {
-        ...basePayload,
-        paymentStatus: 'CANCELLED',
-      },
-    })
-  }
+  void sendConektaPaymentStatusEmails(payment, paymentStatus, previousPaymentStatus)
 }
 
 async function markWebhookProcessed(

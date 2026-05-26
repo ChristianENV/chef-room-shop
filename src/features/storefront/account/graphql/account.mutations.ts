@@ -61,3 +61,31 @@ export const SET_DEFAULT_ADDRESS_MUTATION = /* GraphQL */ `
     }
   }
 `
+
+const ACCOUNT_PAYMENT_STATUS_FIELDS = /* GraphQL */ `
+  orderNumber
+  orderStatus
+  paymentStatus
+  paymentMethod
+  canRetryPayment
+  canContinuePayment
+  paymentRedirectUrl
+  checkedAt
+  message
+`
+
+export const VERIFY_MY_ORDER_PAYMENT_MUTATION = /* GraphQL */ `
+  mutation VerifyMyOrderPayment($orderNumber: String!) {
+    verifyMyOrderPayment(orderNumber: $orderNumber) {
+      ${ACCOUNT_PAYMENT_STATUS_FIELDS}
+    }
+  }
+`
+
+export const RETRY_MY_ORDER_PAYMENT_MUTATION = /* GraphQL */ `
+  mutation RetryMyOrderPayment($orderNumber: String!) {
+    retryMyOrderPayment(orderNumber: $orderNumber) {
+      ${ACCOUNT_PAYMENT_STATUS_FIELDS}
+    }
+  }
+`

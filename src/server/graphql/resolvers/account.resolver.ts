@@ -12,6 +12,10 @@ import {
   updateMyAddress,
   updateMyProfile,
 } from '../modules/account/account.service'
+import {
+  retryMyOrderPayment,
+  verifyMyOrderPayment,
+} from '../modules/account/account-payment.service'
 import type {
   MyAddressInput,
   MyDesignsInput,
@@ -47,6 +51,10 @@ type DeleteMyAddressArgs = {
 type SetDefaultAddressArgs = {
   id: string
   type: string
+}
+
+type OrderNumberArgs = {
+  orderNumber: string
 }
 
 export const accountResolvers = {
@@ -109,5 +117,17 @@ export const accountResolvers = {
       args: SetDefaultAddressArgs,
       context: GraphQLContext,
     ) => setDefaultAddress(context, args.id, args.type),
+
+    verifyMyOrderPayment: (
+      _parent: unknown,
+      args: OrderNumberArgs,
+      context: GraphQLContext,
+    ) => verifyMyOrderPayment(context, args.orderNumber),
+
+    retryMyOrderPayment: (
+      _parent: unknown,
+      args: OrderNumberArgs,
+      context: GraphQLContext,
+    ) => retryMyOrderPayment(context, args.orderNumber),
   },
 }

@@ -156,6 +156,61 @@ export async function createConektaCheckoutForOrder(
 }
 
 /**
+ * Fetches a Conekta order by provider id (ord_*).
+ */
+export async function getConektaOrder(
+  providerOrderId: string,
+): Promise<ConektaOrderResponse> {
+  const trimmed = providerOrderId.trim()
+  if (!trimmed.startsWith('ord_')) {
+    throw new ConektaApiError('Id de orden Conekta inválido.', 400)
+  }
+
+  const order = await conektaFetch<ConektaOrderResponse>(
+    `/orders/${encodeURIComponent(trimmed)}`,
+  )
+
+  return sanitizeConektaPayload(order) as ConektaOrderResponse
+}
+
+/**
+ * Maps a Conekta order API response to internal PaymentStatus.
+ */
+export function mapConektaOrderResponseToPaymentStatus(
+  order: ConektaOrderResponse,
+): 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'AUTHORIZED' {
+  const fromOrderStatus = mapConektaStatusToPaymentStatus(order.payment_status ?? undefined)
+  if (fromOrderStatus !== 'PENDING') {
+    return fromOrderStatus
+  }
+
+  const charges = order.charges?.data
+  if (!Array.isArray(charges)) {
+    return fromOrderStatus
+  }
+
+  let sawPending = false
+
+  for (const charge of charges) {
+    const chargeStatus =
+      typeof charge.status === 'string'
+        ? charge.status
+        : typeof charge.payment_status === 'string'
+          ? charge.payment_status
+          : undefined
+    const mapped = mapConektaStatusToPaymentStatus(chargeStatus)
+    if (mapped === 'PAID' || mapped === 'FAILED' || mapped === 'CANCELLED') {
+      return mapped
+    }
+    if (mapped === 'AUTHORIZED') {
+      sawPending = true
+    }
+  }
+
+  return sawPending ? 'AUTHORIZED' : fromOrderStatus
+}
+
+/**
  * Parses a Conekta webhook JSON body.
  */
 export function parseConektaWebhookEvent(

@@ -36,7 +36,25 @@ Invalidan `meProfile`, `accountSummary` y/o `myAddresses` según corresponda.
 - Requiere sesión y **`emailVerified`** en backend (`EMAIL_NOT_VERIFIED` si no está verificado).
 - Tras guest claim, redirect a esta ruta.
 - Componentes en `src/features/storefront/account/order-detail/`.
-- Pago pendiente: reutiliza `CheckoutConektaPay` (Conekta hosted).
+- **Verificar pago:** mutation `verifyMyOrderPayment(orderNumber)` consulta Conekta (`GET /orders/ord_*`) y reconcilia `Payment`/`Order` si el webhook no llegó. Es **fallback manual**; el webhook sigue siendo la fuente principal.
+- **Continuar pago:** si hay `paymentRedirectUrl` vigente en `paymentActions`, abre el checkout Conekta existente (URL extraída server-side de `PaymentAttempt`, sin exponer raw JSON).
+- **Reintentar pago:** mutation `retryMyOrderPayment(orderNumber)` reutiliza `startConektaCheckoutForOrder` (sin crear nueva orden).
+
+## Mis pedidos — acciones de pago
+
+En `/account/orders`, cada pedido con pago pendiente muestra:
+
+- Badge **Pago pendiente**
+- Botón **Verificar pago** (loading por pedido)
+- **Continuar pago** si hay URL Conekta vigente
+- **Reintentar pago** si falló, expiró o no hay URL
+
+Hooks: `useVerifyMyOrderPaymentMutation`, `useRetryMyOrderPaymentMutation` (invalidan `myOrders`, `myOrderByNumber`, `myAccountSummary`).
+
+Copy visible:
+
+- “Verificar pago” consulta el estado más reciente de Conekta.
+- “La confirmación final depende de Conekta. Si acabas de pagar, puede tardar unos minutos.”
 
 ## Qué sigue mockeado
 

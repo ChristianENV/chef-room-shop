@@ -9,10 +9,7 @@ import { useAccountAuthRedirect } from '@/src/features/storefront/account/api/us
 import { getAccountUserErrorMessage } from '@/src/features/storefront/account/api/account-errors'
 import { useMeProfileQuery } from '@/src/features/storefront/account/api/use-me-profile-query'
 import { useMyOrdersQuery } from '@/src/features/storefront/account/api/use-my-orders-query'
-import {
-  mapAccountOrderToUi,
-  mapAccountUserToProfile,
-} from '@/src/features/storefront/account/mappers/account-ui.mapper'
+import { mapAccountUserToProfile } from '@/src/features/storefront/account/mappers/account-ui.mapper'
 
 export default function OrdersPage() {
   const profileQuery = useMeProfileQuery()
@@ -29,11 +26,6 @@ export default function OrdersPage() {
     }
     return 'Cliente'
   }, [profileQuery.data])
-
-  const orders = useMemo(
-    () => (ordersQuery.data ?? []).map(mapAccountOrderToUi),
-    [ordersQuery.data],
-  )
 
   if (ordersQuery.isError) {
     return (
@@ -59,7 +51,7 @@ export default function OrdersPage() {
       description="Historial y seguimiento de tus pedidos"
       userName={userName}
     >
-      <OrdersList orders={orders} isLoading={ordersQuery.isLoading} />
+      <OrdersList orders={ordersQuery.data ?? []} isLoading={ordersQuery.isLoading} />
     </AccountLayout>
   )
 }

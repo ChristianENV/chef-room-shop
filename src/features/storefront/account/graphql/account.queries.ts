@@ -59,6 +59,15 @@ export const MY_ACCOUNT_SUMMARY_QUERY = /* GraphQL */ `
   }
 `
 
+const ACCOUNT_ORDER_PAYMENT_ACTIONS_FIELDS = /* GraphQL */ `
+  paymentActions {
+    canVerifyPayment
+    canContinuePayment
+    canRetryPayment
+    paymentRedirectUrl
+  }
+`
+
 export const MY_ORDERS_QUERY = /* GraphQL */ `
   query MyOrders($limit: Int, $offset: Int) {
     myOrders(limit: $limit, offset: $offset) {
@@ -88,6 +97,7 @@ export const MY_ORDERS_QUERY = /* GraphQL */ `
         trackingNumber
         status
       }
+      ${ACCOUNT_ORDER_PAYMENT_ACTIONS_FIELDS}
     }
   }
 `
@@ -130,6 +140,7 @@ export const MY_ORDER_BY_NUMBER_QUERY = /* GraphQL */ `
         amountCents
         currency
         paidAt
+        expiresAt
       }
       shipments {
         id
@@ -145,6 +156,7 @@ export const MY_ORDER_BY_NUMBER_QUERY = /* GraphQL */ `
         message
         createdAt
       }
+      ${ACCOUNT_ORDER_PAYMENT_ACTIONS_FIELDS}
     }
   }
 `

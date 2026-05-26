@@ -170,6 +170,25 @@ export const accountTypeDefs = /* GraphQL */ `
     expiresAt: String
   }
 
+  type AccountOrderPaymentActions {
+    canVerifyPayment: Boolean!
+    canContinuePayment: Boolean!
+    canRetryPayment: Boolean!
+    paymentRedirectUrl: String
+  }
+
+  type AccountPaymentStatusPayload {
+    orderNumber: String!
+    orderStatus: String!
+    paymentStatus: String!
+    paymentMethod: String
+    canRetryPayment: Boolean!
+    canContinuePayment: Boolean!
+    paymentRedirectUrl: String
+    checkedAt: String!
+    message: String!
+  }
+
   type AccountShipment {
     id: ID!
     carrier: String
@@ -207,6 +226,7 @@ export const accountTypeDefs = /* GraphQL */ `
     payments: [AccountPayment!]!
     shipments: [AccountShipment!]!
     events: [AccountOrderEvent!]!
+    paymentActions: AccountOrderPaymentActions!
   }
 
   type AccountDesign {
@@ -1124,6 +1144,8 @@ export const typeDefs = /* GraphQL */ `
     updateMyAddress(id: ID!, input: MyAddressInput!): AccountAddress!
     deleteMyAddress(id: ID!): Boolean!
     setDefaultAddress(id: ID!, type: String!): AccountAddress!
+    verifyMyOrderPayment(orderNumber: String!): AccountPaymentStatusPayload!
+    retryMyOrderPayment(orderNumber: String!): AccountPaymentStatusPayload!
     addCartItem(input: AddCartItemInput!): Cart!
     updateCartItemQuantity(input: UpdateCartItemQuantityInput!): Cart!
     removeCartItem(itemId: ID!): Cart!

@@ -3,9 +3,11 @@ import { fetchGraphQL } from '@/src/lib/graphql/fetch-graphql'
 import {
   CREATE_MY_ADDRESS_MUTATION,
   DELETE_MY_ADDRESS_MUTATION,
+  RETRY_MY_ORDER_PAYMENT_MUTATION,
   SET_DEFAULT_ADDRESS_MUTATION,
   UPDATE_MY_ADDRESS_MUTATION,
   UPDATE_MY_PROFILE_MUTATION,
+  VERIFY_MY_ORDER_PAYMENT_MUTATION,
 } from '../graphql/account.mutations'
 import {
   ME_PROFILE_QUERY,
@@ -20,6 +22,7 @@ import type {
   AccountDashboardSummary,
   AccountDesign,
   AccountOrder,
+  AccountPaymentStatusPayload,
   AccountUser,
   MyAddressInput,
   UpdateMyProfileInput,
@@ -175,4 +178,44 @@ export async function setDefaultAddress(
     variables: { id, type },
   })
   return data.setDefaultAddress
+}
+
+type VerifyMyOrderPaymentData = {
+  verifyMyOrderPayment: AccountPaymentStatusPayload
+}
+
+type RetryMyOrderPaymentData = {
+  retryMyOrderPayment: AccountPaymentStatusPayload
+}
+
+/**
+ * Manually verifies payment status with Conekta for an owned order.
+ */
+export async function verifyMyOrderPayment(
+  orderNumber: string,
+): Promise<AccountPaymentStatusPayload> {
+  const data = await fetchGraphQL<
+    VerifyMyOrderPaymentData,
+    { orderNumber: string }
+  >({
+    query: VERIFY_MY_ORDER_PAYMENT_MUTATION,
+    variables: { orderNumber },
+  })
+  return data.verifyMyOrderPayment
+}
+
+/**
+ * Retries Conekta checkout for an owned order (no new order).
+ */
+export async function retryMyOrderPayment(
+  orderNumber: string,
+): Promise<AccountPaymentStatusPayload> {
+  const data = await fetchGraphQL<
+    RetryMyOrderPaymentData,
+    { orderNumber: string }
+  >({
+    query: RETRY_MY_ORDER_PAYMENT_MUTATION,
+    variables: { orderNumber },
+  })
+  return data.retryMyOrderPayment
 }

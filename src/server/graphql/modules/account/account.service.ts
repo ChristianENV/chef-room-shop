@@ -48,7 +48,12 @@ const ACTIVE_ORDER_STATUSES: OrderStatus[] = [
 
 const orderInclude = {
   items: { orderBy: { createdAt: 'asc' as const } },
-  payments: { orderBy: { createdAt: 'desc' as const } },
+  payments: {
+    orderBy: { createdAt: 'desc' as const },
+    include: {
+      attempts: { orderBy: { createdAt: 'desc' as const }, take: 5 },
+    },
+  },
   shipments: { orderBy: { createdAt: 'asc' as const } },
   events: { orderBy: { createdAt: 'asc' as const } },
 } satisfies Prisma.OrderInclude

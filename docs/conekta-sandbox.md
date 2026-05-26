@@ -22,20 +22,17 @@ Set these in `.env.local`. **Build passes without keys**; payment operations fai
 3. Set `CONEKTA_PRIVATE_KEY` in `.env.local`.
 4. Restart `npm run dev`.
 
-## GraphQL: `createConektaCheckout`
+## GraphQL: checkout & account payments
 
-```graphql
-mutation CreateConektaCheckout($input: CreateConektaCheckoutInput!) {
-  createConektaCheckout(input: $input) {
-    orderNumber
-    checkoutUrl
-    checkoutId
-    providerOrderId
-    status
-    amountCents
-  }
-}
-```
+| Operation | Auth | Purpose |
+|-----------|------|---------|
+| `completeCheckout` | Session/guest cart | Order + Conekta + redirect URL |
+| `retryCheckoutPayment({ token })` | Return token | Retry from success page |
+| `verifyMyOrderPayment(orderNumber)` | Session + ownership | Manual Conekta sync (fallback) |
+| `retryMyOrderPayment(orderNumber)` | Session + ownership | New Conekta checkout for owned order |
+| `createConektaCheckout` | Session/email | Legacy hosted checkout |
+
+### `createConektaCheckout` (legacy)
 
 **Input**
 
@@ -132,6 +129,10 @@ Cash (`OXXO` → “Pago en efectivo”): reference/expiry from `PaymentAttempt.
 3. Return to `/checkout/success?token=...` → polling → **Pago confirmado**.
 4. Failed payment → auto-retry redirect via `retryCheckoutPayment`.
 5. Guest success without login: summary + login/register dialog (no session error).
+6. Account: `/account/orders` → **Verificar pago** on pending order → message updates; after sandbox pay or webhook, badge shows **Pagado**.
+7. Account: **Continuar pago** when `paymentRedirectUrl` exists; **Reintentar pago** when URL expired or payment failed.
+
+**Manual verify (account):** uses `GET /orders/{providerOrderId}` with `CONEKTA_PRIVATE_KEY`. Webhook remains primary; verify is fallback when `processedAt` was set without reconciliation or webhook never arrived.
 
 **Local webhook curl (dev secret):**
 
