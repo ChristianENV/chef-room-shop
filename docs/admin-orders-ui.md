@@ -7,7 +7,7 @@ Operación de pedidos en `/admin/orders` conectada al BFF GraphQL (v1).
 1. **Resumen** — Tarjetas por estado (`adminOrderStatusSummary`). Clic filtra la tabla.
 2. **Listado** — `adminOrders` con búsqueda, filtros de estado/pago y toggle “Solo pipeline de producción”.
 3. **Detalle rápido** — Dialog (`OrderDetailDialog`) con `adminOrderByNumber`: cliente, direcciones, pago, items, timeline, notas, guía Skydropx.
-4. **Página completa** — `/admin/orders/[orderNumber]` reutiliza los mismos componentes (`AdminOrderDetailPageView`) en layout de dos columnas.
+4. **Página completa** — `/admin/orders/[orderNumber]` usa layout amplio: header + summary strip + bloques full width (cliente, pago/envío/totales) + grid 8/4 (contenido / operación).
 5. **Producción** — Pestaña o sección “Ficha producción” (`adminOrderProductionSheet`) + impresión básica.
 6. **Acciones** — Mutations desde menú de tabla, dialog o página; queries se invalidan al éxito.
 

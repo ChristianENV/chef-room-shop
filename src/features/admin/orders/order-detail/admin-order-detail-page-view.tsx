@@ -56,11 +56,11 @@ export function AdminOrderDetailPageView({
 
   return (
     <div
-      className="space-y-6"
+      className="mx-auto w-full max-w-screen-2xl space-y-6"
       data-testid="admin-order-detail-page"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button asChild variant="outline" size="sm" className="font-sans">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <Button asChild variant="outline" size="sm" className="w-fit font-sans">
           <Link href={routes.adminOrders}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Volver a órdenes
@@ -68,9 +68,9 @@ export function AdminOrderDetailPageView({
         </Button>
         <Button
           type="button"
-          variant="outline"
+          variant="default"
           size="sm"
-          className="font-sans"
+          className="w-fit font-sans"
           onClick={() => {
             document.getElementById('admin-order-production')?.scrollIntoView({
               behavior: 'smooth',
@@ -82,7 +82,7 @@ export function AdminOrderDetailPageView({
         </Button>
       </div>
 
-      <AdminOrderDetailHeader detail={detail} />
+      <AdminOrderDetailHeader detail={detail} variant="page" />
 
       <AdminOrderDetailBody
         detail={detail}
