@@ -9,7 +9,7 @@ import { AdminPageConfig } from '@/src/features/admin/layout/admin-page-config'
 import {
   ProductsToolbar,
   ProductsTable,
-  ProductFormDrawer,
+  ProductFormDialog,
   ArchiveProductDialog,
 } from '@/src/features/admin/products'
 import { AdminProductsTableSkeleton } from '@/src/features/admin/products/components/admin-products-loading'
@@ -247,7 +247,7 @@ export default function AdminProductsPage() {
         )}
       </div>
 
-      <ProductFormDrawer
+      <ProductFormDialog
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         productId={editingProductId}

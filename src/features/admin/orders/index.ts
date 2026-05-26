@@ -26,7 +26,10 @@ export {
 export { OrdersStatusCards } from './orders-status-cards'
 export { OrdersToolbar } from './orders-toolbar'
 export { OrdersTable } from './orders-table'
-export { OrderDetailDrawer } from './order-detail-drawer'
+export { OrderDetailDialog } from './order-detail-dialog'
+export { AdminOrderDetailPageView } from './order-detail/admin-order-detail-page-view'
+/** @deprecated Use OrderDetailDialog */
+export { OrderDetailDialog as OrderDetailDrawer } from './order-detail-dialog'
 export { CustomizationSnapshot } from './customization-snapshot'
 export { OrderTimeline } from './order-timeline'
 export { ProductionSheetPreview } from './production-sheet-preview'

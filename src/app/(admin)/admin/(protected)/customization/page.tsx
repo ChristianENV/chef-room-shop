@@ -11,7 +11,7 @@ import {
   ProductSelector,
   GarmentAreaMap,
   CustomizationAreaCard,
-  RuleEditorDrawer,
+  RuleEditorDialog,
   PricingPreviewCard,
   DeleteRuleDialog,
   DuplicateRulesDialog,
@@ -426,7 +426,7 @@ export default function CustomizationRulesPage() {
       </div>
 
       {activeProductId && selectedProduct && areasQuery.data && optionsQuery.data ? (
-        <RuleEditorDrawer
+        <RuleEditorDialog
           open={drawerOpen}
           onOpenChange={setDrawerOpen}
           productId={activeProductId}
