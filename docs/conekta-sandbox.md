@@ -85,10 +85,11 @@ Configure in Conekta panel → Webhooks → point to:
 
 | URL | Purpose |
 |-----|---------|
-| `/checkout/success?orderNumber=CR-...` | Conekta `success_url` (no email in query) |
-| `/checkout/success?orderNumber=CR-...&payment=failed` | Conekta `failure_url` (informative only) |
+| `/checkout/success?token=<opaque>` | Conekta `success_url` / `failure_url` (preferred) |
+| `/checkout/success?token=...&payment=failed` | Failure hint only |
+| `/checkout/success?orderNumber=CR-...` | Legacy in-flight sessions |
 
-Real payment state always comes from `orderByNumber` + webhooks, not from `payment=failed`.
+Real payment state comes from `checkoutResultByToken` / `orderByNumber` + webhooks, not from `payment=failed`.
 
 ## Webhook testing (ngrok)
 
@@ -111,22 +112,26 @@ Real payment state always comes from `orderByNumber` + webhooks, not from `payme
 
 ## `/checkout/success` (Payment Status UX)
 
-While `paymentStatus` is `PENDING`, the page polls `orderByNumber` every **5s** (max **24** attempts ≈ 2 min). When the webhook marks the order `PAID`, the UI switches to **Pago confirmado** without a manual refresh.
+Token path: `checkoutResultByToken` + polling every **5s** (max **24** attempts). Legacy: `orderByNumber` with sessionStorage email.
+
+When webhook marks order `PAID`, UI shows **Pago confirmado** without manual refresh.
 
 | BFF status | UI title |
 |------------|----------|
-| `PENDING` / `PENDING_PAYMENT` | Pago pendiente |
+| `PENDING` / `PENDING_PAYMENT` | Confirmando pago |
 | `PAID` | Pago confirmado |
-| `FAILED` / `PAYMENT_FAILED` | Pago no completado (+ reintentar) |
-| `CANCELLED` / `EXPIRED` | Pago expirado (+ reintentar) |
+| `FAILED` / `PAYMENT_FAILED` | Pago no completado (+ auto-retry) |
+| `CANCELLED` / `EXPIRED` | Pago expirado (+ auto-retry) |
+
+Cash (`OXXO` → “Pago en efectivo”): reference/expiry from `PaymentAttempt.rawResponseJson` when available.
 
 ## Manual smoke
 
-1. Add product → checkout → success page.
-2. **Preparar pago con Conekta** → **Pagar ahora** opens Conekta URL.
-3. Complete payment in sandbox (test cards in Conekta docs).
-4. Webhook updates `Payment` + `Order` to `PAID`; success page shows **Pago confirmado** via polling.
-5. Wrong email → GraphQL `FORBIDDEN`.
+1. Add product → `/checkout` → **Continuar al pago** → Conekta redirect (same tab).
+2. Complete payment in sandbox (test cards in Conekta docs).
+3. Return to `/checkout/success?token=...` → polling → **Pago confirmado**.
+4. Failed payment → auto-retry redirect via `retryCheckoutPayment`.
+5. Guest success without login: summary + login/register dialog (no session error).
 
 **Local webhook curl (dev secret):**
 
@@ -153,9 +158,11 @@ See [emails.md](./emails.md). Email failures do not block webhook `200` response
 
 ## Frontend
 
-- `useOrderByNumberQuery` with `pollWhilePending`
+- `useCompleteCheckoutMutation` — checkout submit
+- `useCheckoutResultByTokenQuery` with `pollWhilePending`
+- `useRetryCheckoutPaymentMutation` — retry redirect
 - `getPaymentStatusUi` — copy and polling rules
-- `CheckoutConektaPay` on `/checkout/success`
+- `CheckoutConektaPay` — retry-only on success (legacy `createConektaCheckout` fallback)
 
 ## Not in v1
 

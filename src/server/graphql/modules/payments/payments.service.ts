@@ -2,15 +2,19 @@ import {
   OrderEventType,
   PaymentMethod,
   PaymentStatus,
+  type Payment,
   type Prisma,
 } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 
+import {
+  conektaCheckoutRedirectUrls,
+  conektaCheckoutRedirectUrlsLegacy,
+} from '@/src/lib/checkout-redirect-urls'
 import { createConektaCheckoutForOrder } from '@/src/server/payments/conekta/conekta.client'
 import { ConektaConfigError } from '@/src/server/payments/conekta/conekta.errors'
 import { sanitizeConektaPayload } from '@/src/server/payments/conekta/conekta.sanitize'
 import { getAppBaseUrl } from '@/src/server/payments/app-url'
-import { conektaCheckoutRedirectUrls } from '@/src/lib/checkout-redirect-urls'
 
 import type { GraphQLContext } from '../../context'
 import {
@@ -41,6 +45,20 @@ const orderInclude = {
   },
 } satisfies Prisma.OrderInclude
 
+export type StartConektaCheckoutResult = {
+  checkoutUrl: string | null
+  checkoutId: string | null
+  providerOrderId: string
+  payment: Payment
+}
+
+type StartConektaCheckoutOptions = {
+  orderId: string
+  returnToken?: string
+  source: string
+  skipAuth?: boolean
+}
+
 function mapAllowedConektaMethods(
   method: PaymentMethod | null,
 ): Array<'card' | 'cash' | 'bank_transfer'> {
@@ -65,18 +83,30 @@ function buildCustomerName(order: OrderWithPaymentsAndItems): string {
   return 'Cliente Chef Room'
 }
 
-/**
- * Starts Conekta HostedPayment checkout for an existing local order.
- */
-export async function createConektaCheckout(
-  context: GraphQLContext,
-  input: CreateConektaCheckoutInput,
-): Promise<ConektaCheckoutPayloadGql> {
-  const parsed = createConektaCheckoutInputSchema.parse(input)
+function buildConektaMetadata(order: OrderWithPaymentsAndItems): Record<string, string> {
+  const payment = order.payments[0]
+  return {
+    chef_room_order_id: order.id,
+    chef_room_order_number: order.orderNumber,
+    internalOrderId: order.id,
+    orderNumber: order.orderNumber,
+    ...(order.userId ? { userId: order.userId } : {}),
+    ...(order.guestSessionId ? { guestSessionId: order.guestSessionId } : {}),
+    ...(payment?.method ? { paymentMethod: payment.method } : {}),
+    environment: process.env.NODE_ENV ?? 'development',
+  }
+}
 
+/**
+ * Shared Conekta HostedPayment bootstrap for an existing local order.
+ */
+export async function startConektaCheckoutForOrder(
+  context: GraphQLContext,
+  options: StartConektaCheckoutOptions,
+): Promise<StartConektaCheckoutResult> {
   const order = await context.prisma.order.findFirst({
     where: {
-      orderNumber: parsed.orderNumber.trim(),
+      id: options.orderId,
       deletedAt: null,
     },
     include: orderInclude,
@@ -88,7 +118,6 @@ export async function createConektaCheckout(
 
   const orderView = order as OrderWithPaymentsAndItems
 
-  await assertCanStartConektaCheckout(context, orderView, parsed.email)
   assertOrderPendingPayment(orderView)
 
   const payment = orderView.payments[0]
@@ -104,20 +133,19 @@ export async function createConektaCheckout(
   ) {
     const cached = getCachedCheckoutFromAttempts(payment.attempts)
     if (cached.checkoutUrl) {
-      return mapToConektaCheckoutPayload({
-        orderId: order.id,
-        orderNumber: order.orderNumber,
-        payment,
-        checkoutId: cached.checkoutId,
+      return {
         checkoutUrl: cached.checkoutUrl,
-      })
+        checkoutId: cached.checkoutId,
+        providerOrderId: payment.providerOrderId,
+        payment: payment as unknown as Payment,
+      }
     }
   }
 
-  const { successUrl, failureUrl } = conektaCheckoutRedirectUrls(
-    order.orderNumber,
-    getAppBaseUrl(),
-  )
+  const baseUrl = getAppBaseUrl()
+  const { successUrl, failureUrl } = options.returnToken
+    ? conektaCheckoutRedirectUrls(options.returnToken, baseUrl)
+    : conektaCheckoutRedirectUrlsLegacy(order.orderNumber, baseUrl)
 
   let conektaResult
   try {
@@ -133,10 +161,7 @@ export async function createConektaCheckout(
       allowedPaymentMethods: mapAllowedConektaMethods(
         payment.method as PaymentMethod | null,
       ),
-      metadata: {
-        chef_room_order_id: order.id,
-        chef_room_order_number: order.orderNumber,
-      },
+      metadata: buildConektaMetadata(orderView),
     })
   } catch (error) {
     if (error instanceof ConektaConfigError) {
@@ -157,8 +182,8 @@ export async function createConektaCheckout(
     conektaOrderId: conektaResult.conektaOrderId,
   })
 
-  const updated = await context.prisma.$transaction(async (tx) => {
-    const updatedPayment = await tx.payment.update({
+  const updatedPayment = await context.prisma.$transaction(async (tx) => {
+    const updated = await tx.payment.update({
       where: { id: payment.id },
       data: {
         providerOrderId: conektaResult.conektaOrderId,
@@ -184,19 +209,63 @@ export async function createConektaCheckout(
         metadataJson: {
           conektaOrderId: conektaResult.conektaOrderId,
           checkoutId: conektaResult.checkoutId,
-          source: 'createConektaCheckout',
+          source: options.source,
         },
       },
     })
 
-    return updatedPayment
+    return updated
   })
+
+  return {
+    checkoutUrl: conektaResult.checkoutUrl,
+    checkoutId: conektaResult.checkoutId,
+    providerOrderId: conektaResult.conektaOrderId,
+    payment: updatedPayment,
+  }
+}
+
+/**
+ * Starts Conekta HostedPayment checkout for an existing local order (legacy email auth).
+ */
+export async function createConektaCheckout(
+  context: GraphQLContext,
+  input: CreateConektaCheckoutInput,
+): Promise<ConektaCheckoutPayloadGql> {
+  const parsed = createConektaCheckoutInputSchema.parse(input)
+
+  const order = await context.prisma.order.findFirst({
+    where: {
+      orderNumber: parsed.orderNumber.trim(),
+      deletedAt: null,
+    },
+    include: orderInclude,
+  })
+
+  if (!order) {
+    throw notFound()
+  }
+
+  const orderView = order as OrderWithPaymentsAndItems
+
+  await assertCanStartConektaCheckout(context, orderView, parsed.email)
+
+  const result = await startConektaCheckoutForOrder(context, {
+    orderId: order.id,
+    source: 'createConektaCheckout',
+  })
+
+  if (!result.checkoutUrl) {
+    throw new GraphQLError('No pudimos preparar el pago. Intenta nuevamente.', {
+      extensions: { code: 'CONEKTA_ERROR' },
+    })
+  }
 
   return mapToConektaCheckoutPayload({
     orderId: order.id,
     orderNumber: order.orderNumber,
-    payment: updated,
-    checkoutId: conektaResult.checkoutId,
-    checkoutUrl: conektaResult.checkoutUrl,
+    payment: result.payment,
+    checkoutId: result.checkoutId,
+    checkoutUrl: result.checkoutUrl,
   })
 }

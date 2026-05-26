@@ -899,6 +899,53 @@ export const checkoutTypeDefs = /* GraphQL */ `
     accountOrderUrl: String
   }
 
+  type CompleteCheckoutPayload {
+    orderNumber: String!
+    orderId: ID!
+    status: String!
+    paymentStatus: String!
+    totalCents: Int!
+    shippingCents: Int!
+    currency: String!
+    claimUrl: String
+    accountOrderUrl: String
+    paymentRedirectUrl: String!
+    paymentProviderOrderId: String
+    paymentMethod: String!
+    successUrl: String!
+    returnToken: String!
+  }
+
+  type CheckoutResult {
+    orderNumber: String!
+    orderId: ID!
+    status: String!
+    paymentStatus: String!
+    fulfillmentStatus: String!
+    totalCents: Int!
+    shippingCents: Int!
+    currency: String!
+    paymentMethod: String!
+    createdAt: String!
+    items: [PublicOrderItem!]!
+    payments: [PublicOrderPayment!]!
+    claimUrl: String
+    accountOrderUrl: String
+    canViewDetails: Boolean!
+    detailUrl: String
+    paymentReference: String
+    paymentExpiresAt: String
+    cashPaymentLocations: [String!]
+    returnTokenValid: Boolean!
+    tokenExpired: Boolean!
+    loginUrl: String!
+    registerUrl: String!
+  }
+
+  input RetryCheckoutPaymentInput {
+    token: String!
+  }
+
   type PublicOrderItem {
     id: ID!
     name: String!
@@ -1067,6 +1114,7 @@ export const typeDefs = /* GraphQL */ `
     myCart: Cart!
     shippingQuoteById(id: ID!): ShippingQuote
     orderByNumber(orderNumber: String!, email: String!): PublicOrder
+    checkoutResultByToken(token: String!): CheckoutResult
     orderClaimPreview(token: String!): OrderClaimPreview
   }
 
@@ -1084,6 +1132,8 @@ export const typeDefs = /* GraphQL */ `
     refreshShippingQuote(id: ID!): ShippingQuotePayload!
     selectShippingRate(rateId: ID!): ShippingQuotePayload!
     createCheckoutOrder(input: CreateCheckoutOrderInput!): CheckoutOrderPayload!
+    completeCheckout(input: CreateCheckoutOrderInput!): CompleteCheckoutPayload!
+    retryCheckoutPayment(input: RetryCheckoutPaymentInput!): CompleteCheckoutPayload!
     createConektaCheckout(input: CreateConektaCheckoutInput!): ConektaCheckoutPayload!
     claimOrder(token: String!): OrderClaimPayload!
     updateAdminOrderStatus(input: UpdateAdminOrderStatusInput!): AdminOrder!

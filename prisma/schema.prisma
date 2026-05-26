@@ -696,6 +696,7 @@ model Order {
   shipments        Shipment[]
   emailMessages    EmailMessage[]
   claimTokens      OrderClaimToken[]
+  checkoutReturnToken CheckoutReturnToken?
   shippingQuotes   ShippingQuote[]
 
   @@index([userId])
@@ -724,6 +725,20 @@ model OrderClaimToken {
   @@index([expiresAt])
   @@index([sentToEmail])
   @@map("order_claim_tokens")
+}
+
+model CheckoutReturnToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  orderId   String    @unique @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@map("checkout_return_tokens")
 }
 
 model OrderItem {

@@ -81,12 +81,14 @@ export function OrderPaymentCard({ order }: OrderPaymentCardProps) {
         </p>
       )}
 
-      {(statusUi.canPay || statusUi.canRetryPayment) && email && (
+      {(statusUi.canRetryPayment ||
+        (order.status === 'PENDING_PAYMENT' && order.paymentStatus === 'PENDING')) &&
+        email && (
         <div className="mt-6 border-t border-border pt-6">
           <CheckoutConektaPay
             orderNumber={order.orderNumber}
             email={email}
-            mode={statusUi.canRetryPayment ? 'retry' : 'prepare'}
+            autoRedirect={statusUi.canRetryPayment}
           />
         </div>
       )}

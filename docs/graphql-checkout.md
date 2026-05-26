@@ -1,10 +1,74 @@
 # GraphQL Checkout BFF (v1)
 
-Converts the **ACTIVE** cart into an `Order` with `PENDING_PAYMENT` — no Conekta charge, no emails.
+Converts the **ACTIVE** cart into an `Order` with `PENDING_PAYMENT`. Preferred path: **`completeCheckout`** (order + Conekta + return token in one step).
 
 ## Operations
 
-### Mutation: `createCheckoutOrder`
+### Mutation: `completeCheckout` (preferred)
+
+```graphql
+mutation CompleteCheckout($input: CreateCheckoutOrderInput!) {
+  completeCheckout(input: $input) {
+    orderNumber
+    orderId
+    status
+    paymentStatus
+    totalCents
+    shippingCents
+    currency
+    paymentRedirectUrl
+    paymentProviderOrderId
+    paymentMethod
+    successUrl
+    returnToken
+    claimUrl
+    accountOrderUrl
+  }
+}
+```
+
+- Cart stays `ACTIVE` until Conekta checkout is created successfully.
+- On Conekta OK: cart → `CONVERTED`, `order_created` email, guest claim token.
+- Client redirects to `paymentRedirectUrl` (same tab).
+
+### Mutation: `retryCheckoutPayment`
+
+```graphql
+mutation RetryCheckoutPayment($input: RetryCheckoutPaymentInput!) {
+  retryCheckoutPayment(input: $input) {
+    paymentRedirectUrl
+    returnToken
+    orderNumber
+  }
+}
+```
+
+Reuses existing order (`PENDING_PAYMENT` / `PAYMENT_FAILED`); no new order.
+
+### Query: `checkoutResultByToken`
+
+```graphql
+query CheckoutResultByToken($token: String!) {
+  checkoutResultByToken(token: $token) {
+    orderNumber
+    status
+    paymentStatus
+    totalCents
+    paymentMethod
+    items { name quantity totalPriceCents }
+    paymentReference
+    paymentExpiresAt
+    cashPaymentLocations
+    canViewDetails
+    loginUrl
+    registerUrl
+  }
+}
+```
+
+No session or email required. Used by `/checkout/success?token=...`.
+
+### Mutation: `createCheckoutOrder` (legacy)
 
 ```graphql
 mutation CreateCheckoutOrder($input: CreateCheckoutOrderInput!) {
@@ -29,7 +93,7 @@ Guest checkout returns `claimUrl`; authenticated returns `accountOrderUrl`. See 
 - `email`, `phone` — stored on the order
 - `shippingAddress` — mapped to Prisma `Address` (`line1` = street, `line2` = ext/int, `label` = neighborhood/references)
 - `billingAddress` — optional when `useSameBillingAddress: false`
-- `paymentMethod` — `CARD` | `OXXO` | `SPEI` (placeholder only)
+- `paymentMethod` — `CARD` | `OXXO` | `SPEI` (OXXO UI label: “Pago en efectivo”)
 - `shippingRateId` — id of selected `ShippingRate` from quote BFF (required unless `ALLOW_CHECKOUT_WITHOUT_SHIPPING=true` on server)
 - Totals and shipping amounts are **never** accepted from the client — `shippingCents` comes from `ShippingRate.amountCents` in DB
 
@@ -71,7 +135,14 @@ Returns `null` if the order does not exist or the email does not match `customer
 
 If there is no active guest session: *Tu carrito está vacío o expiró.*
 
-## Server flow (`createCheckoutOrder`)
+## Server flow (`completeCheckout`)
+
+1. `createCheckoutOrderCore(..., { convertCart: false })`
+2. `createCheckoutReturnToken(orderId)` — 48h opaque token
+3. `startConektaCheckoutForOrder` with token-based redirect URLs
+4. On Conekta OK: `finalizeCheckoutOrderSideEffects` (cart converted, email, claim token)
+
+## Server flow (`createCheckoutOrder` legacy)
 
 1. Resolve owner (auth user or existing guest session).
 2. Load ACTIVE cart with items.
@@ -135,26 +206,29 @@ query {
 
 Use session cookies (`chefroom_guest` or Better Auth) on `POST /api/graphql`.
 
-## Frontend (prepared, UI not wired)
+## Frontend
 
-- `src/features/storefront/checkout/graphql/*`
-- `src/features/storefront/checkout/api/*`
-- Hooks: `useCreateCheckoutOrderMutation`, `useOrderByNumberQuery`
+- `useCompleteCheckoutMutation` — `/checkout` submit + redirect
+- `useCheckoutResultByTokenQuery` — success page token path
+- `useRetryCheckoutPaymentMutation` — failed payment retry
+- `useCreateCheckoutOrderMutation`, `useOrderByNumberQuery` — legacy
 
 ## Conekta (sandbox v1)
 
-After `createCheckoutOrder`, call `createConektaCheckout` to obtain a hosted `checkoutUrl`. Payment confirmation is applied via webhook (`POST /api/webhooks/conekta`), not in the mutation.
+`completeCheckout` returns `paymentRedirectUrl`. Payment confirmation via webhook (`POST /api/webhooks/conekta`).
 
-See [conekta-sandbox.md](./conekta-sandbox.md).
+Legacy: `createConektaCheckout` after `createCheckoutOrder`.
+
+See [conekta-sandbox.md](./conekta-sandbox.md) and [payments.md](./payments.md).
 
 ## Not in v1
 
-- Transactional emails
-- Coupons, real tax/shipping
+- Coupons, real tax beyond shipping rate
 - CFDI / RFC
-- Guest order claim by email only (no magic link)
-- Checkout UI (`/checkout` still uses mocks)
+- MSI, refunds
 
 ## Related
 
 - [graphql-cart.md](./graphql-cart.md)
+- [checkout-ui.md](./checkout-ui.md)
+- [payments.md](./payments.md)

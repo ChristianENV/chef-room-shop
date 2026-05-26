@@ -110,3 +110,48 @@ export function mapToConektaCheckoutPayload(params: {
 export function isPlaceholderProviderOrderId(providerOrderId: string): boolean {
   return providerOrderId.startsWith('checkout_pending_')
 }
+
+type CashPaymentDetails = {
+  reference: string | null
+  expiresAt: string | null
+}
+
+/**
+ * Extracts cash payment reference/expiry from sanitized Conekta attempt JSON.
+ */
+export function getCashPaymentDetailsFromAttempts(
+  attempts: Array<{ rawResponseJson: unknown }>,
+): CashPaymentDetails | null {
+  for (const attempt of attempts) {
+    const raw = attempt.rawResponseJson
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue
+    const record = raw as Record<string, unknown>
+    const charges = record.charges
+    if (!charges || typeof charges !== 'object' || Array.isArray(charges)) continue
+    const data = (charges as { data?: unknown }).data
+    if (!Array.isArray(data)) continue
+    for (const charge of data) {
+      if (!charge || typeof charge !== 'object') continue
+      const c = charge as Record<string, unknown>
+      const paymentMethod = c.payment_method
+      if (!paymentMethod || typeof paymentMethod !== 'object') continue
+      const pm = paymentMethod as Record<string, unknown>
+      const reference =
+        typeof pm.reference === 'string'
+          ? pm.reference
+          : typeof c.reference === 'string'
+            ? c.reference
+            : null
+      const expiresAt =
+        typeof pm.expires_at === 'number'
+          ? new Date(pm.expires_at * 1000).toISOString()
+          : typeof pm.expires_at === 'string'
+            ? pm.expires_at
+            : null
+      if (reference || expiresAt) {
+        return { reference, expiresAt }
+      }
+    }
+  }
+  return null
+}

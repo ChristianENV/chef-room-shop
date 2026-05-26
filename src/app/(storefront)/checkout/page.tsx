@@ -1,8 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { CheckoutLayout } from '@/src/features/storefront/layout/checkout-layout'
 import {
   CheckoutSteps,
@@ -16,16 +15,20 @@ import {
   type ShippingAddressData,
   type BillingAddressData,
   type PaymentMethod,
-  useCreateCheckoutOrderMutation,
+  useCompleteCheckoutMutation,
+  SavedAddressSelector,
 } from '@/src/features/storefront/checkout'
 import { useMyCartQuery } from '@/src/features/storefront/cart/api/use-my-cart-query'
+import { useMeProfileQuery } from '@/src/features/storefront/account/api/use-me-profile-query'
+import { useMyAddressesQuery } from '@/src/features/storefront/account/api/use-my-addresses-query'
+import { useSession } from '@/src/lib/auth/auth-client'
 import {
   CartSkeleton,
   CartErrorState,
   EmptyCartState,
 } from '@/src/features/storefront/cart/cart-states'
 import { mapBffCartToCheckoutSummary } from '@/src/features/storefront/checkout/mappers/checkout-ui.mapper'
-import { buildCreateCheckoutOrderInput } from '@/src/features/storefront/checkout/mappers/checkout-ui.mapper'
+import { buildCreateCheckoutOrderInput, mapProfileAndAddressToCheckoutForm } from '@/src/features/storefront/checkout/mappers/checkout-ui.mapper'
 import {
   getCheckoutErrorMessage,
   validateBillingStep,
@@ -43,7 +46,6 @@ import { isCheckoutShippingOptional } from '@/src/features/storefront/checkout/l
 import { saveCheckoutConfirmation } from '@/src/features/storefront/checkout/lib/checkout-session'
 import type { SelectedShippingRateSummary } from '@/src/features/storefront/checkout/types/checkout-shipping.types'
 import { ShippingRateSelector } from '@/src/features/storefront/shipping'
-import { checkoutSuccessUrl } from '@/src/features/storefront/checkout/lib/checkout-routes'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -95,9 +97,13 @@ const initialBillingData: BillingAddressData = {
 }
 
 export default function CheckoutPage() {
-  const router = useRouter()
+  const { data: authSession } = useSession()
+  const isAuthenticated = Boolean(authSession?.user)
+  const { data: profile } = useMeProfileQuery({ enabled: isAuthenticated })
+  const { data: addresses } = useMyAddressesQuery({ enabled: isAuthenticated })
+
   const { data: cart, isLoading, isError, refetch, isFetching } = useMyCartQuery()
-  const createOrder = useCreateCheckoutOrderMutation()
+  const completeCheckoutMutation = useCompleteCheckoutMutation()
 
   const [currentStep, setCurrentStep] = useState<CheckoutStep>('informacion')
   const [completedSteps, setCompletedSteps] = useState<CheckoutStep[]>([])
@@ -115,6 +121,9 @@ export default function CheckoutPage() {
     initialShippingSession.quoteId,
   )
   const [skydropxUnavailable, setSkydropxUnavailable] = useState(false)
+  const [savedShippingAddress, setSavedShippingAddress] = useState<ShippingAddressData | null>(null)
+  const [usingSavedAddress, setUsingSavedAddress] = useState(true)
+  const prefillAppliedRef = useRef(false)
 
   const [contactErrors, setContactErrors] = useState<Partial<Record<keyof ContactFormData, string>>>({})
   const [shippingErrors, setShippingErrors] = useState<Partial<Record<keyof ShippingAddressData, string>>>({})
@@ -133,6 +142,26 @@ export default function CheckoutPage() {
       destinationPostalCode: shippingData.postalCode.trim(),
     })
   }, [selectedShipping, shippingQuoteId, shippingData.postalCode])
+
+  useEffect(() => {
+    if (!isAuthenticated || !profile || !addresses || prefillAppliedRef.current) return
+    prefillAppliedRef.current = true
+
+    const prefilled = mapProfileAndAddressToCheckoutForm({ profile, addresses })
+    queueMicrotask(() => {
+      setContactData(prefilled.contact)
+
+      if (prefilled.shipping) {
+        setSavedShippingAddress(prefilled.shipping)
+        setShippingData(prefilled.shipping)
+        setUsingSavedAddress(true)
+      }
+
+      if (prefilled.billing) {
+        setBillingData(prefilled.billing)
+      }
+    })
+  }, [isAuthenticated, profile, addresses])
 
   const handleShippingAddressChange = useCallback((data: ShippingAddressData) => {
     setShippingData((prev) => {
@@ -162,7 +191,7 @@ export default function CheckoutPage() {
   )
 
   const hasItems = (cart?.items.length ?? 0) > 0
-  const isSubmitting = createOrder.isPending
+  const isSubmitting = completeCheckoutMutation.isPending
 
   const goToNextStep = () => {
     setSubmitError(null)
@@ -226,7 +255,7 @@ export default function CheckoutPage() {
     })
 
     try {
-      const payload = await createOrder.mutateAsync(input)
+      const payload = await completeCheckoutMutation.mutateAsync(input)
       clearCheckoutShippingDraft()
       setSelectedShipping(null)
       setShippingQuoteId(null)
@@ -234,24 +263,21 @@ export default function CheckoutPage() {
         ...payload,
         email: contactData.email.trim(),
         paymentMethod,
+        returnToken: payload.returnToken,
         shippingCarrier: selectedShipping?.carrier ?? null,
         shippingService: selectedShipping?.service ?? null,
       })
-      router.push(checkoutSuccessUrl(payload.orderNumber))
+      window.location.assign(payload.paymentRedirectUrl)
     } catch (error) {
       setSubmitError(getCheckoutErrorMessage(error))
     }
   }
 
   const getButtonText = () => {
-    if (isSubmitting) return 'Procesando...'
+    if (isSubmitting) return 'Preparando tu pago seguro…'
     if (currentStep === 'informacion') return 'Continuar a envío'
     if (currentStep === 'envio') return 'Continuar a pago'
-    if (currentStep === 'pago') {
-      if (paymentMethod === 'card') return 'Crear pedido'
-      if (paymentMethod === 'oxxo') return 'Crear pedido (OXXO)'
-      if (paymentMethod === 'spei') return 'Crear pedido (SPEI)'
-    }
+    if (currentStep === 'pago') return 'Continuar al pago'
     return 'Continuar'
   }
 
@@ -311,6 +337,25 @@ export default function CheckoutPage() {
             currentStep === 'pago' ||
             completedSteps.includes('envio')) && (
             <div className="rounded-lg border border-border bg-card p-4 md:p-6">
+              {isAuthenticated && savedShippingAddress && (
+                <>
+                  <SavedAddressSelector
+                    address={savedShippingAddress}
+                    usingSaved={usingSavedAddress}
+                    onUseSaved={() => {
+                      setUsingSavedAddress(true)
+                      setShippingData(savedShippingAddress)
+                    }}
+                    onUseNew={() => {
+                      setUsingSavedAddress(false)
+                      setShippingData(initialShippingData)
+                    }}
+                    className="mb-6"
+                  />
+                  <Separator className="mb-6" />
+                </>
+              )}
+
               <ShippingAddressForm
                 data={shippingData}
                 onChange={handleShippingAddressChange}

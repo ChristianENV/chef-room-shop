@@ -8,9 +8,10 @@ import { accountQueryKeys } from './account.query-keys'
 /**
  * TanStack Query hook for the authenticated user's addresses.
  */
-export function useMyAddressesQuery() {
+export function useMyAddressesQuery(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: accountQueryKeys.addresses(),
     queryFn: getMyAddresses,
+    enabled: options?.enabled ?? true,
   })
 }

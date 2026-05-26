@@ -1,85 +1,83 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, ExternalLink, AlertCircle, RefreshCw } from 'lucide-react'
+import { Loader2, AlertCircle, RefreshCw } from 'lucide-react'
+import { useRetryCheckoutPaymentMutation } from './api/use-retry-checkout-payment-mutation'
 import { useCreateConektaCheckoutMutation } from './api/use-create-conekta-checkout-mutation'
 
 type CheckoutConektaPayProps = {
-  orderNumber: string
-  email: string
+  returnToken?: string | null
+  /** Legacy fallback when token is unavailable */
+  orderNumber?: string
+  email?: string
   disabled?: boolean
-  /** First-time pay flow vs new attempt after failed/expired */
-  mode?: 'prepare' | 'retry'
+  /** Auto-redirect to Conekta on mount (retry flow) */
+  autoRedirect?: boolean
 }
 
 /**
- * Starts Conekta hosted checkout and renders pay / retry CTA.
+ * Retry-only Conekta checkout — redirects in the same tab.
  */
 export function CheckoutConektaPay({
+  returnToken,
   orderNumber,
   email,
   disabled = false,
-  mode = 'prepare',
+  autoRedirect = true,
 }: CheckoutConektaPayProps) {
-  const conektaCheckout = useCreateConektaCheckoutMutation()
-  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
+  const retryCheckout = useRetryCheckoutPaymentMutation()
+  const legacyCheckout = useCreateConektaCheckoutMutation()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [started, setStarted] = useState(mode === 'retry')
+  const startedRef = useRef(false)
 
-  const startCheckout = async () => {
-    if (!orderNumber || !email || disabled) return
-    setStarted(true)
+  const isPending = retryCheckout.isPending || legacyCheckout.isPending
+
+  const startRetry = async () => {
+    if (disabled || isPending) return
     setErrorMessage(null)
-    setCheckoutUrl(null)
+
     try {
-      const result = await conektaCheckout.mutateAsync({
-        orderNumber,
-        email,
-      })
-      if (result.checkoutUrl) {
-        setCheckoutUrl(result.checkoutUrl)
-      } else {
-        setErrorMessage(
-          'Tu pedido fue creado, pero no pudimos iniciar el pago. Intenta de nuevo.',
-        )
+      if (returnToken) {
+        const result = await retryCheckout.mutateAsync(returnToken)
+        if (result.paymentRedirectUrl) {
+          window.location.assign(result.paymentRedirectUrl)
+          return
+        }
+      } else if (orderNumber && email) {
+        const result = await legacyCheckout.mutateAsync({ orderNumber, email })
+        if (result.checkoutUrl) {
+          window.location.assign(result.checkoutUrl)
+          return
+        }
       }
+
+      setErrorMessage('No pudimos preparar el pago. Intenta nuevamente.')
     } catch {
-      setErrorMessage(
-        'Tu pedido fue creado, pero no pudimos iniciar el pago. Intenta de nuevo.',
-      )
+      setErrorMessage('No pudimos preparar el pago. Intenta nuevamente.')
     }
   }
+
+  useEffect(() => {
+    if (!autoRedirect || disabled || startedRef.current) return
+    if (!returnToken && !(orderNumber && email)) return
+    startedRef.current = true
+    queueMicrotask(() => {
+      void startRetry()
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount for auto retry
+  }, [autoRedirect, disabled, returnToken, orderNumber, email])
 
   if (disabled) {
     return null
   }
 
-  if (!started) {
-    return (
-      <div className="mt-6 space-y-3">
-        <p className="font-serif text-sm text-muted-foreground">
-          Serás redirigido a Conekta para completar el pago de forma segura. No capturamos datos de
-          tarjeta en Chef Room.
-        </p>
-        <Button
-          type="button"
-          size="lg"
-          onClick={() => void startCheckout()}
-          className="w-full font-sans font-semibold sm:w-auto"
-        >
-          Preparar pago con Conekta
-        </Button>
-      </div>
-    )
-  }
-
-  if (conektaCheckout.isPending && !checkoutUrl) {
+  if (isPending && !errorMessage) {
     return (
       <div className="mt-6 flex items-center gap-2 font-serif text-sm text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" />
-        Preparando pago seguro con Conekta…
+        Preparando tu pago seguro…
       </div>
     )
   }
@@ -93,11 +91,11 @@ export function CheckoutConektaPay({
         </Alert>
         <Button
           type="button"
-          onClick={() => void startCheckout()}
-          disabled={conektaCheckout.isPending}
+          onClick={() => void startRetry()}
+          disabled={isPending}
           className="font-sans"
         >
-          {conektaCheckout.isPending ? (
+          {isPending ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <RefreshCw className="mr-2 h-4 w-4" />
@@ -108,39 +106,30 @@ export function CheckoutConektaPay({
     )
   }
 
-  if (!checkoutUrl) {
+  if (autoRedirect) {
     return (
-      <div className="mt-6 space-y-3">
-        <Alert className="border-warning/30 bg-warning/5">
-          <AlertCircle className="h-4 w-4 text-warning" />
-          <AlertDescription className="font-serif text-sm">
-            El checkout de Conekta no está disponible. Verifica la configuración del servidor o
-            intenta más tarde.
-          </AlertDescription>
-        </Alert>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => void startCheckout()}
-          disabled={conektaCheckout.isPending}
-          className="font-sans"
-        >
-          Reintentar pago
-        </Button>
+      <div className="mt-6 flex items-center gap-2 font-serif text-sm text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        Redirigiendo al pago seguro…
       </div>
     )
   }
 
   return (
-    <div className="mt-6 space-y-3">
-      <p className="font-serif text-sm text-muted-foreground">
-        Tu enlace de pago está listo. Completa el pago en la página segura de Conekta.
-      </p>
-      <Button asChild size="lg" className="w-full font-sans font-semibold sm:w-auto">
-        <a href={checkoutUrl} target="_blank" rel="noopener noreferrer">
-          <ExternalLink className="mr-2 h-4 w-4" />
-          Pagar ahora
-        </a>
+    <div className="mt-6">
+      <Button
+        type="button"
+        size="lg"
+        onClick={() => void startRetry()}
+        disabled={isPending}
+        className="w-full font-sans font-semibold sm:w-auto"
+      >
+        {isPending ? (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : (
+          <RefreshCw className="mr-2 h-4 w-4" />
+        )}
+        Reintentar pago
       </Button>
     </div>
   )

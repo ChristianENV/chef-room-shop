@@ -6,6 +6,9 @@ import {
   OrderStatus,
   PaymentProvider,
   PaymentStatus,
+  type Order,
+  type Payment,
+  type PaymentMethod,
   type Prisma,
 } from '@prisma/client'
 import { mapAddressInputToPrisma } from '../account/account.mappers'
@@ -24,6 +27,7 @@ import {
 import { generateOrderNumberWithRetry } from './order-number'
 import type {
   CheckoutOrderPayloadGql,
+  CheckoutOwner,
   CreateCheckoutOrderInput,
   PublicOrderGql,
 } from './checkout.types'
@@ -115,13 +119,28 @@ function buildOrderDesignSnapshot(
   ) as Prisma.InputJsonValue
 }
 
+export type CreateCheckoutOrderCoreResult = {
+  order: Order
+  payments: Payment[]
+  owner: CheckoutOwner
+  cartId: string
+  customerEmail: string
+  paymentMethod: PaymentMethod
+}
+
+type CreateCheckoutOrderCoreOptions = {
+  convertCart?: boolean
+}
+
 /**
- * Converts the active cart into a PENDING_PAYMENT order (no Conekta charge).
+ * Creates a PENDING_PAYMENT order from the active cart (optional cart conversion).
  */
-export async function createCheckoutOrder(
+export async function createCheckoutOrderCore(
   context: GraphQLContext,
   input: CreateCheckoutOrderInput,
-): Promise<CheckoutOrderPayloadGql> {
+  options: CreateCheckoutOrderCoreOptions = {},
+): Promise<CreateCheckoutOrderCoreResult> {
+  const { convertCart = true } = options
   const parsed = createCheckoutOrderInputSchema.parse(input)
   const owner = await resolveCheckoutOwner(context)
   const cart = await getActiveCartForCheckout(context, owner)
@@ -252,7 +271,7 @@ export async function createCheckoutOrder(
           placeholder: true,
           provider: PaymentProvider.CONEKTA,
           method: paymentMethod,
-          message: 'Pago pendiente — Conekta no conectado en v1',
+          message: 'Pago pendiente — esperando checkout Conekta',
         },
       },
     })
@@ -263,7 +282,7 @@ export async function createCheckoutOrder(
         type: OrderEventType.CREATED,
         message: orderEventMessage,
         metadataJson: {
-          source: 'checkout_bff_v1',
+          source: convertCart ? 'checkout_bff_v1' : 'complete_checkout_bff',
           ...(resolvedShipping
             ? {
                 shippingRateId: resolvedShipping.rate.id,
@@ -284,61 +303,106 @@ export async function createCheckoutOrder(
       })
     }
 
-    await tx.cart.update({
-      where: { id: cart.id },
-      data: { status: CartStatus.CONVERTED },
-    })
+    if (convertCart) {
+      await tx.cart.update({
+        where: { id: cart.id },
+        data: { status: CartStatus.CONVERTED },
+      })
+    }
 
-    return { order, payments: [payment] }
+    return { order, payments: [payment], cartId: cart.id }
   })
 
-  const { order, payments } = result
+  return {
+    order: result.order,
+    payments: result.payments,
+    owner,
+    cartId: result.cartId,
+    customerEmail: parsed.email.toLowerCase(),
+    paymentMethod,
+  }
+}
+
+/**
+ * Converts cart, sends order_created email, and creates guest claim token when applicable.
+ */
+export async function finalizeCheckoutOrderSideEffects(
+  context: GraphQLContext,
+  params: {
+    order: Order
+    payments: Payment[]
+    owner: CheckoutOwner
+    cartId: string
+    customerEmail: string
+    paymentMethod: PaymentMethod
+  },
+): Promise<{ claimUrl: string | null; accountOrderUrl: string | null }> {
+  await context.prisma.cart.update({
+    where: { id: params.cartId },
+    data: { status: CartStatus.CONVERTED },
+  })
 
   let claimToken: string | null = null
-  if (!owner.userId) {
+  if (!params.owner.userId) {
     try {
       const created = await createOrderClaimToken({
-        orderId: order.id,
-        sentToEmail: parsed.email,
+        orderId: params.order.id,
+        sentToEmail: params.customerEmail,
       })
       claimToken = created.token
     } catch (error) {
       console.error('[checkout] Failed to create order claim token', {
-        orderId: order.id,
+        orderId: params.order.id,
         error: error instanceof Error ? error.message : 'unknown',
       })
     }
   }
 
   const trackingLinks = buildOrderEmailTrackingLinks({
-    orderNumber: order.orderNumber,
-    userId: owner.userId,
+    orderNumber: params.order.orderNumber,
+    userId: params.owner.userId,
     claimToken,
   })
 
   void safeSendTransactionalEmail({
-    to: parsed.email,
+    to: params.customerEmail,
     templateKey: 'order_created',
     subject: '',
-    orderId: order.id,
-    userId: owner.userId,
-    guestSessionId: owner.guestSessionId,
+    orderId: params.order.id,
+    userId: params.owner.userId,
+    guestSessionId: params.owner.guestSessionId,
     payload: {
-      orderNumber: order.orderNumber,
-      totalCents: order.totalCents,
-      currency: order.currency,
-      paymentStatus: payments[0]?.status ?? PaymentStatus.PENDING,
-      orderStatus: order.status,
-      paymentMethod: payments[0]?.method ?? paymentMethod,
+      orderNumber: params.order.orderNumber,
+      totalCents: params.order.totalCents,
+      currency: params.order.currency,
+      paymentStatus: params.payments[0]?.status ?? PaymentStatus.PENDING,
+      orderStatus: params.order.status,
+      paymentMethod: params.payments[0]?.method ?? params.paymentMethod,
       links: trackingLinks,
       claimUrl: trackingLinks.claimUrl,
       accountOrderUrl: trackingLinks.accountOrderUrl,
     },
   })
 
-  return mapOrderToCheckoutPayload(order, payments, {
+  return {
     claimUrl: trackingLinks.claimUrl ?? null,
     accountOrderUrl: trackingLinks.accountOrderUrl ?? null,
+  }
+}
+
+/**
+ * Converts the active cart into a PENDING_PAYMENT order (no Conekta charge).
+ */
+export async function createCheckoutOrder(
+  context: GraphQLContext,
+  input: CreateCheckoutOrderInput,
+): Promise<CheckoutOrderPayloadGql> {
+  const core = await createCheckoutOrderCore(context, input, { convertCart: true })
+  const tracking = await finalizeCheckoutOrderSideEffects(context, core)
+
+  return mapOrderToCheckoutPayload(core.order, core.payments, {
+    claimUrl: tracking.claimUrl,
+    accountOrderUrl: tracking.accountOrderUrl,
   })
 }
 

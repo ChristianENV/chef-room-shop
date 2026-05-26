@@ -1,9 +1,10 @@
-import type { Order, OrderItem, Payment } from '@prisma/client'
+import type { Order, OrderItem, Payment, PaymentMethod } from '@prisma/client'
 
 import { buildAccountOrderUrl } from '@/src/server/email/email.links'
 
 import type {
   CheckoutOrderPayloadGql,
+  CompleteCheckoutPayloadGql,
   OrderWithCheckoutRelations,
   PublicOrderGql,
   PublicOrderItemGql,
@@ -108,5 +109,34 @@ export function mapOrderToCheckoutPayload(
     accountOrderUrl:
       tracking?.accountOrderUrl ??
       (order.userId ? buildAccountOrderUrl(order.orderNumber) : null),
+  }
+}
+
+/**
+ * Maps order + Conekta redirect to completeCheckout payload.
+ */
+export function mapOrderToCompleteCheckoutPayload(params: {
+  order: Order
+  payments: Payment[]
+  paymentMethod: PaymentMethod | string
+  paymentRedirectUrl: string
+  paymentProviderOrderId: string | null
+  returnToken: string
+  successUrl: string
+  claimUrl: string | null
+  accountOrderUrl: string | null
+}): CompleteCheckoutPayloadGql {
+  const base = mapOrderToCheckoutPayload(params.order, params.payments, {
+    claimUrl: params.claimUrl,
+    accountOrderUrl: params.accountOrderUrl,
+  })
+
+  return {
+    ...base,
+    paymentRedirectUrl: params.paymentRedirectUrl,
+    paymentProviderOrderId: params.paymentProviderOrderId,
+    paymentMethod: String(params.paymentMethod),
+    successUrl: params.successUrl,
+    returnToken: params.returnToken,
   }
 }

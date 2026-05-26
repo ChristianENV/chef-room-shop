@@ -8,6 +8,7 @@ export const CHECKOUT_CONFIRMATION_STORAGE_EVENT = 'chefroom_checkout_confirmati
 export type CheckoutConfirmationSession = CheckoutOrderPayload & {
   email: string
   paymentMethod: string
+  returnToken?: string | null
   /** Display-only snapshot from selected rate at checkout (not used for amounts). */
   shippingCarrier?: string | null
   shippingService?: string | null

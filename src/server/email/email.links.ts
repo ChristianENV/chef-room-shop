@@ -8,7 +8,7 @@ import { getAppBaseUrl } from '@/src/server/payments/app-url'
  * Absolute URL to checkout success (no email in query).
  */
 export function absoluteCheckoutSuccessUrl(orderNumber: string): string {
-  return `${getAppBaseUrl()}${checkoutSuccessPath(orderNumber)}`
+  return `${getAppBaseUrl()}${checkoutSuccessPath({ orderNumber })}`
 }
 
 /**

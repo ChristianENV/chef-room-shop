@@ -45,6 +45,42 @@ export type CheckoutOrderPayloadGql = {
   accountOrderUrl: string | null
 }
 
+export type CompleteCheckoutPayloadGql = CheckoutOrderPayloadGql & {
+  paymentRedirectUrl: string
+  paymentProviderOrderId: string | null
+  paymentMethod: string
+  successUrl: string
+  returnToken: string
+}
+
+export type CheckoutResultItemGql = PublicOrderItemGql
+
+export type CheckoutResultGql = {
+  orderNumber: string
+  orderId: string
+  status: string
+  paymentStatus: string
+  fulfillmentStatus: string
+  totalCents: number
+  shippingCents: number
+  currency: string
+  paymentMethod: string
+  createdAt: string
+  items: CheckoutResultItemGql[]
+  payments: PublicOrderPaymentGql[]
+  claimUrl: string | null
+  accountOrderUrl: string | null
+  canViewDetails: boolean
+  detailUrl: string | null
+  paymentReference: string | null
+  paymentExpiresAt: string | null
+  cashPaymentLocations: string[] | null
+  returnTokenValid: boolean
+  tokenExpired: boolean
+  loginUrl: string
+  registerUrl: string
+}
+
 export type PublicOrderItemGql = {
   id: string
   name: string

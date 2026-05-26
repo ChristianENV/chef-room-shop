@@ -12,7 +12,9 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { CheckoutLayout } from '@/src/features/storefront/layout/checkout-layout'
 import {
+  useCheckoutResultByTokenQuery,
   useOrderByNumberQuery,
+  type CheckoutResult,
   type PublicOrder,
 } from '@/src/features/storefront/checkout'
 import {
@@ -24,10 +26,19 @@ import {
 import { getPaymentStatusUi } from '@/src/features/storefront/checkout/lib/payment-status-ui'
 import { CheckoutConektaPay } from '@/src/features/storefront/checkout/checkout-conekta-pay'
 import { CheckoutPaymentStatusBanner } from '@/src/features/storefront/checkout/checkout-payment-status-banner'
+import { resolvePaymentMethodLabel } from '@/src/config/payment-vars'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { routes } from '@/src/config/routes'
 import { centsToPesos, formatCurrencyMXN } from '@/src/lib/formatters'
 import { useSession } from '@/src/lib/auth/auth-client'
@@ -38,37 +49,32 @@ import {
   ShoppingBag,
 } from 'lucide-react'
 
-const PAYMENT_LABELS: Record<string, string> = {
-  CARD: 'Tarjeta',
-  OXXO: 'OXXO',
-  SPEI: 'SPEI',
-  card: 'Tarjeta',
-  oxxo: 'OXXO',
-  spei: 'SPEI',
-}
-
-function resolvePaymentLabel(method: string | undefined): string {
-  if (!method) return '—'
-  return PAYMENT_LABELS[method] ?? method
-}
-
-function parseConfirmationEmail(raw: string | null): string {
-  if (!raw) return ''
+function parseConfirmationSession(raw: string | null): CheckoutConfirmationSession | null {
+  if (!raw) return null
   try {
-    const parsed = JSON.parse(raw) as CheckoutConfirmationSession
-    return parsed.email?.trim() ?? ''
+    return JSON.parse(raw) as CheckoutConfirmationSession
   } catch {
-    return ''
+    return null
   }
 }
 
-function OrderItemsList({ items }: { items: PublicOrder['items'] }) {
+function parseConfirmationEmail(raw: string | null): string {
+  return parseConfirmationSession(raw)?.email?.trim() ?? ''
+}
+
+function parseConfirmationReturnToken(raw: string | null): string {
+  return parseConfirmationSession(raw)?.returnToken?.trim() ?? ''
+}
+
+type OrderItem = PublicOrder['items'][number] | CheckoutResult['items'][number]
+
+function OrderItemsList({ items }: { items: OrderItem[] }) {
   return (
     <ul className="mt-4 space-y-3">
       {items.map((item) => {
         const linePesos = centsToPesos(item.totalPriceCents + item.customizationPriceCents)
         const snapshot = item.productSnapshotJson as { name?: string; sizeName?: string } | null
-        const name = snapshot?.name ?? 'Producto'
+        const name = snapshot?.name ?? item.name ?? 'Producto'
         const size = snapshot?.sizeName
 
         return (
@@ -93,11 +99,16 @@ type OrderConfirmationCardProps = {
   statusUi: ReturnType<typeof getPaymentStatusUi>
   totalPesos: number
   paymentMethodLabel: string
-  customerEmail: string
-  items?: PublicOrder['items']
+  customerEmail?: string
+  items?: OrderItem[]
   paymentReturnHint?: string | null
   isPolling?: boolean
-  conektaEmail: string
+  returnToken?: string | null
+  legacyOrderNumber?: string
+  legacyEmail?: string
+  paymentReference?: string | null
+  paymentExpiresAt?: string | null
+  cashPaymentLocations?: string[] | null
 }
 
 function OrderConfirmationCard({
@@ -109,7 +120,12 @@ function OrderConfirmationCard({
   items,
   paymentReturnHint,
   isPolling,
-  conektaEmail,
+  returnToken,
+  legacyOrderNumber,
+  legacyEmail,
+  paymentReference,
+  paymentExpiresAt,
+  cashPaymentLocations,
 }: OrderConfirmationCardProps) {
   return (
     <div className="rounded-lg border border-border bg-card p-6 md:p-8">
@@ -141,11 +157,41 @@ function OrderConfirmationCard({
             {paymentMethodLabel}
           </dd>
         </div>
-        <div className="sm:col-span-2">
-          <dt className="text-muted-foreground">Correo</dt>
-          <dd className="font-sans font-medium text-foreground">{customerEmail}</dd>
-        </div>
+        {customerEmail && (
+          <div className="sm:col-span-2">
+            <dt className="text-muted-foreground">Correo</dt>
+            <dd className="font-sans font-medium text-foreground">{customerEmail}</dd>
+          </div>
+        )}
+        {paymentReference && (
+          <div className="sm:col-span-2">
+            <dt className="text-muted-foreground">Referencia de pago</dt>
+            <dd className="font-sans font-medium text-foreground">{paymentReference}</dd>
+          </div>
+        )}
+        {paymentExpiresAt && (
+          <div className="sm:col-span-2">
+            <dt className="text-muted-foreground">Vence</dt>
+            <dd className="font-sans font-medium text-foreground">
+              {new Date(paymentExpiresAt).toLocaleString('es-MX')}
+            </dd>
+          </div>
+        )}
       </dl>
+
+      {cashPaymentLocations && cashPaymentLocations.length > 0 && (
+        <>
+          <Separator className="my-6" />
+          <div>
+            <h3 className="font-sans text-sm font-semibold">Puntos de pago</h3>
+            <ul className="mt-2 list-inside list-disc font-serif text-sm text-muted-foreground">
+              {cashPaymentLocations.slice(0, 10).map((location) => (
+                <li key={location}>{location}</li>
+              ))}
+            </ul>
+          </div>
+        </>
+      )}
 
       {items && items.length > 0 && (
         <>
@@ -158,19 +204,12 @@ function OrderConfirmationCard({
         </>
       )}
 
-      {statusUi.canPay && (
-        <CheckoutConektaPay
-          orderNumber={orderNumber}
-          email={conektaEmail}
-          mode="prepare"
-        />
-      )}
-
       {statusUi.canRetryPayment && (
         <CheckoutConektaPay
-          orderNumber={orderNumber}
-          email={conektaEmail}
-          mode="retry"
+          returnToken={returnToken}
+          orderNumber={legacyOrderNumber}
+          email={legacyEmail}
+          autoRedirect={Boolean(returnToken || (legacyOrderNumber && legacyEmail))}
         />
       )}
     </div>
@@ -194,6 +233,11 @@ type SuccessPageActionsProps = {
   orderNumber: string
   claimUrl?: string | null
   accountOrderUrl?: string | null
+  detailUrl?: string | null
+  loginUrl?: string
+  registerUrl?: string
+  canViewDetails?: boolean
+  onGuestDetailsClick?: () => void
 }
 
 function SuccessPageActions({
@@ -201,22 +245,45 @@ function SuccessPageActions({
   orderNumber,
   claimUrl,
   accountOrderUrl,
+  detailUrl,
+  loginUrl = routes.login,
+  registerUrl = routes.register,
+  canViewDetails,
+  onGuestDetailsClick,
 }: SuccessPageActionsProps) {
   const orderDetailHref =
+    detailUrl ??
     accountOrderUrl ??
     (isAuthenticated ? routes.accountOrderDetail(orderNumber) : null)
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-      {orderDetailHref && (
+      {canViewDetails && orderDetailHref && (
         <Button asChild className="font-sans">
           <Link href={orderDetailHref}>Ver pedido</Link>
         </Button>
       )}
-      {!isAuthenticated && claimUrl && (
-        <Button asChild variant="default" className="font-sans">
-          <Link href={claimUrl}>Crear cuenta para ver seguimiento</Link>
-        </Button>
+      {!isAuthenticated && !canViewDetails && (
+        <>
+          <Button type="button" variant="default" className="font-sans" onClick={onGuestDetailsClick}>
+            Ver detalle del pedido
+          </Button>
+          {claimUrl && (
+            <Button asChild variant="outline" className="font-sans">
+              <Link href={claimUrl}>Crear cuenta para ver seguimiento</Link>
+            </Button>
+          )}
+        </>
+      )}
+      {!isAuthenticated && (
+        <>
+          <Button asChild variant="outline" className="font-sans">
+            <Link href={loginUrl}>Iniciar sesión</Link>
+          </Button>
+          <Button asChild variant="outline" className="font-sans">
+            <Link href={registerUrl}>Crear cuenta</Link>
+          </Button>
+        </>
       )}
       {isAuthenticated && !orderDetailHref && (
         <Button asChild variant="outline" className="font-sans">
@@ -243,7 +310,8 @@ export default function CheckoutSuccessPage() {
 
 function CheckoutSuccessContent() {
   const searchParams = useSearchParams()
-  const orderNumber = searchParams.get('orderNumber') ?? ''
+  const returnTokenFromUrl = searchParams.get('token')?.trim() ?? ''
+  const orderNumberLegacy = searchParams.get('orderNumber')?.trim() ?? ''
   const paymentReturnHint = searchParams.get('payment')
   const { data: authSession } = useSession()
 
@@ -253,79 +321,84 @@ function CheckoutSuccessContent() {
     () => null,
   )
 
-  const storedSession = useMemo((): CheckoutConfirmationSession | null => {
-    if (!confirmationRaw) return null
-    try {
-      return JSON.parse(confirmationRaw) as CheckoutConfirmationSession
-    } catch {
-      return null
-    }
-  }, [confirmationRaw])
+  const storedSession = useMemo(
+    () => parseConfirmationSession(confirmationRaw),
+    [confirmationRaw],
+  )
 
   const [email] = useState(() => parseConfirmationEmail(readCheckoutConfirmationRaw()))
+  const [storedReturnToken] = useState(() => parseConfirmationReturnToken(readCheckoutConfirmationRaw()))
+  const [guestDialogOpen, setGuestDialogOpen] = useState(false)
 
-  const {
-    data: order,
-    isLoading,
-    isError,
-    isFetching,
-    refetch,
-  } = useOrderByNumberQuery({
-    orderNumber,
-    email,
-    enabled: orderNumber.length > 0 && email.length > 0,
+  const effectiveToken = returnTokenFromUrl || storedReturnToken
+
+  const tokenQuery = useCheckoutResultByTokenQuery({
+    token: effectiveToken,
+    enabled: effectiveToken.length > 0,
     pollWhilePending: true,
   })
+
+  const legacyQuery = useOrderByNumberQuery({
+    orderNumber: orderNumberLegacy,
+    email,
+    enabled: !effectiveToken && orderNumberLegacy.length > 0 && email.length > 0,
+    pollWhilePending: true,
+  })
+
+  const checkoutResult = tokenQuery.data
+  const legacyOrder = legacyQuery.data
 
   const paymentReturnRefetchDone = useRef(false)
   useEffect(() => {
     if (!paymentReturnHint || paymentReturnRefetchDone.current) return
-    if (!orderNumber || !email) return
     paymentReturnRefetchDone.current = true
-    void refetch()
-  }, [paymentReturnHint, orderNumber, email, refetch])
+    if (effectiveToken) {
+      void tokenQuery.refetch()
+    } else if (orderNumberLegacy && email) {
+      void legacyQuery.refetch()
+    }
+  }, [paymentReturnHint, effectiveToken, orderNumberLegacy, email, tokenQuery, legacyQuery])
 
-  const statusUi = useMemo(() => {
-    if (order) {
-      return getPaymentStatusUi({
-        orderStatus: order.status,
-        paymentStatus: order.paymentStatus,
-      })
-    }
-    if (storedSession) {
-      return getPaymentStatusUi({
-        orderStatus: storedSession.status,
-        paymentStatus: storedSession.paymentStatus,
-      })
-    }
-    return getPaymentStatusUi({
-      orderStatus: 'PENDING_PAYMENT',
-      paymentStatus: 'PENDING',
-    })
-  }, [order, storedSession])
+  const activeStatus = checkoutResult?.status ?? legacyOrder?.status ?? storedSession?.status ?? 'PENDING_PAYMENT'
+  const activePaymentStatus =
+    checkoutResult?.paymentStatus ?? legacyOrder?.paymentStatus ?? storedSession?.paymentStatus ?? 'PENDING'
+
+  const statusUi = useMemo(
+    () =>
+      getPaymentStatusUi({
+        orderStatus: activeStatus,
+        paymentStatus: activePaymentStatus,
+      }),
+    [activeStatus, activePaymentStatus],
+  )
 
   useEffect(() => {
-    if (order?.status === 'PAID' || order?.paymentStatus === 'PAID') {
+    if (activePaymentStatus === 'PAID' || activeStatus === 'PAID') {
       clearCheckoutConfirmation()
     }
-  }, [order?.status, order?.paymentStatus])
+  }, [activeStatus, activePaymentStatus])
 
   const paymentMethodLabel = useMemo(() => {
-    if (order?.payments[0]?.method) return resolvePaymentLabel(order.payments[0].method)
-    return resolvePaymentLabel(storedSession?.paymentMethod)
-  }, [order, storedSession])
+    if (checkoutResult?.paymentMethod) return resolvePaymentMethodLabel(checkoutResult.paymentMethod)
+    if (legacyOrder?.payments[0]?.method) {
+      return resolvePaymentMethodLabel(legacyOrder.payments[0].method)
+    }
+    return resolvePaymentMethodLabel(storedSession?.paymentMethod)
+  }, [checkoutResult, legacyOrder, storedSession])
 
   const isAuthenticated = Boolean(authSession?.user)
-  const isPolling = isFetching && statusUi.shouldPoll
+  const isPolling =
+    (tokenQuery.isFetching && statusUi.shouldPoll && Boolean(effectiveToken)) ||
+    (legacyQuery.isFetching && statusUi.shouldPoll && !effectiveToken)
 
-  if (!orderNumber) {
+  if (!effectiveToken && !orderNumberLegacy && !storedSession) {
     return (
       <CheckoutLayout>
         <div className="mx-auto max-w-lg py-16 text-center">
           <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground" />
           <h1 className="mt-4 font-sans text-xl font-bold">Pedido no encontrado</h1>
           <p className="mt-2 font-serif text-muted-foreground">
-            Falta el número de pedido. Revisa el enlace o contacta soporte.
+            Falta el enlace de confirmación. Revisa tu correo o contacta soporte.
           </p>
           <Button asChild className="mt-6 font-sans">
             <Link href={routes.shop}>Seguir comprando</Link>
@@ -335,7 +408,91 @@ function CheckoutSuccessContent() {
     )
   }
 
-  if (!email) {
+  if (effectiveToken && tokenQuery.isLoading && !checkoutResult) {
+    return <CheckoutSuccessLoading />
+  }
+
+  if (effectiveToken && tokenQuery.isError && !checkoutResult) {
+    return (
+      <CheckoutLayout>
+        <div className="mx-auto max-w-lg py-16 text-center">
+          <Alert variant="destructive" className="text-left">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="font-serif">
+              No pudimos cargar tu pedido. Verifica tu conexión e intenta de nuevo.
+            </AlertDescription>
+          </Alert>
+          <Button className="mt-6 font-sans" onClick={() => void tokenQuery.refetch()}>
+            Reintentar
+          </Button>
+        </div>
+      </CheckoutLayout>
+    )
+  }
+
+  if (checkoutResult) {
+    const totalPesos = centsToPesos(checkoutResult.totalCents)
+    const claimUrl = storedSession?.claimUrl ?? checkoutResult.claimUrl
+
+    return (
+      <CheckoutLayout>
+        <div className="mx-auto max-w-2xl space-y-6">
+          <OrderConfirmationCard
+            orderNumber={checkoutResult.orderNumber}
+            statusUi={statusUi}
+            totalPesos={totalPesos}
+            paymentMethodLabel={paymentMethodLabel}
+            customerEmail={storedSession?.email}
+            items={checkoutResult.items}
+            paymentReturnHint={paymentReturnHint}
+            isPolling={isPolling}
+            returnToken={effectiveToken}
+            paymentReference={checkoutResult.paymentReference}
+            paymentExpiresAt={checkoutResult.paymentExpiresAt}
+            cashPaymentLocations={checkoutResult.cashPaymentLocations}
+          />
+          <SuccessPageActions
+            isAuthenticated={isAuthenticated}
+            orderNumber={checkoutResult.orderNumber}
+            claimUrl={claimUrl}
+            accountOrderUrl={checkoutResult.accountOrderUrl ?? storedSession?.accountOrderUrl}
+            detailUrl={checkoutResult.detailUrl}
+            loginUrl={checkoutResult.loginUrl}
+            registerUrl={checkoutResult.registerUrl}
+            canViewDetails={checkoutResult.canViewDetails}
+            onGuestDetailsClick={() => setGuestDialogOpen(true)}
+          />
+        </div>
+
+        <Dialog open={guestDialogOpen} onOpenChange={setGuestDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="font-sans">Ver detalle del pedido</DialogTitle>
+              <DialogDescription className="font-serif">
+                Inicia sesión o crea una cuenta para ver el seguimiento completo. También puedes
+                usar el enlace del correo de confirmación si compraste como invitado.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex-col gap-2 sm:flex-row">
+              <Button asChild variant="outline" className="font-sans">
+                <Link href={checkoutResult.loginUrl}>Iniciar sesión</Link>
+              </Button>
+              <Button asChild className="font-sans">
+                <Link href={checkoutResult.registerUrl}>Crear cuenta</Link>
+              </Button>
+              {claimUrl && (
+                <Button asChild variant="secondary" className="font-sans">
+                  <Link href={claimUrl}>Reclamar pedido</Link>
+                </Button>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </CheckoutLayout>
+    )
+  }
+
+  if (!effectiveToken && !email && !storedSession) {
     return (
       <CheckoutLayout>
         <div className="mx-auto max-w-lg py-16 text-center">
@@ -358,11 +515,11 @@ function CheckoutSuccessContent() {
     )
   }
 
-  if (isLoading && !order) {
+  if (legacyQuery.isLoading && !legacyOrder && !storedSession) {
     return <CheckoutSuccessLoading />
   }
 
-  if (isError && !order) {
+  if (legacyQuery.isError && !legacyOrder && !storedSession) {
     return (
       <CheckoutLayout>
         <div className="mx-auto max-w-lg py-16 text-center">
@@ -372,7 +529,7 @@ function CheckoutSuccessContent() {
               No pudimos cargar tu pedido. Verifica tu conexión e intenta de nuevo.
             </AlertDescription>
           </Alert>
-          <Button className="mt-6 font-sans" onClick={() => void refetch()}>
+          <Button className="mt-6 font-sans" onClick={() => void legacyQuery.refetch()}>
             Reintentar
           </Button>
         </div>
@@ -380,26 +537,27 @@ function CheckoutSuccessContent() {
     )
   }
 
-  if (order) {
-    const totalPesos = centsToPesos(order.totalCents)
+  if (legacyOrder) {
+    const totalPesos = centsToPesos(legacyOrder.totalCents)
 
     return (
       <CheckoutLayout>
         <div className="mx-auto max-w-2xl space-y-6">
           <OrderConfirmationCard
-            orderNumber={order.orderNumber}
+            orderNumber={legacyOrder.orderNumber}
             statusUi={statusUi}
             totalPesos={totalPesos}
             paymentMethodLabel={paymentMethodLabel}
-            customerEmail={order.customerEmail}
-            items={order.items}
+            customerEmail={legacyOrder.customerEmail}
+            items={legacyOrder.items}
             paymentReturnHint={paymentReturnHint}
             isPolling={isPolling}
-            conektaEmail={order.customerEmail}
+            legacyOrderNumber={legacyOrder.orderNumber}
+            legacyEmail={legacyOrder.customerEmail}
           />
           <SuccessPageActions
             isAuthenticated={isAuthenticated}
-            orderNumber={order.orderNumber}
+            orderNumber={legacyOrder.orderNumber}
             claimUrl={storedSession?.claimUrl}
             accountOrderUrl={storedSession?.accountOrderUrl}
           />
@@ -408,7 +566,7 @@ function CheckoutSuccessContent() {
     )
   }
 
-  if (storedSession && storedSession.orderNumber === orderNumber) {
+  if (storedSession && storedSession.orderNumber === orderNumberLegacy) {
     const totalPesos = centsToPesos(storedSession.totalCents)
     const fallbackStatusUi = getPaymentStatusUi({
       orderStatus: storedSession.status,
@@ -422,14 +580,16 @@ function CheckoutSuccessContent() {
             orderNumber={storedSession.orderNumber}
             statusUi={fallbackStatusUi}
             totalPesos={totalPesos}
-            paymentMethodLabel={resolvePaymentLabel(storedSession.paymentMethod)}
+            paymentMethodLabel={resolvePaymentMethodLabel(storedSession.paymentMethod)}
             customerEmail={storedSession.email}
             paymentReturnHint={paymentReturnHint}
-            isPolling={isFetching && fallbackStatusUi.shouldPoll}
-            conektaEmail={storedSession.email}
+            isPolling={legacyQuery.isFetching && fallbackStatusUi.shouldPoll}
+            returnToken={storedSession.returnToken}
+            legacyOrderNumber={storedSession.orderNumber}
+            legacyEmail={storedSession.email}
           />
 
-          {isError && (
+          {legacyQuery.isError && (
             <Alert>
               <AlertDescription className="font-serif text-sm text-muted-foreground">
                 Mostramos los datos de tu confirmación reciente. El detalle completo se cargará
@@ -456,7 +616,7 @@ function CheckoutSuccessContent() {
         <h1 className="mt-4 font-sans text-xl font-bold">No pudimos mostrar tu pedido</h1>
         <p className="mt-2 font-serif text-muted-foreground">
           Si acabas de completar el checkout, intenta desde el mismo navegador. Para consultar un
-          pedido anterior necesitarás el correo usado en la compra.
+          pedido anterior revisa el correo de confirmación.
         </p>
         <Button asChild className="mt-6 font-sans">
           <Link href={routes.shop}>Seguir comprando</Link>

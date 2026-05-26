@@ -1,5 +1,10 @@
 import type { GraphQLContext } from '../context'
 import {
+  completeCheckout,
+  retryCheckoutPayment,
+} from '../modules/checkout/complete-checkout.service'
+import { getCheckoutResultByToken } from '../modules/checkout/checkout-result.service'
+import {
   createCheckoutOrder,
   getPublicOrderByNumber,
 } from '../modules/checkout/checkout.service'
@@ -14,6 +19,14 @@ type OrderByNumberArgs = {
   email: string
 }
 
+type CheckoutResultByTokenArgs = {
+  token: string
+}
+
+type RetryCheckoutPaymentArgs = {
+  input: { token: string }
+}
+
 export const checkoutResolvers = {
   Query: {
     orderByNumber: (
@@ -21,6 +34,12 @@ export const checkoutResolvers = {
       args: OrderByNumberArgs,
       context: GraphQLContext,
     ) => getPublicOrderByNumber(context, args.orderNumber, args.email),
+
+    checkoutResultByToken: (
+      _parent: unknown,
+      args: CheckoutResultByTokenArgs,
+      context: GraphQLContext,
+    ) => getCheckoutResultByToken(context, args.token),
   },
   Mutation: {
     createCheckoutOrder: (
@@ -28,5 +47,17 @@ export const checkoutResolvers = {
       args: CreateCheckoutOrderArgs,
       context: GraphQLContext,
     ) => createCheckoutOrder(context, args.input),
+
+    completeCheckout: (
+      _parent: unknown,
+      args: CreateCheckoutOrderArgs,
+      context: GraphQLContext,
+    ) => completeCheckout(context, args.input),
+
+    retryCheckoutPayment: (
+      _parent: unknown,
+      args: RetryCheckoutPaymentArgs,
+      context: GraphQLContext,
+    ) => retryCheckoutPayment(context, args.input.token),
   },
 }

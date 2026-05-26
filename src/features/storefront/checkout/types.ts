@@ -36,6 +36,40 @@ export type CheckoutOrderPayload = {
   accountOrderUrl?: string | null
 }
 
+export type CompleteCheckoutPayload = CheckoutOrderPayload & {
+  paymentRedirectUrl: string
+  paymentProviderOrderId: string | null
+  paymentMethod: string
+  successUrl: string
+  returnToken: string
+}
+
+export type CheckoutResult = {
+  orderNumber: string
+  orderId: string
+  status: string
+  paymentStatus: string
+  fulfillmentStatus: string
+  totalCents: number
+  shippingCents: number
+  currency: string
+  paymentMethod: string
+  createdAt: string
+  items: PublicOrderItem[]
+  payments: PublicOrderPayment[]
+  claimUrl?: string | null
+  accountOrderUrl?: string | null
+  canViewDetails: boolean
+  detailUrl?: string | null
+  paymentReference?: string | null
+  paymentExpiresAt?: string | null
+  cashPaymentLocations?: string[] | null
+  returnTokenValid: boolean
+  tokenExpired: boolean
+  loginUrl: string
+  registerUrl: string
+}
+
 export type PublicOrderItem = {
   id: string
   name: string

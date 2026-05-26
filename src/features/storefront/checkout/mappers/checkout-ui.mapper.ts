@@ -6,6 +6,7 @@ import {
 } from '@/src/features/storefront/cart/mappers/cart-ui.mapper'
 
 import type { Cart } from '@/src/features/storefront/cart/types/cart-bff.types'
+import type { AccountAddress, AccountUser } from '@/src/features/storefront/account/types'
 import type { CreateCheckoutOrderInput } from '../types'
 import type { ContactFormData } from '../contact-form'
 import type { ShippingAddressData } from '../shipping-address-form'
@@ -134,4 +135,59 @@ export function buildCreateCheckoutOrderInput(params: {
   }
 
   return input
+}
+
+function mapAccountAddressToShippingForm(address: AccountAddress): ShippingAddressData {
+  return {
+    firstName: address.firstName ?? '',
+    lastName: address.lastName ?? '',
+    street: address.street,
+    exteriorNumber: address.extNumber ?? '',
+    interiorNumber: address.intNumber ?? '',
+    neighborhood: address.neighborhood ?? '',
+    city: address.city,
+    state: address.state,
+    postalCode: address.postalCode,
+    country: address.country === 'MX' ? 'Mexico' : address.country,
+    saveAddress: false,
+  }
+}
+
+/**
+ * Prefills checkout form fields from authenticated profile + saved addresses.
+ */
+export function mapProfileAndAddressToCheckoutForm(input: {
+  profile: AccountUser
+  addresses: AccountAddress[]
+}): {
+  contact: ContactFormData
+  shipping: ShippingAddressData | null
+  billing: BillingAddressData | null
+} {
+  const contact: ContactFormData = {
+    email: input.profile.email,
+    phone: input.profile.phone ?? '',
+  }
+
+  const shippingAddress =
+    input.addresses.find((a) => a.isDefault && (a.type === 'SHIPPING' || a.type === 'BOTH')) ??
+    input.addresses.find((a) => a.type === 'SHIPPING' || a.type === 'BOTH') ??
+    input.addresses[0] ??
+    null
+
+  const billingAddress =
+    input.addresses.find((a) => a.isDefault && (a.type === 'BILLING' || a.type === 'BOTH')) ??
+    input.addresses.find((a) => a.type === 'BILLING') ??
+    null
+
+  return {
+    contact,
+    shipping: shippingAddress ? mapAccountAddressToShippingForm(shippingAddress) : null,
+    billing: billingAddress
+      ? {
+          sameAsShipping: false,
+          ...mapAccountAddressToShippingForm(billingAddress),
+        }
+      : null,
+  }
 }

@@ -13,6 +13,8 @@ import {
   Info,
 } from 'lucide-react'
 
+import { CASH_PAYMENT_LOCATIONS } from '@/src/config/payment-vars'
+
 export type PaymentMethod = 'card' | 'oxxo' | 'spei'
 
 interface PaymentMethodTabsProps {
@@ -26,7 +28,7 @@ interface PaymentMethodTabsProps {
 
 const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   card: 'Tarjeta',
-  oxxo: 'OXXO',
+  oxxo: 'Pago en efectivo',
   spei: 'SPEI',
 }
 
@@ -47,14 +49,6 @@ export function PaymentMethodTabs({
         </h2>
       </div>
 
-      <Alert className="border-warning/30 bg-warning/5">
-        <AlertCircle className="h-4 w-4 text-warning" />
-        <AlertDescription className="font-serif text-sm text-warning">
-          Pago real pendiente de integración con Conekta. No se capturan datos bancarios en esta
-          fase.
-        </AlertDescription>
-      </Alert>
-
       <Tabs
         value={selectedMethod}
         onValueChange={(value) => onMethodChange(value as PaymentMethod)}
@@ -67,7 +61,7 @@ export function PaymentMethodTabs({
           </TabsTrigger>
           <TabsTrigger value="oxxo" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
-            <span className="hidden sm:inline">OXXO</span>
+            <span className="hidden sm:inline">Efectivo</span>
           </TabsTrigger>
           <TabsTrigger value="spei" className="flex items-center gap-2">
             <Banknote className="h-4 w-4" />
@@ -81,8 +75,8 @@ export function PaymentMethodTabs({
               {PAYMENT_METHOD_LABELS.card}
             </h3>
             <p className="mt-2 font-serif text-sm text-muted-foreground">
-              Al confirmar se creará tu pedido en estado pendiente de pago. El cobro con tarjeta se
-              habilitará cuando integremos Conekta.
+              Al confirmar serás redirigido a Conekta para completar el pago de forma segura. No
+              capturamos datos de tarjeta en Chef Room.
             </p>
           </div>
         </TabsContent>
@@ -90,20 +84,28 @@ export function PaymentMethodTabs({
         <TabsContent value="oxxo" className="mt-4 space-y-4">
           <div className="rounded-lg border border-border bg-card p-4">
             <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#E4002B]">
-                <span className="font-sans text-lg font-bold text-white">OXXO</span>
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                <Banknote className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h3 className="font-sans font-semibold text-foreground">Pago en OXXO</h3>
+                <h3 className="font-sans font-semibold text-foreground">Pago en efectivo</h3>
                 <p className="font-serif text-sm text-muted-foreground">
-                  Paga en efectivo en cualquier tienda OXXO
+                  Paga en efectivo en puntos de pago autorizados
                 </p>
               </div>
             </div>
 
             <div className="space-y-3 font-serif text-sm text-muted-foreground">
-              <p>1. Al confirmar, se creará tu pedido pendiente de pago</p>
-              <p>2. La referencia OXXO se generará en la siguiente fase (Conekta)</p>
+              <p>1. Al confirmar, serás redirigido a Conekta para generar tu referencia de pago</p>
+              <p>2. Paga en cualquiera de estos puntos:</p>
+              <ul className="list-inside list-disc space-y-1 pl-1">
+                {CASH_PAYMENT_LOCATIONS.slice(0, 8).map((location) => (
+                  <li key={location}>{location}</li>
+                ))}
+                {CASH_PAYMENT_LOCATIONS.length > 8 && (
+                  <li>y más puntos autorizados</li>
+                )}
+              </ul>
               <p>
                 3. Recibirás confirmación por correo a:{' '}
                 <strong className="text-foreground">{customerEmail || 'tu correo'}</strong>
@@ -134,8 +136,8 @@ export function PaymentMethodTabs({
             </div>
 
             <div className="space-y-3 font-serif text-sm text-muted-foreground">
-              <p>1. Al confirmar, se creará tu pedido pendiente de pago</p>
-              <p>2. Las instrucciones SPEI se generarán en la siguiente fase (Conekta)</p>
+              <p>1. Al confirmar, serás redirigido a Conekta para obtener las instrucciones SPEI</p>
+              <p>2. Realiza la transferencia desde tu banca en línea</p>
               <p>
                 3. Recibirás confirmación por correo a:{' '}
                 <strong className="text-foreground">{customerEmail || 'tu correo'}</strong>
@@ -146,7 +148,7 @@ export function PaymentMethodTabs({
           <Alert className="border-primary/30 bg-primary/5">
             <Info className="h-4 w-4 text-primary" />
             <AlertDescription className="font-serif text-sm text-foreground">
-              Las instrucciones bancarias estarán disponibles cuando integremos Conekta.
+              Las instrucciones bancarias se generarán en Conekta al continuar.
             </AlertDescription>
           </Alert>
         </TabsContent>

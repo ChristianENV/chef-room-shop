@@ -81,11 +81,12 @@ export function getPaymentStatusUi(input: {
 
   return {
     tone: 'pending',
-    title: 'Pago pendiente',
-    description: 'Tu pedido fue creado. Completa el pago para iniciar producción.',
-    badgeLabel: 'Pendiente de pago',
+    title: 'Confirmando pago',
+    description:
+      'Estamos confirmando tu pago con Conekta. Esto puede tardar unos momentos.',
+    badgeLabel: 'Confirmando',
     shouldPoll: true,
-    canPay: true,
+    canPay: false,
     canRetryPayment: false,
   }
 }

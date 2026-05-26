@@ -2,96 +2,83 @@
 
 ## Overview
 
-`/checkout` uses the real cart from the Cart BFF (`myCart`) and creates orders via Checkout BFF v1 (`createCheckoutOrder`). Payment methods are placeholders until Conekta is integrated.
+`/checkout` uses the real cart from the Cart BFF (`myCart`) and completes purchase via **`completeCheckout`** (order + Conekta in one step).
 
 ## Flow
 
 1. **Cart load** — `useMyCartQuery` loads the active cart (guest or authenticated).
-2. **Steps** — Contact → shipping/billing → payment (no card capture).
-3. **Submit** — `useCreateCheckoutOrderMutation` sends customer and address data only (no totals, items, `userId`, or `guestSessionId`).
-4. **Success** — Redirect to `/checkout/success?orderNumber=...` with confirmation stored in `sessionStorage` (email not in URL).
+2. **Steps** — Contact → shipping/billing → payment.
+3. **Prefill (authenticated)** — `useMeProfileQuery` + `useMyAddressesQuery` prefill contact/shipping; `SavedAddressSelector` lets users keep or replace saved address.
+4. **Submit** — `useCompleteCheckoutMutation` → `completeCheckout` (customer/address data only; totals from server).
+5. **Redirect** — `window.location.assign(paymentRedirectUrl)` to Conekta (same tab). Minimal confirmation saved in `sessionStorage` (`returnToken`, `orderNumber`, etc.).
+6. **Success** — Conekta redirects to `/checkout/success?token=...` → `checkoutResultByToken` + polling until webhook confirms `PAID`.
+
+Legacy flow (`createCheckoutOrder` → success → manual Conekta) remains supported via `?orderNumber=` + sessionStorage email.
 
 ## GraphQL
 
 | Operation | Purpose |
 |-----------|---------|
-| `myCart` | Checkout summary (items, subtotal, customization, total) |
-| `createCheckoutOrder` | Creates `Order` with `PENDING_PAYMENT`, converts cart to `CONVERTED` |
-| `orderByNumber(orderNumber, email)` | Success page detail |
+| `myCart` | Checkout summary |
+| `completeCheckout` | Order + Conekta + `paymentRedirectUrl` + `returnToken` |
+| `checkoutResultByToken(token)` | Success page (no session/email) |
+| `retryCheckoutPayment({ token })` | Retry Conekta from success |
+| `createCheckoutOrder` | Legacy order-only |
+| `orderByNumber(orderNumber, email)` | Legacy success fallback |
 
-## Payment methods (placeholder)
+See [graphql-checkout.md](./graphql-checkout.md) and [payments.md](./payments.md).
 
-UI tabs: Tarjeta, OXXO, SPEI → BFF: `CARD`, `OXXO`, `SPEI`.
+## Payment methods
 
-Copy shown to users: *Pago real pendiente de integración con Conekta.*
+UI tabs: **Tarjeta**, **Pago en efectivo**, **SPEI** → BFF: `CARD`, `OXXO`, `SPEI`.
 
-No card number, CVV, or bank details are collected.
+Cash payment points listed from `CASH_PAYMENT_LOCATIONS` (`src/config/payment-vars.ts`).
+
+No card number, CVV, or bank details are collected on Chef Room.
 
 ## Guest checkout
 
-- Guest cart is tied to `chefroom_guest` cookie (created when adding to cart).
-- Checkout BFF resolves owner from session; does not create a new guest session at checkout.
-- Orders link to `GuestSession` when unauthenticated, or `userId` when logged in.
+- Guest cart tied to `chefroom_guest` cookie.
+- Checkout BFF resolves owner from session; does not create guest session at checkout.
+- Guest claim link sent by email (`order_created`); success page shows login/register CTAs without requiring session.
 
 ## Success page
 
 `src/app/(storefront)/checkout/success/page.tsx`
 
-- Reads `orderNumber` from query string.
-- Reads email from `sessionStorage` (`chefroom_checkout_confirmation`) for `orderByNumber`.
-- Falls back to session payload if the query fails.
-- Shows order number, `PENDING_PAYMENT`, total, payment method, and items when available.
-- Guest CTA: **Crear cuenta para ver seguimiento** → `claimUrl` from `createCheckoutOrder` (stored in session).
-- Authenticated CTA: **Ver pedido** → `/account/orders/[orderNumber]`.
+Resolution priority:
 
-Post-purchase tracking for guests: `/claim-order?token=...` from email (see `docs/order-claim.md`). `orderByNumber` remains for same-tab receipt/polling only.
+1. `?token=` → `checkoutResultByToken` + polling
+2. Legacy `?orderNumber=` + sessionStorage email → `orderByNumber`
+3. sessionStorage fallback (`returnToken`, order snapshot)
+
+UX:
+
+- **Pending** — “Confirmando pago” + polling (~5s, max ~2 min)
+- **Paid** — “Pago confirmado” (webhook is source of truth)
+- **Failed/expired** — auto-retry redirect via `retryCheckoutPayment`
+- **Guest without session** — order summary + dialog: login / register / claim
 
 ## Validation
 
-Zod schema: `src/features/storefront/checkout/lib/checkout-form.validation.ts`
-
-Step helpers: `src/features/storefront/checkout/lib/checkout-step-validation.ts`
+- `src/features/storefront/checkout/lib/checkout-form.validation.ts`
+- `src/features/storefront/checkout/lib/checkout-step-validation.ts`
 
 ## Files
 
 | Path | Role |
 |------|------|
-| `src/app/(storefront)/checkout/page.tsx` | Checkout flow |
-| `src/app/(storefront)/checkout/success/page.tsx` | Confirmation |
-| `src/features/storefront/checkout/mappers/checkout-ui.mapper.ts` | Cart → summary, form → mutation input |
-| `src/features/storefront/checkout/lib/checkout-session.ts` | Session storage for success |
-| `src/config/routes.ts` | `checkout`, `checkoutSuccess` |
+| `src/app/(storefront)/checkout/page.tsx` | Checkout flow + redirect |
+| `src/app/(storefront)/checkout/success/page.tsx` | Token-first confirmation |
+| `src/features/storefront/checkout/saved-address-selector.tsx` | Auth address picker |
+| `src/features/storefront/checkout/mappers/checkout-ui.mapper.ts` | Cart → summary, prefill mapper |
+| `src/features/storefront/checkout/lib/checkout-session.ts` | Session storage fallback |
+| `src/lib/checkout-redirect-urls.ts` | Token-based success URLs |
 
-## Conekta payment (sandbox v1)
+## Conekta
 
-On `/checkout/success`, `CheckoutConektaPay` calls `createConektaCheckout` and shows **Pagar ahora** → Conekta hosted checkout. See [conekta-sandbox.md](./conekta-sandbox.md).
+Hosted checkout redirect; webhook confirms payment. See [conekta-sandbox.md](./conekta-sandbox.md).
 
-## Transactional email (v1)
+## Transactional email
 
-After `createCheckoutOrder` commits, the server sends `order_created` via `safeSendTransactionalEmail` (console/Resend). Failures do not roll back the order. See [emails.md](./emails.md).
-
-## Payment Status UX (v1)
-
-- `getPaymentStatusUi` drives banner copy, badge, and when to poll.
-- `useOrderByNumberQuery({ pollWhilePending: true })` loads once, then polls every **5s** only while payment is pending (max **24** attempts ≈ 2 min). It does **not** refetch on window focus.
-- Returning from Conekta with `?payment=` triggers **one** extra `orderByNumber` refetch.
-- In React dev (Strict Mode), the initial GraphQL call may appear **twice** — that is expected, not a production loop.
-- Email stays in `sessionStorage` (not in URL); cleared only after `PAID`.
-- `payment=failed` in URL is informational after Conekta redirect only.
-
-## Not in scope (v1)
-
-- Card capture in Chef Room UI
-- Refunds, MSI, saved cards
-- Transactional emails
-- Coupons, real shipping/taxes, CFDI
-- **Shipping on order** — Checkout UI quotes and selects Skydropx rates (`docs/checkout-shipping-ui.md`); `createCheckoutOrder` still saves `shippingCents = 0` until `shippingRateId` is wired
-- Guest order claim
-- Advanced public tracking
-
-## Related docs
-
-- `docs/graphql-cart.md`
-- `docs/graphql-checkout.md`
-- `docs/graphql-shipping.md`
-- `docs/checkout-shipping-ui.md`
+After successful `completeCheckout` (Conekta OK), server sends `order_created`. Failures do not roll back the order. See [emails.md](./emails.md).
