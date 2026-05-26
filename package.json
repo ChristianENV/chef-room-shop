@@ -67,6 +67,7 @@
     "lucide-react": "^0.564.0",
     "next": "16.2.6",
     "next-themes": "^0.4.6",
+    "nextjs-toploader": "^3.9.17",
     "react": "^19",
     "react-day-picker": "9.13.2",
     "react-dom": "^19",
@@ -81,12 +82,12 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "dotenv": "^16.6.1",
     "@tailwindcss/postcss": "^4.2.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^16.6.1",
     "eslint": "^9",
     "eslint-config-next": "^16.2.6",
     "postcss": "^8.5",

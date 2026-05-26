@@ -1,17 +1,18 @@
 # Admin Shipping UI (Skydropx)
 
-Generación y gestión de guías desde el drawer de `/admin/orders`.
+Generación y gestión de guías desde el detalle de orden (dialog o página `/admin/orders/[orderNumber]`).
 
 ## Dónde vive
 
-- Sección **Guía Skydropx** en pestaña Detalles del drawer (`AdminShipmentCard`).
-- Menú de tabla: **Guía Skydropx** abre el drawer en la misma sección.
+- Sección **Guía Skydropx** en panel Detalles (`AdminShipmentCard`).
+- Menú de tabla: **Guía Skydropx** abre el dialog en la misma sección.
+- Página completa: misma tarjeta en columna derecha sticky.
 
 ## Flujo: generar guía
 
 1. Orden **pagada** y en `PAID`, `IN_PRODUCTION` o `READY_TO_SHIP`.
 2. Sin guía activa (`providerShipmentId` o `labelUrl`).
-3. Clic **Generar guía** → diálogo de confirmación (formato PDF por defecto; ZPL/EPL disponibles).
+3. Clic **Generar guía** → `AlertDialog` de confirmación (formato PDF por defecto; ZPL/EPL disponibles).
 4. Mutation `adminCreateShippingLabel` → muestra carrier, tracking, costo y botones de etiqueta.
 
 **No se genera automáticamente al pagar.** Operaciones debe marcar lista para envío y luego generar la guía.
@@ -23,7 +24,7 @@ Generación y gestión de guías desde el drawer de `/admin/orders`.
 | No pagada | Mensaje: *Disponible cuando el pedido esté pagado.* |
 | Ya tiene guía | Mensaje: *Esta orden ya tiene guía.* + acciones de etiqueta |
 | Cancelada / entregada | Mensaje de no disponible |
-| Elegible | Botón **Generar guía** |
+| Elegible | Botón **Generar guía** (`data-testid="admin-create-label-button"`) |
 
 ## Etiqueta e impresión
 
@@ -38,9 +39,17 @@ Generación y gestión de guías desde el drawer de `/admin/orders`.
 
 ## Cancelar guía
 
-- **Cancelar guía** — diálogo con motivo opcional → `adminCancelShippingLabel`.
+- **Cancelar guía** — `AlertDialog` con motivo opcional → `adminCancelShippingLabel`.
 - Solo si existe `providerShipmentId` en Skydropx.
 - No afecta pagos ni reembolsos Conekta.
+
+## Patrón UX: Dialogs vs Drawers
+
+| Caso | Componente |
+|------|------------|
+| Detalle de orden + guía | `Dialog` o página dedicada |
+| Confirmar generar / cancelar guía | `AlertDialog` |
+| Drawer lateral | No usar para lectura de guía |
 
 ## Invalidación de queries
 
@@ -56,7 +65,7 @@ Tras crear, cancelar o refrescar:
 - Sin pickups.
 - Sin email `shipping_update`.
 - Sin tracking público para clientes.
-- Sin paquetería manual (reemplazada por Skydropx en drawer).
+- Sin paquetería manual (reemplazada por Skydropx).
 - ZPL/EPL: se envían al BFF; impresión térmica avanzada pendiente.
 
 ## Archivos
@@ -69,5 +78,12 @@ src/features/admin/shipping/
   mappers/admin-shipping-ui.mapper.ts
   api/use-admin-*-mutation.ts
 ```
+
+## data-testid
+
+| ID | Ubicación |
+|----|-----------|
+| `admin-shipping-card` | Tarjeta guía Skydropx |
+| `admin-create-label-button` | Botón generar guía |
 
 Ver también `docs/graphql-admin-shipping.md`.

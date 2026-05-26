@@ -30,7 +30,9 @@ export { useUpsertAdminProductImageMutation } from './api/use-upsert-admin-produ
 export { useDeleteAdminProductImageMutation } from './api/use-delete-admin-product-image-mutation'
 export { ProductsToolbar } from './products-toolbar'
 export { ProductsTable } from './products-table'
-export { ProductFormDrawer } from './product-form-drawer'
+export { ProductFormDialog } from './product-form-dialog'
+/** @deprecated Use ProductFormDialog */
+export { ProductFormDialog as ProductFormDrawer } from './product-form-dialog'
 export { ArchiveProductDialog } from './archive-product-dialog'
 export { AdminProductsTableSkeleton } from './components/admin-products-loading'
 export { AdminProductsError } from './components/admin-products-error'

@@ -26,6 +26,8 @@ export const routes = {
   adminDashboard: '/admin/dashboard',
   adminProducts: '/admin/products',
   adminOrders: '/admin/orders',
+  adminOrderDetail: (orderNumber: string) =>
+    `/admin/orders/${encodeURIComponent(orderNumber)}`,
   adminCustomization: '/admin/customization',
   adminDesigns: '/admin/designs',
   adminUsers: '/admin/users',

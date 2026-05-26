@@ -19,13 +19,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
@@ -50,7 +50,7 @@ import type {
   ProductFormValues,
 } from './types/admin-products-ui.types'
 
-interface ProductFormDrawerProps {
+interface ProductFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   productId: string | null
@@ -696,7 +696,7 @@ function ProductFormDrawerBody({
               </Alert>
             ) : null}
 
-      <SheetFooter className="mt-6 gap-2 sm:justify-end">
+      <DialogFooter className="mt-6 gap-2 sm:justify-end">
         <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
           Cancelar
         </Button>
@@ -712,17 +712,17 @@ function ProductFormDrawerBody({
             'Crear producto'
           )}
         </Button>
-      </SheetFooter>
+      </DialogFooter>
     </>
   )
 }
 
-export function ProductFormDrawer({
+export function ProductFormDialog({
   open,
   onOpenChange,
   productId,
   onSaved,
-}: ProductFormDrawerProps) {
+}: ProductFormDialogProps) {
   const isEditing = !!productId
 
   const productQuery = useAdminProductByIdQuery(productId ?? '', open && isEditing)
@@ -750,42 +750,47 @@ export function ProductFormDrawer({
     (formOptionsQuery.isPending || (isEditing && productQuery.isPending) || !initialValues)
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex w-full flex-col overflow-y-auto sm:max-w-xl">
-        <SheetHeader>
-          <SheetTitle className="font-sans">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        data-testid="admin-product-form-dialog"
+        className="flex max-h-[min(92vh,900px)] max-w-[min(96vw,64rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-5xl"
+      >
+        <DialogHeader className="border-b border-border px-6 py-4 text-left">
+          <DialogTitle className="font-sans">
             {isEditing ? 'Editar producto' : 'Nuevo producto'}
-          </SheetTitle>
-          <SheetDescription className="font-serif">
+          </DialogTitle>
+          <DialogDescription className="font-serif">
             {isEditing
               ? 'Modifica la información comercial del producto.'
               : 'Completa los datos del nuevo producto.'}
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
 
-        {formOptionsQuery.isError ? (
-          <Alert variant="destructive" className="mt-4">
-            <AlertDescription className="font-serif">
-              No pudimos cargar tipos, colores y tallas. Cierra y vuelve a intentar.
-            </AlertDescription>
-          </Alert>
-        ) : null}
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+          {formOptionsQuery.isError ? (
+            <Alert variant="destructive" className="mt-4">
+              <AlertDescription className="font-serif">
+                No pudimos cargar tipos, colores y tallas. Cierra y vuelve a intentar.
+              </AlertDescription>
+            </Alert>
+          ) : null}
 
-        {isLoading ? (
-          <div className="flex flex-1 items-center justify-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        ) : initialValues && selectOptions ? (
-          <ProductFormDrawerBody
-            key={formBodyKey}
-            productId={productId}
-            initialValues={initialValues}
-            selectOptions={selectOptions}
-            onOpenChange={onOpenChange}
-            onSaved={onSaved}
-          />
-        ) : null}
-      </SheetContent>
-    </Sheet>
+          {isLoading ? (
+            <div className="flex flex-1 items-center justify-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : initialValues && selectOptions ? (
+            <ProductFormDrawerBody
+              key={formBodyKey}
+              productId={productId}
+              initialValues={initialValues}
+              selectOptions={selectOptions}
+              onOpenChange={onOpenChange}
+              onSaved={onSaved}
+            />
+          ) : null}
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }

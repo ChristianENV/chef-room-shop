@@ -73,7 +73,9 @@ After `createCheckoutOrder` commits, the server sends `order_created` via `safeS
 ## Payment Status UX (v1)
 
 - `getPaymentStatusUi` drives banner copy, badge, and when to poll.
-- `useOrderByNumberQuery({ pollWhilePending: true })` refetches every 5s while pending (max ~2 min).
+- `useOrderByNumberQuery({ pollWhilePending: true })` loads once, then polls every **5s** only while payment is pending (max **24** attempts ≈ 2 min). It does **not** refetch on window focus.
+- Returning from Conekta with `?payment=` triggers **one** extra `orderByNumber` refetch.
+- In React dev (Strict Mode), the initial GraphQL call may appear **twice** — that is expected, not a production loop.
 - Email stays in `sessionStorage` (not in URL); cleared only after `PAID`.
 - `payment=failed` in URL is informational after Conekta redirect only.
 

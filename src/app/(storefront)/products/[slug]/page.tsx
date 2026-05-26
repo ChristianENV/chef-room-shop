@@ -1,7 +1,7 @@
 'use client'
 
-import { use, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useMemo } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import {
   ProductGallery,
   ProductInfo,
@@ -34,14 +34,10 @@ const categoryNames: Record<string, string> = {
   accesorios: 'Accesorios',
 }
 
-interface ProductPageProps {
-  params: Promise<{ slug: string }>
-}
-
-export default function ProductPage({ params }: ProductPageProps) {
-  const resolvedParams = use(params)
+export default function ProductPage() {
   const router = useRouter()
-  const slug = resolvedParams.slug
+  const params = useParams()
+  const slug = typeof params.slug === 'string' ? params.slug : ''
 
   const {
     data: detail,

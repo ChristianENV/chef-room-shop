@@ -20,6 +20,7 @@ import {
 import {
   MoreHorizontal,
   Eye,
+  ExternalLink,
   Factory,
   Truck,
   XCircle,
@@ -41,6 +42,7 @@ interface OrdersTableProps {
   onAddTracking: (orderNumber: string) => void
   onCancelOrder: (orderNumber: string) => void
   onOpenProductionSheet: (orderNumber: string) => void
+  onOpenFullPage?: (orderNumber: string) => void
   actionOrderNumber?: string | null
 }
 
@@ -60,6 +62,7 @@ export function OrdersTable({
   onAddTracking,
   onCancelOrder,
   onOpenProductionSheet,
+  onOpenFullPage,
   actionOrderNumber,
 }: OrdersTableProps) {
   if (loading) {
@@ -171,6 +174,17 @@ export function OrdersTable({
                         <Eye className="mr-2 h-4 w-4" />
                         Ver detalles
                       </DropdownMenuItem>
+                      {onOpenFullPage ? (
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onOpenFullPage(row.orderNumber)
+                          }}
+                        >
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          Abrir página completa
+                        </DropdownMenuItem>
+                      ) : null}
                       {row.order.canMoveToProduction && (
                         <DropdownMenuItem
                           onClick={(e) => {

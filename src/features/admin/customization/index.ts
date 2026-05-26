@@ -33,7 +33,9 @@ export { useDuplicateCustomizationRulesToProductMutation } from './api/use-dupli
 export { ProductSelector } from './product-selector'
 export { GarmentAreaMap } from './garment-area-map'
 export { CustomizationAreaCard } from './customization-area-card'
-export { RuleEditorDrawer } from './rule-editor-drawer'
+export { RuleEditorDialog } from './rule-editor-dialog'
+/** @deprecated Use RuleEditorDialog */
+export { RuleEditorDialog as RuleEditorDrawer } from './rule-editor-dialog'
 export { PricingPreviewCard } from './pricing-preview'
 export { DeleteRuleDialog } from './delete-rule-dialog'
 export { DuplicateRulesDialog } from './duplicate-rules-dialog'

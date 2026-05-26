@@ -1,13 +1,15 @@
 'use client'
 
 import { useDeferredValue, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { AdminPageConfig } from '@/src/features/admin/layout/admin-page-config'
 import {
   OrdersStatusCards,
   OrdersToolbar,
   OrdersTable,
-  OrderDetailDrawer,
+  OrderDetailDialog,
 } from '@/src/features/admin/orders'
+import { routes } from '@/src/config/routes'
 import { useAdminOrdersQuery } from '@/src/features/admin/orders/api/use-admin-orders-query'
 import { useAdminOrderStatusSummaryQuery } from '@/src/features/admin/orders/api/use-admin-order-status-summary-query'
 import { useMoveAdminOrderToProductionMutation } from '@/src/features/admin/orders/api/use-move-admin-order-to-production-mutation'
@@ -24,12 +26,13 @@ import type {
 } from '@/src/features/admin/orders/types/admin-orders-ui.types'
 
 export default function AdminOrdersPage() {
+  const router = useRouter()
   const [selectedOrderNumber, setSelectedOrderNumber] = useState<string | null>(null)
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const [drawerInitialTab, setDrawerInitialTab] = useState<
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [dialogInitialTab, setDialogInitialTab] = useState<
     'details' | 'items' | 'timeline' | 'production'
   >('details')
-  const [drawerCancelOnOpen, setDrawerCancelOnOpen] = useState(false)
+  const [dialogCancelOnOpen, setDialogCancelOnOpen] = useState(false)
   const [actionOrderNumber, setActionOrderNumber] = useState<string | null>(null)
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -69,23 +72,23 @@ export default function AdminOrdersPage() {
     [ordersQuery.data?.items],
   )
 
-  const openDrawer = (
+  const openOrderDialog = (
     orderNumber: string,
     options?: {
-      tab?: typeof drawerInitialTab
+      tab?: typeof dialogInitialTab
       cancel?: boolean
     },
   ) => {
     setSelectedOrderNumber(orderNumber)
-    setDrawerInitialTab(options?.tab ?? 'details')
-    setDrawerCancelOnOpen(!!options?.cancel)
-    setDrawerOpen(true)
+    setDialogInitialTab(options?.tab ?? 'details')
+    setDialogCancelOnOpen(!!options?.cancel)
+    setDialogOpen(true)
   }
 
-  const handleDrawerOpenChange = (open: boolean) => {
-    setDrawerOpen(open)
+  const handleDialogOpenChange = (open: boolean) => {
+    setDialogOpen(open)
     if (!open) {
-      setDrawerCancelOnOpen(false)
+      setDialogCancelOnOpen(false)
     }
   }
 
@@ -147,7 +150,10 @@ export default function AdminOrdersPage() {
           <OrdersTable
             rows={tableRows}
             loading={ordersQuery.isPending}
-            onViewOrder={(orderNumber) => openDrawer(orderNumber)}
+            onViewOrder={(orderNumber) => openOrderDialog(orderNumber)}
+            onOpenFullPage={(orderNumber) => {
+              router.push(routes.adminOrderDetail(orderNumber))
+            }}
             onMoveToProduction={(orderNumber) =>
               void runTableAction(orderNumber, () =>
                 moveToProduction.mutateAsync(orderNumber),
@@ -156,23 +162,23 @@ export default function AdminOrdersPage() {
             onMarkReadyToShip={(orderNumber) =>
               void runTableAction(orderNumber, () => markReadyToShip.mutateAsync(orderNumber))
             }
-            onAddTracking={(orderNumber) => openDrawer(orderNumber)}
+            onAddTracking={(orderNumber) => openOrderDialog(orderNumber)}
             onCancelOrder={(orderNumber) =>
-              openDrawer(orderNumber, { cancel: true })
+              openOrderDialog(orderNumber, { cancel: true })
             }
             onOpenProductionSheet={(orderNumber) =>
-              openDrawer(orderNumber, { tab: 'production' })
+              openOrderDialog(orderNumber, { tab: 'production' })
             }
             actionOrderNumber={actionOrderNumber}
           />
         )}
 
-        <OrderDetailDrawer
+        <OrderDetailDialog
           orderNumber={selectedOrderNumber}
-          open={drawerOpen}
-          onOpenChange={handleDrawerOpenChange}
-          initialTab={drawerInitialTab}
-          onOpenCancelDialog={drawerCancelOnOpen}
+          open={dialogOpen}
+          onOpenChange={handleDialogOpenChange}
+          initialTab={dialogInitialTab}
+          onOpenCancelDialog={dialogCancelOnOpen}
         />
       </div>
     </AdminPageConfig>

@@ -18,13 +18,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { useCreateAdminCustomizationRuleMutation } from './api/use-create-admin-customization-rule-mutation'
 import { useUpdateAdminCustomizationRuleMutation } from './api/use-update-admin-customization-rule-mutation'
@@ -38,7 +38,7 @@ import type { AdminCustomizationArea, AdminCustomizationOption, AdminCustomizati
 import type { RuleFormValues } from './types/admin-customization-ui.types'
 import { KNOWN_FILE_TYPES } from './types/admin-customization-ui.types'
 
-type RuleEditorDrawerProps = {
+type RuleEditorDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   productId: string
@@ -320,7 +320,7 @@ function RuleEditorForm({
         ) : null}
       </div>
 
-      <SheetFooter className="mt-6 gap-2">
+      <DialogFooter className="mt-6 gap-2">
         <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
           Cancelar
         </Button>
@@ -336,12 +336,12 @@ function RuleEditorForm({
             'Crear regla'
           )}
         </Button>
-      </SheetFooter>
+      </DialogFooter>
     </>
   )
 }
 
-export function RuleEditorDrawer({
+export function RuleEditorDialog({
   open,
   onOpenChange,
   productId,
@@ -352,7 +352,7 @@ export function RuleEditorDrawer({
   presetAreaId,
   existingRules,
   onSaved,
-}: RuleEditorDrawerProps) {
+}: RuleEditorDialogProps) {
   const isEditing = !!rule
 
   const presetOption = options[0]
@@ -371,38 +371,40 @@ export function RuleEditorDrawer({
   const catalogReady = areas.length > 0 && options.length > 0
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex w-full flex-col overflow-y-auto sm:max-w-lg">
-        <SheetHeader>
-          <SheetTitle className="font-sans">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="flex max-h-[min(92vh,900px)] max-w-[min(96vw,40rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
+        <DialogHeader className="border-b border-border px-6 py-4 text-left">
+          <DialogTitle className="font-sans">
             {isEditing ? 'Editar regla' : 'Nueva regla'}
-          </SheetTitle>
-          <SheetDescription className="font-serif">
-            Define zona, técnica, precios y restricciones para el customizador.
-          </SheetDescription>
-        </SheetHeader>
+          </DialogTitle>
+          <DialogDescription className="font-serif">
+            {productName} — define zona, técnica, precios y restricciones.
+          </DialogDescription>
+        </DialogHeader>
 
-        {!catalogReady ? (
-          <Alert variant="destructive" className="mt-4">
-            <AlertDescription className="font-serif">
-              No pudimos cargar áreas u opciones. Cierra y vuelve a intentar.
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <RuleEditorForm
-            key={formKey}
-            initialValues={initialValues}
-            productName={productName}
-            isEditing={isEditing}
-            areas={areas}
-            options={options}
-            existingRules={existingRules}
-            editingRuleId={rule?.id ?? null}
-            onOpenChange={onOpenChange}
-            onSaved={onSaved}
-          />
-        )}
-      </SheetContent>
-    </Sheet>
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+          {!catalogReady ? (
+            <Alert variant="destructive" className="mt-4">
+              <AlertDescription className="font-serif">
+                No pudimos cargar áreas u opciones. Cierra y vuelve a intentar.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <RuleEditorForm
+              key={formKey}
+              initialValues={initialValues}
+              productName={productName}
+              isEditing={isEditing}
+              areas={areas}
+              options={options}
+              existingRules={existingRules}
+              editingRuleId={rule?.id ?? null}
+              onOpenChange={onOpenChange}
+              onSaved={onSaved}
+            />
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
