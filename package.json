@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "node scripts/run-eslint.mjs",
     "typecheck": "tsc --noEmit",
+    "audit:copy": "tsx scripts/audit-spanish-copy.ts",
     "db:validate": "prisma validate",
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed",

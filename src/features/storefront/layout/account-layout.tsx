@@ -47,7 +47,7 @@ const accountNavItems = [
     href: accountNav.addresses.href,
     label: accountNav.addresses.label,
     icon: MapPin,
-    description: 'Direcciones de env?o',
+    description: 'Direcciones de envío',
   },
 ]
 
@@ -98,7 +98,7 @@ function AccountSidebar({ className, onNavigate }: AccountSidebarProps) {
         className="group mt-4 flex items-center gap-3 rounded-lg border-t border-border px-3 py-3 pt-4 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
       >
         <LogOut className="h-5 w-5 flex-shrink-0" />
-        <span className="font-sans text-sm font-medium">Cerrar sesi?n</span>
+        <span className="font-sans text-sm font-medium">Cerrar sesión</span>
       </button>
     </nav>
   )

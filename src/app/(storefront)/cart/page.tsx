@@ -94,7 +94,7 @@ export default function CartPage() {
                   Tu carrito
                 </h1>
                 <p className="font-serif text-muted-foreground">
-                  Revisa tus prendas, dise�os personalizados y costos antes de continuar.
+                  Revisa tus prendas, diseños personalizados y costos antes de continuar.
                 </p>
               </div>
             </div>
@@ -137,8 +137,8 @@ export default function CartPage() {
                       <span className="font-sans font-semibold text-accent">
                         {formatCurrencyMXN(freeShippingRemaining)}
                       </span>{' '}
-                      m�s para obtener{' '}
-                      <span className="font-sans font-semibold text-success">env�o gratis</span>
+                      más para obtener{' '}
+                      <span className="font-sans font-semibold text-success">envío gratis</span>
                     </p>
                     <div className="mt-2 h-2 overflow-hidden rounded-full bg-border">
                       <div

@@ -66,7 +66,7 @@ export function LoginForm({
 
     const parsed = loginSchema.safeParse({ email, password })
     if (!parsed.success) {
-      setError(parsed.error.errors[0]?.message ?? 'Datos inv?lidos')
+      setError(parsed.error.errors[0]?.message ?? 'Datos inválidos')
       setIsLoading(false)
       return
     }
@@ -82,7 +82,7 @@ export function LoginForm({
       setError(
         getAuthErrorMessage(
           result.error,
-          'Correo o contrase?a incorrectos.',
+          'Correo o contraseña incorrectos.',
         ),
       )
       setIsLoading(false)
@@ -115,7 +115,7 @@ export function LoginForm({
   const handleGoogleLogin = async () => {
     if (!googleEnabled) {
       setError(
-        'Google no est? configurado. Agrega GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en el entorno.',
+        'Google no está configurado. Agrega GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en el entorno.',
       )
       return
     }
@@ -131,7 +131,7 @@ export function LoginForm({
       })
     } catch (err) {
       setError(
-        getAuthErrorMessage(err, 'No se pudo iniciar sesi?n con Google.'),
+        getAuthErrorMessage(err, 'No se pudo iniciar sesión con Google.'),
       )
       setIsGoogleLoading(false)
     }
@@ -140,7 +140,7 @@ export function LoginForm({
   const handleForgotPassword = (e: React.MouseEvent) => {
     e.preventDefault()
     setForgotMessage(
-      'La recuperaci?n de contrase?a estar? disponible pronto.',
+      'La recuperación de contraseña estará disponible pronto.',
     )
   }
 
@@ -150,12 +150,12 @@ export function LoginForm({
     <div className={cn('space-y-6', className)}>
       <div className="space-y-2 text-center">
         <h1 className="font-sans text-2xl font-bold text-foreground">
-          {isAdminVariant ? 'Panel de administraci?n' : 'Bienvenido de vuelta'}
+          {isAdminVariant ? 'Panel de administración' : 'Bienvenido de vuelta'}
         </h1>
         <p className="font-serif text-muted-foreground">
           {isAdminVariant
-            ? 'Inicia sesi?n con tu cuenta de administrador'
-            : 'Inicia sesi?n para acceder a tu cuenta'}
+            ? 'Inicia sesión con tu cuenta de administrador'
+            : 'Inicia sesión para acceder a tu cuenta'}
         </p>
       </div>
 
@@ -180,7 +180,7 @@ export function LoginForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email" className="font-sans text-sm font-medium">
-            Correo electr?nico
+            Correo electrónico
           </Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -200,14 +200,14 @@ export function LoginForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password" className="font-sans text-sm font-medium">
-              Contrase?a
+              Contraseña
             </Label>
             <button
               type="button"
               onClick={handleForgotPassword}
               className="font-serif text-xs text-accent hover:underline"
             >
-              ?Olvidaste tu contrase?a?
+              ¿Olvidaste tu contraseña?
             </button>
           </div>
           <div className="relative">
@@ -215,7 +215,7 @@ export function LoginForm({
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
-              placeholder="????????"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="pl-10 pr-10 font-serif"
@@ -248,7 +248,7 @@ export function LoginForm({
             htmlFor="remember"
             className="cursor-pointer font-serif text-sm text-muted-foreground"
           >
-            Mantener sesi?n iniciada
+            Mantener sesión iniciada
           </Label>
         </div>
 
@@ -260,10 +260,10 @@ export function LoginForm({
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Iniciando sesi?n...
+              Iniciando sesión...
             </>
           ) : (
-            'Iniciar sesi?n'
+            'Iniciar sesión'
           )}
         </Button>
       </form>
@@ -274,7 +274,7 @@ export function LoginForm({
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 font-serif text-muted-foreground">
-            O contin?a con
+            O continúa con
           </span>
         </div>
       </div>
@@ -287,7 +287,7 @@ export function LoginForm({
         disabled={busy || !googleEnabled}
         title={
           !googleEnabled
-            ? 'Google no est? configurado. Agrega GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET.'
+            ? 'Google no está configurado. Agrega GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET.'
             : undefined
         }
       >
@@ -315,13 +315,13 @@ export function LoginForm({
             Conectando...
           </>
         ) : (
-          'Iniciar sesi?n con Google'
+          'Iniciar sesión con Google'
         )}
       </Button>
 
       {!isAdminVariant && (
         <p className="text-center font-serif text-sm text-muted-foreground">
-          ?No tienes cuenta?{' '}
+          ¿No tienes cuenta?{' '}
           <Link
             href={routes.register}
             className="font-sans font-medium text-accent hover:underline"
