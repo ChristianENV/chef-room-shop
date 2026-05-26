@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { UserAvatar } from '@/components/shared/user-avatar'
 import { Bell, LogOut, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -76,13 +77,16 @@ export function AdminTopbar({
 
       <div className="flex items-center gap-2">
         {adminUser && (
-          <div className="hidden text-right sm:block">
-            <p className="font-sans text-sm font-medium leading-none">
-              {adminUser.name}
-            </p>
-            <p className="font-serif text-xs text-muted-foreground">
-              {adminUser.email}
-            </p>
+          <div className="flex items-center gap-2.5">
+            <UserAvatar user={adminUser} size="sm" />
+            <div className="hidden text-right sm:block">
+              <p className="font-sans text-sm font-medium leading-none">
+                {adminUser.name}
+              </p>
+              <p className="font-serif text-xs text-muted-foreground">
+                {adminUser.email}
+              </p>
+            </div>
           </div>
         )}
         <Button

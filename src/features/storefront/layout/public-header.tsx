@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { ChevronDown, Menu, ShoppingBag, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { UserAvatar } from '@/components/shared/user-avatar'
 import {
   Sheet,
   SheetContent,
@@ -32,6 +33,7 @@ import {
   publicNavItems,
   type NavLink,
 } from '@/src/config/navigation.storefront'
+import { getUserDisplayName, type UserDisplayInput } from '@/src/lib/user/user-display'
 
 function CartBadge({ count }: { count: number }) {
   if (count === 0) return null
@@ -62,37 +64,44 @@ function isLinkActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
-function getProfileInitials(name?: string): string {
-  if (!name?.trim()) return 'CR'
-  const parts = name.trim().split(/\s+/).filter(Boolean)
-  if (parts.length >= 2) {
-    return `${parts[0]![0]}${parts[1]![0]}`.toUpperCase()
-  }
-  return name.slice(0, 2).toUpperCase()
-}
-
-function getProfileDestination(isAdmin: boolean) {
-  return isAdmin ? routes.adminDashboard : routes.account
-}
-
 function AccountMenu({
   isLoggedIn = false,
   isAdmin = false,
   onSignOut,
+  user,
 }: {
   isLoggedIn?: boolean
   isAdmin?: boolean
   onSignOut?: () => void | Promise<void>
+  user?: UserDisplayInput | null
 }) {
   const profileHref = getProfileDestination(isAdmin)
   const profileLabel = isAdmin ? 'Dashboard' : 'Perfil'
+  const accountLabel =
+    isLoggedIn && user ? getUserDisplayName(user) : 'Mi cuenta'
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9">
-          <User className="h-4 w-4" />
-          <span className="sr-only">Mi cuenta</span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            'h-9 w-9',
+            isLoggedIn && user && 'rounded-full p-0 hover:bg-accent',
+          )}
+          aria-label={accountLabel}
+        >
+          {isLoggedIn && user ? (
+            <UserAvatar
+              user={user}
+              size="sm"
+              decorative
+              className="hover:ring-2 hover:ring-primary/20"
+            />
+          ) : (
+            <User className="h-4 w-4" />
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
@@ -125,30 +134,31 @@ function AccountMenu({
   )
 }
 
+function getProfileDestination(isAdmin: boolean) {
+  return isAdmin ? routes.adminDashboard : routes.account
+}
+
 function MobileDrawerAccount({
-  userName,
+  user,
   isAdmin = false,
   onNavigate,
   onSignOut,
 }: {
-  userName?: string
+  user?: UserDisplayInput | null
   isAdmin?: boolean
   onNavigate: () => void
   onSignOut?: () => void | Promise<void>
 }) {
-  const displayName = userName ?? 'Mi cuenta'
-  const profileHref = getProfileDestination(isAdmin)
+  const displayName = getUserDisplayName(user)
 
   return (
     <div className="mt-2 border-t border-border px-1 pt-4">
       <Link
-        href={profileHref}
+        href={getProfileDestination(isAdmin)}
         onClick={onNavigate}
         className="flex items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-accent"
       >
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-          {getProfileInitials(userName)}
-        </span>
+        <UserAvatar user={user} size="md" />
         <span className="font-sans text-sm font-medium text-foreground">{displayName}</span>
       </Link>
       <button
@@ -182,14 +192,14 @@ function DesktopNavLink({ link, pathname }: { link: NavLink; pathname: string })
 
 export interface PublicHeaderProps {
   isLoggedIn?: boolean
-  userName?: string
+  user?: UserDisplayInput | null
   isAdmin?: boolean
   onSignOut?: () => void | Promise<void>
 }
 
 export function PublicHeader({
   isLoggedIn = false,
-  userName,
+  user,
   isAdmin = false,
   onSignOut,
 }: PublicHeaderProps) {
@@ -251,6 +261,7 @@ export function PublicHeader({
               isLoggedIn={isLoggedIn}
               isAdmin={isAdmin}
               onSignOut={onSignOut}
+              user={user}
             />
 
             <CartPopover />
@@ -271,6 +282,7 @@ export function PublicHeader({
               isLoggedIn={isLoggedIn}
               isAdmin={isAdmin}
               onSignOut={onSignOut}
+              user={user}
             />
             ) : null}
 
@@ -314,7 +326,7 @@ export function PublicHeader({
 
                   {isLoggedIn ? (
                     <MobileDrawerAccount
-                      userName={userName}
+                      user={user}
                       isAdmin={isAdmin}
                       onNavigate={closeMobileMenu}
                       onSignOut={onSignOut}

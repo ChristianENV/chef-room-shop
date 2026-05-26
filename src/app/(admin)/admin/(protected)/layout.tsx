@@ -8,7 +8,15 @@ export default async function AdminProtectedLayout({
 }>) {
   const user = await requireAdminSession()
   return (
-    <AdminShell adminUser={{ name: user.name, email: user.email }}>
+    <AdminShell
+      adminUser={{
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      }}
+    >
       {children}
     </AdminShell>
   )

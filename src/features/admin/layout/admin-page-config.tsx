@@ -21,7 +21,9 @@ const AdminPageConfigContext = createContext<{
   setPageConfig: (config: AdminPageConfig) => void
 } | null>(null)
 
-export type AdminShellUser = {
+import type { UserDisplayInput } from '@/src/lib/user/user-display'
+
+export type AdminShellUser = UserDisplayInput & {
   name: string
   email: string
 }
