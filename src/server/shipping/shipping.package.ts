@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { SHIPPING_PACKAGE_TIERS } from '@/src/config/shipping'
+import { SHIPPING_VARS } from '@/src/config/vars'
 
 import { getDefaultPackageConfig, type PackageDimensionsConfig } from './shipping.config'
 
@@ -10,13 +10,25 @@ export type CartItemQuantityInput = {
 
 export type PackageDimensions = PackageDimensionsConfig
 
-const MULTI_PACKAGE_WEIGHT_PER_EXTRA_KG = 0.15
-
 /**
- * Returns default single-garment package from env-backed config.
+ * Returns default single-garment package from vars-backed config (env override optional).
  */
 export function getDefaultPackage(): PackageDimensions {
   return getDefaultPackageConfig()
+}
+
+function tierDimensionsForQuantity(quantity: number): PackageDimensions | null {
+  const tier = SHIPPING_VARS.packageTiers.find(
+    (entry) => quantity >= entry.minItems && quantity <= entry.maxItems,
+  )
+  if (!tier) return null
+
+  return {
+    lengthCm: tier.lengthCm,
+    widthCm: tier.widthCm,
+    heightCm: tier.heightCm,
+    weightKg: tier.weightKg,
+  }
 }
 
 /**
@@ -25,28 +37,24 @@ export function getDefaultPackage(): PackageDimensions {
  * - 1 garment: 30×20×5 cm, 0.5 kg
  * - 2–3: 35×25×8 cm, 0.9 kg
  * - 4–6: 40×30×12 cm, 1.5 kg
- * - \>6: same volume as medium; weight increases 0.15 kg per extra unit (multipackage TBD)
+ * - \>6: same volume as medium; weight increases per `SHIPPING_VARS.extraItemWeightKg`
  */
 export function calculateEstimatedPackageFromQuantity(quantity: number): PackageDimensions {
   const qty = Math.max(1, Math.floor(quantity))
+  const matched = tierDimensionsForQuantity(qty)
+  if (matched) return matched
 
-  if (qty === 1) {
-    return { ...SHIPPING_PACKAGE_TIERS.single }
-  }
+  const lastTier = SHIPPING_VARS.packageTiers[SHIPPING_VARS.packageTiers.length - 1]!
+  const extraUnits = qty - lastTier.maxItems
 
-  if (qty <= 3) {
-    return { ...SHIPPING_PACKAGE_TIERS.small }
-  }
-
-  if (qty <= 6) {
-    return { ...SHIPPING_PACKAGE_TIERS.medium }
-  }
-
-  const base = { ...SHIPPING_PACKAGE_TIERS.medium }
-  const extraUnits = qty - 6
   return {
-    ...base,
-    weightKg: Math.round((base.weightKg + extraUnits * MULTI_PACKAGE_WEIGHT_PER_EXTRA_KG) * 100) / 100,
+    lengthCm: lastTier.lengthCm,
+    widthCm: lastTier.widthCm,
+    heightCm: lastTier.heightCm,
+    weightKg:
+      Math.round(
+        (lastTier.weightKg + extraUnits * SHIPPING_VARS.extraItemWeightKg) * 100,
+      ) / 100,
   }
 }
 

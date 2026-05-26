@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { ChefRoomLogo } from '@/components/brand/chef-room-logo'
 import { BRAND_TAGLINE } from '@/lib/brand'
 import { routes } from '@/src/config/routes'
+import { BUSINESS_VARS } from '@/src/config/vars'
 import { footerCompanyLinks, footerProductLinks } from '@/src/config/navigation.storefront'
 
 const footerLegalLinks = [
@@ -65,17 +66,19 @@ export function PublicFooter({ showNewsletter = true, className }: PublicFooterP
               <p className="mt-5 max-w-xs font-serif text-sm leading-relaxed text-muted-foreground">
                 {BRAND_TAGLINE}
               </p>
-              <div className="mt-6 flex items-center gap-4">
-                <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground transition-colors hover:text-primary"
-                  aria-label="Instagram"
-                >
-                  <Instagram className="h-4 w-4" />
-                </a>
-              </div>
+              {BUSINESS_VARS.social.instagram ? (
+                <div className="mt-6 flex items-center gap-4">
+                  <a
+                    href={BUSINESS_VARS.social.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground transition-colors hover:text-primary"
+                    aria-label="Instagram"
+                  >
+                    <Instagram className="h-4 w-4" />
+                  </a>
+                </div>
+              ) : null}
             </div>
 
             {[
@@ -116,27 +119,31 @@ export function PublicFooter({ showNewsletter = true, className }: PublicFooterP
                 <li className="flex items-start gap-2.5">
                   <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
                   <span className="font-serif text-sm text-foreground/70">
-                    Guadalajara, Jalisco, México
+                    {BUSINESS_VARS.address.formatted}
                   </span>
                 </li>
-                <li className="flex items-center gap-2.5">
-                  <Phone className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
-                  <a
-                    href="tel:+523312345678"
-                    className="font-serif text-sm text-foreground/70 hover:text-foreground"
-                  >
-                    +52 33 1234 5678
-                  </a>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Mail className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
-                  <a
-                    href="mailto:hola@chefroom.mx"
-                    className="font-serif text-sm text-foreground/70 hover:text-foreground"
-                  >
-                    hola@chefroom.mx
-                  </a>
-                </li>
+                {BUSINESS_VARS.support.phone ? (
+                  <li className="flex items-center gap-2.5">
+                    <Phone className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+                    <a
+                      href={`tel:${BUSINESS_VARS.support.phoneTelHref}`}
+                      className="font-serif text-sm text-foreground/70 hover:text-foreground"
+                    >
+                      {BUSINESS_VARS.support.phone}
+                    </a>
+                  </li>
+                ) : null}
+                {BUSINESS_VARS.support.email ? (
+                  <li className="flex items-center gap-2.5">
+                    <Mail className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+                    <a
+                      href={`mailto:${BUSINESS_VARS.support.email}`}
+                      className="font-serif text-sm text-foreground/70 hover:text-foreground"
+                    >
+                      {BUSINESS_VARS.support.email}
+                    </a>
+                  </li>
+                ) : null}
               </ul>
             </div>
           </div>
@@ -146,7 +153,7 @@ export function PublicFooter({ showNewsletter = true, className }: PublicFooterP
       <div className="border-t border-border px-6 py-5 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 md:flex-row">
           <p className="font-serif text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} Chef Room by Bedolla. Todos los derechos reservados.
+            &copy; {new Date().getFullYear()} {BUSINESS_VARS.legalName}. Todos los derechos reservados.
           </p>
           <div className="flex items-center gap-6">
             {footerLegalLinks.map((link) => (

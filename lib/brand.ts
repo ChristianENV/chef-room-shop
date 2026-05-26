@@ -1,23 +1,12 @@
-// Chef Room by Bedolla - Brand Constants
-// These constants define the official brand identity
+// Chef Room by Bedolla - Brand constants (re-exported from src/config/vars.ts)
 
-export const BRAND_NAME = 'Chef Room by Bedolla'
-export const BRAND_SHORT = 'Chef Room'
-export const BRAND_TAGLINE = 'Tu cocina te define, tu uniforme te distingue.'
+import { BRAND_VARS, BUSINESS_VARS } from '@/src/config/vars'
 
-// Brand Colors - Official Palette
-export const BRAND_COLORS = {
-  primary: '#2B3280',      // Primary Blue - Main brand identity
-  warmGray: '#E2E0DB',     // Warm Gray - Backgrounds, surfaces
-  white: '#FFFFFF',        // White - Cards, clean surfaces
-  softBlack: '#111111',    // Soft Black - Primary text
-  deepNavy: '#0B1026',     // Deep Navy - Premium overlays
-  muted: '#6B7280',        // Muted Text - Secondary text
-  border: '#D8D6D0',       // Border Neutral - Subtle borders
-  success: '#16A34A',      // Success - Positive states
-  warning: '#F59E0B',      // Warning - Attention states
-  error: '#DC2626',        // Error - Error states
-} as const
+export const BRAND_NAME = BUSINESS_VARS.legalName
+export const BRAND_SHORT = BUSINESS_VARS.name
+export const BRAND_TAGLINE = BRAND_VARS.tagline
+
+export const BRAND_COLORS = BRAND_VARS.colors
 
 // Color usage recommendations
 export const COLOR_USAGE = {

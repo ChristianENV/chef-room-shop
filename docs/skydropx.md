@@ -62,11 +62,13 @@ sequenceDiagram
 
 ## Origin (Puebla)
 
-Configured via `SHIPPING_ORIGIN_*` env vars. Default postal code `72000`, city/state Puebla, country `MX`. Read with `getShippingOriginConfig()` in `src/server/shipping/shipping.config.ts`.
+Defaults in `SHIPPING_VARS.origin` (`src/config/vars.ts`): postal code `72000`, city/state Puebla, country `MX`.
+
+Optional per-environment overrides: `SHIPPING_ORIGIN_*` env vars. Resolved by `getShippingOriginConfig()` in `src/server/shipping/shipping.config.ts`.
 
 ## Standard package (chef apparel v1)
 
-Tiered by total garment quantity (`src/server/shipping/shipping.package.ts`):
+Tiered by total garment quantity (`SHIPPING_VARS.packageTiers` → `src/server/shipping/shipping.package.ts`):
 
 | Quantity | Dimensions (L×W×H cm) | Weight (kg) |
 |----------|------------------------|-------------|
@@ -77,7 +79,7 @@ Tiered by total garment quantity (`src/server/shipping/shipping.package.ts`):
 
 **Pending:** true multi-parcel shipments for large orders.
 
-Env defaults (`SHIPPING_DEFAULT_PACKAGE_*`) match the single-garment tier.
+Single-garment defaults: `SHIPPING_VARS.defaultPackage`. Optional env overrides: `SHIPPING_DEFAULT_PACKAGE_*` (see `docs/configuration.md`).
 
 ## Database (Prisma)
 

@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { SHIPPING_VARS } from '@/src/config/vars'
 import { SHIPPING_COUNTRY_MX } from '@/src/config/shipping'
 
 export type ShippingOriginConfig = {
@@ -38,49 +39,55 @@ function parsePositiveNumber(
 }
 
 /**
- * Warehouse / origin address for outbound shipments (from env).
- * Missing optional contact fields do not break build; validate at quote time if needed.
+ * Warehouse / origin address for outbound shipments.
+ * Defaults from `SHIPPING_VARS.origin`; optional `SHIPPING_ORIGIN_*` env overrides.
  */
 export function getShippingOriginConfig(): ShippingOriginConfig {
+  const origin = SHIPPING_VARS.origin
+
   return {
-    name: process.env.SHIPPING_ORIGIN_NAME?.trim() || 'Chef Room',
-    company: process.env.SHIPPING_ORIGIN_COMPANY?.trim() || 'Chef Room by Bedolla',
-    phone: process.env.SHIPPING_ORIGIN_PHONE?.trim() ?? '',
-    email: process.env.SHIPPING_ORIGIN_EMAIL?.trim() ?? '',
-    street: process.env.SHIPPING_ORIGIN_STREET?.trim() ?? '',
-    extNumber: process.env.SHIPPING_ORIGIN_EXT_NUMBER?.trim() ?? '',
-    intNumber: process.env.SHIPPING_ORIGIN_INT_NUMBER?.trim() ?? '',
-    neighborhood: process.env.SHIPPING_ORIGIN_NEIGHBORHOOD?.trim() ?? '',
-    city: process.env.SHIPPING_ORIGIN_CITY?.trim() || 'Puebla',
-    state: process.env.SHIPPING_ORIGIN_STATE?.trim() || 'Puebla',
+    name: process.env.SHIPPING_ORIGIN_NAME?.trim() || origin.name,
+    company: process.env.SHIPPING_ORIGIN_COMPANY?.trim() || origin.company,
+    phone: process.env.SHIPPING_ORIGIN_PHONE?.trim() || origin.phone,
+    email: process.env.SHIPPING_ORIGIN_EMAIL?.trim() || origin.email,
+    street: process.env.SHIPPING_ORIGIN_STREET?.trim() || origin.street,
+    extNumber: process.env.SHIPPING_ORIGIN_EXT_NUMBER?.trim() || origin.extNumber,
+    intNumber: process.env.SHIPPING_ORIGIN_INT_NUMBER?.trim() || origin.intNumber,
+    neighborhood:
+      process.env.SHIPPING_ORIGIN_NEIGHBORHOOD?.trim() || origin.neighborhood,
+    city: process.env.SHIPPING_ORIGIN_CITY?.trim() || origin.city,
+    state: process.env.SHIPPING_ORIGIN_STATE?.trim() || origin.state,
     country: process.env.SHIPPING_ORIGIN_COUNTRY?.trim() || SHIPPING_COUNTRY_MX,
-    postalCode: process.env.SHIPPING_ORIGIN_POSTAL_CODE?.trim() || '72000',
+    postalCode: process.env.SHIPPING_ORIGIN_POSTAL_CODE?.trim() || origin.postalCode,
   }
 }
 
 /**
- * Default parcel dimensions for a single garment (from env with sane fallbacks).
+ * Default parcel dimensions for a single garment.
+ * Defaults from `SHIPPING_VARS.defaultPackage`; optional `SHIPPING_DEFAULT_PACKAGE_*` env overrides.
  */
 export function getDefaultPackageConfig(): PackageDimensionsConfig {
+  const defaults = SHIPPING_VARS.defaultPackage
+
   return {
     lengthCm: parsePositiveNumber(
       process.env.SHIPPING_DEFAULT_PACKAGE_LENGTH_CM,
-      30,
+      defaults.lengthCm,
       'SHIPPING_DEFAULT_PACKAGE_LENGTH_CM',
     ),
     widthCm: parsePositiveNumber(
       process.env.SHIPPING_DEFAULT_PACKAGE_WIDTH_CM,
-      20,
+      defaults.widthCm,
       'SHIPPING_DEFAULT_PACKAGE_WIDTH_CM',
     ),
     heightCm: parsePositiveNumber(
       process.env.SHIPPING_DEFAULT_PACKAGE_HEIGHT_CM,
-      5,
+      defaults.heightCm,
       'SHIPPING_DEFAULT_PACKAGE_HEIGHT_CM',
     ),
     weightKg: parsePositiveNumber(
       process.env.SHIPPING_DEFAULT_PACKAGE_WEIGHT_KG,
-      0.5,
+      defaults.weightKg,
       'SHIPPING_DEFAULT_PACKAGE_WEIGHT_KG',
     ),
   }

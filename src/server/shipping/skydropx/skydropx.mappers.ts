@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { APP_LIMITS } from '@/src/config/vars'
 import { SHIPPING_CURRENCY_MX } from '@/src/config/shipping'
 
 import { getShippingOriginConfig } from '../shipping.config'
@@ -105,8 +106,9 @@ function parseAmountToCents(value: unknown): number | null {
   return null
 }
 
-/** Skydropx PRO rates are valid for 24 hours from quotation time. */
-export const SKYDROPX_RATE_VALIDITY_MS = 24 * 60 * 60 * 1000
+/** Skydropx PRO rates validity window from quotation time. */
+export const SKYDROPX_RATE_VALIDITY_MS =
+  APP_LIMITS.shipping.rateExpirationHours * 60 * 60 * 1000
 
 export function skydropxRateExpiresAt(from: Date = new Date()): Date {
   return new Date(from.getTime() + SKYDROPX_RATE_VALIDITY_MS)

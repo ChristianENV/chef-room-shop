@@ -1,12 +1,15 @@
 import 'server-only'
 
+import { BRAND_VARS } from '@/src/config/vars'
+
 import type {
   RenderedEmail,
   TransactionalEmailPayload,
   TransactionalEmailTemplate,
 } from './email.types'
 
-const BRAND_COLOR = '#2B3280'
+const BRAND_COLOR = BRAND_VARS.primaryColor
+const BRAND_NAME = BRAND_VARS.name
 
 function formatMoney(cents: number | undefined, currency = 'MXN'): string {
   if (cents === undefined) return '—'
@@ -22,10 +25,10 @@ function formatMoney(cents: number | undefined, currency = 'MXN'): string {
 function layoutHtml(body: string): string {
   return `<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="utf-8"><title>Chef Room</title></head>
+<head><meta charset="utf-8"><title>${BRAND_NAME}</title></head>
 <body style="margin:0;padding:24px;font-family:Georgia,serif;background:#f8f9fc;color:#1a1a2e;">
   <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:8px;border:1px solid #e5e7eb;padding:32px;">
-    <p style="margin:0 0 24px;font-family:system-ui,sans-serif;font-size:20px;font-weight:700;color:${BRAND_COLOR};">Chef Room</p>
+    <p style="margin:0 0 24px;font-family:system-ui,sans-serif;font-size:20px;font-weight:700;color:${BRAND_COLOR};">${BRAND_NAME}</p>
     ${body}
     <p style="margin-top:32px;font-size:12px;color:#6b7280;">Este es un mensaje automático. No respondas a este correo.</p>
   </div>

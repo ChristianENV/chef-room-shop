@@ -1,6 +1,7 @@
 import { ShippingProvider, type Prisma } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 
+import { APP_LIMITS } from '@/src/config/vars'
 import { getShippingOriginConfig } from '@/src/server/shipping/shipping.config'
 import { getPackageForCartItems } from '@/src/server/shipping/shipping.package'
 import {
@@ -35,7 +36,7 @@ import {
   shippingRateIdSchema,
 } from './shipping.validation'
 
-const QUOTE_REUSE_WINDOW_MS = 30 * 60 * 1000
+const QUOTE_REUSE_WINDOW_MS = APP_LIMITS.shipping.quoteReuseMinutes * 60 * 1000
 
 const quoteInclude = {
   rates: { orderBy: { amountCents: 'asc' as const } },

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Mail, MapPin, Phone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { routes } from '@/src/config/routes'
+import { BUSINESS_VARS } from '@/src/config/vars'
 
 export const metadata: Metadata = {
   title: 'Contacto | Chef Room by Bedolla',
@@ -26,23 +27,30 @@ export default function ContactPage() {
         <ul className="mt-10 space-y-4">
           <li className="flex items-center gap-3 font-serif text-foreground/80">
             <MapPin className="h-4 w-4 text-muted-foreground" />
-            Guadalajara, Jalisco, México
+            {BUSINESS_VARS.address.formatted}
           </li>
-          <li className="flex items-center gap-3">
-            <Phone className="h-4 w-4 text-muted-foreground" />
-            <a href="tel:+523312345678" className="font-serif text-foreground/80 hover:text-foreground">
-              +52 33 1234 5678
-            </a>
-          </li>
-          <li className="flex items-center gap-3">
-            <Mail className="h-4 w-4 text-muted-foreground" />
-            <a
-              href="mailto:hola@chefroom.mx"
-              className="font-serif text-foreground/80 hover:text-foreground"
-            >
-              hola@chefroom.mx
-            </a>
-          </li>
+          {BUSINESS_VARS.support.phone ? (
+            <li className="flex items-center gap-3">
+              <Phone className="h-4 w-4 text-muted-foreground" />
+              <a
+                href={`tel:${BUSINESS_VARS.support.phoneTelHref}`}
+                className="font-serif text-foreground/80 hover:text-foreground"
+              >
+                {BUSINESS_VARS.support.phone}
+              </a>
+            </li>
+          ) : null}
+          {BUSINESS_VARS.support.email ? (
+            <li className="flex items-center gap-3">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <a
+                href={`mailto:${BUSINESS_VARS.support.email}`}
+                className="font-serif text-foreground/80 hover:text-foreground"
+              >
+                {BUSINESS_VARS.support.email}
+              </a>
+            </li>
+          ) : null}
         </ul>
 
         <div className="mt-10">
