@@ -109,18 +109,23 @@ Real payment state comes from `checkoutResultByToken` / `orderByNumber` + webhoo
 
 ## `/checkout/success` (Payment Status UX)
 
-Token path: `checkoutResultByToken` + polling every **5s** (max **24** attempts). Legacy: `orderByNumber` with sessionStorage email.
+Token path: `checkoutResultByToken` + polling (fast ~4s, then slow ~12s, up to ~2 min). Legacy: `orderByNumber` with sessionStorage email.
+
+The webhook may take a few seconds after redirect. The success page shows a **30s visual confirmation** (progress + spinner) while status is pending. **Ver pedido** and **Seguir comprando** stay disabled until payment is confirmed or terminal (failed/expired/cancelled).
+
+After 30s without change: **Verificar pago nuevamente** (refetch BFF only; does not mark PAID client-side) + enabled **Seguir comprando**.
 
 When webhook marks order `PAID`, UI shows **Pago confirmado** without manual refresh.
 
-| BFF status | UI title |
-|------------|----------|
-| `PENDING` / `PENDING_PAYMENT` | Confirmando pago |
-| `PAID` | Pago confirmado |
-| `FAILED` / `PAYMENT_FAILED` | Pago no completado (+ auto-retry) |
-| `CANCELLED` / `EXPIRED` | Pago expirado (+ auto-retry) |
+| UX state | BFF status (examples) | Actions |
+|----------|----------------------|---------|
+| Confirming | `PENDING`, `PENDING_PAYMENT`, `AUTHORIZED` | Poll; buttons disabled |
+| Paid | `PAID` | All actions enabled |
+| Failed | `FAILED`, `PAYMENT_FAILED` | Retry + verify again |
+| Expired / cancelled | `EXPIRED`, `CANCELLED` | Retry + verify again |
+| Pending after timeout | Still pending after 30s | Verify again; shop enabled |
 
-Cash (`OXXO` → “Pago en efectivo”): reference/expiry from `PaymentAttempt.rawResponseJson` when available.
+Cash (“Pago en efectivo”): reference/expiry from `PaymentAttempt.rawResponseJson` when available.
 
 ## Manual smoke
 

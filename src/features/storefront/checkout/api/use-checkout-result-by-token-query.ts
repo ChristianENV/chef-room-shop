@@ -1,15 +1,13 @@
 'use client'
 
-import { useEffect, useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
 import { getPaymentStatusUi } from '../lib/payment-status-ui'
+import { useCheckoutResultPolling } from '../lib/use-checkout-result-polling'
 import type { CheckoutResult } from '../types'
 import { getCheckoutResultByToken } from './checkout.api'
 import { checkoutQueryKeys } from './checkout.query-keys'
-
-const POLL_INTERVAL_MS = 5_000
-const MAX_POLL_ATTEMPTS = 24
 
 type UseCheckoutResultByTokenQueryOptions = {
   token: string
@@ -22,7 +20,6 @@ type UseCheckoutResultByTokenQueryOptions = {
  */
 export function useCheckoutResultByTokenQuery(options: UseCheckoutResultByTokenQueryOptions) {
   const { token, enabled = true, pollWhilePending = false } = options
-  const pollAttemptsRef = useRef(0)
 
   const query = useQuery<CheckoutResult | null>({
     queryKey: checkoutQueryKeys.checkoutResultByToken(token),
@@ -35,7 +32,9 @@ export function useCheckoutResultByTokenQuery(options: UseCheckoutResultByTokenQ
   })
 
   const shouldPoll = useMemo(() => {
-    if (!pollWhilePending || !query.data) return false
+    if (!pollWhilePending || !query.data) {
+      return false
+    }
     const ui = getPaymentStatusUi({
       orderStatus: query.data.status,
       paymentStatus: query.data.paymentStatus,
@@ -43,24 +42,11 @@ export function useCheckoutResultByTokenQuery(options: UseCheckoutResultByTokenQ
     return ui.shouldPoll
   }, [pollWhilePending, query.data])
 
-  useEffect(() => {
-    pollAttemptsRef.current = 0
-  }, [token, pollWhilePending])
-
-  useEffect(() => {
-    if (!shouldPoll) return
-
-    const intervalId = window.setInterval(() => {
-      pollAttemptsRef.current += 1
-      if (pollAttemptsRef.current > MAX_POLL_ATTEMPTS) {
-        window.clearInterval(intervalId)
-        return
-      }
-      void query.refetch()
-    }, POLL_INTERVAL_MS)
-
-    return () => window.clearInterval(intervalId)
-  }, [shouldPoll, query.refetch])
+  useCheckoutResultPolling({
+    shouldPoll,
+    refetch: query.refetch,
+    resetKey: `${token}:${pollWhilePending}`,
+  })
 
   return query
 }

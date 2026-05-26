@@ -54,10 +54,12 @@ Resolution priority:
 
 UX:
 
-- **Pending** — “Confirmando pago” + polling (~5s, max ~2 min)
-- **Paid** — “Pago confirmado” (webhook is source of truth)
-- **Failed/expired** — auto-retry redirect via `retryCheckoutPayment`
-- **Guest without session** — order summary + dialog: login / register / claim
+- **Confirming (0–30s)** — progress bar + spinner, copy “Confirmando tu pago”, **Ver pedido** y **Seguir comprando** deshabilitados
+- **Paid** — “Pago confirmado”; cuenta regresiva de 8s y redirección automática al detalle del pedido (o login/claim según sesión); el usuario puede ir ya o quedarse en la página
+- **Failed / expired / cancelled** — retry Conekta + “Verificar pago nuevamente”
+- **Pending after 30s** — mensaje de espera, “Verificar pago nuevamente”, seguir comprando habilitado, ver pedido con badge “Pago pendiente” si hay URL
+- **Polling** — rápido (~4s) durante ~32s, luego lento (~12s) hasta ~2 min; no marca PAID en frontend
+- **Guest without session** — resumen + diálogo login / registro / claim
 
 ## Validation
 

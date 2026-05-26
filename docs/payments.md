@@ -9,7 +9,7 @@ One-step checkout with Conekta HostedPayment and token-based success page.
 3. **On Conekta OK** — cart → `CONVERTED`, `order_created` email, guest `OrderClaimToken`
 4. **Browser** — `window.location.assign(paymentRedirectUrl)` (same tab)
 5. **Conekta** — user pays → redirect to `/checkout/success?token=...`
-6. **Success** — `checkoutResultByToken` + polling until webhook sets `PAID`
+6. **Success** — `checkoutResultByToken` + polling until webhook sets `PAID`; UI de confirmación ~30s con botones bloqueados mientras `confirming`
 
 ## GraphQL
 

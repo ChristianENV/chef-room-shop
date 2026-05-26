@@ -24,8 +24,18 @@ import {
   type CheckoutConfirmationSession,
 } from '@/src/features/storefront/checkout/lib/checkout-session'
 import { getPaymentStatusUi } from '@/src/features/storefront/checkout/lib/payment-status-ui'
+import {
+  getPaymentConfirmationActions,
+  getVerifyAgainResultMessage,
+  resolvePaymentConfirmationUxState,
+  type PaymentConfirmationUxState,
+} from '@/src/features/storefront/checkout/lib/payment-confirmation-state'
+import { usePaymentConfirmationElapsed } from '@/src/features/storefront/checkout/lib/use-payment-confirmation-elapsed'
+import { resolvePaidOrderRedirectUrl } from '@/src/features/storefront/checkout/lib/resolve-paid-order-redirect'
+import { usePaidOrderRedirectCountdown } from '@/src/features/storefront/checkout/lib/use-paid-order-redirect-countdown'
 import { CheckoutConektaPay } from '@/src/features/storefront/checkout/checkout-conekta-pay'
 import { CheckoutPaymentStatusBanner } from '@/src/features/storefront/checkout/checkout-payment-status-banner'
+import { CheckoutSuccessActions } from '@/src/features/storefront/checkout/checkout-success-actions'
 import { resolvePaymentMethodLabel } from '@/src/config/payment-vars'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -42,12 +52,7 @@ import {
 import { routes } from '@/src/config/routes'
 import { centsToPesos, formatCurrencyMXN } from '@/src/lib/formatters'
 import { useSession } from '@/src/lib/auth/auth-client'
-import {
-  Package,
-  CreditCard,
-  AlertCircle,
-  ShoppingBag,
-} from 'lucide-react'
+import { Package, CreditCard, AlertCircle } from 'lucide-react'
 
 function parseConfirmationSession(raw: string | null): CheckoutConfirmationSession | null {
   if (!raw) return null
@@ -96,7 +101,9 @@ function OrderItemsList({ items }: { items: OrderItem[] }) {
 
 type OrderConfirmationCardProps = {
   orderNumber: string
-  statusUi: ReturnType<typeof getPaymentStatusUi>
+  confirmationState: PaymentConfirmationUxState
+  elapsedMs: number
+  canRetryPayment: boolean
   totalPesos: number
   paymentMethodLabel: string
   customerEmail?: string
@@ -113,7 +120,9 @@ type OrderConfirmationCardProps = {
 
 function OrderConfirmationCard({
   orderNumber,
-  statusUi,
+  confirmationState,
+  elapsedMs,
+  canRetryPayment,
   totalPesos,
   paymentMethodLabel,
   customerEmail,
@@ -127,6 +136,17 @@ function OrderConfirmationCard({
   paymentExpiresAt,
   cashPaymentLocations,
 }: OrderConfirmationCardProps) {
+  const canUseRetryFlow = Boolean(
+    returnToken || (legacyOrderNumber && legacyEmail),
+  )
+  const showRetry =
+    canUseRetryFlow &&
+    (canRetryPayment ||
+      confirmationState === 'pendingAfterTimeout' ||
+      confirmationState === 'failed' ||
+      confirmationState === 'expired' ||
+      confirmationState === 'cancelled')
+
   return (
     <div className="rounded-lg border border-border bg-card p-6 md:p-8">
       <p className="font-serif text-sm text-muted-foreground">
@@ -135,7 +155,8 @@ function OrderConfirmationCard({
       </p>
 
       <CheckoutPaymentStatusBanner
-        statusUi={statusUi}
+        confirmationState={confirmationState}
+        elapsedMs={elapsedMs}
         isPolling={isPolling}
         paymentReturnHint={paymentReturnHint}
         className="mt-6"
@@ -204,7 +225,7 @@ function OrderConfirmationCard({
         </>
       )}
 
-      {statusUi.canRetryPayment && (
+      {showRetry && (
         <CheckoutConektaPay
           returnToken={returnToken}
           orderNumber={legacyOrderNumber}
@@ -225,78 +246,6 @@ function CheckoutSuccessLoading() {
         <Skeleton className="h-32 w-full" />
       </div>
     </CheckoutLayout>
-  )
-}
-
-type SuccessPageActionsProps = {
-  isAuthenticated: boolean
-  orderNumber: string
-  claimUrl?: string | null
-  accountOrderUrl?: string | null
-  detailUrl?: string | null
-  loginUrl?: string
-  registerUrl?: string
-  canViewDetails?: boolean
-  onGuestDetailsClick?: () => void
-}
-
-function SuccessPageActions({
-  isAuthenticated,
-  orderNumber,
-  claimUrl,
-  accountOrderUrl,
-  detailUrl,
-  loginUrl = routes.login,
-  registerUrl = routes.register,
-  canViewDetails,
-  onGuestDetailsClick,
-}: SuccessPageActionsProps) {
-  const orderDetailHref =
-    detailUrl ??
-    accountOrderUrl ??
-    (isAuthenticated ? routes.accountOrderDetail(orderNumber) : null)
-
-  return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-      {canViewDetails && orderDetailHref && (
-        <Button asChild className="font-sans">
-          <Link href={orderDetailHref}>Ver pedido</Link>
-        </Button>
-      )}
-      {!isAuthenticated && !canViewDetails && (
-        <>
-          <Button type="button" variant="default" className="font-sans" onClick={onGuestDetailsClick}>
-            Ver detalle del pedido
-          </Button>
-          {claimUrl && (
-            <Button asChild variant="outline" className="font-sans">
-              <Link href={claimUrl}>Crear cuenta para ver seguimiento</Link>
-            </Button>
-          )}
-        </>
-      )}
-      {!isAuthenticated && (
-        <>
-          <Button asChild variant="outline" className="font-sans">
-            <Link href={loginUrl}>Iniciar sesión</Link>
-          </Button>
-          <Button asChild variant="outline" className="font-sans">
-            <Link href={registerUrl}>Crear cuenta</Link>
-          </Button>
-        </>
-      )}
-      {isAuthenticated && !orderDetailHref && (
-        <Button asChild variant="outline" className="font-sans">
-          <Link href={routes.account}>Ir a mi cuenta</Link>
-        </Button>
-      )}
-      <Button asChild variant="outline" className="font-sans">
-        <Link href={routes.shop}>
-          <ShoppingBag className="mr-2 h-4 w-4" />
-          Seguir comprando
-        </Link>
-      </Button>
-    </div>
   )
 }
 
@@ -329,6 +278,9 @@ function CheckoutSuccessContent() {
   const [email] = useState(() => parseConfirmationEmail(readCheckoutConfirmationRaw()))
   const [storedReturnToken] = useState(() => parseConfirmationReturnToken(readCheckoutConfirmationRaw()))
   const [guestDialogOpen, setGuestDialogOpen] = useState(false)
+  const [confirmingStartedAt] = useState(() => Date.now())
+  const [isVerifying, setIsVerifying] = useState(false)
+  const [verifyMessage, setVerifyMessage] = useState<string | null>(null)
 
   const effectiveToken = returnTokenFromUrl || storedReturnToken
 
@@ -372,6 +324,78 @@ function CheckoutSuccessContent() {
     [activeStatus, activePaymentStatus],
   )
 
+  const hasOrderData = Boolean(checkoutResult || legacyOrder)
+  const isQueryLoading =
+    (effectiveToken.length > 0 && tokenQuery.isLoading && !checkoutResult) ||
+    (!effectiveToken && legacyQuery.isLoading && !legacyOrder && !storedSession)
+
+  const isAwaitingConfirmation = useMemo(() => {
+    const orderStatus = activeStatus.trim().toUpperCase()
+    const paymentStatus = activePaymentStatus.trim().toUpperCase()
+    if (orderStatus === 'PAID' || paymentStatus === 'PAID') return false
+    if (paymentStatus === 'FAILED' || orderStatus === 'PAYMENT_FAILED') return false
+    if (paymentStatus === 'CANCELLED' || orderStatus === 'CANCELLED') return false
+    if (paymentStatus === 'EXPIRED') return false
+    return true
+  }, [activeStatus, activePaymentStatus])
+
+  const elapsedMs = usePaymentConfirmationElapsed(
+    isAwaitingConfirmation && (hasOrderData || isQueryLoading),
+    confirmingStartedAt,
+  )
+
+  const confirmationState = useMemo(
+    () =>
+      resolvePaymentConfirmationUxState({
+        orderStatus: activeStatus,
+        paymentStatus: activePaymentStatus,
+        isQueryLoading,
+        hasOrderData,
+        elapsedMs,
+      }),
+    [activeStatus, activePaymentStatus, isQueryLoading, hasOrderData, elapsedMs],
+  )
+
+  const confirmationActions = useMemo(
+    () =>
+      getPaymentConfirmationActions(confirmationState, {
+        canRetryPayment: statusUi.canRetryPayment,
+      }),
+    [confirmationState, statusUi.canRetryPayment],
+  )
+
+  const handleVerifyAgain = async () => {
+    setIsVerifying(true)
+    setVerifyMessage(null)
+    try {
+      if (effectiveToken) {
+        const result = await tokenQuery.refetch()
+        if (result.data) {
+          setVerifyMessage(
+            getVerifyAgainResultMessage(result.data.status, result.data.paymentStatus),
+          )
+        } else {
+          setVerifyMessage('No pudimos verificar el estado. Intenta de nuevo.')
+        }
+        return
+      }
+      if (orderNumberLegacy && email) {
+        const result = await legacyQuery.refetch()
+        if (result.data) {
+          setVerifyMessage(
+            getVerifyAgainResultMessage(result.data.status, result.data.paymentStatus),
+          )
+        } else {
+          setVerifyMessage('No pudimos verificar el estado. Intenta de nuevo.')
+        }
+      }
+    } catch {
+      setVerifyMessage('No pudimos verificar el estado. Intenta de nuevo.')
+    } finally {
+      setIsVerifying(false)
+    }
+  }
+
   useEffect(() => {
     if (activePaymentStatus === 'PAID' || activeStatus === 'PAID') {
       clearCheckoutConfirmation()
@@ -387,9 +411,45 @@ function CheckoutSuccessContent() {
   }, [checkoutResult, legacyOrder, storedSession])
 
   const isAuthenticated = Boolean(authSession?.user)
+
+  const orderNumberForRedirect =
+    checkoutResult?.orderNumber ??
+    legacyOrder?.orderNumber ??
+    storedSession?.orderNumber ??
+    orderNumberLegacy
+
+  const paidRedirectUrl = useMemo(() => {
+    if (confirmationState !== 'paid' || !orderNumberForRedirect) {
+      return null
+    }
+    return resolvePaidOrderRedirectUrl({
+      orderNumber: orderNumberForRedirect,
+      isAuthenticated,
+      detailUrl: checkoutResult?.detailUrl,
+      accountOrderUrl:
+        checkoutResult?.accountOrderUrl ?? storedSession?.accountOrderUrl ?? null,
+      canViewDetails: checkoutResult?.canViewDetails,
+      claimUrl: checkoutResult?.claimUrl ?? storedSession?.claimUrl ?? null,
+    })
+  }, [
+    confirmationState,
+    orderNumberForRedirect,
+    isAuthenticated,
+    checkoutResult?.detailUrl,
+    checkoutResult?.accountOrderUrl,
+    checkoutResult?.canViewDetails,
+    checkoutResult?.claimUrl,
+    storedSession?.accountOrderUrl,
+    storedSession?.claimUrl,
+  ])
+
+  const { secondsLeft: paidRedirectSecondsLeft, cancelRedirect: cancelPaidRedirect } =
+    usePaidOrderRedirectCountdown(confirmationState === 'paid', paidRedirectUrl)
+
   const isPolling =
-    (tokenQuery.isFetching && statusUi.shouldPoll && Boolean(effectiveToken)) ||
-    (legacyQuery.isFetching && statusUi.shouldPoll && !effectiveToken)
+    confirmationActions.shouldPoll &&
+    ((tokenQuery.isFetching && Boolean(effectiveToken)) ||
+      (legacyQuery.isFetching && !effectiveToken))
 
   if (!effectiveToken && !orderNumberLegacy && !storedSession) {
     return (
@@ -439,7 +499,9 @@ function CheckoutSuccessContent() {
         <div className="mx-auto max-w-2xl space-y-6">
           <OrderConfirmationCard
             orderNumber={checkoutResult.orderNumber}
-            statusUi={statusUi}
+            confirmationState={confirmationState}
+            elapsedMs={elapsedMs}
+            canRetryPayment={statusUi.canRetryPayment}
             totalPesos={totalPesos}
             paymentMethodLabel={paymentMethodLabel}
             customerEmail={storedSession?.email}
@@ -451,7 +513,8 @@ function CheckoutSuccessContent() {
             paymentExpiresAt={checkoutResult.paymentExpiresAt}
             cashPaymentLocations={checkoutResult.cashPaymentLocations}
           />
-          <SuccessPageActions
+          <CheckoutSuccessActions
+            confirmationState={confirmationState}
             isAuthenticated={isAuthenticated}
             orderNumber={checkoutResult.orderNumber}
             claimUrl={claimUrl}
@@ -461,6 +524,13 @@ function CheckoutSuccessContent() {
             registerUrl={checkoutResult.registerUrl}
             canViewDetails={checkoutResult.canViewDetails}
             onGuestDetailsClick={() => setGuestDialogOpen(true)}
+            onVerifyAgain={() => void handleVerifyAgain()}
+            isVerifying={isVerifying}
+            verifyMessage={verifyMessage}
+            showWaitingNote={confirmationActions.showWaitingNote}
+            paidRedirectSecondsLeft={paidRedirectSecondsLeft}
+            paidRedirectUrl={paidRedirectUrl}
+            onCancelPaidRedirect={cancelPaidRedirect}
           />
         </div>
 
@@ -545,7 +615,9 @@ function CheckoutSuccessContent() {
         <div className="mx-auto max-w-2xl space-y-6">
           <OrderConfirmationCard
             orderNumber={legacyOrder.orderNumber}
-            statusUi={statusUi}
+            confirmationState={confirmationState}
+            elapsedMs={elapsedMs}
+            canRetryPayment={statusUi.canRetryPayment}
             totalPesos={totalPesos}
             paymentMethodLabel={paymentMethodLabel}
             customerEmail={legacyOrder.customerEmail}
@@ -555,11 +627,19 @@ function CheckoutSuccessContent() {
             legacyOrderNumber={legacyOrder.orderNumber}
             legacyEmail={legacyOrder.customerEmail}
           />
-          <SuccessPageActions
+          <CheckoutSuccessActions
+            confirmationState={confirmationState}
             isAuthenticated={isAuthenticated}
             orderNumber={legacyOrder.orderNumber}
             claimUrl={storedSession?.claimUrl}
             accountOrderUrl={storedSession?.accountOrderUrl}
+            onVerifyAgain={() => void handleVerifyAgain()}
+            isVerifying={isVerifying}
+            verifyMessage={verifyMessage}
+            showWaitingNote={confirmationActions.showWaitingNote}
+            paidRedirectSecondsLeft={paidRedirectSecondsLeft}
+            paidRedirectUrl={paidRedirectUrl}
+            onCancelPaidRedirect={cancelPaidRedirect}
           />
         </div>
       </CheckoutLayout>
@@ -568,22 +648,19 @@ function CheckoutSuccessContent() {
 
   if (storedSession && storedSession.orderNumber === orderNumberLegacy) {
     const totalPesos = centsToPesos(storedSession.totalCents)
-    const fallbackStatusUi = getPaymentStatusUi({
-      orderStatus: storedSession.status,
-      paymentStatus: storedSession.paymentStatus,
-    })
-
     return (
       <CheckoutLayout>
         <div className="mx-auto max-w-2xl space-y-6">
           <OrderConfirmationCard
             orderNumber={storedSession.orderNumber}
-            statusUi={fallbackStatusUi}
+            confirmationState={confirmationState}
+            elapsedMs={elapsedMs}
+            canRetryPayment={statusUi.canRetryPayment}
             totalPesos={totalPesos}
             paymentMethodLabel={resolvePaymentMethodLabel(storedSession.paymentMethod)}
             customerEmail={storedSession.email}
             paymentReturnHint={paymentReturnHint}
-            isPolling={legacyQuery.isFetching && fallbackStatusUi.shouldPoll}
+            isPolling={isPolling}
             returnToken={storedSession.returnToken}
             legacyOrderNumber={storedSession.orderNumber}
             legacyEmail={storedSession.email}
@@ -598,11 +675,19 @@ function CheckoutSuccessContent() {
             </Alert>
           )}
 
-          <SuccessPageActions
+          <CheckoutSuccessActions
+            confirmationState={confirmationState}
             isAuthenticated={isAuthenticated}
             orderNumber={storedSession.orderNumber}
             claimUrl={storedSession.claimUrl}
             accountOrderUrl={storedSession.accountOrderUrl}
+            onVerifyAgain={() => void handleVerifyAgain()}
+            isVerifying={isVerifying}
+            verifyMessage={verifyMessage}
+            showWaitingNote={confirmationActions.showWaitingNote}
+            paidRedirectSecondsLeft={paidRedirectSecondsLeft}
+            paidRedirectUrl={paidRedirectUrl}
+            onCancelPaidRedirect={cancelPaidRedirect}
           />
         </div>
       </CheckoutLayout>
