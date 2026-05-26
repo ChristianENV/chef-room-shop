@@ -188,6 +188,13 @@ export function OrderDetailDrawer({
         }}
       >
         <SheetContent className="w-full p-0 sm:max-w-2xl" key={orderNumber ?? 'closed'}>
+          {!order && (
+            <SheetHeader className="sr-only">
+              <SheetTitle>
+                {orderNumber ? `Pedido ${orderNumber}` : 'Detalle de pedido'}
+              </SheetTitle>
+            </SheetHeader>
+          )}
           {detailQuery.isLoading ? (
             <AdminOrderDetailSkeleton />
           ) : detailQuery.isError ? (
