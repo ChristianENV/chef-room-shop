@@ -1,7 +1,10 @@
 import { PaymentMethod } from '@prisma/client'
 import { z } from 'zod'
 
-import { isNormalizableMxPhone } from '@/src/server/shipping/skydropx/skydropx-phone'
+import {
+  normalizeMxPhoneForSkydropx,
+  isNormalizableMxPhone,
+} from '@/src/server/shipping/skydropx/skydropx-phone'
 
 import { isCheckoutShippingOptionalOnServer } from './checkout-shipping-config'
 
@@ -18,6 +21,17 @@ const mxPhoneSchema = z
   .min(8, 'Teléfono requerido')
   .refine((value) => isNormalizableMxPhone(value), {
     message: 'El teléfono debe tener 10 dígitos (México)',
+  })
+  .transform((value, ctx) => {
+    try {
+      return normalizeMxPhoneForSkydropx(value)
+    } catch {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El teléfono debe tener 10 dígitos (México)',
+      })
+      return z.NEVER
+    }
   })
 
 const checkoutAddressSchema = z.object({
