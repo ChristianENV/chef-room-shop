@@ -15,6 +15,9 @@ export function sanitizeSkydropxWebhookPayload<T>(value: T): T {
   return sanitizeValue(value) as T
 }
 
+/** Alias for debug logs and internal error context. */
+export const sanitizeSkydropxDebugPayload = sanitizeSkydropxWebhookPayload
+
 function sanitizeValue(value: unknown, key?: string): unknown {
   if (key && SENSITIVE_KEYS.has(key.toLowerCase())) {
     return '[redacted]'

@@ -2,7 +2,9 @@ import 'server-only'
 
 import { getSkydropxAccessToken } from './skydropx.auth'
 import { getSkydropxConfig } from './skydropx.config'
+import { logSkydropxDebug } from './skydropx.debug'
 import { SkydropxApiError } from './skydropx.errors'
+import { sanitizeSkydropxDebugPayload } from './skydropx.sanitize'
 import { scheduleSkydropxRequest } from './skydropx-rate-limit'
 import type {
   SkydropxCancelShipmentRequest,
@@ -17,6 +19,14 @@ type SkydropxFetchOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   body?: unknown
   query?: Record<string, string | undefined>
+  operation?: string
+  debugContext?: {
+    orderNumber?: string
+    providerQuoteId?: string | null
+    providerRateId?: string | null
+    carrier?: string | null
+    service?: string | null
+  }
 }
 
 function buildUrl(path: string, query?: Record<string, string | undefined>): string {
@@ -34,16 +44,79 @@ function buildUrl(path: string, query?: Record<string, string | undefined>): str
   return url.toString()
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null
+}
+
+function readString(record: Record<string, unknown>, key: string): string | null {
+  const value = record[key]
+  return typeof value === 'string' && value.length > 0 ? value : null
+}
+
 function extractApiErrorMessage(parsed: unknown, statusText: string): string {
-  if (typeof parsed === 'object' && parsed !== null) {
-    if ('message' in parsed && typeof (parsed as { message: unknown }).message === 'string') {
-      return (parsed as { message: string }).message
-    }
-    if ('error' in parsed && typeof (parsed as { error: unknown }).error === 'string') {
-      return (parsed as { error: string }).error
+  const record = asRecord(parsed)
+  if (record) {
+    const message =
+      readString(record, 'message') ??
+      readString(record, 'error') ??
+      readString(record, 'error_message')
+    if (message) return message
+
+    const errors = record.errors
+    if (Array.isArray(errors) && errors.length > 0) {
+      const first = errors[0]
+      if (typeof first === 'string') return first
+      const firstRecord = asRecord(first)
+      if (firstRecord) {
+        return (
+          readString(firstRecord, 'message') ??
+          readString(firstRecord, 'detail') ??
+          `Skydropx API error (${statusText})`
+        )
+      }
     }
   }
   return `Skydropx API error (${statusText})`
+}
+
+function extractRequestId(parsed: unknown): string | null {
+  const record = asRecord(parsed)
+  if (!record) return null
+  return (
+    readString(record, 'request_id') ??
+    readString(record, 'requestId') ??
+    readString(record, 'x-request-id')
+  )
+}
+
+function summarizeRequestBody(body: unknown): unknown {
+  if (!body || typeof body !== 'object') return body
+  const record = body as Record<string, unknown>
+  const shipment = asRecord(record.shipment)
+  if (!shipment) return sanitizeSkydropxDebugPayload(body)
+
+  return sanitizeSkydropxDebugPayload({
+    rate_id: shipment.rate_id,
+    printing_format: shipment.printing_format,
+    address_from: shipment.address_from
+      ? {
+          postal_code: asRecord(shipment.address_from as unknown)?.postal_code,
+          area_level1: asRecord(shipment.address_from as unknown)?.area_level1,
+          has_street1: Boolean(asRecord(shipment.address_from as unknown)?.street1),
+          has_phone: Boolean(asRecord(shipment.address_from as unknown)?.phone),
+        }
+      : undefined,
+    address_to: shipment.address_to
+      ? {
+          postal_code: asRecord(shipment.address_to as unknown)?.postal_code,
+          area_level1: asRecord(shipment.address_to as unknown)?.area_level1,
+          has_street1: Boolean(asRecord(shipment.address_to as unknown)?.street1),
+          has_phone: Boolean(asRecord(shipment.address_to as unknown)?.phone),
+        }
+      : undefined,
+  })
 }
 
 /**
@@ -55,10 +128,12 @@ export async function skydropxRequest<T>(
 ): Promise<T> {
   const accessToken = await getSkydropxAccessToken()
   const url = buildUrl(path, options.query)
+  const method = options.method ?? 'GET'
+  const operation = options.operation ?? `${method} ${path}`
 
   const response = await scheduleSkydropxRequest(() =>
     fetch(url, {
-      method: options.method ?? 'GET',
+      method,
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
@@ -75,17 +150,47 @@ export async function skydropxRequest<T>(
     try {
       parsed = JSON.parse(text) as unknown
     } catch {
-      parsed = { raw: text }
+      parsed = { raw: text.slice(0, 500) }
     }
   }
 
-  if (!response.ok) {
-    throw new SkydropxApiError(
-      extractApiErrorMessage(parsed, response.statusText),
-      response.status,
-      parsed,
-    )
+  const requestId = extractRequestId(parsed)
+  const debugBase = {
+    operation,
+    method,
+    path,
+    orderNumber: options.debugContext?.orderNumber,
+    providerQuoteId: options.debugContext?.providerQuoteId,
+    providerRateId: options.debugContext?.providerRateId,
+    carrier: options.debugContext?.carrier,
+    service: options.debugContext?.service,
+    statusCode: response.status,
+    requestId,
   }
+
+  if (!response.ok) {
+    const sanitizedBody = sanitizeSkydropxDebugPayload(parsed)
+    logSkydropxDebug({
+      ...debugBase,
+      requestSummary: options.body ? summarizeRequestBody(options.body) : undefined,
+      errorBody: sanitizedBody,
+    })
+
+    throw new SkydropxApiError({
+      message: extractApiErrorMessage(parsed, response.statusText),
+      status: response.status,
+      details: parsed,
+      operation,
+      path,
+      requestId,
+      sanitizedBody,
+    })
+  }
+
+  logSkydropxDebug({
+    ...debugBase,
+    requestSummary: options.body ? summarizeRequestBody(options.body) : undefined,
+  })
 
   return parsed as T
 }
@@ -99,6 +204,7 @@ export async function createSkydropxQuotation(
   return skydropxRequest<SkydropxQuotationResponse>('/api/v1/quotations', {
     method: 'POST',
     body: input,
+    operation: 'createQuotation',
   })
 }
 
@@ -106,7 +212,9 @@ export async function createSkydropxQuotation(
  * GET /api/v1/quotations/{id} — fetch quote and carrier rates.
  */
 export async function getSkydropxQuotation(id: string): Promise<SkydropxQuotationResponse> {
-  return skydropxRequest<SkydropxQuotationResponse>(`/api/v1/quotations/${encodeURIComponent(id)}`)
+  return skydropxRequest<SkydropxQuotationResponse>(`/api/v1/quotations/${encodeURIComponent(id)}`, {
+    operation: 'getQuotation',
+  })
 }
 
 /**
@@ -114,10 +222,17 @@ export async function getSkydropxQuotation(id: string): Promise<SkydropxQuotatio
  */
 export async function createSkydropxShipment(
   input: SkydropxCreateShipmentRequest,
+  debugContext?: SkydropxFetchOptions['debugContext'],
 ): Promise<SkydropxShipmentResponse> {
   return skydropxRequest<SkydropxShipmentResponse>('/api/v1/shipments/', {
     method: 'POST',
     body: input,
+    operation: 'createShipment',
+    debugContext: {
+      ...debugContext,
+      providerRateId:
+        debugContext?.providerRateId ?? input.shipment.rate_id,
+    },
   })
 }
 
@@ -127,6 +242,7 @@ export async function createSkydropxShipment(
 export async function getSkydropxShipment(id: string): Promise<SkydropxShipmentResponse> {
   return skydropxRequest<SkydropxShipmentResponse>(
     `/api/v1/shipments/${encodeURIComponent(id)}`,
+    { operation: 'getShipment' },
   )
 }
 
@@ -139,7 +255,7 @@ export async function cancelSkydropxLabelOrShipment(
 ): Promise<SkydropxShipmentResponse> {
   return skydropxRequest<SkydropxShipmentResponse>(
     `/api/v1/shipments/${encodeURIComponent(shipmentId)}/cancellations`,
-    { method: 'POST', body: input },
+    { method: 'POST', body: input, operation: 'cancelShipment' },
   )
 }
 
@@ -154,5 +270,6 @@ export async function getSkydropxTracking(
       tracking_number: query.tracking_number,
       carrier_name: query.carrier_name,
     },
+    operation: 'getTracking',
   })
 }

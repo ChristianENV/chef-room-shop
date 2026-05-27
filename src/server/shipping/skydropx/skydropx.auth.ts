@@ -84,12 +84,24 @@ export async function refreshSkydropxAccessToken(): Promise<string> {
       typeof (parsed as { message: unknown }).message === 'string'
         ? (parsed as { message: string }).message
         : `Skydropx OAuth error (${response.status})`
-    throw new SkydropxApiError(message, response.status, parsed)
+    throw new SkydropxApiError({
+      message,
+      status: response.status,
+      details: parsed,
+      operation: 'oauthToken',
+      path: '/api/v1/oauth/token',
+    })
   }
 
   const token = parsed as SkydropxOAuthTokenResponse
   if (!token?.access_token || typeof token.expires_in !== 'number') {
-    throw new SkydropxApiError('Skydropx OAuth response inválida', response.status, parsed)
+    throw new SkydropxApiError({
+      message: 'Skydropx OAuth response inválida',
+      status: response.status,
+      details: parsed,
+      operation: 'oauthToken',
+      path: '/api/v1/oauth/token',
+    })
   }
 
   const expiresAtMs =

@@ -4,6 +4,21 @@ import { APP_LIMITS } from '@/src/config/vars'
 import { SHIPPING_CURRENCY_MX } from '@/src/config/shipping'
 
 import { getShippingOriginConfig } from '../shipping.config'
+import {
+  mapLabelFormatToSkydropx,
+  mapOrderToSkydropxShipmentPayload,
+  mapOriginToSkydropxAddress,
+  type MapOrderToSkydropxShipmentInput,
+  type OrderShippingAddressInput,
+} from './skydropx-shipment-payload'
+
+export {
+  mapLabelFormatToSkydropx,
+  mapOrderToSkydropxShipmentPayload,
+  mapOriginToSkydropxAddress,
+  type MapOrderToSkydropxShipmentInput,
+  type OrderShippingAddressInput,
+}
 import type { PackageDimensions } from '../shipping.package'
 import type { CartItemQuantityInput } from '../shipping.package'
 import { getPackageForCartItems } from '../shipping.package'
@@ -50,27 +65,6 @@ export type MappedShipmentData = {
   rawJson: Record<string, unknown>
 }
 
-export type OrderShippingAddressInput = {
-  fullName: string
-  line1: string
-  line2?: string | null
-  city: string
-  state: string
-  postalCode: string
-  country: string
-  phone?: string | null
-  email?: string
-}
-
-export type MapOrderToSkydropxShipmentInput = {
-  providerRateId: string
-  printingFormat?: 'standard' | 'thermal'
-  packageJson: unknown
-  shippingAddress: OrderShippingAddressInput
-  orderNumber: string
-  customerEmail: string
-}
-
 function asRecord(value: unknown): Record<string, unknown> | null {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -112,25 +106,6 @@ export const SKYDROPX_RATE_VALIDITY_MS =
 
 export function skydropxRateExpiresAt(from: Date = new Date()): Date {
   return new Date(from.getTime() + SKYDROPX_RATE_VALIDITY_MS)
-}
-
-/**
- * Maps Chef Room warehouse origin (env) to Skydropx address_from.
- */
-export function mapOriginToSkydropxAddress(): SkydropxAddressInput {
-  const origin = getShippingOriginConfig()
-  return {
-    country_code: origin.country,
-    postal_code: origin.postalCode,
-    area_level1: origin.state,
-    area_level2: origin.city,
-    area_level3: origin.neighborhood || origin.city,
-    street1: origin.street || undefined,
-    name: origin.name,
-    company: origin.company,
-    phone: origin.phone || undefined,
-    email: origin.email || undefined,
-  }
 }
 
 /**
@@ -270,59 +245,6 @@ export function mapSkydropxRateToShippingRate(raw: unknown): MappedShippingRate 
         ? estimatedDeliveryDate
         : null,
     rawJson: record,
-  }
-}
-
-function mapOrderAddressToSkydropx(
-  address: OrderShippingAddressInput,
-  email: string,
-): SkydropxAddressInput & {
-  street1: string
-  name: string
-  company?: string
-  phone?: string
-  email?: string
-} {
-  const street1 = [address.line1, address.line2].filter(Boolean).join(', ')
-  return {
-    country_code: address.country.length === 2 ? address.country : 'MX',
-    postal_code: address.postalCode,
-    area_level1: address.state,
-    area_level2: address.city,
-    area_level3: address.city,
-    street1: street1 || address.line1,
-    name: address.fullName,
-    phone: address.phone ?? undefined,
-    email: address.email ?? email,
-  }
-}
-
-/**
- * Maps Chef Room label format hint to Skydropx printing_format.
- */
-export function mapLabelFormatToSkydropx(
-  labelFormat?: string | null,
-): 'standard' | 'thermal' {
-  const normalized = labelFormat?.trim().toUpperCase()
-  if (normalized === 'ZPL' || normalized === 'EPL' || normalized === 'THERMAL') {
-    return 'thermal'
-  }
-  return 'standard'
-}
-
-/**
- * Builds POST /api/v1/shipments body from order, quote package, and selected rate.
- */
-export function mapOrderToSkydropxShipmentPayload(
-  input: MapOrderToSkydropxShipmentInput,
-): SkydropxCreateShipmentRequest {
-  return {
-    shipment: {
-      rate_id: input.providerRateId,
-      printing_format: input.printingFormat ?? 'standard',
-      address_from: mapOriginToSkydropxAddress(),
-      address_to: mapOrderAddressToSkydropx(input.shippingAddress, input.customerEmail),
-    },
   }
 }
 

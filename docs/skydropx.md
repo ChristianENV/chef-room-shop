@@ -124,6 +124,50 @@ See `docs/graphql-shipping.md` for ownership, idempotency, and `recommendedRate`
 - `mapOrderToSkydropxShipmentPayload` — `rate_id`, origin, destination, `printing_format`
 - `parseSkydropxShipmentResponse` — tracking, label URL, carrier, cost (defensivo)
 
+## Debug de generación de guías
+
+### Causas frecuentes
+
+| Síntoma | Causa probable |
+|---------|----------------|
+| `502 Bad Gateway` | Skydropx caído, payload inválido, o origen incompleto enviado al API |
+| Tarifa expirada | `ShippingRate.expiresAt` pasado — volver a cotizar en checkout |
+| Dirección incompleta | Falta colonia (`Address.label`), número exterior (`line2`), teléfono, etc. |
+| Origen incompleto | `SHIPPING_ORIGIN_*` vacíos; defaults en `vars.ts` no incluyen calle/teléfono |
+| 401/403 | `SKYDROPX_CLIENT_ID` / `SECRET` incorrectos |
+| Saldo / carrier | Cuenta Skydropx sin créditos o paquetería no habilitada |
+
+### Endpoint admin (label)
+
+- **POST** `{SKYDROPX_API_BASE_URL}/api/v1/shipments/` (mismo que cotización v1)
+- Body: `{ shipment: { rate_id, printing_format, address_from, address_to } }`
+- `rate_id` = `ShippingRate.providerRateId` de la cotización del pedido
+- v2 (`POST /api/v2/shipments`) existe pero no usamos en v1 para no romper checkout
+
+### Logging seguro
+
+```env
+SKYDROPX_DEBUG=true
+```
+
+En desarrollo también se activa sin la variable. Logs en servidor: operación, path, `orderNumber`, IDs de quote/rate, status HTTP y cuerpo **sanitizado** (sin Bearer, sin secrets).
+
+### Script smoke (dry-run)
+
+```bash
+pnpm tsx scripts/skydropx-create-label-smoke.ts CR-2026-000027
+pnpm tsx scripts/skydropx-create-label-smoke.ts CR-2026-000027 --send
+```
+
+Imprime payload sanitizado. Con `--send` llama a Skydropx (requiere credenciales en `.env.local`).
+
+### Probar payload en Postman
+
+1. Ejecuta el script **sin** `--send` y copia el JSON sanitizado.
+2. Obtén Bearer con OAuth (`POST /api/v1/oauth/token`) desde el dashboard Skydropx — **no** pegues el token en docs ni commits.
+3. `POST https://api-pro.skydropx.com/api/v1/shipments/` con el body del script.
+4. Si Postman devuelve 502 → problema de cuenta/Skydropx/payload; si 201/202 → revisar headers/base URL en la app.
+
 ## v1 decisions
 
 - Checkout usa `shippingRateId` y `shippingCents` desde DB

@@ -14,7 +14,25 @@ export function mapShippingMutationError(error: unknown): string {
       return 'La orden aún no está lista para generar guía.'
     }
     if (message.includes('expiró')) {
-      return 'La tarifa de envío expiró. El cliente debe cotizar de nuevo en checkout.'
+      return 'La tarifa de envío expiró. Vuelve a cotizar el envío antes de generar la guía.'
+    }
+    if (message.includes('dirección del pedido está incompleta')) {
+      return 'La dirección del pedido está incompleta.'
+    }
+    if (message.includes('dirección de origen')) {
+      return 'Configura la dirección de origen antes de generar guías.'
+    }
+    if (message.includes('Skydropx no pudo generar la guía')) {
+      return `${message} Si persiste, revisa que la dirección y la tarifa sigan vigentes.`
+    }
+    if (message.includes('saldo') || message.includes('servicios habilitados')) {
+      return message
+    }
+    if (message.includes('datos de envío no son válidos')) {
+      return message
+    }
+    if (message.includes('autenticar con Skydropx')) {
+      return message
     }
     if (message.includes('tarifa')) {
       return message

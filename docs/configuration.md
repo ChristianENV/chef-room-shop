@@ -37,12 +37,18 @@ import { VARS, BUSINESS_VARS, SHIPPING_VARS } from '@/src/config/vars'
 Warehouse address for Skydropx labels can be overridden per environment:
 
 ```env
-SHIPPING_ORIGIN_STREET=
-SHIPPING_ORIGIN_POSTAL_CODE=
-# …see .env.example
+SHIPPING_ORIGIN_STREET=Calle Ejemplo
+SHIPPING_ORIGIN_EXT_NUMBER=123
+SHIPPING_ORIGIN_NEIGHBORHOOD=Centro
+SHIPPING_ORIGIN_CITY=Puebla
+SHIPPING_ORIGIN_STATE=Puebla
+SHIPPING_ORIGIN_POSTAL_CODE=72000
+SHIPPING_ORIGIN_PHONE=2221234567
+SHIPPING_ORIGIN_EMAIL=bodega@chefroom.mx
+# SHIPPING_ORIGIN_NAME, SHIPPING_ORIGIN_COMPANY optional overrides
 ```
 
-Defaults live in `SHIPPING_VARS.origin` inside `vars.ts` (Puebla, CP `72000`).
+Defaults in `SHIPPING_VARS.origin` (`vars.ts`) only set city/state/CP — **admin label generation requires** full origin via env before calling Skydropx.
 
 ### Package dimension overrides (optional, deprecated for daily use)
 

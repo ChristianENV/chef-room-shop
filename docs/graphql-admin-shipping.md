@@ -76,7 +76,7 @@ mutation CreateLabel {
 4. `ShippingQuote` vinculada por `orderId`.
 5. Tarifa: `rateId` del input (debe pertenecer a la quote) o tarifa con `selectedAt` en checkout.
 6. Tarifa no expirada (`expiresAt`).
-7. Dirección de envío de la orden.
+7. Validación de origen (`SHIPPING_ORIGIN_*`), dirección (colonia en `Address.label`, número en `line2`) y `providerQuoteId`.
 8. `POST /api/v1/shipments/` con `rate_id` = `ShippingRate.providerRateId`.
 9. Transacción Prisma: `Shipment`, `ShipmentEvent`, `OrderEvent`, actualización de orden.
 
@@ -107,7 +107,15 @@ Consulta `GET /api/v1/shipments/tracking` con `trackingNumber` + `carrier` del `
 | Guía ya generada | `CONFLICT` |
 | Sin quote o sin tarifa seleccionada | `BAD_REQUEST` |
 | Tarifa expirada | `BAD_REQUEST` |
-| Error Skydropx | `SKYDROPX_API_ERROR` |
+| Error Skydropx | `SKYDROPX_API_ERROR` (mensaje amigable por status HTTP) |
+| Origen incompleto | `BAD_REQUEST` — configurar `SHIPPING_ORIGIN_*` |
+| Dirección incompleta | `BAD_REQUEST` |
+
+### Debug
+
+- `SKYDROPX_DEBUG=true` — logs sanitizados en servidor (`skydropx.debug.ts`)
+- `pnpm tsx scripts/skydropx-create-label-smoke.ts <orderNumber>` — dry-run del payload
+- Ver `docs/skydropx.md` → sección *Debug de generación de guías*
 
 ## Frontend UI
 

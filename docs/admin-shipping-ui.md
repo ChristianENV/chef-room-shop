@@ -59,6 +59,18 @@ Tras crear, cancelar o refrescar:
 - `adminOrdersQueryKeys.all`
 - `adminDashboardQueryKeys.all`
 
+## Mensajes de error (mutation)
+
+Mapeados en `shipping-mutation-errors.ts`:
+
+| Caso | Mensaje UI |
+|------|------------|
+| 502 Skydropx | *Skydropx no pudo generar la guía…* + nota de reintentar |
+| Tarifa expirada | *Vuelve a cotizar el envío antes de generar la guía.* |
+| Dirección incompleta | *La dirección del pedido está incompleta.* |
+| Origen no configurado | *Configura la dirección de origen antes de generar guías.* |
+| Saldo / carrier | *Revisa saldo o servicios habilitados en Skydropx.* |
+
 ## Limitaciones (v1)
 
 - Sin webhooks Skydropx (estado no se actualiza solo).

@@ -16,6 +16,13 @@ import {
   getSkydropxTracking,
 } from '@/src/server/shipping/skydropx/skydropx.client'
 import { SkydropxApiError } from '@/src/server/shipping/skydropx/skydropx.errors'
+import { getSkydropxUserMessage } from '@/src/server/shipping/skydropx/skydropx.user-messages'
+import {
+  SkydropxValidationError,
+  validateOrderShippingAddressForLabel,
+  validateShippingOriginForLabel,
+  validateShippingQuoteForLabel,
+} from '@/src/server/shipping/skydropx/skydropx.validation'
 import {
   mapLabelFormatToSkydropx,
   mapOrderToSkydropxShipmentPayload,
@@ -69,10 +76,13 @@ function conflictError(message: string): GraphQLError {
 }
 
 function skydropxGraphQLError(error: SkydropxApiError): GraphQLError {
-  return new GraphQLError(
-    error.message || 'No se pudo completar la operación con Skydropx.',
-    { extensions: { code: 'SKYDROPX_API_ERROR', status: error.status } },
-  )
+  return new GraphQLError(getSkydropxUserMessage(error), {
+    extensions: { code: 'SKYDROPX_API_ERROR', status: error.status },
+  })
+}
+
+function validationGraphQLError(error: SkydropxValidationError): GraphQLError {
+  return new GraphQLError(error.message, { extensions: { code: 'BAD_REQUEST' } })
 }
 
 async function createAdminOrderEvent(
@@ -222,19 +232,31 @@ export async function createAdminShippingLabel(
     )
   }
 
-  if (rate.expiresAt && rate.expiresAt <= new Date()) {
-    throw badRequestError(
-      'La tarifa de envío expiró. Cotiza nuevamente antes de generar guía.',
-    )
-  }
-
-  if (!rate.providerRateId?.trim()) {
-    throw badRequestError('La tarifa no tiene identificador de proveedor válido.')
-  }
-
   const address = order.shippingAddress
   if (!address) {
     throw badRequestError('El pedido no tiene dirección de envío.')
+  }
+
+  try {
+    validateShippingOriginForLabel()
+    validateShippingQuoteForLabel(quote, rate, {
+      explicitRateId: parsed.rateId ?? null,
+    })
+  } catch (error) {
+    if (error instanceof SkydropxValidationError) {
+      throw validationGraphQLError(error)
+    }
+    throw error
+  }
+
+  let addressMeta: { neighborhood: string; reference: string }
+  try {
+    addressMeta = validateOrderShippingAddressForLabel(address, order.customerEmail)
+  } catch (error) {
+    if (error instanceof SkydropxValidationError) {
+      throw validationGraphQLError(error)
+    }
+    throw error
   }
 
   const printingFormat = mapLabelFormatToSkydropx(parsed.labelFormat ?? 'PDF')
@@ -248,17 +270,25 @@ export async function createAdminShippingLabel(
       fullName: address.fullName,
       line1: address.line1,
       line2: address.line2,
+      neighborhood: addressMeta.neighborhood,
       city: address.city,
       state: address.state,
       postalCode: address.postalCode,
       country: address.country,
       phone: address.phone,
+      reference: addressMeta.reference,
     },
   })
 
   let skydropxRaw: unknown
   try {
-    skydropxRaw = await createSkydropxShipment(skydropxPayload)
+    skydropxRaw = await createSkydropxShipment(skydropxPayload, {
+      orderNumber: order.orderNumber,
+      providerQuoteId: quote.providerQuoteId,
+      providerRateId: rate.providerRateId,
+      carrier: rate.carrier,
+      service: rate.service,
+    })
   } catch (error) {
     if (error instanceof SkydropxApiError) {
       throw skydropxGraphQLError(error)

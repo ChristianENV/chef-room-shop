@@ -1,3 +1,5 @@
+import { sanitizeSkydropxDebugPayload } from './skydropx.sanitize'
+
 export class SkydropxConfigError extends Error {
   readonly code = 'SKYDROPX_NOT_CONFIGURED'
 
@@ -9,16 +11,34 @@ export class SkydropxConfigError extends Error {
   }
 }
 
+export type SkydropxApiErrorOptions = {
+  message: string
+  status: number
+  details?: unknown
+  operation?: string
+  path?: string
+  requestId?: string | null
+  sanitizedBody?: unknown
+}
+
 export class SkydropxApiError extends Error {
   readonly code = 'SKYDROPX_API_ERROR'
   readonly status: number
   readonly details: unknown
+  readonly operation?: string
+  readonly path?: string
+  readonly requestId?: string | null
+  readonly sanitizedBody?: unknown
 
-  constructor(message: string, status: number, details?: unknown) {
-    super(message)
+  constructor(options: SkydropxApiErrorOptions) {
+    super(options.message)
     this.name = 'SkydropxApiError'
-    this.status = status
-    this.details = details
+    this.status = options.status
+    this.details = options.details
+    this.operation = options.operation
+    this.path = options.path
+    this.requestId = options.requestId
+    this.sanitizedBody = options.sanitizedBody ?? sanitizeSkydropxDebugPayload(options.details)
   }
 }
 
