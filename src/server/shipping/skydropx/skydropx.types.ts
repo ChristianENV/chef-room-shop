@@ -61,6 +61,11 @@ export type SkydropxCreateShipmentRequest = {
       phone?: string
       email?: string
     }
+    packages?: Array<{
+      package_number: string
+      consignment_note: string
+      package_type: string
+    }>
   }
 }
 

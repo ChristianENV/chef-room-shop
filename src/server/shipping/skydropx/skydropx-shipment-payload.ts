@@ -7,6 +7,17 @@ import {
   type OrderAddressForLabel,
 } from './skydropx.validation'
 
+const DEFAULT_CONSIGNMENT_NOTE = '53102400'
+const DEFAULT_PACKAGE_TYPE = '4G'
+
+function getSkydropxDefaultConsignmentNote(): string {
+  return process.env.SKYDROPX_DEFAULT_CONSIGNMENT_NOTE?.trim() || DEFAULT_CONSIGNMENT_NOTE
+}
+
+function getSkydropxDefaultPackageType(): string {
+  return process.env.SKYDROPX_DEFAULT_PACKAGE_TYPE?.trim() || DEFAULT_PACKAGE_TYPE
+}
+
 export type MapOrderToSkydropxShipmentInput = {
   providerRateId: string
   printingFormat?: 'standard' | 'thermal'
@@ -59,6 +70,14 @@ export function mapOrderToSkydropxShipmentPayload(
       printing_format: input.printingFormat ?? 'standard',
       address_from: toSkydropxV1AddressInput(origin),
       address_to: toSkydropxV1AddressInput(recipient),
+      // Temporary fixed defaults to satisfy carriers requiring Carta Porte metadata.
+      packages: [
+        {
+          package_number: '1',
+          consignment_note: getSkydropxDefaultConsignmentNote(),
+          package_type: getSkydropxDefaultPackageType(),
+        },
+      ],
     },
   }
 }

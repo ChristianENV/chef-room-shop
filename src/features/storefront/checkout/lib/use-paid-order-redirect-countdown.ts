@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export const PAID_ORDER_REDIRECT_SECONDS = 8
@@ -13,40 +13,47 @@ export function usePaidOrderRedirectCountdown(
   redirectUrl: string | null,
 ): { secondsLeft: number | null; cancelRedirect: () => void } {
   const router = useRouter()
+  const active = enabled && Boolean(redirectUrl?.trim())
   const [secondsLeft, setSecondsLeft] = useState(PAID_ORDER_REDIRECT_SECONDS)
   const [cancelled, setCancelled] = useState(false)
   const hasRedirectedRef = useRef(false)
 
   useEffect(() => {
-    if (!enabled || !redirectUrl || cancelled) {
-      setSecondsLeft(PAID_ORDER_REDIRECT_SECONDS)
+    if (!active) {
       hasRedirectedRef.current = false
+      setCancelled(false)
+      setSecondsLeft(PAID_ORDER_REDIRECT_SECONDS)
       return
     }
 
-    setSecondsLeft(PAID_ORDER_REDIRECT_SECONDS)
     hasRedirectedRef.current = false
+    setCancelled(false)
+    setSecondsLeft(PAID_ORDER_REDIRECT_SECONDS)
+  }, [active, redirectUrl])
+
+  useEffect(() => {
+    if (!active || cancelled) return
 
     const intervalId = window.setInterval(() => {
-      setSecondsLeft((prev) => {
-        if (prev <= 1) {
-          if (!hasRedirectedRef.current) {
-            hasRedirectedRef.current = true
-            router.push(redirectUrl)
-          }
-          return 0
-        }
-        return prev - 1
-      })
+      setSecondsLeft((prev) => (prev <= 1 ? 0 : prev - 1))
     }, 1000)
 
     return () => window.clearInterval(intervalId)
-  }, [enabled, redirectUrl, cancelled, router])
+  }, [active, cancelled, redirectUrl])
 
-  const cancelRedirect = () => setCancelled(true)
+  useEffect(() => {
+    if (!active || cancelled || secondsLeft > 0 || !redirectUrl) return
+    if (hasRedirectedRef.current) return
 
-  const activeCountdown =
-    enabled && redirectUrl && !cancelled ? secondsLeft : null
+    hasRedirectedRef.current = true
+    router.push(redirectUrl)
+  }, [active, cancelled, secondsLeft, redirectUrl, router])
+
+  const cancelRedirect = useCallback(() => {
+    setCancelled(true)
+  }, [])
+
+  const activeCountdown = active && !cancelled ? secondsLeft : null
 
   return { secondsLeft: activeCountdown, cancelRedirect }
 }

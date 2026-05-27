@@ -120,8 +120,6 @@ function mentionsReference(text: string): boolean {
  */
 export function getSkydropxQuoteUserMessage(error: SkydropxApiError): string {
   const text = collectErrorText(error)
-  const nested = extractSkydropxNestedFieldErrors(error.sanitizedBody ?? error.details)
-  const detailHint = nested[0] ?? null
 
   if (mentionsCreditsOrCarrier(text)) {
     return 'Revisa saldo o servicios habilitados en Skydropx.'
@@ -137,9 +135,6 @@ export function getSkydropxQuoteUserMessage(error: SkydropxApiError): string {
     if (mentionsPostal(text)) {
       return 'El código postal debe tener 5 dígitos.'
     }
-    if (detailHint && detailHint.length < 140) {
-      return `No pudimos cotizar el envío: ${detailHint}`
-    }
     return 'No pudimos cotizar el envío con esos datos. Revisa código postal, ciudad, estado y paquete.'
   }
 
@@ -154,7 +149,7 @@ export function getSkydropxQuoteUserMessage(error: SkydropxApiError): string {
     case 402:
       return 'Revisa saldo o servicios habilitados en Skydropx.'
     default:
-      return error.message || 'No pudimos cotizar el envío. Intenta de nuevo.'
+      return 'No pudimos cotizar el envío. Intenta de nuevo.'
   }
 }
 
@@ -163,8 +158,6 @@ export function getSkydropxQuoteUserMessage(error: SkydropxApiError): string {
  */
 export function getSkydropxUserMessage(error: SkydropxApiError): string {
   const text = collectErrorText(error)
-  const nested = extractSkydropxNestedFieldErrors(error.sanitizedBody ?? error.details)
-  const detailHint = nested[0] ?? null
 
   if (mentionsCreditsOrCarrier(text)) {
     return 'Revisa saldo o servicios habilitados en Skydropx.'
@@ -179,9 +172,6 @@ export function getSkydropxUserMessage(error: SkydropxApiError): string {
     }
     if (mentionsPostal(text)) {
       return 'Los datos de envío no son válidos. El código postal debe tener 5 dígitos.'
-    }
-    if (detailHint && detailHint.length < 120) {
-      return `Los datos de envío no son válidos: ${detailHint}`
     }
     return 'Los datos de envío no son válidos. Revisa dirección, teléfono y código postal.'
   }
@@ -201,6 +191,6 @@ export function getSkydropxUserMessage(error: SkydropxApiError): string {
     case 409:
       return 'La guía ya fue generada o la tarifa no está disponible.'
     default:
-      return error.message || 'No se pudo completar la operación con Skydropx.'
+      return 'No se pudo completar la operación con Skydropx.'
   }
 }
