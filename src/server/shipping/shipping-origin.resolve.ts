@@ -14,6 +14,7 @@ export type ShippingOriginConfig = {
   state: string
   country: string
   postalCode: string
+  reference: string
 }
 
 /**
@@ -36,5 +37,6 @@ export function resolveShippingOriginFromEnv(): ShippingOriginConfig {
     state: process.env.SHIPPING_ORIGIN_STATE?.trim() || origin.state,
     country: process.env.SHIPPING_ORIGIN_COUNTRY?.trim() || SHIPPING_COUNTRY_MX,
     postalCode: process.env.SHIPPING_ORIGIN_POSTAL_CODE?.trim() || origin.postalCode,
+    reference: process.env.SHIPPING_ORIGIN_REFERENCE?.trim() || '',
   }
 }

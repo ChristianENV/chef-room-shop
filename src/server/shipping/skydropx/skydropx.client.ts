@@ -26,6 +26,10 @@ type SkydropxFetchOptions = {
     providerRateId?: string | null
     carrier?: string | null
     service?: string | null
+    destinationPostalCode?: string
+    destinationCity?: string
+    destinationState?: string
+    originPostalCode?: string
   }
 }
 
@@ -53,6 +57,11 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 function readString(record: Record<string, unknown>, key: string): string | null {
   const value = record[key]
   return typeof value === 'string' && value.length > 0 ? value : null
+}
+
+function readNumber(record: Record<string, unknown>, key: string): number | null {
+  const value = record[key]
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
 }
 
 function extractApiErrorMessage(parsed: unknown, statusText: string): string {
@@ -91,30 +100,48 @@ function extractRequestId(parsed: unknown): string | null {
   )
 }
 
+function summarizeV1AddressNode(node: unknown): Record<string, unknown> | undefined {
+  const addr = asRecord(node)
+  if (!addr) return undefined
+  const phone = readString(addr, 'phone')
+  const reference = readString(addr, 'reference')
+  return {
+    postal_code: readString(addr, 'postal_code'),
+    area_level1: readString(addr, 'area_level1'),
+    area_level2: readString(addr, 'area_level2'),
+    area_level3: readString(addr, 'area_level3'),
+    has_street1: Boolean(readString(addr, 'street1')),
+    phoneLength: phone?.replace(/\D/g, '').length ?? 0,
+    referenceLength: reference?.length ?? 0,
+    has_reference: Boolean(reference),
+    has_email: Boolean(readString(addr, 'email')),
+  }
+}
+
 function summarizeRequestBody(body: unknown): unknown {
   if (!body || typeof body !== 'object') return body
   const record = body as Record<string, unknown>
-  const shipment = asRecord(record.shipment)
+  const quotation = asRecord(record.quotation)
+  const shipment = asRecord(record.shipment) ?? quotation
   if (!shipment) return sanitizeSkydropxDebugPayload(body)
 
   return sanitizeSkydropxDebugPayload({
     rate_id: shipment.rate_id,
     printing_format: shipment.printing_format,
-    address_from: shipment.address_from
-      ? {
-          postal_code: asRecord(shipment.address_from as unknown)?.postal_code,
-          area_level1: asRecord(shipment.address_from as unknown)?.area_level1,
-          has_street1: Boolean(asRecord(shipment.address_from as unknown)?.street1),
-          has_phone: Boolean(asRecord(shipment.address_from as unknown)?.phone),
-        }
-      : undefined,
-    address_to: shipment.address_to
-      ? {
-          postal_code: asRecord(shipment.address_to as unknown)?.postal_code,
-          area_level1: asRecord(shipment.address_to as unknown)?.area_level1,
-          has_street1: Boolean(asRecord(shipment.address_to as unknown)?.street1),
-          has_phone: Boolean(asRecord(shipment.address_to as unknown)?.phone),
-        }
+    address_from: summarizeV1AddressNode(shipment.address_from),
+    address_to: summarizeV1AddressNode(shipment.address_to),
+    parcels: Array.isArray(shipment.parcels)
+      ? shipment.parcels.map((p) => {
+          const parcel = asRecord(p)
+          return parcel
+            ? {
+                length: readNumber(parcel, 'length'),
+                width: readNumber(parcel, 'width'),
+                height: readNumber(parcel, 'height'),
+                weight: readNumber(parcel, 'weight'),
+              }
+            : null
+        })
       : undefined,
   })
 }
@@ -164,6 +191,10 @@ export async function skydropxRequest<T>(
     providerRateId: options.debugContext?.providerRateId,
     carrier: options.debugContext?.carrier,
     service: options.debugContext?.service,
+    destinationPostalCode: options.debugContext?.destinationPostalCode,
+    destinationCity: options.debugContext?.destinationCity,
+    destinationState: options.debugContext?.destinationState,
+    originPostalCode: options.debugContext?.originPostalCode,
     statusCode: response.status,
     requestId,
   }
@@ -200,11 +231,13 @@ export async function skydropxRequest<T>(
  */
 export async function createSkydropxQuotation(
   input: SkydropxCreateQuotationRequest,
+  debugContext?: SkydropxFetchOptions['debugContext'],
 ): Promise<SkydropxQuotationResponse> {
   return skydropxRequest<SkydropxQuotationResponse>('/api/v1/quotations', {
     method: 'POST',
     body: input,
     operation: 'createQuotation',
+    debugContext,
   })
 }
 

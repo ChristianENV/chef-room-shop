@@ -66,9 +66,11 @@ Mapeados en `shipping-mutation-errors.ts`:
 | Caso | Mensaje UI |
 |------|------------|
 | 502 Skydropx | *Skydropx no pudo generar la guía…* + nota de reintentar |
+| 422 Skydropx | Detalle si Skydropx lo envía; si no, revisar teléfono 10 dígitos y CP |
 | Tarifa expirada | *Vuelve a cotizar el envío antes de generar la guía.* |
-| Dirección incompleta | *La dirección del pedido está incompleta.* |
-| Origen no configurado | *Configura la dirección de origen antes de generar guías.* |
+| Dirección incompleta | *La dirección del pedido está incompleta. Faltan: …* |
+| Origen no configurado | *Configura la dirección de origen… Faltan: …* |
+| Teléfono inválido | *El teléfono debe tener 10 dígitos…* |
 | Saldo / carrier | *Revisa saldo o servicios habilitados en Skydropx.* |
 
 ## Limitaciones (v1)

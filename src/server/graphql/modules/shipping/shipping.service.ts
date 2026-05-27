@@ -10,6 +10,7 @@ import {
 } from '@/src/server/shipping/skydropx/skydropx.client'
 import { isSkydropxConfigured } from '@/src/server/shipping/skydropx/skydropx.config'
 import { SkydropxApiError, SkydropxConfigError } from '@/src/server/shipping/skydropx/skydropx.errors'
+import { skydropxErrorToGraphQLError } from '@/src/server/shipping/skydropx/skydropx-graphql-errors'
 import type { DestinationAddressInput } from '@/src/server/shipping/skydropx/skydropx.mappers'
 import {
   mapShippingQuoteToSkydropxQuotationPayload,
@@ -17,6 +18,12 @@ import {
   skydropxRateExpiresAt,
   type MappedShippingRate,
 } from '@/src/server/shipping/skydropx/skydropx.mappers'
+import {
+  SkydropxValidationError,
+  validateQuotationDestination,
+  validateQuotationParcel,
+  validateShippingOriginForQuotation,
+} from '@/src/server/shipping/skydropx/skydropx.validation'
 
 import type { GraphQLContext } from '../../context'
 import {
@@ -50,8 +57,11 @@ function wrapSkydropxError(error: unknown): GraphQLError {
   if (error instanceof SkydropxConfigError) {
     return shippingError(error.message, 'SERVICE_UNAVAILABLE')
   }
+  if (error instanceof SkydropxValidationError) {
+    return shippingError(error.message, 'SKYDROPX_VALIDATION_ERROR')
+  }
   if (error instanceof SkydropxApiError) {
-    return shippingError(error.message, 'BAD_GATEWAY')
+    return skydropxErrorToGraphQLError(error, 'quote')
   }
   if (error instanceof GraphQLError) {
     return error
@@ -211,8 +221,12 @@ export async function createShippingQuote(
     const parsed = createShippingQuoteInputSchema.parse(input)
     const { owner, cart } = await resolveShippingQuoteOwnerWithCart(context)
     const origin = getShippingOriginConfig()
-    const destination = destinationFromInput(parsed.destination)
+    const destinationInput = destinationFromInput(parsed.destination)
+    const destination = validateQuotationDestination(destinationInput)
     const packageDimensions = getPackageForCartItems(cart.items)
+
+    validateShippingOriginForQuotation()
+    validateQuotationParcel(packageDimensions)
 
     const reusable = await findReusableQuote(
       context,
@@ -224,7 +238,13 @@ export async function createShippingQuote(
     }
 
     const skydropxPayload = mapShippingQuoteToSkydropxQuotationPayload({
-      destination,
+      destination: {
+        postalCode: destination.postalCode,
+        city: destination.city,
+        state: destination.state,
+        neighborhood: destination.neighborhood,
+        country: destination.country,
+      },
       cartItems: cart.items,
     })
 
@@ -243,7 +263,12 @@ export async function createShippingQuote(
       include: quoteInclude,
     })
 
-    const rawResponse = await createSkydropxQuotation(skydropxPayload)
+    const rawResponse = await createSkydropxQuotation(skydropxPayload, {
+      destinationPostalCode: destination.postalCode,
+      destinationCity: destination.city,
+      destinationState: destination.state,
+      originPostalCode: origin.postalCode,
+    })
     const updated = await applySkydropxQuotationToQuote(context, quote.id, rawResponse)
     return toShippingQuotePayload(updated)
   } catch (error) {

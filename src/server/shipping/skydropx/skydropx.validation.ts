@@ -1,17 +1,23 @@
 import type { Address, ShippingQuote, ShippingRate } from '@prisma/client'
 
+import type { PackageDimensions } from '../shipping-package.shared'
 import {
   resolveShippingOriginFromEnv,
   type ShippingOriginConfig,
 } from '../shipping-origin.resolve'
+import type { SkydropxLabelAddress } from './skydropx-address'
+import { truncateSkydropxReference } from './skydropx-field-limits'
+import { normalizeMxPhoneForSkydropx } from './skydropx-phone'
+import { SkydropxValidationError } from './skydropx.validation-errors'
 
-export class SkydropxValidationError extends Error {
-  readonly code = 'SKYDROPX_VALIDATION'
+export { SkydropxValidationError }
 
-  constructor(message: string) {
-    super(message)
-    this.name = 'SkydropxValidationError'
-  }
+export type QuotationDestinationInput = {
+  postalCode: string
+  city: string
+  state: string
+  neighborhood: string
+  country?: string
 }
 
 function isBlank(value: string | null | undefined): boolean {
@@ -22,28 +28,15 @@ function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
 }
 
-function isValidPhone(value: string): boolean {
-  const digits = value.replace(/\D/g, '')
-  return digits.length >= 8
-}
-
 /**
- * Builds street1 for Skydropx from calle + número exterior/interior.
+ * Mexican postal code: exactly 5 digits.
  */
-export function formatSkydropxStreet1(
-  street: string,
-  extNumber?: string | null,
-  intNumber?: string | null,
-): string {
-  const base = street.trim()
-  const parts = [base]
-  if (extNumber?.trim()) {
-    parts.push(`#${extNumber.trim()}`)
+export function normalizeMxPostalCode(postalCode: string): string {
+  const digits = postalCode.replace(/\D/g, '')
+  if (digits.length !== 5) {
+    throw new SkydropxValidationError('El código postal debe tener 5 dígitos.')
   }
-  if (intNumber?.trim()) {
-    parts.push(`Int. ${intNumber.trim()}`)
-  }
-  return parts.join(' ').trim()
+  return digits
 }
 
 export function parseAddressLine2(line2: string | null | undefined): {
@@ -58,29 +51,90 @@ export function parseAddressLine2(line2: string | null | undefined): {
   }
 }
 
+function assertMxCountry(country: string, fieldLabel = 'país'): void {
+  const normalized = country.trim().toUpperCase()
+  if (normalized !== 'MX' && normalized !== 'MEX' && normalized !== 'MÉXICO' && normalized !== 'MEXICO') {
+    throw new SkydropxValidationError(`El ${fieldLabel} debe ser MX para envíos nacionales.`)
+  }
+}
+
 /**
- * Ensures warehouse origin is configured before calling Skydropx.
+ * Validates warehouse origin and returns canonical Skydropx label address.
  */
 export function validateShippingOriginForLabel(
   origin: ShippingOriginConfig = resolveShippingOriginFromEnv(),
-): void {
+): SkydropxLabelAddress {
   const missing: string[] = []
 
   if (isBlank(origin.name)) missing.push('nombre')
-  if (isBlank(origin.company)) missing.push('empresa')
   if (isBlank(origin.street)) missing.push('calle')
   if (isBlank(origin.extNumber)) missing.push('número exterior')
   if (isBlank(origin.neighborhood)) missing.push('colonia')
   if (isBlank(origin.city)) missing.push('ciudad')
   if (isBlank(origin.state)) missing.push('estado')
   if (isBlank(origin.postalCode)) missing.push('código postal')
-  if (isBlank(origin.phone) || !isValidPhone(origin.phone)) missing.push('teléfono')
-  if (isBlank(origin.email) || !isValidEmail(origin.email)) missing.push('correo')
+  if (isBlank(origin.phone)) missing.push('teléfono')
+  if (isBlank(origin.email)) missing.push('correo')
 
   if (missing.length > 0) {
     throw new SkydropxValidationError(
-      'Configura la dirección de origen antes de generar guías. Revisa SHIPPING_ORIGIN_* en el servidor (calle, número exterior, colonia, ciudad, estado, CP, teléfono y correo).',
+      `Configura la dirección de origen antes de generar guías. Faltan: ${missing.join(', ')}.`,
     )
+  }
+
+  let postal_code: string
+  let phone: string
+
+  try {
+    postal_code = normalizeMxPostalCode(origin.postalCode)
+  } catch (error) {
+    if (error instanceof SkydropxValidationError) {
+      throw new SkydropxValidationError(
+        'Configura la dirección de origen antes de generar guías. El código postal debe tener 5 dígitos.',
+      )
+    }
+    throw error
+  }
+
+  try {
+    phone = normalizeMxPhoneForSkydropx(origin.phone)
+  } catch (error) {
+    if (error instanceof SkydropxValidationError) {
+      throw new SkydropxValidationError(
+        'Configura la dirección de origen antes de generar guías. El teléfono debe tener 10 dígitos.',
+      )
+    }
+    throw error
+  }
+
+  if (!isValidEmail(origin.email)) {
+    throw new SkydropxValidationError(
+      'Configura la dirección de origen antes de generar guías. El correo no es válido.',
+    )
+  }
+
+  assertMxCountry(origin.country)
+
+  const reference = truncateSkydropxReference(
+    origin.reference?.trim() || origin.neighborhood.trim() || 'Bodega Chef Room',
+  )
+
+  return {
+    address: origin.street.trim(),
+    internal_number: origin.extNumber.trim(),
+    reference,
+    sector: origin.neighborhood.trim(),
+    city: origin.city.trim(),
+    state: origin.state.trim(),
+    postal_code,
+    country: 'MX',
+    person_name: origin.name.trim(),
+    company: origin.company?.trim() || origin.name.trim(),
+    phone,
+    email: origin.email.trim(),
+    ...(origin.intNumber?.trim()
+      ? { further_information: `Int. ${origin.intNumber.trim()}`.slice(0, 70) }
+      : {}),
   }
 }
 
@@ -90,37 +144,143 @@ export type OrderAddressForLabel = Pick<
 >
 
 /**
- * Validates order shipping address fields required for Skydropx label creation.
+ * Validates order shipping address and returns canonical recipient address.
  */
-export function validateOrderShippingAddressForLabel(
+export function validateOrderShippingAddressForSkydropx(
   address: OrderAddressForLabel,
   customerEmail: string,
-): { neighborhood: string; reference: string } {
-  const { extNumber } = parseAddressLine2(address.line2)
-  const neighborhood = address.label?.trim() || ''
+): SkydropxLabelAddress {
+  const { extNumber, intNumber } = parseAddressLine2(address.line2)
+  const sector = address.label?.trim() || ''
   const missing: string[] = []
 
   if (isBlank(address.fullName)) missing.push('nombre')
   if (isBlank(address.line1)) missing.push('calle')
   if (isBlank(extNumber)) missing.push('número exterior')
-  if (isBlank(neighborhood)) missing.push('colonia')
+  if (isBlank(sector)) missing.push('colonia')
   if (isBlank(address.city)) missing.push('ciudad')
   if (isBlank(address.state)) missing.push('estado')
   if (isBlank(address.postalCode)) missing.push('código postal')
-  if (isBlank(address.phone) || !isValidPhone(address.phone!)) missing.push('teléfono')
+  if (isBlank(address.phone)) missing.push('teléfono')
 
   const email = customerEmail?.trim() || ''
   if (!isValidEmail(email)) missing.push('correo del cliente')
 
   if (missing.length > 0) {
     throw new SkydropxValidationError(
-      'La dirección del pedido está incompleta. Agrega calle, número exterior, colonia, ciudad, estado, código postal y teléfono.',
+      `La dirección del pedido está incompleta. Faltan: ${missing.join(', ')}.`,
     )
   }
 
+  let postal_code: string
+  let phone: string
+
+  try {
+    postal_code = normalizeMxPostalCode(address.postalCode)
+  } catch {
+    throw new SkydropxValidationError(
+      'La dirección del pedido está incompleta. El código postal debe tener 5 dígitos.',
+    )
+  }
+
+  try {
+    phone = normalizeMxPhoneForSkydropx(address.phone!)
+  } catch {
+    throw new SkydropxValidationError(
+      'La dirección del pedido está incompleta. El teléfono debe tener 10 dígitos.',
+    )
+  }
+
+  assertMxCountry(address.country, 'país del destinatario')
+
+  const referencesFromLabel = sector
+
   return {
-    neighborhood,
-    reference: neighborhood,
+    address: address.line1.trim(),
+    internal_number: extNumber!.trim(),
+    reference: referencesFromLabel,
+    sector,
+    city: address.city.trim(),
+    state: address.state.trim(),
+    postal_code,
+    country: 'MX',
+    person_name: address.fullName.trim(),
+    company: address.fullName.trim(),
+    phone,
+    email,
+    ...(intNumber?.trim()
+      ? { further_information: `Int. ${intNumber.trim()}`.slice(0, 70) }
+      : {}),
+  }
+}
+
+/** @deprecated Use validateOrderShippingAddressForSkydropx */
+export function validateOrderShippingAddressForLabel(
+  address: OrderAddressForLabel,
+  customerEmail: string,
+): { neighborhood: string; reference: string } {
+  const validated = validateOrderShippingAddressForSkydropx(address, customerEmail)
+  return { neighborhood: validated.sector, reference: validated.reference }
+}
+
+/** Alias — same rules as label origin (phone 10 digits, reference max 30). */
+export function validateShippingOriginForQuotation(
+  origin?: ShippingOriginConfig,
+): SkydropxLabelAddress {
+  return validateShippingOriginForLabel(origin)
+}
+
+/**
+ * Validates destination for POST /api/v1/quotations (CP + city/state sufficient).
+ */
+export function validateQuotationDestination(
+  input: QuotationDestinationInput,
+): QuotationDestinationInput {
+  const missing: string[] = []
+
+  if (isBlank(input.postalCode)) missing.push('código postal')
+  if (isBlank(input.city)) missing.push('ciudad')
+  if (isBlank(input.state)) missing.push('estado')
+
+  if (missing.length > 0) {
+    throw new SkydropxValidationError(
+      `No pudimos cotizar el envío. Faltan: ${missing.join(', ')}.`,
+    )
+  }
+
+  let postalCode: string
+  try {
+    postalCode = normalizeMxPostalCode(input.postalCode)
+  } catch {
+    throw new SkydropxValidationError('El código postal debe tener 5 dígitos.')
+  }
+
+  assertMxCountry(input.country ?? 'MX', 'país de destino')
+
+  return {
+    postalCode,
+    city: input.city.trim(),
+    state: input.state.trim(),
+    neighborhood: input.neighborhood?.trim() || input.city.trim(),
+    country: 'MX',
+  }
+}
+
+/**
+ * Validates cart package dimensions before Skydropx quotation.
+ */
+export function validateQuotationParcel(pkg: PackageDimensions): void {
+  const invalid: string[] = []
+
+  if (!Number.isFinite(pkg.lengthCm) || pkg.lengthCm <= 0) invalid.push('largo')
+  if (!Number.isFinite(pkg.widthCm) || pkg.widthCm <= 0) invalid.push('ancho')
+  if (!Number.isFinite(pkg.heightCm) || pkg.heightCm <= 0) invalid.push('alto')
+  if (!Number.isFinite(pkg.weightKg) || pkg.weightKg <= 0) invalid.push('peso')
+
+  if (invalid.length > 0) {
+    throw new SkydropxValidationError(
+      `El paquete debe tener peso y dimensiones válidas. Revisa: ${invalid.join(', ')}.`,
+    )
   }
 }
 

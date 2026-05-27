@@ -1,80 +1,26 @@
-import { resolveShippingOriginFromEnv } from '../shipping-origin.resolve'
-import type { SkydropxAddressInput, SkydropxCreateShipmentRequest } from './skydropx.types'
+import type { SkydropxLabelAddress } from './skydropx-address'
+import { toSkydropxV1AddressInput } from './skydropx-address'
+import type { SkydropxCreateShipmentRequest } from './skydropx.types'
 import {
-  formatSkydropxStreet1,
-  parseAddressLine2,
+  validateOrderShippingAddressForSkydropx,
+  validateShippingOriginForLabel,
+  type OrderAddressForLabel,
 } from './skydropx.validation'
-
-export type OrderShippingAddressInput = {
-  fullName: string
-  line1: string
-  line2?: string | null
-  neighborhood?: string | null
-  city: string
-  state: string
-  postalCode: string
-  country: string
-  phone?: string | null
-  email?: string
-  reference?: string | null
-}
 
 export type MapOrderToSkydropxShipmentInput = {
   providerRateId: string
   printingFormat?: 'standard' | 'thermal'
-  packageJson: unknown
-  shippingAddress: OrderShippingAddressInput
-  orderNumber: string
-  customerEmail: string
-}
-
-export function mapOriginToSkydropxAddress(): SkydropxAddressInput {
-  const origin = resolveShippingOriginFromEnv()
-  const street1 = formatSkydropxStreet1(origin.street, origin.extNumber, origin.intNumber)
-
-  return {
-    country_code: origin.country,
-    postal_code: origin.postalCode,
-    area_level1: origin.state,
-    area_level2: origin.city,
-    area_level3: origin.neighborhood,
-    street1,
-    name: origin.name,
-    company: origin.company,
-    phone: origin.phone,
-    email: origin.email,
-    reference: origin.company || origin.name,
+  origin?: SkydropxLabelAddress
+  recipient?: SkydropxLabelAddress
+  /** Legacy: build recipient from order address when recipient is omitted */
+  shippingAddress?: OrderAddressForLabel & {
+    neighborhood?: string | null
+    reference?: string | null
+    email?: string
   }
-}
-
-function mapOrderAddressToSkydropx(
-  address: OrderShippingAddressInput,
-  email: string,
-): SkydropxAddressInput & {
-  street1: string
-  name: string
-  company: string
-  phone: string
-  email: string
-  reference: string
-} {
-  const { extNumber, intNumber } = parseAddressLine2(address.line2)
-  const street1 = formatSkydropxStreet1(address.line1, extNumber, intNumber)
-  const neighborhood = address.neighborhood?.trim() || address.city
-
-  return {
-    country_code: address.country.length === 2 ? address.country : 'MX',
-    postal_code: address.postalCode,
-    area_level1: address.state,
-    area_level2: address.city,
-    area_level3: neighborhood,
-    street1,
-    name: address.fullName,
-    company: address.fullName,
-    phone: address.phone!.trim(),
-    email: (address.email ?? email).trim(),
-    reference: address.reference?.trim() || neighborhood,
-  }
+  customerEmail?: string
+  packageJson?: unknown
+  orderNumber?: string
 }
 
 export function mapLabelFormatToSkydropx(
@@ -87,15 +33,38 @@ export function mapLabelFormatToSkydropx(
   return 'standard'
 }
 
+/**
+ * Builds POST /api/v1/shipments body with validated origin + recipient addresses.
+ */
 export function mapOrderToSkydropxShipmentPayload(
   input: MapOrderToSkydropxShipmentInput,
 ): SkydropxCreateShipmentRequest {
+  const origin = input.origin ?? validateShippingOriginForLabel()
+
+  let recipient: SkydropxLabelAddress
+  if (input.recipient) {
+    recipient = input.recipient
+  } else if (input.shippingAddress && input.customerEmail) {
+    recipient = validateOrderShippingAddressForSkydropx(
+      input.shippingAddress,
+      input.customerEmail,
+    )
+  } else {
+    throw new Error('mapOrderToSkydropxShipmentPayload: recipient or shippingAddress required')
+  }
+
   return {
     shipment: {
       rate_id: input.providerRateId,
       printing_format: input.printingFormat ?? 'standard',
-      address_from: mapOriginToSkydropxAddress(),
-      address_to: mapOrderAddressToSkydropx(input.shippingAddress, input.customerEmail),
+      address_from: toSkydropxV1AddressInput(origin),
+      address_to: toSkydropxV1AddressInput(recipient),
     },
   }
+}
+
+export type OrderShippingAddressInput = OrderAddressForLabel & {
+  neighborhood?: string | null
+  reference?: string | null
+  email?: string
 }

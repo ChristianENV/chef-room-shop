@@ -4,24 +4,27 @@ import { APP_LIMITS } from '@/src/config/vars'
 import { SHIPPING_CURRENCY_MX } from '@/src/config/shipping'
 
 import { getShippingOriginConfig } from '../shipping.config'
+import { toSkydropxV1AddressInput } from './skydropx-address'
 import {
   mapLabelFormatToSkydropx,
   mapOrderToSkydropxShipmentPayload,
-  mapOriginToSkydropxAddress,
   type MapOrderToSkydropxShipmentInput,
   type OrderShippingAddressInput,
 } from './skydropx-shipment-payload'
+import { normalizeMxPostalCode, validateShippingOriginForQuotation } from './skydropx.validation'
 
 export {
   mapLabelFormatToSkydropx,
   mapOrderToSkydropxShipmentPayload,
-  mapOriginToSkydropxAddress,
   type MapOrderToSkydropxShipmentInput,
   type OrderShippingAddressInput,
 }
-import type { PackageDimensions } from '../shipping.package'
-import type { CartItemQuantityInput } from '../shipping.package'
-import { getPackageForCartItems } from '../shipping.package'
+import {
+  mapCartToQuotationPayload,
+  mapShippingQuoteToSkydropxQuotationPayload,
+  type MapCartToQuotationPayloadInput,
+} from './skydropx-quotation-payload'
+import { mapPackageToSkydropxParcel } from './skydropx-parcel'
 import type {
   SkydropxAddressInput,
   SkydropxCreateQuotationRequest,
@@ -109,23 +112,34 @@ export function skydropxRateExpiresAt(from: Date = new Date()): Date {
 }
 
 /**
- * Maps a customer destination to Skydropx address_to.
+ * Maps warehouse origin for quotations (validated + truncated reference).
+ */
+export function mapOriginToSkydropxAddress(): SkydropxAddressInput {
+  return toSkydropxV1AddressInput(validateShippingOriginForQuotation())
+}
+
+/**
+ * Maps a customer destination to Skydropx address_to (quotation: CP + city/state).
  */
 export function mapAddressToSkydropxAddress(
   input: DestinationAddressInput,
 ): SkydropxAddressInput {
-  const origin = getShippingOriginConfig()
+  const postal_code = normalizeMxPostalCode(input.postalCode)
+  const city = input.city?.trim() || 'Ciudad'
+  const state = input.state?.trim() || 'México'
+  const neighborhood = input.neighborhood?.trim() || city
+
   return {
-    country_code: input.country ?? origin.country,
-    postal_code: input.postalCode,
-    area_level1: input.state,
-    area_level2: input.city,
-    area_level3: input.neighborhood,
-    street1: input.street,
-    name: input.name,
-    company: input.company,
-    phone: input.phone,
-    email: input.email,
+    country_code: input.country?.trim().toUpperCase() === 'MX' ? 'MX' : 'MX',
+    postal_code,
+    area_level1: state,
+    area_level2: city,
+    area_level3: neighborhood,
+    ...(input.street ? { street1: input.street } : {}),
+    ...(input.name ? { name: input.name } : {}),
+    ...(input.company ? { company: input.company } : {}),
+    ...(input.phone ? { phone: input.phone } : {}),
+    ...(input.email ? { email: input.email } : {}),
   }
 }
 
@@ -133,50 +147,12 @@ export function mapAddressToSkydropxAddress(
  * Maps internal package dimensions (cm/kg) to Skydropx parcel integers/float.
  * Skydropx expects integer cm dimensions and float kg weight.
  */
-export function mapPackageToSkydropxParcel(pkg: PackageDimensions): SkydropxParcelInput {
-  return {
-    length: Math.max(1, Math.round(pkg.lengthCm)),
-    width: Math.max(1, Math.round(pkg.widthCm)),
-    height: Math.max(1, Math.round(pkg.heightCm)),
-    weight: Math.max(0.1, pkg.weightKg),
-  }
-}
+export { mapPackageToSkydropxParcel } from './skydropx-parcel'
 
-export type MapCartToQuotationPayloadInput = {
-  destination: DestinationAddressInput
-  cartItems: CartItemQuantityInput[]
-  orderId?: string
-  requestedCarriers?: string[]
-}
-
-/**
- * Builds POST /api/v1/quotations body from cart + destination (BFF entry point).
- */
-export function mapShippingQuoteToSkydropxQuotationPayload(
-  input: MapCartToQuotationPayloadInput,
-): SkydropxCreateQuotationRequest {
-  return mapCartToQuotationPayload(input)
-}
-
-/**
- * Builds POST /api/v1/quotations body from cart + destination.
- */
-export function mapCartToQuotationPayload(
-  input: MapCartToQuotationPayloadInput,
-): SkydropxCreateQuotationRequest {
-  const pkg = getPackageForCartItems(input.cartItems)
-  const addressFrom = mapOriginToSkydropxAddress()
-  const addressTo = mapAddressToSkydropxAddress(input.destination)
-
-  return {
-    quotation: {
-      order_id: input.orderId,
-      address_from: addressFrom,
-      address_to: addressTo,
-      parcels: [mapPackageToSkydropxParcel(pkg)],
-      requested_carriers: input.requestedCarriers,
-    },
-  }
+export {
+  mapCartToQuotationPayload,
+  mapShippingQuoteToSkydropxQuotationPayload,
+  type MapCartToQuotationPayloadInput,
 }
 
 /**

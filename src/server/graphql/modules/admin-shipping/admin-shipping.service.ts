@@ -16,10 +16,12 @@ import {
   getSkydropxTracking,
 } from '@/src/server/shipping/skydropx/skydropx.client'
 import { SkydropxApiError } from '@/src/server/shipping/skydropx/skydropx.errors'
-import { getSkydropxUserMessage } from '@/src/server/shipping/skydropx/skydropx.user-messages'
+import { skydropxErrorToGraphQLError } from '@/src/server/shipping/skydropx/skydropx-graphql-errors'
+import { summarizeLabelAddressForDebug } from '@/src/server/shipping/skydropx/skydropx-address'
+import { logSkydropxDebug, isSkydropxDebugEnabled } from '@/src/server/shipping/skydropx/skydropx.debug'
 import {
   SkydropxValidationError,
-  validateOrderShippingAddressForLabel,
+  validateOrderShippingAddressForSkydropx,
   validateShippingOriginForLabel,
   validateShippingQuoteForLabel,
 } from '@/src/server/shipping/skydropx/skydropx.validation'
@@ -76,9 +78,7 @@ function conflictError(message: string): GraphQLError {
 }
 
 function skydropxGraphQLError(error: SkydropxApiError): GraphQLError {
-  return new GraphQLError(getSkydropxUserMessage(error), {
-    extensions: { code: 'SKYDROPX_API_ERROR', status: error.status },
-  })
+  return skydropxErrorToGraphQLError(error, 'label')
 }
 
 function validationGraphQLError(error: SkydropxValidationError): GraphQLError {
@@ -238,7 +238,6 @@ export async function createAdminShippingLabel(
   }
 
   try {
-    validateShippingOriginForLabel()
     validateShippingQuoteForLabel(quote, rate, {
       explicitRateId: parsed.rateId ?? null,
     })
@@ -249,9 +248,14 @@ export async function createAdminShippingLabel(
     throw error
   }
 
-  let addressMeta: { neighborhood: string; reference: string }
+  let originAddress
+  let recipientAddress
   try {
-    addressMeta = validateOrderShippingAddressForLabel(address, order.customerEmail)
+    originAddress = validateShippingOriginForLabel()
+    recipientAddress = validateOrderShippingAddressForSkydropx(
+      address,
+      order.customerEmail,
+    )
   } catch (error) {
     if (error instanceof SkydropxValidationError) {
       throw validationGraphQLError(error)
@@ -259,25 +263,29 @@ export async function createAdminShippingLabel(
     throw error
   }
 
+  if (isSkydropxDebugEnabled()) {
+    logSkydropxDebug({
+      operation: 'createShipment.validate',
+      method: 'POST',
+      path: '/api/v1/shipments/',
+      orderNumber: order.orderNumber,
+      providerQuoteId: quote.providerQuoteId,
+      providerRateId: rate.providerRateId,
+      carrier: rate.carrier,
+      service: rate.service,
+      requestSummary: {
+        shipper: summarizeLabelAddressForDebug(originAddress, 'shipper'),
+        recipient: summarizeLabelAddressForDebug(recipientAddress, 'recipient'),
+      },
+    })
+  }
+
   const printingFormat = mapLabelFormatToSkydropx(parsed.labelFormat ?? 'PDF')
   const skydropxPayload = mapOrderToSkydropxShipmentPayload({
     providerRateId: rate.providerRateId,
     printingFormat,
-    packageJson: quote.packageJson,
-    orderNumber: order.orderNumber,
-    customerEmail: order.customerEmail,
-    shippingAddress: {
-      fullName: address.fullName,
-      line1: address.line1,
-      line2: address.line2,
-      neighborhood: addressMeta.neighborhood,
-      city: address.city,
-      state: address.state,
-      postalCode: address.postalCode,
-      country: address.country,
-      phone: address.phone,
-      reference: addressMeta.reference,
-    },
+    origin: originAddress,
+    recipient: recipientAddress,
   })
 
   let skydropxRaw: unknown

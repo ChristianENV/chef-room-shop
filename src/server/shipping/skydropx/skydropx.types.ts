@@ -18,6 +18,7 @@ export type SkydropxAddressInput = {
   phone?: string
   email?: string
   reference?: string
+  further_information?: string
   tax_id_number?: string
   address_template_id?: string
 }

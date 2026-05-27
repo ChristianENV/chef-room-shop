@@ -124,16 +124,61 @@ See `docs/graphql-shipping.md` for ownership, idempotency, and `recommendedRate`
 - `mapOrderToSkydropxShipmentPayload` — `rate_id`, origin, destination, `printing_format`
 - `parseSkydropxShipmentResponse` — tracking, label URL, carrier, cost (defensivo)
 
+## Debug de cotización Skydropx
+
+Endpoint: **POST** `{SKYDROPX_API_BASE_URL}/api/v1/quotations`
+
+Body: `{ quotation: { address_from, address_to, parcels[] } }`
+
+- Cotización acepta destino con **solo CP + ciudad/estado** (`address_to` sin calle completa).
+- Origen requiere calle, teléfono 10 dígitos, email y **`reference` máx. 30 chars**.
+- `SHIPPING_ORIGIN_REFERENCE` se trunca a 30 caracteres antes de enviar.
+
+```bash
+SKYDROPX_DEBUG=true
+pnpm tsx scripts/skydropx-create-quote-smoke.ts 72830
+pnpm tsx scripts/skydropx-create-quote-smoke.ts 72830 --send
+```
+
+Errores frecuentes en cotización:
+
+| Síntoma | Causa |
+|---------|--------|
+| 422 `reference es demasiado largo` | `SHIPPING_ORIGIN_REFERENCE` > 30 chars (ahora truncado) |
+| 422 teléfono | Origen con +52 — usar 10 dígitos |
+| 422 CP | Destino sin 5 dígitos |
+| GraphQL `SKYDROPX_VALIDATION_ERROR` | Validación local antes de llamar Skydropx |
+
 ## Debug de generación de guías
+
+### Direcciones para guías (v1)
+
+El endpoint `POST /api/v1/shipments/` usa `address_from` / `address_to` con campos v1. Internamente normalizamos a dirección canónica y mapeamos:
+
+| Canónico | Skydropx v1 |
+|----------|-------------|
+| `address` | parte de `street1` |
+| `internal_number` | parte de `street1` |
+| `sector` (colonia) | `area_level3` |
+| `city` | `area_level2` |
+| `state` | `area_level1` |
+| `postal_code` | `postal_code` (5 dígitos) |
+| `country` | `country_code` (`MX`) |
+| `person_name` | `name` |
+| `phone` | `phone` (**10 dígitos**, sin +52) |
+| `reference` | `reference` |
+
+Origen y destino deben tener calle, número exterior, colonia, ciudad, estado, CP, teléfono 10 dígitos y email.
 
 ### Causas frecuentes
 
 | Síntoma | Causa probable |
 |---------|----------------|
-| `502 Bad Gateway` | Skydropx caído, payload inválido, o origen incompleto enviado al API |
+| `422` | Teléfono con +52, CP ≠ 5 dígitos, colonia/número faltante en **destino** u origen |
+| `502 Bad Gateway` | Skydropx caído o payload inválido |
 | Tarifa expirada | `ShippingRate.expiresAt` pasado — volver a cotizar en checkout |
-| Dirección incompleta | Falta colonia (`Address.label`), número exterior (`line2`), teléfono, etc. |
-| Origen incompleto | `SHIPPING_ORIGIN_*` vacíos; defaults en `vars.ts` no incluyen calle/teléfono |
+| Dirección incompleta | Falta colonia (`Address.label`), número exterior (`line2`), teléfono |
+| Origen incompleto | `SHIPPING_ORIGIN_*` incompletos |
 | 401/403 | `SKYDROPX_CLIENT_ID` / `SECRET` incorrectos |
 | Saldo / carrier | Cuenta Skydropx sin créditos o paquetería no habilitada |
 

@@ -1,27 +1,44 @@
 import { PaymentMethod } from '@prisma/client'
 import { z } from 'zod'
 
+import { isNormalizableMxPhone } from '@/src/server/shipping/skydropx/skydropx-phone'
+
 import { isCheckoutShippingOptionalOnServer } from './checkout-shipping-config'
+
+const mxPostalCodeSchema = z
+  .string()
+  .trim()
+  .refine((value) => value.replace(/\D/g, '').length === 5, {
+    message: 'El código postal debe tener 5 dígitos',
+  })
+
+const mxPhoneSchema = z
+  .string()
+  .trim()
+  .min(8, 'Teléfono requerido')
+  .refine((value) => isNormalizableMxPhone(value), {
+    message: 'El teléfono debe tener 10 dígitos (México)',
+  })
 
 const checkoutAddressSchema = z.object({
   firstName: z.string().trim().min(1, 'Nombre requerido'),
   lastName: z.string().trim().min(1, 'Apellido requerido'),
-  phone: z.string().trim().min(8, 'Teléfono requerido'),
+  phone: mxPhoneSchema,
   street: z.string().trim().min(1, 'Calle requerida'),
-  extNumber: z.string().trim().optional().nullable(),
+  extNumber: z.string().trim().min(1, 'Número exterior requerido'),
   intNumber: z.string().trim().optional().nullable(),
-  neighborhood: z.string().trim().optional().nullable(),
+  neighborhood: z.string().trim().min(1, 'Colonia requerida'),
   city: z.string().trim().min(1, 'Ciudad requerida'),
   state: z.string().trim().min(1, 'Estado requerido'),
   country: z.string().trim().min(2, 'País requerido'),
-  postalCode: z.string().trim().min(4, 'Código postal requerido'),
+  postalCode: mxPostalCodeSchema,
   references: z.string().trim().optional().nullable(),
 })
 
 export const createCheckoutOrderInputSchema = z
   .object({
     email: z.string().trim().email('Correo electrónico inválido'),
-    phone: z.string().trim().min(8, 'Teléfono requerido'),
+    phone: mxPhoneSchema,
     shippingAddress: checkoutAddressSchema,
     billingAddress: checkoutAddressSchema.optional().nullable(),
     useSameBillingAddress: z.boolean().optional().default(true),

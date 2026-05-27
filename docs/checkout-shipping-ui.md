@@ -46,7 +46,9 @@ Allows skipping rate selection when Skydropx returns `SERVICE_UNAVAILABLE`. **Do
 | Case | Message |
 |------|---------|
 | Skydropx off | La cotización de envío no está disponible en este momento. |
-| API failure | No pudimos cotizar el envío. Intenta de nuevo. |
+| Validation (422 / local) | Mensaje específico del BFF (CP, teléfono origen, referencia, etc.) |
+| API 5xx | No pudimos cotizar el envío en este momento. Intenta de nuevo. |
+| CP inválido | No pudimos cotizar ese destino. Revisa el código postal… |
 | No rates | No encontramos tarifas para este destino. |
 | Select rate failed | No pudimos guardar esta tarifa. Intenta de nuevo. |
 | No selection | Selecciona una opción de envío para continuar. |

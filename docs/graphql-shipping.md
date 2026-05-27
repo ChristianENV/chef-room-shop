@@ -73,9 +73,21 @@ After `createShippingQuote`, if `quote.isCompleted === false`, the client should
 | `FORBIDDEN` | Quote/rate owned by another session |
 | `NOT_FOUND` | Unknown quote/rate id |
 | `SERVICE_UNAVAILABLE` | Missing `SKYDROPX_CLIENT_ID` / `SECRET` |
-| `BAD_GATEWAY` | Skydropx API error |
+| `SKYDROPX_VALIDATION_ERROR` | Origen inválido, CP, teléfono, paquete, o Skydropx 422 |
+| `SKYDROPX_AUTH_ERROR` | Credenciales Skydropx rechazadas |
+| `SKYDROPX_API_ERROR` | Skydropx 5xx / 502 |
 
 Build succeeds without Skydropx credentials; runtime calls throw `SERVICE_UNAVAILABLE`.
+
+### Debug de cotización
+
+```bash
+SKYDROPX_DEBUG=true
+pnpm tsx scripts/skydropx-create-quote-smoke.ts 72830
+pnpm tsx scripts/skydropx-create-quote-smoke.ts 72830 --send --city "San Andrés Cholula" --state Puebla
+```
+
+Origen validado igual que guías (`validateShippingOriginForQuotation`). `SHIPPING_ORIGIN_REFERENCE` máximo **30 caracteres** (Skydropx trunca automáticamente si excede).
 
 ## Example — create quote (guest)
 

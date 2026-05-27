@@ -6,25 +6,25 @@ import { GraphQLRequestError } from '@/src/lib/graphql/errors'
 export function getShippingQuoteErrorMessage(error: unknown): string {
   if (error instanceof GraphQLRequestError) {
     const code = error.errors[0]?.extensions?.code
+    const msg = error.errors[0]?.message ?? ''
+
     if (code === 'SERVICE_UNAVAILABLE') {
       return 'La cotización de envío no está disponible en este momento.'
     }
-    if (code === 'BAD_GATEWAY') {
-      return 'No pudimos cotizar el envío. Intenta de nuevo.'
+    if (code === 'SKYDROPX_VALIDATION_ERROR' || code === 'BAD_REQUEST') {
+      if (msg) return msg
+      return 'No pudimos cotizar ese destino. Revisa el código postal o intenta con otra dirección.'
     }
-    if (code === 'BAD_REQUEST') {
-      const msg = error.errors[0]?.message ?? ''
-      if (msg.toLowerCase().includes('vacío') || msg.toLowerCase().includes('carrito')) {
-        return 'Tu carrito está vacío. Agrega productos antes de cotizar envío.'
-      }
-      if (msg.toLowerCase().includes('postal') || msg.toLowerCase().includes('código')) {
-        return 'Revisa el código postal e intenta de nuevo.'
-      }
-      return msg || 'Datos de envío inválidos.'
+    if (code === 'SKYDROPX_API_ERROR' || code === 'BAD_GATEWAY') {
+      return 'No pudimos cotizar el envío en este momento. Intenta de nuevo.'
+    }
+    if (code === 'SKYDROPX_AUTH_ERROR') {
+      return 'La cotización de envío no está disponible en este momento.'
     }
     if (code === 'FORBIDDEN') {
       return 'No pudimos acceder a esta cotización. Cotiza de nuevo.'
     }
+    if (msg) return msg
   }
 
   return 'No pudimos cotizar el envío. Intenta de nuevo.'

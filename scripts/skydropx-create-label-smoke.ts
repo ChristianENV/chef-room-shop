@@ -22,15 +22,16 @@ async function main(): Promise<void> {
     process.exit(1)
   }
 
+  const { summarizeLabelAddressForDebug } =
+    await import('../src/server/shipping/skydropx/skydropx-address')
   const {
-    validateOrderShippingAddressForLabel,
+    validateOrderShippingAddressForSkydropx,
     validateShippingOriginForLabel,
     validateShippingQuoteForLabel,
+    SkydropxValidationError,
   } = await import('../src/server/shipping/skydropx/skydropx.validation')
-
   const { mapLabelFormatToSkydropx, mapOrderToSkydropxShipmentPayload } =
     await import('../src/server/shipping/skydropx/skydropx-shipment-payload')
-
   const { sanitizeSkydropxDebugPayload } =
     await import('../src/server/shipping/skydropx/skydropx.sanitize')
 
@@ -103,46 +104,46 @@ async function main(): Promise<void> {
       ),
     )
 
-    let addressMeta: { neighborhood: string; reference: string }
+    let originAddress
+    let recipientAddress
+
+    console.log('\n--- Origin validation ---')
     try {
-      validateShippingOriginForLabel()
+      originAddress = validateShippingOriginForLabel()
+      console.log('OK')
+      console.log(JSON.stringify(summarizeLabelAddressForDebug(originAddress, 'shipper'), null, 2))
+    } catch (error) {
+      console.error('FAILED:', error instanceof SkydropxValidationError ? error.message : error)
+      process.exit(1)
+    }
+
+    console.log('\n--- Recipient validation ---')
+    try {
       validateShippingQuoteForLabel(quote, rate)
-      addressMeta = validateOrderShippingAddressForLabel(
+      recipientAddress = validateOrderShippingAddressForSkydropx(
         order.shippingAddress,
         order.customerEmail,
       )
-      console.log('\n--- Validation ---')
-      console.log('OK (origin, quote, address)')
-      console.log(JSON.stringify({ addressMeta }, null, 2))
+      console.log('OK')
+      console.log(
+        JSON.stringify(summarizeLabelAddressForDebug(recipientAddress, 'recipient'), null, 2),
+      )
     } catch (error) {
-      console.error('\n--- Validation FAILED ---')
-      console.error(error instanceof Error ? error.message : error)
+      console.error('FAILED:', error instanceof SkydropxValidationError ? error.message : error)
       process.exit(1)
     }
 
     const payload = mapOrderToSkydropxShipmentPayload({
       providerRateId: rate.providerRateId,
       printingFormat: mapLabelFormatToSkydropx('PDF'),
-      packageJson: quote.packageJson,
-      orderNumber: order.orderNumber,
-      customerEmail: order.customerEmail,
-      shippingAddress: {
-        fullName: order.shippingAddress.fullName,
-        line1: order.shippingAddress.line1,
-        line2: order.shippingAddress.line2,
-        neighborhood: addressMeta.neighborhood,
-        city: order.shippingAddress.city,
-        state: order.shippingAddress.state,
-        postalCode: order.shippingAddress.postalCode,
-        country: order.shippingAddress.country,
-        phone: order.shippingAddress.phone,
-        reference: addressMeta.reference,
-      },
+      origin: originAddress,
+      recipient: recipientAddress,
     })
 
-    console.log('\n--- Skydropx payload (sanitized) ---')
+    console.log('\n--- Skydropx v1 payload (sanitized) ---')
     console.log(JSON.stringify(sanitizeSkydropxDebugPayload(payload), null, 2))
     console.log('\nEndpoint: POST {SKYDROPX_API_BASE_URL}/api/v1/shipments/')
+    console.log('Canonical: address→street1, internal_number→street1 suffix, sector→area_level3')
 
     if (!shouldSend) {
       console.log('\nDry-run only. Pass --send to call Skydropx.')
