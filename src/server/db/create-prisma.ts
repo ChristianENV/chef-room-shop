@@ -4,7 +4,14 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-const MAX_QUERY_ATTEMPTS = 3
+const MAX_QUERY_ATTEMPTS = 4
+
+/** Neon compute can take several seconds to wake from auto-suspend. */
+const RECONNECT_BACKOFF_MS = [500, 1500, 4000]
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
 
 /**
  * Neon pooler URLs on Windows often break with `channel_binding=require`.
@@ -73,8 +80,9 @@ function withReconnectRetry(client: PrismaClient): PrismaClient {
               if (attempt >= MAX_QUERY_ATTEMPTS || !isReconnectableError(error)) {
                 throw error
               }
-              await client.$disconnect()
-              await client.$connect()
+              await client.$disconnect().catch(() => {})
+              await sleep(RECONNECT_BACKOFF_MS[attempt - 1] ?? 4000)
+              await client.$connect().catch(() => {})
             }
           }
 
