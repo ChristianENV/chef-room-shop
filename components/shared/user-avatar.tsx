@@ -12,6 +12,7 @@ const sizeClasses = {
   sm: 'size-9 text-[11px]',
   md: 'size-10 text-xs',
   lg: 'size-12 text-sm',
+  xl: 'size-20 text-base',
 } as const
 
 export type UserAvatarProps = {
@@ -46,7 +47,12 @@ export function UserAvatar({
       aria-label={decorative ? undefined : displayName}
     >
       {imageSrc ? (
-        <AvatarImage src={imageSrc} alt={displayName} className="object-cover" />
+        <AvatarImage
+          key={imageSrc}
+          src={imageSrc}
+          alt={displayName}
+          className="object-cover"
+        />
       ) : null}
       <AvatarFallback
         delayMs={imageSrc ? 600 : 0}

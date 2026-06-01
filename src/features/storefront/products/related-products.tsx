@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import { cn } from '@/lib/utils'
+import { ProductImageDisplay } from '@/components/shared/product-image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Star, Heart } from 'lucide-react'
@@ -46,12 +47,12 @@ function RelatedProductCard({ product }: { product: Product }) {
     <Link href={`/products/${product.slug}`}>
       <Card className="group overflow-hidden border-border bg-card transition-all duration-300 hover:shadow-lg">
         <div className="relative aspect-square overflow-hidden bg-secondary">
-          {/* Image Placeholder */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <svg className="h-12 w-12 opacity-30 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
+          <ProductImageDisplay
+            images={product.images}
+            alt={product.name}
+            className="absolute inset-0"
+            placeholderIconClassName="h-12 w-12"
+          />
 
           {/* Badge */}
           {product.badge && (

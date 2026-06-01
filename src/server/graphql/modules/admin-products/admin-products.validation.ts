@@ -73,6 +73,11 @@ export const updateAdminProductStatusSchema = z.object({
   status: z.enum(productStatusValues),
 })
 
+export const reorderAdminProductImagesSchema = z.object({
+  productId: uuidSchema,
+  imageIds: z.array(uuidSchema).min(1).max(10),
+})
+
 export const productSlugSchema = z.string().trim().min(1).max(120)
 
 /**

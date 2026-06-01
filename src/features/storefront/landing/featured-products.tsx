@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Star, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { ProductImageDisplay } from '@/components/shared/product-image'
 import { MOCK_PRODUCTS } from '@/lib/mock-data'
 
 const featuredProducts = MOCK_PRODUCTS.slice(0, 4)
@@ -45,12 +46,12 @@ export function FeaturedProducts({ className }: FeaturedProductsProps) {
               <article className="overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 group-hover:border-primary/30 group-hover:shadow-lg group-hover:shadow-primary/5">
                 {/* Image */}
                 <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <div className="h-28 w-20 rounded-lg bg-gradient-to-b from-muted/80 to-secondary" />
-                    <p className="mt-3 font-sans text-[10px] font-medium tracking-widest uppercase text-muted-foreground/40">
-                      {product.category}
-                    </p>
-                  </div>
+                  <ProductImageDisplay
+                    images={product.images}
+                    alt={product.name}
+                    className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
+                    placeholderIconClassName="h-16 w-16"
+                  />
 
                   {/* Badges */}
                   <div className="absolute left-4 top-4 flex flex-col gap-2">

@@ -132,3 +132,8 @@ export type AdminProductImageInput = {
   sortOrder?: number | null
   isPrimary?: boolean | null
 }
+
+export type ReorderAdminProductImagesInput = {
+  productId: string
+  imageIds: string[]
+}

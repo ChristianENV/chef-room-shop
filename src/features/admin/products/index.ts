@@ -28,6 +28,12 @@ export { useUpsertAdminProductVariantMutation } from './api/use-upsert-admin-pro
 export { useDeleteAdminProductVariantMutation } from './api/use-delete-admin-product-variant-mutation'
 export { useUpsertAdminProductImageMutation } from './api/use-upsert-admin-product-image-mutation'
 export { useDeleteAdminProductImageMutation } from './api/use-delete-admin-product-image-mutation'
+export { useReorderAdminProductImagesMutation } from './api/use-reorder-admin-product-images-mutation'
+export { ProductImageUploader } from './components/product-image-uploader'
+export type {
+  ProductImageUploaderHandle,
+  ProductImageUploaderItem,
+} from './components/product-image-uploader.types'
 export { ProductsToolbar } from './products-toolbar'
 export { ProductsTable } from './products-table'
 export { ProductFormDialog } from './product-form-dialog'

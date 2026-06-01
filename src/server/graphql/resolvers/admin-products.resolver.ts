@@ -9,6 +9,7 @@ import {
   getAdminProductBySlug,
   getAdminProductFormOptions,
   getAdminProducts,
+  reorderAdminProductImages,
   updateAdminProduct,
   updateAdminProductStatus,
   upsertAdminProductImage,
@@ -38,6 +39,8 @@ type ImageInputArgs = { input: AdminProductImageInput }
 type VariantIdArgs = { id: string }
 
 type ImageIdArgs = { id: string }
+
+type ReorderImagesArgs = { productId: string; imageIds: string[] }
 
 type CreateProductArgs = { input: AdminProductInput }
 
@@ -122,5 +125,11 @@ export const adminProductsResolvers = {
       args: ImageIdArgs,
       context: GraphQLContext,
     ) => deleteAdminProductImage(context, args.id),
+
+    reorderAdminProductImages: (
+      _parent: unknown,
+      args: ReorderImagesArgs,
+      context: GraphQLContext,
+    ) => reorderAdminProductImages(context, args.productId, args.imageIds),
   },
 }

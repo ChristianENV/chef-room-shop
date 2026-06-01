@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import { UserAvatar } from '@/components/shared/user-avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -60,9 +61,16 @@ export function ProfileSummary({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-semibold text-primary-foreground">
-              {user.firstName.charAt(0)}{user.lastName.charAt(0)}
-            </div>
+            <UserAvatar
+              user={{
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                image: user.avatar ?? null,
+              }}
+              size="lg"
+              className="size-16 text-2xl"
+            />
             <div>
               <h3 className="font-sans text-lg font-semibold text-foreground">
                 {user.firstName} {user.lastName}

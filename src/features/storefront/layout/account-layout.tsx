@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import { UserAvatar } from '@/components/shared/user-avatar'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -23,6 +24,8 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { accountNav } from '@/src/config/navigation.storefront'
+import { useMeProfileQuery } from '@/src/features/storefront/account/api/use-me-profile-query'
+import { getUserDisplayName } from '@/src/lib/user/user-display'
 
 const accountNavItems = [
   {
@@ -120,6 +123,11 @@ export function AccountLayout({
   userName = 'Usuario',
 }: AccountLayoutProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const profileQuery = useMeProfileQuery()
+  const sidebarUser = profileQuery.data
+  const sidebarDisplayName = sidebarUser
+    ? getUserDisplayName(sidebarUser)
+    : userName
 
   return (
     <div className="flex flex-col">
@@ -158,12 +166,10 @@ export function AccountLayout({
               <div className="sticky top-24">
                 <div className="mb-6 rounded-lg border border-border bg-card p-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">
-                      {userName.charAt(0).toUpperCase()}
-                    </div>
+                    <UserAvatar user={sidebarUser ?? null} size="md" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-sans text-sm font-semibold text-foreground">
-                        {userName}
+                        {sidebarDisplayName}
                       </p>
                       <p className="font-serif text-xs text-muted-foreground">Cliente Premium</p>
                     </div>

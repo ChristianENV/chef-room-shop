@@ -11,6 +11,8 @@ import {
   Truck,
 } from 'lucide-react'
 
+import { ProductImageDisplay } from '@/components/shared/product-image'
+import { parseProductSnapshot } from '@/src/features/storefront/account/order-detail/order-detail.utils'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -105,13 +107,20 @@ export function OrderCard({ order }: OrderCardProps) {
         </div>
 
         <div className="flex flex-wrap gap-3 p-4">
-          {order.items.map((item) => (
+          {order.items.map((item) => {
+            const snapshot = parseProductSnapshot(item.productSnapshotJson)
+            return (
             <div
               key={item.id}
               className="flex items-center gap-3 rounded-lg border border-border bg-secondary/30 p-2"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-md bg-secondary">
-                <Package className="h-5 w-5 text-muted-foreground" />
+              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md bg-secondary">
+                <ProductImageDisplay
+                  src={snapshot.imageUrl}
+                  alt={item.name}
+                  className="absolute inset-0"
+                  placeholderIconClassName="h-5 w-5"
+                />
               </div>
               <div className="min-w-0">
                 <p className="max-w-[150px] truncate font-sans text-sm font-medium text-foreground">
@@ -122,7 +131,8 @@ export function OrderCard({ order }: OrderCardProps) {
                 </p>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
 
         <div className="flex flex-col gap-3 border-t border-border bg-secondary/20 p-4 sm:flex-row sm:items-center sm:justify-between">

@@ -6,6 +6,7 @@ import {
   DELETE_ADMIN_PRODUCT_IMAGE_MUTATION,
   DELETE_ADMIN_PRODUCT_VARIANT_MUTATION,
   DUPLICATE_ADMIN_PRODUCT_MUTATION,
+  REORDER_ADMIN_PRODUCT_IMAGES_MUTATION,
   UPDATE_ADMIN_PRODUCT_MUTATION,
   UPDATE_ADMIN_PRODUCT_STATUS_MUTATION,
   UPSERT_ADMIN_PRODUCT_IMAGE_MUTATION,
@@ -163,4 +164,18 @@ export async function deleteAdminProductImage(id: string): Promise<boolean> {
     variables: { id },
   })
   return data.deleteAdminProductImage
+}
+
+export async function reorderAdminProductImages(
+  productId: string,
+  imageIds: string[],
+): Promise<AdminProductImage[]> {
+  const data = await fetchGraphQL<
+    { reorderAdminProductImages: AdminProductImage[] },
+    { productId: string; imageIds: string[] }
+  >({
+    query: REORDER_ADMIN_PRODUCT_IMAGES_MUTATION,
+    variables: { productId, imageIds },
+  })
+  return data.reorderAdminProductImages
 }

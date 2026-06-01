@@ -1,8 +1,7 @@
 ﻿'use client'
 
-import { useMemo, useState } from 'react'
-import Image from 'next/image'
-import { ImagePlus, Plus, Trash2, Loader2 } from 'lucide-react'
+import { useMemo, useRef, useState } from 'react'
+import { Plus, Trash2, Loader2 } from 'lucide-react'
 
 import { formatCurrencyMXN } from '@/src/lib/formatters'
 import { Button } from '@/components/ui/button'
@@ -35,8 +34,8 @@ import { useCreateAdminProductMutation } from './api/use-create-admin-product-mu
 import { useUpdateAdminProductMutation } from './api/use-update-admin-product-mutation'
 import { useUpsertAdminProductVariantMutation } from './api/use-upsert-admin-product-variant-mutation'
 import { useDeleteAdminProductVariantMutation } from './api/use-delete-admin-product-variant-mutation'
-import { useUpsertAdminProductImageMutation } from './api/use-upsert-admin-product-image-mutation'
-import { useDeleteAdminProductImageMutation } from './api/use-delete-admin-product-image-mutation'
+import { ProductImageUploader } from './components/product-image-uploader'
+import type { ProductImageUploaderHandle } from './components/product-image-uploader.types'
 import {
   mapAdminProductToFormValues,
   mapFormValuesToAdminProductInput,
@@ -44,7 +43,6 @@ import {
 } from './mappers/admin-products-ui.mapper'
 import { mapFormOptionsToSelectOptions } from './types/admin-products-ui.types'
 import type {
-  AdminProductImageUi,
   AdminProductStatusUi,
   AdminProductVariantUi,
   ProductFormValues,
@@ -90,8 +88,7 @@ function ProductFormDrawerBody({
   const updateMutation = useUpdateAdminProductMutation()
   const upsertVariant = useUpsertAdminProductVariantMutation()
   const deleteVariant = useDeleteAdminProductVariantMutation()
-  const upsertImage = useUpsertAdminProductImageMutation()
-  const deleteImage = useDeleteAdminProductImageMutation()
+  const imageUploaderRef = useRef<ProductImageUploaderHandle>(null)
 
   const [formValues, setFormValues] = useState<ProductFormValues>(initialValues)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -104,7 +101,7 @@ function ProductFormDrawerBody({
     setFormValues((prev) => (prev ? { ...prev, [key]: value } : prev))
   }
 
-  const persistVariantsAndImages = async (targetProductId: string, values: ProductFormValues) => {
+  const persistVariants = async (targetProductId: string, values: ProductFormValues) => {
     for (const variant of values.variants) {
       if (!variant.colorId || !variant.sizeId) continue
       await upsertVariant.mutateAsync({
@@ -117,19 +114,6 @@ function ProductFormDrawerBody({
         priceCents: Math.round(variant.pricePesos * 100),
         stockQty: variant.stockQty,
         isActive: variant.isActive,
-      })
-    }
-
-    for (const image of values.images) {
-      if (!image.url.trim()) continue
-      await upsertImage.mutateAsync({
-        id: image.isPersisted ? image.id : null,
-        productId: targetProductId,
-        url: image.url.trim(),
-        publicId: image.publicId?.trim() || null,
-        alt: image.alt.trim() || null,
-        sortOrder: image.sortOrder,
-        isPrimary: image.isPrimary,
       })
     }
   }
@@ -159,11 +143,14 @@ function ProductFormDrawerBody({
 
       if (isEditing && productId) {
         await updateMutation.mutateAsync({ id: productId, input })
-        await persistVariantsAndImages(productId, formValues)
+        await persistVariants(productId, formValues)
       } else {
         const created = await createMutation.mutateAsync(input)
         savedId = created.id
-        await persistVariantsAndImages(created.id, formValues)
+        await persistVariants(created.id, formValues)
+        if (imageUploaderRef.current?.hasPendingUploads()) {
+          await imageUploaderRef.current.uploadPendingImages(created.id)
+        }
       }
 
       if (savedId) onSaved?.(savedId)
@@ -229,50 +216,6 @@ function ProductFormDrawerBody({
     )
   }
 
-  const addImage = () => {
-    if (!formValues) return
-    const newImage: AdminProductImageUi = {
-      id: newTempId(),
-      url: '',
-      publicId: null,
-      alt: '',
-      sortOrder: formValues.images.length,
-      isPrimary: formValues.images.length === 0,
-      isPersisted: false,
-    }
-    updateField('images', [...formValues.images, newImage])
-  }
-
-  const updateImage = (index: number, patch: Partial<AdminProductImageUi>) => {
-    if (!formValues) return
-    let next = formValues.images.map((img, i) => (i === index ? { ...img, ...patch } : img))
-    if (patch.isPrimary) {
-      next = next.map((img, i) => ({ ...img, isPrimary: i === index }))
-    }
-    updateField('images', next)
-  }
-
-  const removeImage = async (index: number) => {
-    if (!formValues) return
-    const image = formValues.images[index]
-    if (!image) return
-
-    if (image.isPersisted && productId) {
-      try {
-        await deleteImage.mutateAsync({ id: image.id, productId })
-      } catch (error) {
-        setSaveError('No pudimos eliminar la imagen.')
-        if (process.env.NODE_ENV === 'development') console.error(error)
-        return
-      }
-    }
-
-    updateField(
-      'images',
-      formValues.images.filter((_, i) => i !== index),
-    )
-  }
-
   return (
     <>
       <Tabs defaultValue="general" className="mt-6 flex-1">
@@ -289,86 +232,12 @@ function ProductFormDrawerBody({
               </TabsList>
 
               <TabsContent value="general" className="space-y-4 pt-4">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="font-sans text-sm">Imágenes</Label>
-                    <Button type="button" variant="outline" size="sm" onClick={addImage}>
-                      <ImagePlus className="mr-1 h-4 w-4" />
-                      Agregar URL
-                    </Button>
-                  </div>
-                  <p className="font-serif text-xs text-muted-foreground">
-                    Upload real a Cloudinary se conectará en la siguiente fase.
-                  </p>
-                  {formValues.images.length === 0 ? (
-                    <div className="rounded-lg border border-dashed border-border py-6 text-center">
-                      <p className="font-serif text-sm text-muted-foreground">
-                        Sin imágenes. Agrega una URL para vista previa.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {formValues.images.map((image, index) => (
-                        <Card key={image.id}>
-                          <CardContent className="space-y-3 p-4">
-                            <div className="flex gap-3">
-                              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-secondary">
-                                {image.url ? (
-                                  <Image
-                                    src={image.url}
-                                    alt={image.alt || 'Vista previa'}
-                                    fill
-                                    className="object-cover"
-                                    sizes="64px"
-                                    onError={(e) => {
-                                      e.currentTarget.style.display = 'none'
-                                    }}
-                                  />
-                                ) : (
-                                  <div className="flex h-full w-full items-center justify-center">
-                                    <ImagePlus className="h-5 w-5 text-muted-foreground" />
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex-1 space-y-2">
-                                <Input
-                                  placeholder="https://..."
-                                  value={image.url}
-                                  onChange={(e) => updateImage(index, { url: e.target.value })}
-                                  className="font-mono text-xs"
-                                />
-                                <Input
-                                  placeholder="Texto alternativo"
-                                  value={image.alt}
-                                  onChange={(e) => updateImage(index, { alt: e.target.value })}
-                                  className="font-sans text-sm"
-                                />
-                              </div>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="shrink-0 text-muted-foreground hover:text-destructive"
-                                onClick={() => void removeImage(index)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Switch
-                                checked={image.isPrimary}
-                                onCheckedChange={(checked) =>
-                                  updateImage(index, { isPrimary: checked })
-                                }
-                              />
-                              <Label className="font-sans text-xs">Imagen principal</Label>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <ProductImageUploader
+                  ref={imageUploaderRef}
+                  productId={productId}
+                  initialImages={formValues.images}
+                  disabled={isSaving}
+                />
 
                 <Separator />
 

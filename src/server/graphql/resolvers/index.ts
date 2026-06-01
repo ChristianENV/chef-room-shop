@@ -10,6 +10,7 @@ import { checkoutResolvers } from './checkout.resolver'
 import { shippingResolvers } from './shipping.resolver'
 import { orderClaimResolvers } from './order-claim.resolver'
 import { paymentsResolvers } from './payments.resolver'
+import { uploadsResolvers } from './uploads.resolver'
 import { JSONScalar } from '../scalars/json.scalar'
 
 export const resolvers = {
@@ -39,5 +40,6 @@ export const resolvers = {
     ...adminShippingResolvers.Mutation,
     ...adminProductsResolvers.Mutation,
     ...adminCustomizationResolvers.Mutation,
+    ...uploadsResolvers.Mutation,
   },
 }

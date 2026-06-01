@@ -30,7 +30,32 @@ import { VARS, BUSINESS_VARS, SHIPPING_VARS } from '@/src/config/vars'
 | Payments | `CONEKTA_PRIVATE_KEY`, `NEXT_PUBLIC_CONEKTA_PUBLIC_KEY` |
 | Shipping API | `SKYDROPX_CLIENT_ID`, `SKYDROPX_CLIENT_SECRET`, `SKYDROPX_WEBHOOK_SECRET` |
 | Email | `RESEND_API_KEY`, `EMAIL_FROM` |
+| Storage (R2) | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_BASE_URL`, `R2_REGION` |
 | App URL | `NEXT_PUBLIC_APP_URL` |
+
+### Cloudflare R2 image uploads (server-only)
+
+Used for avatar and product image uploads via presigned PUT URLs. See
+[`docs/uploads-r2.md`](./uploads-r2.md) for the full architecture.
+
+```env
+# Cloudflare account id (R2 endpoint host prefix)
+R2_ACCOUNT_ID=
+# R2 API token with Object Read & Write — SECRET, server-only
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+# Bucket name, e.g. chef-room-media
+R2_BUCKET_NAME=
+# Public base URL (r2.dev or custom CDN domain), no trailing slash
+R2_PUBLIC_BASE_URL=
+# R2 is region-less; keep "auto"
+R2_REGION=auto
+```
+
+**Never** expose `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` to the client. The
+browser only ever receives short-lived presigned PUT URLs. When R2 vars are
+missing, upload mutations fail with a clear `R2_NOT_CONFIGURED` reason and the
+rest of the app keeps working.
 
 ### Shipping origin overrides (optional)
 
