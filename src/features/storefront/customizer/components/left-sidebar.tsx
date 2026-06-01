@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Palette, ChevronDown, ChevronLeft, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { BASE_COLORS, DETAIL_COLORS, MOCK_PRODUCT, SIZES } from '../lib/customizer-defaults'
 import { useCustomizerStore } from '../store/customizer.store'
 import type { ButtonStyle, CollarStyle, Size, SleeveStyle } from '../types/customizer.types'
 
@@ -38,7 +38,7 @@ function Section({
   defaultOpen = true,
 }: {
   title: string
-  children: React.ReactNode
+  children: ReactNode
   defaultOpen?: boolean
 }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -118,7 +118,18 @@ export function LeftSidebar() {
     setCollarStyle,
     setButtonStyle,
     setSize,
+    sleeveOption,
+    setSleeveOption,
+    product,
+    customizationRuleAvailability,
   } = useCustomizerStore()
+
+  const colorOptions =
+    product?.colors.map((color) => ({ id: color.id, hex: color.hex, label: color.name })) ?? []
+  const sizeOptions = product?.sizes ?? []
+
+  const isRuleEnabled = (areaSlug: string, optionSlug: string) =>
+    customizationRuleAvailability[`${areaSlug}:${optionSlug}`] ?? false
 
   return (
     <div className="flex h-full">
@@ -130,25 +141,42 @@ export function LeftSidebar() {
       </div>
       {!collapsed ? (
         <div className="w-72 overflow-y-auto border-r border-border/30 bg-card/30">
-          <div className="border-b border-border/30 px-4 py-3 text-sm font-semibold">{MOCK_PRODUCT.name}</div>
+          <div className="border-b border-border/30 px-4 py-3 text-sm font-semibold">
+            {product?.name ?? 'Producto'}
+          </div>
           <Section title="Colores principales">
             <div className="flex flex-wrap gap-2">
-              {BASE_COLORS.map((color) => (
-                <ColorSwatch key={color} color={color} selected={baseColor === color} onClick={() => setBaseColor(color)} />
+              {colorOptions.map((color) => (
+                <ColorSwatch
+                  key={color.id}
+                  color={color.hex}
+                  selected={baseColor === color.hex}
+                  onClick={() => setBaseColor(color.hex)}
+                />
               ))}
             </div>
           </Section>
           <Section title="Colores de detalle">
             <div className="flex flex-wrap gap-2">
-              {DETAIL_COLORS.map((color) => (
-                <ColorSwatch key={color} color={color} selected={detailColor === color} onClick={() => setDetailColor(color)} />
+              {colorOptions.map((color) => (
+                <ColorSwatch
+                  key={`detail-${color.id}`}
+                  color={color.hex}
+                  selected={detailColor === color.hex}
+                  onClick={() => setDetailColor(color.hex)}
+                />
               ))}
             </div>
           </Section>
           <Section title="Talla">
             <div className="flex flex-wrap gap-2">
-              {SIZES.map((item) => (
-                <SizeButton key={item} size={item} selected={size === item} onClick={() => setSize(item)} />
+              {sizeOptions.map((item) => (
+                <SizeButton
+                  key={item.id}
+                  size={item.name as Size}
+                  selected={size === item.name}
+                  onClick={() => setSize(item.name as Size)}
+                />
               ))}
             </div>
           </Section>
@@ -173,6 +201,45 @@ export function LeftSidebar() {
               ))}
             </div>
           </Section>
+
+          {product?.customizationAreas.length ? (
+            <Section title="Opciones de personalizacion">
+              <div className="space-y-3">
+                {product.customizationAreas.map((area) => {
+                  const options = product.rules.filter((rule) => rule.area.slug === area.slug)
+                  return (
+                    <div key={area.slug}>
+                      <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        {area.name}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {options.map((rule) => {
+                          const key = `${rule.area.slug}:${rule.option.slug}`
+                          const enabled = isRuleEnabled(rule.area.slug, rule.option.slug)
+                          return (
+                            <button
+                              key={key}
+                              type="button"
+                              disabled={!enabled}
+                              onClick={() => setSleeveOption(rule.option.slug)}
+                              className={cn(
+                                'rounded-md border px-2 py-1 text-xs',
+                                sleeveOption === rule.option.slug &&
+                                  'border-primary bg-primary/10 text-foreground',
+                                !enabled && 'cursor-not-allowed opacity-40',
+                              )}
+                            >
+                              {rule.option.name}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </Section>
+          ) : null}
         </div>
       ) : null}
     </div>

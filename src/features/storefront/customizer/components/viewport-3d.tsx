@@ -55,12 +55,20 @@ function JacketModel() {
 }
 
 export default function Viewport3D() {
-  const { viewMode } = useCustomizerStore()
+  const { viewMode, product } = useCustomizerStore()
+  const heroImage =
+    product?.images.find((image) => image.isPrimary)?.url ?? product?.images[0]?.url ?? null
 
   if (viewMode !== '3D') {
     return (
       <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#080810] via-[#0c0c18] to-[#080810]">
-        <div className="customizer-glass rounded-xl px-6 py-4 text-muted-foreground">Vista 2D - Proximamente</div>
+        <div className="customizer-glass flex items-center gap-3 rounded-xl px-6 py-4 text-muted-foreground">
+          {heroImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={heroImage} alt={product?.name ?? 'Producto'} className="h-14 w-14 rounded-md object-cover" />
+          ) : null}
+          <span>Vista 2D premium disponible en la siguiente fase</span>
+        </div>
       </div>
     )
   }

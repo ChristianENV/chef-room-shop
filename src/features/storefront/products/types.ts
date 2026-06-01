@@ -68,6 +68,10 @@ export type ProductBySlugQueryData = {
   productBySlug: ProductDetail | null
 }
 
+export type CustomizationRulesByProductQueryData = {
+  customizationRulesByProduct: ProductCustomizationRule[]
+}
+
 export type {
   CatalogColor,
   CatalogProductImage,

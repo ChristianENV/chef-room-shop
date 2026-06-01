@@ -61,7 +61,7 @@ export default function ProductPage() {
   }, [catalogData, slug])
 
   const handleCustomize = () => {
-    router.push(routes.customize)
+    router.push(routes.customizeProduct(slug))
   }
 
   if (isProductLoading) {

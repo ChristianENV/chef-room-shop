@@ -1,12 +1,12 @@
 'use client'
 
 import { RotateCcw, Scan, ZoomIn, ZoomOut } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { MOCK_PRODUCT } from '../lib/customizer-defaults'
 import { useCustomizerStore } from '../store/customizer.store'
 
-function NextPhaseHint({ children }: { children: React.ReactNode }) {
+function NextPhaseHint({ children }: { children: ReactNode }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>{children}</TooltipTrigger>
@@ -80,13 +80,13 @@ export function ViewportControls() {
 }
 
 export function BottomActionBar() {
-  const { size } = useCustomizerStore()
+  const { size, product } = useCustomizerStore()
   return (
     <div className="absolute bottom-0 left-0 right-0 z-20">
       <div className="customizer-glass mx-auto flex max-w-3xl items-center justify-between rounded-t-2xl px-4 py-3">
         <div className="text-sm">
           <div className="text-xs text-muted-foreground">Producto</div>
-          <div className="font-semibold">{MOCK_PRODUCT.name}</div>
+          <div className="font-semibold">{product?.name ?? 'Producto'}</div>
         </div>
         <div className="text-sm">
           <div className="text-xs text-muted-foreground">Talla</div>
@@ -94,7 +94,9 @@ export function BottomActionBar() {
         </div>
         <div className="text-sm">
           <div className="text-xs text-muted-foreground">Precio</div>
-          <div className="font-semibold text-primary">{MOCK_PRODUCT.priceLabel}</div>
+          <div className="font-semibold text-primary">
+            {product ? `$${(product.basePriceCents / 100).toLocaleString('es-MX')} MXN` : '—'}
+          </div>
         </div>
         <NextPhaseHint>
           <Button disabled>Agregar al carrito</Button>

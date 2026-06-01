@@ -47,3 +47,30 @@
 - R2 upload logos
 - Preview render persistente
 - E2E
+
+## Fase 2: conexion a catalogo real
+
+Se agrego la ruta dinamica `src/app/(storefront)/customize/[productSlug]/page.tsx` para cargar:
+
+- `productBySlug` via `useProductQuery`
+- `customizationRulesByProduct` via `useCustomizationRulesByProductQuery`
+
+Nuevos archivos de adaptacion:
+
+- `src/features/storefront/customizer/types/customizer-product.types.ts`
+- `src/features/storefront/customizer/mappers/product-to-customizer.mapper.ts`
+
+Store actualizado:
+
+- `initFromProduct(product)`
+- `resetCustomizer()`
+- `setSelectedVariant(variantId)`
+- `setBaseColor(color)` (sincroniza variante)
+- `setSize(size)` (sincroniza variante)
+- `setSleeveOption(option)`
+- `setCustomizationRuleAvailability(key, enabled)`
+
+Navegacion actualizada:
+
+- `routes.customizeProduct(slug)` en `src/config/routes.ts`
+- CTA de PDP ahora dirige a `/customize/[productSlug]`

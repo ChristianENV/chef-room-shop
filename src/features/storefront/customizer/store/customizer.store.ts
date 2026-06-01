@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { DEFAULT_LAYERS } from '../lib/customizer-defaults'
+import type { CustomizerProductData } from '../types/customizer-product.types'
 import type {
   ButtonStyle,
   CollarStyle,
@@ -11,22 +12,31 @@ import type {
 } from '../types/customizer.types'
 
 type CustomizerState = {
+  product: CustomizerProductData | null
+  selectedVariantId: string | null
   baseColor: string
   detailColor: string
   collarStyle: CollarStyle
   sleeveStyle: SleeveStyle
+  sleeveOption: string | null
   buttonStyle: ButtonStyle
   size: Size
   viewMode: ViewMode
   viewAngle: ViewAngle
   layers: Layer[]
   selectedLayerId: string | null
+  customizationRuleAvailability: Record<string, boolean>
+  initFromProduct: (product: CustomizerProductData) => void
+  resetCustomizer: () => void
+  setSelectedVariant: (variantId: string | null) => void
   setBaseColor: (color: string) => void
   setDetailColor: (color: string) => void
   setCollarStyle: (style: CollarStyle) => void
   setSleeveStyle: (style: SleeveStyle) => void
+  setSleeveOption: (option: string | null) => void
   setButtonStyle: (style: ButtonStyle) => void
   setSize: (size: Size) => void
+  setCustomizationRuleAvailability: (key: string, enabled: boolean) => void
   setViewMode: (mode: ViewMode) => void
   setViewAngle: (angle: ViewAngle) => void
   selectLayer: (id: string | null) => void
@@ -39,24 +49,123 @@ type CustomizerState = {
   deleteLayer: (id: string) => void
 }
 
-export const useCustomizerStore = create<CustomizerState>((set) => ({
+const INITIAL_STATE = {
+  product: null,
+  selectedVariantId: null,
   baseColor: '#FFFFFF',
   detailColor: '#1a1a1a',
-  collarStyle: 'mao',
-  sleeveStyle: '3/4',
-  buttonStyle: 'tradicional',
-  size: 'M',
-  viewMode: '3D',
-  viewAngle: 'front',
+  collarStyle: 'mao' as CollarStyle,
+  sleeveStyle: '3/4' as SleeveStyle,
+  sleeveOption: null,
+  buttonStyle: 'tradicional' as ButtonStyle,
+  size: 'M' as Size,
+  viewMode: '3D' as ViewMode,
+  viewAngle: 'front' as ViewAngle,
   layers: DEFAULT_LAYERS,
   selectedLayerId: 'logo',
+  customizationRuleAvailability: {},
+}
 
-  setBaseColor: (color) => set({ baseColor: color }),
+function computeFirstVariant(product: CustomizerProductData) {
+  return (
+    product.variants.find((variant) => variant.isActive && variant.stockQty > 0) ??
+    product.variants.find((variant) => variant.isActive) ??
+    product.variants[0] ??
+    null
+  )
+}
+
+export const useCustomizerStore = create<CustomizerState>((set) => ({
+  ...INITIAL_STATE,
+
+  initFromProduct: (product) =>
+    set(() => {
+      const firstVariant = computeFirstVariant(product)
+      const firstColor =
+        product.colors.find((color) => color.id === firstVariant?.colorId)?.hex ??
+        product.colors[0]?.hex ??
+        INITIAL_STATE.baseColor
+      const firstSize =
+        product.sizes.find((size) => size.id === firstVariant?.sizeId)?.name ??
+        product.sizes[0]?.name ??
+        INITIAL_STATE.size
+
+      return {
+        product,
+        selectedVariantId: firstVariant?.id ?? null,
+        baseColor: firstColor,
+        size: (firstSize as Size) ?? INITIAL_STATE.size,
+        customizationRuleAvailability: Object.fromEntries(
+          product.customizationAvailability.map((item) => [
+            `${item.areaSlug}:${item.optionSlug}`,
+            item.enabled,
+          ]),
+        ),
+      }
+    }),
+  resetCustomizer: () => set(() => ({ ...INITIAL_STATE })),
+  setSelectedVariant: (variantId) => set({ selectedVariantId: variantId }),
+
+  setBaseColor: (color) =>
+    set((state) => {
+      if (!state.product) return { baseColor: color }
+      const selectedColor = state.product.colors.find((item) => item.hex === color)
+      const matchingVariant =
+        state.product.variants.find(
+          (variant) =>
+            variant.colorId === selectedColor?.id &&
+            variant.sizeId === state.product?.sizes.find((size) => size.name === state.size)?.id &&
+            variant.isActive,
+        ) ??
+        state.product.variants.find(
+          (variant) => variant.colorId === selectedColor?.id && variant.isActive,
+        ) ??
+        null
+      const nextSize =
+        state.product.sizes.find((size) => size.id === matchingVariant?.sizeId)?.name ?? state.size
+
+      return {
+        baseColor: color,
+        selectedVariantId: matchingVariant?.id ?? state.selectedVariantId,
+        size: nextSize as Size,
+      }
+    }),
   setDetailColor: (color) => set({ detailColor: color }),
   setCollarStyle: (style) => set({ collarStyle: style }),
   setSleeveStyle: (style) => set({ sleeveStyle: style }),
+  setSleeveOption: (option) => set({ sleeveOption: option }),
   setButtonStyle: (style) => set({ buttonStyle: style }),
-  setSize: (size) => set({ size }),
+  setSize: (size) =>
+    set((state) => {
+      if (!state.product) return { size }
+      const selectedColorId =
+        state.product.colors.find((color) => color.hex === state.baseColor)?.id ?? null
+      const nextVariant =
+        state.product.variants.find(
+          (variant) =>
+            variant.sizeId === state.product?.sizes.find((item) => item.name === size)?.id &&
+            variant.colorId === selectedColorId &&
+            variant.isActive,
+        ) ??
+        state.product.variants.find(
+          (variant) =>
+            variant.sizeId === state.product?.sizes.find((item) => item.name === size)?.id &&
+            variant.isActive,
+        ) ??
+        null
+
+      return {
+        size,
+        selectedVariantId: nextVariant?.id ?? state.selectedVariantId,
+      }
+    }),
+  setCustomizationRuleAvailability: (key, enabled) =>
+    set((state) => ({
+      customizationRuleAvailability: {
+        ...state.customizationRuleAvailability,
+        [key]: enabled,
+      },
+    })),
   setViewMode: (mode) => set({ viewMode: mode }),
   setViewAngle: (angle) => set({ viewAngle: angle }),
   selectLayer: (id) => set({ selectedLayerId: id }),
