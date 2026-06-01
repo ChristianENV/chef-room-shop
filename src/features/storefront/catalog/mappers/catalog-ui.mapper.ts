@@ -29,23 +29,16 @@ export function mapCategoryToProductTypeSlug(category: string): string | null {
 }
 
 function mapImages(images: CatalogProduct['images']): ProductImage[] {
-  if (images.length === 0) {
-    return [
-      {
-        id: 'placeholder',
-        url: '',
-        alt: '',
-        isPrimary: true,
-      },
-    ]
-  }
+  if (images.length === 0) return []
 
-  return images.map((image) => ({
-    id: image.id,
-    url: image.url,
-    alt: image.alt ?? '',
-    isPrimary: image.isPrimary,
-  }))
+  return images
+    .filter((image) => Boolean(image.url?.trim()))
+    .map((image) => ({
+      id: image.id,
+      url: image.url,
+      alt: image.alt ?? '',
+      isPrimary: image.isPrimary,
+    }))
 }
 
 function uniqueColorsFromVariants(variants: CatalogProductVariant[]): ProductColor[] {

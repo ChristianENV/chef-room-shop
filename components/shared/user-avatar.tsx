@@ -47,7 +47,12 @@ export function UserAvatar({
       aria-label={decorative ? undefined : displayName}
     >
       {imageSrc ? (
-        <AvatarImage src={imageSrc} alt={displayName} className="object-cover" />
+        <AvatarImage
+          key={imageSrc}
+          src={imageSrc}
+          alt={displayName}
+          className="object-cover"
+        />
       ) : null}
       <AvatarFallback
         delayMs={imageSrc ? 600 : 0}

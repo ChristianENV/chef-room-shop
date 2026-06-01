@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { ProductImageDisplay } from '@/components/shared/product-image'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Star, Heart } from 'lucide-react'
@@ -30,12 +31,12 @@ export function ProductCard({
         'relative overflow-hidden bg-secondary',
         isCompact ? 'aspect-square' : 'aspect-[4/5]'
       )}>
-        {/* Product Image Placeholder */}
-        <div className="absolute inset-0 flex items-center justify-center text-chef-muted">
-          <svg className="h-16 w-16 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-        </div>
+        <ProductImageDisplay
+          images={product.images}
+          alt={product.name}
+          className="absolute inset-0"
+          placeholderIconClassName={isCompact ? 'h-12 w-12' : 'h-16 w-16'}
+        />
         
         {/* Badge */}
         {product.badge && (

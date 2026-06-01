@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { ProductImageDisplay } from '@/components/shared/product-image'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -33,22 +34,12 @@ export function CatalogProductCard({
     >
       {/* Image Container */}
       <div className="relative aspect-[4/5] overflow-hidden bg-secondary">
-        {/* Product Image Placeholder */}
-        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground transition-transform duration-500 group-hover:scale-110">
-          <svg
-            className="h-20 w-20 opacity-30"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1}
-              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
-        </div>
+        <ProductImageDisplay
+          images={product.images}
+          alt={product.name}
+          className="absolute inset-0 transition-transform duration-500 group-hover:scale-110"
+          placeholderIconClassName="h-20 w-20"
+        />
 
         {/* Badges */}
         <div className="absolute left-3 top-3 flex flex-col gap-2">

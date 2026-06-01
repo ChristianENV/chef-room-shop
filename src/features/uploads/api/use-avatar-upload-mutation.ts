@@ -1,10 +1,12 @@
 'use client'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 
-import { accountQueryKeys } from '@/src/features/storefront/account/api/account.query-keys'
+import { useSession } from '@/src/lib/auth/auth-client'
 
 import type { AvatarUploadVariables, UserAvatarPayload } from '../types'
+import { refreshUserAvatarCaches } from '../lib/avatar-cache'
 import {
   confirmAvatarUpload,
   createAvatarUpload,
@@ -12,15 +14,22 @@ import {
 } from './uploads.api'
 import { uploadsMutationKeys } from './uploads.query-keys'
 
+export type AvatarUploadMutationOptions = {
+  /** Called after caches and session are refreshed. */
+  onAvatarUpdated?: (imageUrl: string | null) => void
+}
+
 /**
  * Avatar upload flow: request presigned URLs → PUT files directly to R2 →
  * confirm so the server stores the public URL on `User.image`.
  *
- * The UI is responsible for converting the source image to WebP (and an
- * optional JPG fallback) before calling this hook.
+ * On success, synchronizes TanStack Query, Better Auth session and App Router
+ * so navbar and account UI update without a manual reload.
  */
-export function useAvatarUploadMutation() {
+export function useAvatarUploadMutation(options?: AvatarUploadMutationOptions) {
   const queryClient = useQueryClient()
+  const router = useRouter()
+  const { refetch: refetchSession } = useSession()
 
   return useMutation<UserAvatarPayload, Error, AvatarUploadVariables>({
     mutationKey: uploadsMutationKeys.avatar(),
@@ -50,9 +59,14 @@ export function useAvatarUploadMutation() {
 
       return confirmAvatarUpload(created.uploadId)
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: accountQueryKeys.profile() })
-      void queryClient.invalidateQueries({ queryKey: accountQueryKeys.summary() })
+    onSuccess: async (payload) => {
+      await refreshUserAvatarCaches({
+        queryClient,
+        imageUrl: payload.image,
+        refetchSession,
+        routerRefresh: () => router.refresh(),
+      })
+      options?.onAvatarUpdated?.(payload.image)
     },
   })
 }
