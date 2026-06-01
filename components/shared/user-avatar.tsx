@@ -12,6 +12,7 @@ const sizeClasses = {
   sm: 'size-9 text-[11px]',
   md: 'size-10 text-xs',
   lg: 'size-12 text-sm',
+  xl: 'size-20 text-base',
 } as const
 
 export type UserAvatarProps = {

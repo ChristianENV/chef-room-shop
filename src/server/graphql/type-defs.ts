@@ -1051,6 +1051,76 @@ const shippingTypeDefs = /* GraphQL */ `
   }
 `
 
+export const uploadsTypeDefs = /* GraphQL */ `
+  type UploadKeys {
+    webp: String!
+    jpg: String!
+    thumb: String
+  }
+
+  type UploadPublicUrls {
+    webp: String!
+    jpg: String!
+    thumb: String
+  }
+
+  type UploadPresignedUrls {
+    webp: String!
+    jpg: String!
+    thumb: String
+  }
+
+  type AvatarUploadPayload {
+    uploadId: String!
+    keys: UploadKeys!
+    publicUrls: UploadPublicUrls!
+    presignedUrls: UploadPresignedUrls!
+    expiresAt: String!
+  }
+
+  type ProductImageUploadPayload {
+    uploadId: String!
+    imageId: ID!
+    keys: UploadKeys!
+    publicUrls: UploadPublicUrls!
+    presignedUrls: UploadPresignedUrls!
+    expiresAt: String!
+  }
+
+  type UserAvatarPayload {
+    user: AccountUser!
+    image: String
+  }
+
+  input CreateAvatarUploadInput {
+    webpSizeBytes: Int!
+    jpgSizeBytes: Int
+    originalFileName: String
+    originalContentType: String
+  }
+
+  input ConfirmAvatarUploadInput {
+    uploadId: String!
+  }
+
+  input CreateProductImageUploadInput {
+    productId: ID!
+    imageId: ID
+    webpSizeBytes: Int!
+    jpgSizeBytes: Int
+    thumbSizeBytes: Int
+    originalFileName: String
+    altText: String
+  }
+
+  input ConfirmProductImageUploadInput {
+    uploadId: String!
+    altText: String
+    isPrimary: Boolean
+    sortOrder: Int
+  }
+`
+
 const orderClaimTypeDefs = /* GraphQL */ `
   type OrderClaimPreview {
     orderNumber: String!
@@ -1183,6 +1253,10 @@ export const typeDefs = /* GraphQL */ `
     duplicateCustomizationRulesToProduct(
       input: DuplicateCustomizationRulesInput!
     ): [AdminCustomizationRule!]!
+    createAvatarUpload(input: CreateAvatarUploadInput!): AvatarUploadPayload!
+    confirmAvatarUpload(input: ConfirmAvatarUploadInput!): UserAvatarPayload!
+    createProductImageUpload(input: CreateProductImageUploadInput!): ProductImageUploadPayload!
+    confirmProductImageUpload(input: ConfirmProductImageUploadInput!): ProductImage!
   }
 
   ${catalogTypeDefs}
@@ -1197,4 +1271,5 @@ export const typeDefs = /* GraphQL */ `
   ${adminShippingTypeDefs}
   ${adminProductsTypeDefs}
   ${adminCustomizationTypeDefs}
+  ${uploadsTypeDefs}
 `

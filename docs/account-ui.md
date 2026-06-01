@@ -1,5 +1,54 @@
 # Account UI — conexión al Account BFF v1
 
+## Avatar editable
+
+La página `/account` muestra un `AccountProfileHeader` con el componente `EditableAvatar`.
+
+### Flujo de edición de avatar
+
+1. El usuario hace clic en el badge de lápiz (o en el avatar).
+2. Se abre `AvatarUploadDialog` (shadcn Dialog, sin Drawer).
+3. El usuario arrastra, selecciona desde disco o captura con cámara (`capture="user"`).
+4. `AvatarCropper` (react-easy-crop) permite recortar en círculo 1:1, rotar y hacer zoom.
+5. Al confirmar, `processAvatarImage` genera en el browser:
+   - `avatar.webp` 256×256 — calidad 0.82
+   - `avatar.jpg` 256×256 — calidad 0.86
+6. `useAvatarUploadMutation` orquesta:
+   - `createAvatarUpload` → presigned PUT URLs
+   - PUT WebP directo a R2
+   - PUT JPG directo a R2
+   - `confirmAvatarUpload` → actualiza `User.image` en BD
+7. El mutation hook invalida `meProfile` y `accountSummary` → el avatar se refresca sin reload.
+8. El componente aplica el nuevo URL de forma optimista mientras refetch corre.
+
+### Componentes
+
+| Archivo | Responsabilidad |
+|---------|----------------|
+| `components/shared/user-avatar.tsx` | Avatar con imagen u opción de iniciales; sizes sm/md/lg/xl |
+| `src/features/uploads/components/editable-avatar.tsx` | Avatar xl + badge lápiz + abre dialog |
+| `src/features/uploads/components/avatar-upload-dialog.tsx` | Dialog 5 estados: empty/editing/uploading/success/error |
+| `src/features/uploads/components/avatar-cropper.tsx` | Crop circular + zoom + rotación (react-easy-crop) |
+| `src/features/uploads/lib/image-processing.ts` | Utilidades canvas: `getCroppedCanvas`, `canvasToBlob`, validación |
+| `src/features/uploads/lib/avatar-image-processing.ts` | `processAvatarImage` — produce WebP + JPG 256×256 |
+| `src/features/storefront/account/components/account-profile-header.tsx` | Header de perfil con `EditableAvatar` + nombre/email |
+
+### Cámara móvil
+
+El segundo `<input>` tiene `capture="user"` para activar la cámara frontal en móvil.
+En desktop el atributo es ignorado y el input funciona como un file picker normal.
+
+### Accesibilidad
+
+- `EditableAvatar` es un `<button>` con `aria-label="Editar foto de perfil"`.
+- El drop zone tiene `role="button"`, `tabIndex={0}` y responde a Enter/Space.
+- `AvatarUploadDialog` usa `DialogTitle` y `DialogDescription` de Radix.
+- Los estados Uploading y Success tienen `role="status" aria-live="polite"`.
+- El estado Error tiene `role="alert" aria-live="assertive"`.
+- Todos los botones tienen `aria-label` descriptivo.
+
+---
+
 ## Páginas conectadas
 
 | Ruta | Hooks | Datos |
