@@ -4,6 +4,7 @@ export type ButtonStyle = 'tradicional' | 'ocultos' | 'automaticos'
 export type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL'
 export type ViewMode = '2D' | '3D'
 export type ViewAngle = 'front' | 'back'
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 export type LayerType = 'logo' | 'text' | 'patch' | 'vivos' | 'buttons' | 'base'
 

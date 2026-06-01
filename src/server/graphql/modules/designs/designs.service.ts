@@ -1,0 +1,279 @@
+import {
+  DesignEventType,
+  DesignStatus,
+  ProductStatus,
+  type Design,
+  type Prisma,
+} from '@prisma/client'
+import { GraphQLError } from 'graphql'
+
+import { getOrCreateGuestSession } from '@/src/server/guest/guest-session'
+
+import type { GraphQLContext } from '../../context'
+import { mapDesignToGql, mapProductForDesign } from '../account/account.mappers'
+import type { AccountDesignGql } from '../account/account.types'
+import type {
+  CreateDesignDraftInput,
+  DeleteDesignDraftInput,
+  SaveDesignPreviewInput,
+  UpdateDesignInput,
+} from './designs.types'
+import {
+  createDesignDraftSchema,
+  deleteDesignDraftSchema,
+  designByIdSchema,
+  saveDesignPreviewSchema,
+  updateDesignSchema,
+} from './designs.validation'
+
+type DesignActor = {
+  userId: string | null
+  guestSessionId: string | null
+}
+
+type DesignConfigRecord = Record<string, unknown>
+type InputJsonValue = Prisma.InputJsonValue
+
+const productForDesignInclude = {
+  productType: true,
+  images: { orderBy: { sortOrder: 'asc' as const } },
+  variants: {
+    where: { deletedAt: null },
+    include: { color: true, size: true },
+  },
+  customizationRules: {
+    where: { isEnabled: true },
+    include: { area: true, option: true },
+  },
+} satisfies Prisma.ProductInclude
+
+function designError(message: string, code: string): GraphQLError {
+  return new GraphQLError(message, { extensions: { code } })
+}
+
+async function resolveDesignActor(context: GraphQLContext): Promise<DesignActor> {
+  if (context.currentUser) {
+    return { userId: context.currentUser.id, guestSessionId: null }
+  }
+  const { guestSession } = await getOrCreateGuestSession()
+  return { userId: null, guestSessionId: guestSession.id }
+}
+
+function actorWhere(actor: DesignActor): Prisma.DesignWhereInput {
+  if (actor.userId) {
+    return { userId: actor.userId, deletedAt: null }
+  }
+  return { guestSessionId: actor.guestSessionId, deletedAt: null }
+}
+
+function configProductSlug(configJson: unknown): string | null {
+  if (!configJson || typeof configJson !== 'object' || Array.isArray(configJson)) return null
+  const slug = (configJson as DesignConfigRecord).productSlug
+  return typeof slug === 'string' && slug.length > 0 ? slug : null
+}
+
+async function resolveDesignProduct(
+  context: GraphQLContext,
+  design: Design,
+) {
+  const slug = configProductSlug(design.configJson)
+  if (!slug) return null
+
+  const product = await context.prisma.product.findFirst({
+    where: { slug, deletedAt: null, status: ProductStatus.ACTIVE },
+    include: productForDesignInclude,
+  })
+
+  return product ? mapProductForDesign(product) : null
+}
+
+async function mapDesignPayload(
+  context: GraphQLContext,
+  design: Design,
+): Promise<AccountDesignGql> {
+  const product = await resolveDesignProduct(context, design)
+  return mapDesignToGql(design, product)
+}
+
+async function assertProductExists(
+  context: GraphQLContext,
+  productId: string,
+  productVariantId?: string | null,
+) {
+  const product = await context.prisma.product.findFirst({
+    where: { id: productId, deletedAt: null, status: ProductStatus.ACTIVE },
+    select: { id: true, slug: true },
+  })
+  if (!product) throw designError('Producto no encontrado.', 'NOT_FOUND')
+
+  if (productVariantId) {
+    const variant = await context.prisma.productVariant.findFirst({
+      where: { id: productVariantId, productId, deletedAt: null },
+      select: { id: true },
+    })
+    if (!variant) {
+      throw designError('Variante no encontrada para este producto.', 'NOT_FOUND')
+    }
+  }
+}
+
+async function assertDesignOwnership(
+  context: GraphQLContext,
+  actor: DesignActor,
+  designId: string,
+): Promise<Design> {
+  const design = await context.prisma.design.findFirst({
+    where: { id: designId, ...actorWhere(actor) },
+  })
+
+  if (!design) {
+    throw designError('Diseño no encontrado o sin permisos.', 'NOT_FOUND')
+  }
+
+  return design
+}
+
+async function createDesignEvent(
+  context: GraphQLContext,
+  designId: string,
+  type: DesignEventType,
+  metadataJson?: unknown,
+) {
+  await context.prisma.designEvent.create({
+    data: {
+      designId,
+      type,
+      metadataJson: (metadataJson as InputJsonValue | undefined) ?? undefined,
+    },
+  })
+}
+
+/**
+ * Creates a draft design for an authenticated user or guest session.
+ * Ownership is resolved server-side from auth/cookie context.
+ */
+export async function createDesignDraft(
+  context: GraphQLContext,
+  input: CreateDesignDraftInput,
+): Promise<AccountDesignGql> {
+  const parsed = createDesignDraftSchema.parse(input)
+  const actor = await resolveDesignActor(context)
+  await assertProductExists(context, parsed.productId, parsed.productVariantId)
+
+  const design = await context.prisma.design.create({
+    data: {
+      userId: actor.userId,
+      guestSessionId: actor.guestSessionId,
+      status: DesignStatus.DRAFT,
+      configJson: parsed.configJson as InputJsonValue,
+      name: 'Borrador',
+    },
+  })
+
+  await createDesignEvent(context, design.id, DesignEventType.CREATED, {
+    productId: parsed.productId,
+    productVariantId: parsed.productVariantId ?? null,
+  })
+
+  return mapDesignPayload(context, design)
+}
+
+/**
+ * Updates draft/saved design configuration JSON.
+ */
+export async function updateDesign(
+  context: GraphQLContext,
+  input: UpdateDesignInput,
+): Promise<AccountDesignGql> {
+  const parsed = updateDesignSchema.parse(input)
+  const actor = await resolveDesignActor(context)
+  await assertDesignOwnership(context, actor, parsed.designId)
+
+  const design = await context.prisma.design.update({
+    where: { id: parsed.designId },
+    data: {
+      configJson: parsed.configJson as InputJsonValue,
+      status: DesignStatus.SAVED,
+    },
+  })
+
+  await createDesignEvent(context, design.id, DesignEventType.UPDATED, {
+    action: 'config',
+  })
+
+  return mapDesignPayload(context, design)
+}
+
+/**
+ * Stores preview URL/public id for a design and logs UPDATE event.
+ */
+export async function saveDesignPreview(
+  context: GraphQLContext,
+  input: SaveDesignPreviewInput,
+): Promise<AccountDesignGql> {
+  const parsed = saveDesignPreviewSchema.parse(input)
+  const actor = await resolveDesignActor(context)
+  await assertDesignOwnership(context, actor, parsed.designId)
+
+  const design = await context.prisma.design.update({
+    where: { id: parsed.designId },
+    data: {
+      previewUrl: parsed.previewUrl,
+      previewPublicId: parsed.previewPublicId ?? null,
+    },
+  })
+
+  await createDesignEvent(context, design.id, DesignEventType.UPDATED, {
+    action: 'preview',
+  })
+
+  return mapDesignPayload(context, design)
+}
+
+/**
+ * Soft-deletes a draft/saved design owned by current actor.
+ */
+export async function deleteDesignDraft(
+  context: GraphQLContext,
+  input: DeleteDesignDraftInput,
+): Promise<boolean> {
+  const parsed = deleteDesignDraftSchema.parse(input)
+  const actor = await resolveDesignActor(context)
+  const design = await assertDesignOwnership(context, actor, parsed.designId)
+
+  if (design.status === DesignStatus.PURCHASED) {
+    throw designError('No puedes eliminar un diseño comprado.', 'BAD_USER_INPUT')
+  }
+
+  await context.prisma.design.update({
+    where: { id: design.id },
+    data: {
+      deletedAt: new Date(),
+      status: DesignStatus.ARCHIVED,
+    },
+  })
+
+  await createDesignEvent(context, design.id, DesignEventType.UPDATED, {
+    action: 'soft-delete',
+  })
+
+  return true
+}
+
+/**
+ * Returns a design by id if the current actor owns it.
+ */
+export async function getDesignById(
+  context: GraphQLContext,
+  designId: string,
+): Promise<AccountDesignGql | null> {
+  const parsed = designByIdSchema.parse({ designId })
+  const actor = await resolveDesignActor(context)
+
+  const design = await context.prisma.design.findFirst({
+    where: { id: parsed.designId, ...actorWhere(actor) },
+  })
+
+  if (!design) return null
+  return mapDesignPayload(context, design)
+}

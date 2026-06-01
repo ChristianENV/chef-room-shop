@@ -9,6 +9,7 @@ import type {
   SleeveStyle,
   ViewAngle,
   ViewMode,
+  SaveStatus,
 } from '../types/customizer.types'
 
 type CustomizerState = {
@@ -26,6 +27,10 @@ type CustomizerState = {
   layers: Layer[]
   selectedLayerId: string | null
   customizationRuleAvailability: Record<string, boolean>
+  designId: string | null
+  isDirty: boolean
+  lastSavedAt: string | null
+  saveStatus: SaveStatus
   initFromProduct: (product: CustomizerProductData) => void
   resetCustomizer: () => void
   setSelectedVariant: (variantId: string | null) => void
@@ -37,6 +42,10 @@ type CustomizerState = {
   setButtonStyle: (style: ButtonStyle) => void
   setSize: (size: Size) => void
   setCustomizationRuleAvailability: (key: string, enabled: boolean) => void
+  setDesignId: (designId: string | null) => void
+  setSaveStatus: (status: SaveStatus) => void
+  setLastSavedAt: (iso: string | null) => void
+  markDirty: (dirty?: boolean) => void
   setViewMode: (mode: ViewMode) => void
   setViewAngle: (angle: ViewAngle) => void
   selectLayer: (id: string | null) => void
@@ -64,6 +73,10 @@ const INITIAL_STATE = {
   layers: DEFAULT_LAYERS,
   selectedLayerId: 'logo',
   customizationRuleAvailability: {},
+  designId: null,
+  isDirty: false,
+  lastSavedAt: null,
+  saveStatus: 'idle' as SaveStatus,
 }
 
 function computeFirstVariant(product: CustomizerProductData) {
@@ -101,6 +114,8 @@ export const useCustomizerStore = create<CustomizerState>((set) => ({
             item.enabled,
           ]),
         ),
+        isDirty: false,
+        saveStatus: 'idle',
       }
     }),
   resetCustomizer: () => set(() => ({ ...INITIAL_STATE })),
@@ -128,13 +143,14 @@ export const useCustomizerStore = create<CustomizerState>((set) => ({
         baseColor: color,
         selectedVariantId: matchingVariant?.id ?? state.selectedVariantId,
         size: nextSize as Size,
+        isDirty: true,
       }
     }),
-  setDetailColor: (color) => set({ detailColor: color }),
-  setCollarStyle: (style) => set({ collarStyle: style }),
-  setSleeveStyle: (style) => set({ sleeveStyle: style }),
-  setSleeveOption: (option) => set({ sleeveOption: option }),
-  setButtonStyle: (style) => set({ buttonStyle: style }),
+  setDetailColor: (color) => set({ detailColor: color, isDirty: true }),
+  setCollarStyle: (style) => set({ collarStyle: style, isDirty: true }),
+  setSleeveStyle: (style) => set({ sleeveStyle: style, isDirty: true }),
+  setSleeveOption: (option) => set({ sleeveOption: option, isDirty: true }),
+  setButtonStyle: (style) => set({ buttonStyle: style, isDirty: true }),
   setSize: (size) =>
     set((state) => {
       if (!state.product) return { size }
@@ -157,6 +173,7 @@ export const useCustomizerStore = create<CustomizerState>((set) => ({
       return {
         size,
         selectedVariantId: nextVariant?.id ?? state.selectedVariantId,
+        isDirty: true,
       }
     }),
   setCustomizationRuleAvailability: (key, enabled) =>
@@ -165,7 +182,12 @@ export const useCustomizerStore = create<CustomizerState>((set) => ({
         ...state.customizationRuleAvailability,
         [key]: enabled,
       },
+      isDirty: true,
     })),
+  setDesignId: (designId) => set({ designId }),
+  setSaveStatus: (saveStatus) => set({ saveStatus }),
+  setLastSavedAt: (lastSavedAt) => set({ lastSavedAt }),
+  markDirty: (dirty = true) => set({ isDirty: dirty }),
   setViewMode: (mode) => set({ viewMode: mode }),
   setViewAngle: (angle) => set({ viewAngle: angle }),
   selectLayer: (id) => set({ selectedLayerId: id }),
@@ -174,22 +196,27 @@ export const useCustomizerStore = create<CustomizerState>((set) => ({
       layers: state.layers.map((layer) =>
         layer.id === id ? { ...layer, visible: !layer.visible } : layer
       ),
+      isDirty: true,
     })),
   updateLayerPosition: (id, position) =>
     set((state) => ({
       layers: state.layers.map((layer) => (layer.id === id ? { ...layer, position } : layer)),
+      isDirty: true,
     })),
   updateLayerSize: (id, size) =>
     set((state) => ({
       layers: state.layers.map((layer) => (layer.id === id ? { ...layer, size } : layer)),
+      isDirty: true,
     })),
   updateLayerRotation: (id, rotation) =>
     set((state) => ({
       layers: state.layers.map((layer) => (layer.id === id ? { ...layer, rotation } : layer)),
+      isDirty: true,
     })),
   updateLayerOpacity: (id, opacity) =>
     set((state) => ({
       layers: state.layers.map((layer) => (layer.id === id ? { ...layer, opacity } : layer)),
+      isDirty: true,
     })),
   duplicateLayer: (id) =>
     set((state) => {
@@ -201,7 +228,11 @@ export const useCustomizerStore = create<CustomizerState>((set) => ({
         name: `${layer.name} (copia)`,
         position: { x: layer.position.x + 2, y: layer.position.y + 2 },
       }
-      return { layers: [duplicate, ...state.layers], selectedLayerId: duplicate.id }
+      return {
+        layers: [duplicate, ...state.layers],
+        selectedLayerId: duplicate.id,
+        isDirty: true,
+      }
     }),
   deleteLayer: (id) =>
     set((state) => {
@@ -210,6 +241,7 @@ export const useCustomizerStore = create<CustomizerState>((set) => ({
       return {
         layers: state.layers.filter((item) => item.id !== id),
         selectedLayerId: state.selectedLayerId === id ? null : state.selectedLayerId,
+        isDirty: true,
       }
     }),
 }))

@@ -15,17 +15,32 @@ function NextPhaseHint({ children }: { children: ReactNode }) {
   )
 }
 
-export function TopToolbar() {
+interface TopToolbarProps {
+  onSaveDesign?: () => void
+  isSaving?: boolean
+  saveStatusLabel?: string
+}
+
+export function TopToolbar({
+  onSaveDesign,
+  isSaving = false,
+  saveStatusLabel = 'Demo tecnica',
+}: TopToolbarProps) {
   return (
     <div className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-4 py-3">
       <div />
-      <div className="customizer-glass rounded-xl px-3 py-2 text-xs text-muted-foreground">Demo tecnica</div>
+      <div className="customizer-glass rounded-xl px-3 py-2 text-xs text-muted-foreground">
+        {saveStatusLabel}
+      </div>
       <div className="flex gap-2">
-        <NextPhaseHint>
-          <Button size="sm" variant="outline" disabled>
-            Guardar diseno
-          </Button>
-        </NextPhaseHint>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onSaveDesign}
+          disabled={isSaving}
+        >
+          {isSaving ? 'Guardando...' : 'Guardar diseno'}
+        </Button>
         <NextPhaseHint>
           <Button size="sm" disabled>
             Agregar al carrito

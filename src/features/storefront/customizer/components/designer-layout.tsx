@@ -16,7 +16,17 @@ const Viewport3D = dynamic(() => import('./viewport-3d'), {
   ),
 })
 
-export function DesignerLayout() {
+interface DesignerLayoutProps {
+  onSaveDesign?: () => void
+  isSaving?: boolean
+  saveStatusLabel?: string
+}
+
+export function DesignerLayout({
+  onSaveDesign,
+  isSaving,
+  saveStatusLabel,
+}: DesignerLayoutProps) {
   return (
     <div className="relative flex h-full w-full overflow-hidden bg-background">
       {/* Left Sidebar */}
@@ -32,7 +42,11 @@ export function DesignerLayout() {
       {/* Main viewport area */}
       <div className="relative flex-1">
         {/* Top toolbar */}
-        <TopToolbar />
+        <TopToolbar
+          onSaveDesign={onSaveDesign}
+          isSaving={isSaving}
+          saveStatusLabel={saveStatusLabel}
+        />
         
         {/* 3D Viewport */}
         <div className="h-full w-full">

@@ -1139,6 +1139,29 @@ const orderClaimTypeDefs = /* GraphQL */ `
   }
 `
 
+const designsTypeDefs = /* GraphQL */ `
+  input CreateDesignDraftInput {
+    productId: ID!
+    productVariantId: ID
+    configJson: JSON!
+  }
+
+  input UpdateDesignInput {
+    designId: ID!
+    configJson: JSON!
+  }
+
+  input SaveDesignPreviewInput {
+    designId: ID!
+    previewUrl: String!
+    previewPublicId: String
+  }
+
+  input DeleteDesignDraftInput {
+    designId: ID!
+  }
+`
+
 export const typeDefs = /* GraphQL */ `
   """
   Business BFF — authentication is handled by Better Auth at /api/auth/*.
@@ -1206,6 +1229,7 @@ export const typeDefs = /* GraphQL */ `
     orderByNumber(orderNumber: String!, email: String!): PublicOrder
     checkoutResultByToken(token: String!): CheckoutResult
     orderClaimPreview(token: String!): OrderClaimPreview
+    designById(designId: ID!): AccountDesign
   }
 
   type Mutation {
@@ -1258,6 +1282,10 @@ export const typeDefs = /* GraphQL */ `
     confirmAvatarUpload(input: ConfirmAvatarUploadInput!): UserAvatarPayload!
     createProductImageUpload(input: CreateProductImageUploadInput!): ProductImageUploadPayload!
     confirmProductImageUpload(input: ConfirmProductImageUploadInput!): ProductImage!
+    createDesignDraft(input: CreateDesignDraftInput!): AccountDesign!
+    updateDesign(input: UpdateDesignInput!): AccountDesign!
+    saveDesignPreview(input: SaveDesignPreviewInput!): AccountDesign!
+    deleteDesignDraft(input: DeleteDesignDraftInput!): Boolean!
   }
 
   ${catalogTypeDefs}
@@ -1273,4 +1301,5 @@ export const typeDefs = /* GraphQL */ `
   ${adminProductsTypeDefs}
   ${adminCustomizationTypeDefs}
   ${uploadsTypeDefs}
+  ${designsTypeDefs}
 `
