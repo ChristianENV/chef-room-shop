@@ -71,3 +71,11 @@ export const DELETE_ADMIN_PRODUCT_IMAGE_MUTATION = /* GraphQL */ `
     deleteAdminProductImage(id: $id)
   }
 `
+
+export const REORDER_ADMIN_PRODUCT_IMAGES_MUTATION = /* GraphQL */ `
+  mutation ReorderAdminProductImages($productId: ID!, $imageIds: [ID!]!) {
+    reorderAdminProductImages(productId: $productId, imageIds: $imageIds) {
+      ${ADMIN_PRODUCT_IMAGE_FIELDS}
+    }
+  }
+`

@@ -1246,6 +1246,7 @@ export const typeDefs = /* GraphQL */ `
     deleteAdminProductVariant(id: ID!): Boolean!
     upsertAdminProductImage(input: AdminProductImageInput!): AdminProductImage!
     deleteAdminProductImage(id: ID!): Boolean!
+    reorderAdminProductImages(productId: ID!, imageIds: [ID!]!): [AdminProductImage!]!
     createAdminCustomizationRule(input: AdminCustomizationRuleInput!): AdminCustomizationRule!
     updateAdminCustomizationRule(id: ID!, input: AdminCustomizationRuleInput!): AdminCustomizationRule!
     deleteAdminCustomizationRule(id: ID!): Boolean!

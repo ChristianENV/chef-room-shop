@@ -89,6 +89,99 @@ export async function getCroppedCanvas(
 }
 
 /**
+ * Crops and rotates a region, then scales so the longest side is at most
+ * `maxSide`. Preserves aspect ratio (unlike {@link getCroppedCanvas} which
+ * forces a square output).
+ */
+export async function getCroppedRectCanvas(
+  imageSrc: string,
+  cropArea: CropArea,
+  rotation: number,
+  maxSide: number,
+): Promise<HTMLCanvasElement> {
+  const image = await loadImage(imageSrc)
+
+  const diagonal = Math.ceil(
+    Math.sqrt(image.width * image.width + image.height * image.height),
+  )
+
+  const rotationCanvas = document.createElement('canvas')
+  rotationCanvas.width = diagonal
+  rotationCanvas.height = diagonal
+
+  const rotCtx = rotationCanvas.getContext('2d')
+  if (!rotCtx) throw new Error('No se pudo crear el contexto 2D del canvas.')
+
+  rotCtx.save()
+  rotCtx.translate(diagonal / 2, diagonal / 2)
+  rotCtx.rotate((rotation * Math.PI) / 180)
+  rotCtx.drawImage(image, -image.width / 2, -image.height / 2)
+  rotCtx.restore()
+
+  const offsetX = (diagonal - image.width) / 2
+  const offsetY = (diagonal - image.height) / 2
+
+  const cropCanvas = document.createElement('canvas')
+  cropCanvas.width = cropArea.width
+  cropCanvas.height = cropArea.height
+
+  const cropCtx = cropCanvas.getContext('2d')
+  if (!cropCtx) throw new Error('No se pudo crear el contexto 2D de recorte.')
+
+  cropCtx.drawImage(
+    rotationCanvas,
+    cropArea.x + offsetX,
+    cropArea.y + offsetY,
+    cropArea.width,
+    cropArea.height,
+    0,
+    0,
+    cropArea.width,
+    cropArea.height,
+  )
+
+  const longest = Math.max(cropArea.width, cropArea.height)
+  const scale = longest > maxSide ? maxSide / longest : 1
+  const outW = Math.max(1, Math.round(cropArea.width * scale))
+  const outH = Math.max(1, Math.round(cropArea.height * scale))
+
+  const outputCanvas = document.createElement('canvas')
+  outputCanvas.width = outW
+  outputCanvas.height = outH
+
+  const ctx = outputCanvas.getContext('2d')
+  if (!ctx) throw new Error('No se pudo crear el contexto 2D de salida.')
+
+  ctx.drawImage(cropCanvas, 0, 0, outW, outH)
+  return outputCanvas
+}
+
+/**
+ * Exports canvas to JPEG with an opaque white background (for PNG transparency).
+ */
+export async function canvasToJpegBlob(
+  canvas: HTMLCanvasElement,
+  quality: number,
+): Promise<Blob> {
+  const flat = document.createElement('canvas')
+  flat.width = canvas.width
+  flat.height = canvas.height
+  const ctx = flat.getContext('2d')
+  if (!ctx) throw new Error('No se pudo crear el contexto 2D.')
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(0, 0, flat.width, flat.height)
+  ctx.drawImage(canvas, 0, 0)
+  return canvasToBlob(flat, 'image/jpeg', quality)
+}
+
+/** Formats byte size for UI display. */
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+/**
  * Exports an HTMLCanvasElement to a Blob with the specified MIME type and
  * quality. Throws when the browser cannot produce the requested format.
  */

@@ -32,6 +32,7 @@ import type {
 } from './admin-products.types'
 import {
   adminProductImageInputSchema,
+  reorderAdminProductImagesSchema,
   adminProductInputSchema,
   adminProductVariantInputSchema,
   parseAdminProductsListInput,
@@ -754,4 +755,69 @@ export async function deleteAdminProductImage(
   })
 
   return true
+}
+
+/**
+ * Reorders product images and sets the first as primary.
+ */
+export async function reorderAdminProductImages(
+  context: GraphQLContext,
+  productId: string,
+  imageIds: string[],
+): Promise<AdminProductImageGql[]> {
+  requireAdminGraphQL(context)
+  const parsed = reorderAdminProductImagesSchema.parse({ productId, imageIds })
+
+  const product = await context.prisma.product.findUnique({
+    where: { id: parsed.productId },
+    select: { id: true },
+  })
+  if (!product) {
+    throw notFoundError()
+  }
+
+  const existing = await context.prisma.productImage.findMany({
+    where: { productId: parsed.productId },
+    select: { id: true },
+  })
+
+  const existingIds = new Set(existing.map((img) => img.id))
+  if (existing.length !== parsed.imageIds.length) {
+    throw new GraphQLError('La lista de imágenes no coincide con el producto.', {
+      extensions: { code: 'BAD_USER_INPUT' },
+    })
+  }
+
+  for (const id of parsed.imageIds) {
+    if (!existingIds.has(id)) {
+      throw new GraphQLError('Una o más imágenes no pertenecen a este producto.', {
+        extensions: { code: 'BAD_USER_INPUT' },
+      })
+    }
+  }
+
+  await context.prisma.$transaction(async (tx) => {
+    await tx.productImage.updateMany({
+      where: { productId: parsed.productId },
+      data: { isPrimary: false },
+    })
+
+    for (let index = 0; index < parsed.imageIds.length; index++) {
+      const id = parsed.imageIds[index]!
+      await tx.productImage.update({
+        where: { id },
+        data: {
+          sortOrder: index,
+          isPrimary: index === 0,
+        },
+      })
+    }
+  })
+
+  const images = await context.prisma.productImage.findMany({
+    where: { productId: parsed.productId },
+    orderBy: { sortOrder: 'asc' },
+  })
+
+  return images.map(mapAdminProductImageToGql)
 }

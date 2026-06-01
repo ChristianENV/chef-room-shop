@@ -1,5 +1,65 @@
 # Image uploads — Cloudflare R2
 
+## Avatar — flujo completo
+
+```
+Browser                          Next.js BFF                     Cloudflare R2
+  |                                   |                                |
+  |-- createAvatarUpload(sizes) ------>|                                |
+  |<-- uploadId + presigned URLs ------|                                |
+  |                                   |                                |
+  |-- [canvas] crop + resize (256px) --|                                |
+  |-- PUT avatar.webp ---------------------------------->               |
+  |-- PUT avatar.jpg ----------------------------------->               |
+  |                                   |                                |
+  |-- confirmAvatarUpload(uploadId) -->|                                |
+  |                             User.image = CDN WebP URL              |
+  |<-- { image: "<cdn url>" } ---------|                                |
+```
+
+### Formato de salida avatar
+
+| Archivo | Tamaño | Formato | Calidad |
+|---------|--------|---------|---------|
+| `avatar.webp` | 256×256 | WebP | 0.82 |
+| `avatar.jpg` | 256×256 | JPEG | 0.86 |
+
+El círculo se muestra por CSS (`border-radius: 9999px`); el archivo almacenado es cuadrado.
+
+### Procesamiento en el browser
+
+1. El usuario selecciona imagen (JPG/PNG/WebP, máx. 16 MB).
+2. `react-easy-crop` provee el área de recorte en píxeles + rotación.
+3. `getCroppedCanvas` (`image-processing.ts`) dibuja la región en un canvas 256×256.
+4. `canvasToBlob` exporta a WebP (0.82) y JPEG (0.86).
+5. Los object URLs temporales se revocan al cerrar el dialog.
+
+## Product images — admin uploader
+
+```
+Admin UI                         Next.js BFF                     Cloudflare R2
+  |                                   |                                |
+  |-- createProductImageUpload ------>|                                |
+  |<-- uploadId + presigned URLs -----|                                |
+  |-- [canvas] crop (max 1600px) -----|                                |
+  |-- PUT image.webp / image.jpg / thumb.webp ------------------------>|
+  |-- confirmProductImageUpload ----->| ProductImage row               |
+  |-- reorderAdminProductImages ----->| sortOrder + isPrimary          |
+```
+
+| Archivo | Max lado | Formato | Calidad |
+|---------|----------|---------|---------|
+| `image.webp` | 1600px | WebP | 0.82 |
+| `image.jpg` | 1600px | JPEG | 0.86 (fondo blanco si PNG) |
+| `thumb.webp` | 400px | WebP | 0.78 |
+
+- Máximo **10** imágenes por producto.
+- Sin cámara en admin productos.
+- Reorden: `reorderAdminProductImages(productId, imageIds)` — primera = principal.
+- Pendiente: borrado físico R2 al eliminar; EXIF explícito; CORS bucket para re-editar.
+
+---
+
 Reusable foundation for uploading images (user avatars and product images) to
 Cloudflare R2 using **presigned PUT URLs**. The browser uploads bytes directly
 to R2; Next.js never proxies the file. R2 credentials stay server-only.
