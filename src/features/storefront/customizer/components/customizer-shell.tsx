@@ -193,7 +193,10 @@ export function CustomizerShell({ product }: CustomizerShellProps) {
       : 'Demo tecnica'
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-background">
+    <div
+      className="flex h-dvh flex-col overflow-hidden bg-background"
+      data-testid="customizer-root"
+    >
       <header className="flex items-center justify-between border-b border-border/40 bg-card/80 px-4 py-2">
         <Button variant="ghost" size="sm" asChild>
           <Link href={routes.shop}>

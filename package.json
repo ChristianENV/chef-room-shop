@@ -14,7 +14,8 @@
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed",
     "db:seed:demo": "tsx prisma/seed-demo.ts",
-    "db:seed:all": "tsx prisma/seed.ts && tsx prisma/seed-demo.ts"
+    "db:seed:all": "tsx prisma/seed.ts && tsx prisma/seed-demo.ts",
+    "test:e2e:smoke": "playwright test"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -95,6 +96,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4.2.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22",

@@ -21,6 +21,7 @@ function ColorSwatch({
     <button
       type="button"
       onClick={onClick}
+      data-testid="customizer-color-option"
       className={cn(
         'relative size-8 rounded-full border-2',
         selected ? 'border-primary ring-2 ring-primary/30' : 'border-transparent'
@@ -68,6 +69,7 @@ function SizeButton({ size, selected, onClick }: { size: Size; selected: boolean
     <button
       type="button"
       onClick={onClick}
+      data-testid="customizer-size-option"
       className={cn(
         'flex size-9 items-center justify-center rounded-md text-xs',
         selected ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'

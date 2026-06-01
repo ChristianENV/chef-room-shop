@@ -31,10 +31,16 @@ export function TopToolbar({
           variant="outline"
           onClick={onSaveDesign}
           disabled={isSaving}
+          data-testid="customizer-save-button"
         >
           {isSaving ? 'Guardando...' : 'Guardar diseno'}
         </Button>
-        <Button size="sm" onClick={onAddToCart} disabled={isAddingToCart}>
+        <Button
+          size="sm"
+          onClick={onAddToCart}
+          disabled={isAddingToCart}
+          data-testid="customizer-add-to-cart-button"
+        >
           {isAddingToCart ? 'Agregando...' : 'Agregar al carrito'}
         </Button>
       </div>
