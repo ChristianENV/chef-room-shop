@@ -5,7 +5,7 @@ import { PublicNavbarSession } from './public-navbar-session'
 import { PublicFooter } from './public-footer'
 
 /** Routes that provide their own full-page chrome (auth, checkout, admin demo). */
-const CHROMELESS_PATH_PREFIXES = ['/login', '/register', '/checkout', '/demo/admin'] as const
+const CHROMELESS_PATH_PREFIXES = ['/login', '/register', '/checkout', '/customize', '/demo/admin'] as const
 
 /** Storefront routes that hide the newsletter block in the footer. */
 const FOOTER_NO_NEWSLETTER_PREFIXES = [
