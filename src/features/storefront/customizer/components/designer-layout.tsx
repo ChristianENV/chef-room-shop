@@ -18,13 +18,17 @@ const Viewport3D = dynamic(() => import('./viewport-3d'), {
 
 interface DesignerLayoutProps {
   onSaveDesign?: () => void
+  onAddToCart?: () => void
   isSaving?: boolean
+  isAddingToCart?: boolean
   saveStatusLabel?: string
 }
 
 export function DesignerLayout({
   onSaveDesign,
+  onAddToCart,
   isSaving,
+  isAddingToCart,
   saveStatusLabel,
 }: DesignerLayoutProps) {
   return (
@@ -44,7 +48,9 @@ export function DesignerLayout({
         {/* Top toolbar */}
         <TopToolbar
           onSaveDesign={onSaveDesign}
+          onAddToCart={onAddToCart}
           isSaving={isSaving}
+          isAddingToCart={isAddingToCart}
           saveStatusLabel={saveStatusLabel}
         />
         
@@ -57,7 +63,10 @@ export function DesignerLayout({
         <ViewportControls />
         
         {/* Bottom action bar */}
-        <BottomActionBar />
+        <BottomActionBar
+          onAddToCart={onAddToCart}
+          isAddingToCart={isAddingToCart}
+        />
       </div>
 
       {/* Right Sidebar */}

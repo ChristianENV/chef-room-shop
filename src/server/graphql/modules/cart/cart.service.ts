@@ -1,4 +1,10 @@
-import { CartStatus, DesignStatus, ProductStatus, type Prisma } from '@prisma/client'
+import {
+  CartStatus,
+  DesignEventType,
+  DesignStatus,
+  ProductStatus,
+  type Prisma,
+} from '@prisma/client'
 import { GraphQLError } from 'graphql'
 
 import type { GraphQLContext } from '../../context'
@@ -381,6 +387,18 @@ export async function addCartItem(
     await context.prisma.design.update({
       where: { id: designId },
       data: { status: DesignStatus.IN_CART },
+    })
+    await context.prisma.designEvent.create({
+      data: {
+        designId,
+        type: DesignEventType.ADDED_TO_CART,
+        metadataJson: {
+          cartId: cart.id,
+          productId: product.id,
+          productVariantId: variant?.id ?? null,
+          quantity: parsed.quantity,
+        },
+      },
     })
   }
 

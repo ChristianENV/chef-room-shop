@@ -1,29 +1,22 @@
 'use client'
 
 import { RotateCcw, Scan, ZoomIn, ZoomOut } from 'lucide-react'
-import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useCustomizerStore } from '../store/customizer.store'
-
-function NextPhaseHint({ children }: { children: ReactNode }) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>{children}</TooltipTrigger>
-      <TooltipContent>Disponible en la siguiente fase</TooltipContent>
-    </Tooltip>
-  )
-}
 
 interface TopToolbarProps {
   onSaveDesign?: () => void
+  onAddToCart?: () => void
   isSaving?: boolean
+  isAddingToCart?: boolean
   saveStatusLabel?: string
 }
 
 export function TopToolbar({
   onSaveDesign,
+  onAddToCart,
   isSaving = false,
+  isAddingToCart = false,
   saveStatusLabel = 'Demo tecnica',
 }: TopToolbarProps) {
   return (
@@ -41,11 +34,9 @@ export function TopToolbar({
         >
           {isSaving ? 'Guardando...' : 'Guardar diseno'}
         </Button>
-        <NextPhaseHint>
-          <Button size="sm" disabled>
-            Agregar al carrito
-          </Button>
-        </NextPhaseHint>
+        <Button size="sm" onClick={onAddToCart} disabled={isAddingToCart}>
+          {isAddingToCart ? 'Agregando...' : 'Agregar al carrito'}
+        </Button>
       </div>
     </div>
   )
@@ -94,7 +85,15 @@ export function ViewportControls() {
   )
 }
 
-export function BottomActionBar() {
+interface BottomActionBarProps {
+  onAddToCart?: () => void
+  isAddingToCart?: boolean
+}
+
+export function BottomActionBar({
+  onAddToCart,
+  isAddingToCart = false,
+}: BottomActionBarProps) {
   const { size, product } = useCustomizerStore()
   return (
     <div className="absolute bottom-0 left-0 right-0 z-20">
@@ -113,9 +112,9 @@ export function BottomActionBar() {
             {product ? `$${(product.basePriceCents / 100).toLocaleString('es-MX')} MXN` : '—'}
           </div>
         </div>
-        <NextPhaseHint>
-          <Button disabled>Agregar al carrito</Button>
-        </NextPhaseHint>
+        <Button onClick={onAddToCart} disabled={isAddingToCart}>
+          {isAddingToCart ? 'Agregando...' : 'Agregar al carrito'}
+        </Button>
       </div>
     </div>
   )

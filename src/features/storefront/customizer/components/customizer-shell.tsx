@@ -2,13 +2,14 @@
 
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { routes } from '@/src/config/routes'
 import type { CustomizerProductData } from '../types/customizer-product.types'
 import { useCustomizerStore } from '../store/customizer.store'
 import { useCreateDesignDraftMutation } from '../api/use-create-design-draft'
 import { useUpdateDesignMutation } from '../api/use-update-design'
+import { useAddCartItemMutation } from '@/src/features/storefront/cart/api/use-add-cart-item-mutation'
 import { DesignerLayout } from './designer-layout'
 import '../customizer.css'
 
@@ -41,7 +42,10 @@ export function CustomizerShell({ product }: CustomizerShellProps) {
   } = useCustomizerStore()
   const createDraft = useCreateDesignDraftMutation()
   const updateDesign = useUpdateDesignMutation()
+  const addToCart = useAddCartItemMutation()
   const autosaveTimerRef = useRef<number | null>(null)
+  const [cartActionError, setCartActionError] = useState<string | null>(null)
+  const [addedToCart, setAddedToCart] = useState(false)
 
   useEffect(() => {
     if (product) {
@@ -87,8 +91,8 @@ export function CustomizerShell({ product }: CustomizerShellProps) {
     ],
   )
 
-  const runSave = useCallback(async () => {
-    if (!product) return
+  const runSave = useCallback(async (): Promise<string | null> => {
+    if (!product) return null
     setSaveStatus('saving')
     try {
       if (!designId) {
@@ -98,17 +102,23 @@ export function CustomizerShell({ product }: CustomizerShellProps) {
           configJson,
         })
         setDesignId(created.id)
+        setLastSavedAt(new Date().toISOString())
+        markDirty(false)
+        setSaveStatus('saved')
+        return created.id
       } else {
         await updateDesign.mutateAsync({
           designId,
           configJson,
         })
+        setSaveStatus('saved')
+        setLastSavedAt(new Date().toISOString())
+        markDirty(false)
+        return designId
       }
-      setSaveStatus('saved')
-      setLastSavedAt(new Date().toISOString())
-      markDirty(false)
     } catch {
       setSaveStatus('error')
+      return null
     }
   }, [
     product,
@@ -121,6 +131,41 @@ export function CustomizerShell({ product }: CustomizerShellProps) {
     updateDesign,
     setLastSavedAt,
     markDirty,
+  ])
+
+  const handleAddToCart = useCallback(async () => {
+    if (!product) return
+    setCartActionError(null)
+    setAddedToCart(false)
+
+    let ensuredDesignId = designId
+    if (!ensuredDesignId || isDirty) {
+      ensuredDesignId = await runSave()
+    }
+
+    if (!ensuredDesignId) {
+      setCartActionError('No pudimos guardar el diseño antes de agregarlo al carrito.')
+      return
+    }
+
+    try {
+      await addToCart.mutateAsync({
+        productId: product.id,
+        productVariantId: selectedVariantId ?? null,
+        designId: ensuredDesignId,
+        quantity: 1,
+      })
+      setAddedToCart(true)
+    } catch {
+      setCartActionError('No pudimos agregar el diseño personalizado al carrito.')
+    }
+  }, [
+    product,
+    designId,
+    isDirty,
+    runSave,
+    addToCart,
+    selectedVariantId,
   ])
 
   useEffect(() => {
@@ -156,14 +201,40 @@ export function CustomizerShell({ product }: CustomizerShellProps) {
             Volver a tienda
           </Link>
         </Button>
-        <p className="text-xs text-muted-foreground">Demo tecnica - sin carrito ni guardado</p>
+        <p className="text-xs text-muted-foreground">Customizador conectado a diseños y carrito</p>
       </header>
+      {cartActionError ? (
+        <div className="border-b border-destructive/30 bg-destructive/10 px-4 py-2 font-serif text-sm text-destructive">
+          {cartActionError}
+        </div>
+      ) : null}
+      {addedToCart ? (
+        <div className="flex flex-wrap items-center gap-2 border-b border-success/30 bg-success/10 px-4 py-2">
+          <span className="font-sans text-sm text-foreground">
+            Diseño personalizado agregado al carrito.
+          </span>
+          <Button size="sm" variant="outline" asChild>
+            <Link href={routes.cart}>Ver carrito</Link>
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setAddedToCart(false)}
+          >
+            Seguir diseñando
+          </Button>
+        </div>
+      ) : null}
       <div className="min-h-0 flex-1">
         <DesignerLayout
           onSaveDesign={() => {
             void runSave()
           }}
+          onAddToCart={() => {
+            void handleAddToCart()
+          }}
           isSaving={saveStatus === 'saving'}
+          isAddingToCart={addToCart.isPending}
           saveStatusLabel={saveStatusLabel}
         />
       </div>
