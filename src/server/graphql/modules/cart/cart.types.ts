@@ -91,6 +91,15 @@ export type CartOwner = {
 export type CartConfigSnapshotJson = {
   productSnapshot?: CartProductSnapshotGql
   customizationSnapshot?: CartCustomizationSnapshotGql
+  designSnapshot?: {
+    designId: string | null
+    previewUrl: string | null
+    previewBackUrl: string | null
+    configJson: unknown
+    elements: unknown[]
+    selectedOptions: Record<string, unknown>
+  }
+  customizationPriceCents?: number
 }
 
 export type CartItemWithRelations = CartItem & {

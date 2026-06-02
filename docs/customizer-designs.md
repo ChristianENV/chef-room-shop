@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Conectar el customizador con persistencia real de `Design` para usuarios autenticados y guest, sin conectar carrito ni checkout en esta fase.
+Conectar el customizador con persistencia real de `Design` y flujo de carrito con `designId`.
 
 ## Backend GraphQL (Yoga)
 
@@ -101,9 +101,22 @@ Keys R2:
 
 El autosave solo guarda `configJson` (no captura previews en cada cambio).
 
-### Carrito (preparado)
+### Carrito (activo)
 
-`ensureDesignPreviews()` en `lib/ensure-design-previews.ts` captura y sube si faltan previews antes de agregar al carrito.
+El botón **Agregar al carrito** en `CustomizerShell` ahora:
+
+1. Valida variante (`talla/color`) y stock.
+2. Guarda/actualiza `Design` si está sucio o no existe `designId`.
+3. Asegura previews front/back (`ensureDesignPreviews`).
+4. Ejecuta `addCartItem({ productId, productVariantId, designId, quantity })`.
+5. Muestra éxito: `Tu diseño se agregó al carrito.` con CTAs de seguir diseñando o ir al carrito.
+
+En backend (`cart.service.ts`):
+
+- valida ownership y relación diseño-producto,
+- persiste snapshot de personalización en `CartItem.configSnapshotJson`,
+- actualiza `Design.status` a `IN_CART`,
+- registra `DesignEventType.ADDED_TO_CART`.
 
 ### Limitaciones
 

@@ -1,5 +1,6 @@
 import {
   CartStatus,
+  type Design,
   DesignEventType,
   DesignStatus,
   ProductStatus,
@@ -58,6 +59,11 @@ type DesignConfigJson = {
   productId?: string
   productSlug?: string
   finalPriceCents?: number
+  elements?: Array<Record<string, unknown>>
+  previews?: {
+    back?: { url?: string }
+  }
+  style?: Record<string, unknown>
 }
 
 function cartError(message: string, code: string): GraphQLError {
@@ -201,10 +207,39 @@ function resolveUnitPriceCents(
 function resolveCustomizationPriceCents(
   design: { configJson: unknown } | null,
   basePriceCents: number,
+  rules: Array<{
+    isEnabled: boolean
+    option: { slug: string; priceCents: number }
+  }>,
 ): number {
   if (!design) return 0
 
   const config = design.configJson as DesignConfigJson
+  const elements = Array.isArray(config.elements) ? config.elements : []
+  if (elements.length > 0) {
+    let computed = 0
+    for (const element of elements) {
+      if (!element || typeof element !== 'object') continue
+      const type = element.type
+      const name = typeof element.name === 'string' ? element.name.toLowerCase() : ''
+      const text = typeof element.text === 'string' ? element.text.toLowerCase() : ''
+      const optionSlug =
+        type === 'logo'
+          ? 'logo'
+          : type === 'patch'
+            ? 'bordado'
+            : name.includes('nombre') || text.includes('nombre')
+              ? 'nombre'
+              : 'texto'
+
+      const rule = rules.find((entry) => entry.isEnabled && entry.option.slug === optionSlug)
+      if (rule) {
+        computed += Math.max(0, rule.option.priceCents)
+      }
+    }
+    if (computed > 0) return computed
+  }
+
   const finalPrice = config.finalPriceCents
   if (typeof finalPrice !== 'number' || Number.isNaN(finalPrice)) {
     return 0
@@ -218,7 +253,7 @@ async function validateDesignForCart(
   owner: CartOwner,
   designId: string,
   productId: string,
-): Promise<{ id: string; configJson: unknown; previewUrl: string | null; name: string | null }> {
+): Promise<Design> {
   const design = await context.prisma.design.findFirst({
     where: {
       id: designId,
@@ -306,20 +341,20 @@ export async function addCartItem(
     if (!variant) {
       throw cartError('Variante no encontrada para este producto.', 'NOT_FOUND')
     }
+    if (variant.stockQty <= 0) {
+      throw cartError('La variante seleccionada no tiene stock disponible.', 'BAD_REQUEST')
+    }
   }
 
   const designId = parsed.designId ?? null
-  if (designId) {
-    await validateDesignForCart(context, owner, designId, product.id)
-  }
-
-  const unitPriceCents = resolveUnitPriceCents(product, variant)
   const designRow = designId
-    ? await context.prisma.design.findUnique({ where: { id: designId } })
+    ? await validateDesignForCart(context, owner, designId, product.id)
     : null
+  const unitPriceCents = resolveUnitPriceCents(product, variant)
   const customizationPriceCents = resolveCustomizationPriceCents(
     designRow,
     unitPriceCents,
+    product.customizationRules,
   )
 
   let cart = await findActiveCart(context, owner)
@@ -365,6 +400,19 @@ export async function addCartItem(
       designRow,
       designRow?.configJson,
     )
+    const configRecord =
+      designRow?.configJson &&
+      typeof designRow.configJson === 'object' &&
+      !Array.isArray(designRow.configJson)
+        ? (designRow.configJson as DesignConfigJson)
+        : null
+    const previewBackUrl =
+      configRecord?.previews?.back?.url && typeof configRecord.previews.back.url === 'string'
+        ? configRecord.previews.back.url
+        : null
+    const elements = Array.isArray(configRecord?.elements) ? configRecord.elements : []
+    const selectedOptions =
+      configRecord?.style && typeof configRecord.style === 'object' ? configRecord.style : {}
 
     await context.prisma.cartItem.create({
       data: {
@@ -378,6 +426,19 @@ export async function addCartItem(
         configSnapshotJson: toConfigSnapshotJson(
           productSnapshot,
           customizationSnapshot,
+          designRow
+            ? {
+                designSnapshot: {
+                  designId: designRow.id,
+                  previewUrl: designRow.previewUrl,
+                  previewBackUrl,
+                  configJson: designRow.configJson,
+                  elements,
+                  selectedOptions,
+                },
+                customizationPriceCents,
+              }
+            : { customizationPriceCents },
         ),
       },
     })

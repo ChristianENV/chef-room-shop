@@ -42,6 +42,9 @@ export function CartCustomizationSummary({
           {summary.areas && summary.areas.length > 0 && (
             <li>Áreas: {summary.areas.join(', ')}</li>
           )}
+          {summary.lines && summary.lines.length > 0 && (
+            <li>Texto: {summary.lines.join(' · ')}</li>
+          )}
         </ul>
       )}
       {showEditLink && (

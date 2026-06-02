@@ -99,6 +99,14 @@ export function CustomizerShell({
   const [lastPreviewSuccess, setLastPreviewSuccess] = useState(false)
   const [logoUploadError, setLogoUploadError] = useState<string | null>(null)
 
+  const selectedVariant = useMemo(
+    () =>
+      selectedVariantId
+        ? product.variants.find((variant) => variant.id === selectedVariantId) ?? null
+        : null,
+    [product.variants, selectedVariantId],
+  )
+
   useEffect(() => {
     initFromProduct(product)
   }, [product, initFromProduct])
@@ -282,6 +290,15 @@ export function CustomizerShell({
     setCartActionError(null)
     setAddedToCart(false)
 
+    if (!selectedVariantId || !selectedVariant) {
+      setCartActionError('Selecciona talla y color para continuar.')
+      return
+    }
+    if (!selectedVariant.isActive || selectedVariant.stockQty <= 0) {
+      setCartActionError('La variante seleccionada no tiene stock disponible.')
+      return
+    }
+
     let ensuredDesignId = designId
     if (!ensuredDesignId || isDirty) {
       ensuredDesignId = await runSaveConfig()
@@ -304,16 +321,20 @@ export function CustomizerShell({
       },
     })
 
-    if (!previewResult.ok && previewResult.reason === 'no_3d') {
-      setPreviewWarning(
-        'El diseño se agregará al carrito sin vista previa. Cambia a 3D y guarda para generar capturas.',
-      )
+    if (!previewResult.ok) {
+      if (previewResult.reason === 'no_3d') {
+        setPreviewWarning(
+          'Para agregar al carrito, genera al menos la vista frontal en modo 3D y guarda de nuevo.',
+        )
+      }
+      setCartActionError('No pudimos generar la vista previa del diseño. Intenta de nuevo.')
+      return
     }
 
     try {
       await addToCart.mutateAsync({
         productId: product.id,
-        productVariantId: selectedVariantId ?? null,
+        productVariantId: selectedVariantId,
         designId: ensuredDesignId,
         quantity,
       })
@@ -331,6 +352,7 @@ export function CustomizerShell({
     viewMode,
     addToCart,
     selectedVariantId,
+    selectedVariant,
     quantity,
   ])
 
@@ -438,7 +460,7 @@ export function CustomizerShell({
       {addedToCart ? (
         <div className="flex flex-wrap items-center gap-2 border-b border-success/30 bg-success/10 px-4 py-2">
           <span className="font-sans text-sm text-foreground">
-            Diseño personalizado agregado al carrito.
+            Tu diseño se agregó al carrito.
           </span>
           <Button size="sm" variant="outline" asChild>
             <Link href={routes.cart}>Ver carrito</Link>

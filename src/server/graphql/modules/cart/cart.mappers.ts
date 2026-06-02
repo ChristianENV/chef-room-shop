@@ -21,6 +21,10 @@ type DesignConfigJson = {
   hasEmbroidery?: boolean
   embroideredName?: string
   summary?: string[]
+  elements?: Array<Record<string, unknown>>
+  previews?: {
+    back?: { url?: string }
+  }
 }
 
 function parseJsonRecord(value: unknown): Record<string, unknown> {
@@ -100,23 +104,53 @@ export function buildCustomizationSnapshot(
   }
 
   const config = parseJsonRecord(configJson ?? design.configJson) as DesignConfigJson
+  const elements = Array.isArray(config.elements) ? config.elements : []
+  const textElements = elements.filter(
+    (element) => element && typeof element === 'object' && element.type === 'text',
+  ) as Array<Record<string, unknown>>
+  const logoElements = elements.filter(
+    (element) => element && typeof element === 'object' && element.type === 'logo',
+  )
+  const patchElements = elements.filter(
+    (element) => element && typeof element === 'object' && element.type === 'patch',
+  )
+
+  const summaryFromElements: string[] = []
+  for (const element of textElements) {
+    const rawText = element.text
+    if (typeof rawText === 'string' && rawText.trim()) {
+      summaryFromElements.push(rawText.trim())
+    }
+  }
+
   const summary = Array.isArray(config.summary)
     ? config.summary.filter((line): line is string => typeof line === 'string')
-    : design.name
-      ? [design.name]
-      : []
+    : summaryFromElements.length > 0
+      ? summaryFromElements
+      : design.name
+        ? [design.name]
+        : []
 
-  const areas = Array.isArray(config.areas)
-    ? config.areas.filter((area): area is string => typeof area === 'string')
-    : []
+  const areaSet = new Set<string>()
+  if (Array.isArray(config.areas)) {
+    for (const area of config.areas) {
+      if (typeof area === 'string' && area.trim()) areaSet.add(area)
+    }
+  }
+  for (const element of elements) {
+    if (!element || typeof element !== 'object') continue
+    const zone = element.zone
+    if (typeof zone === 'string' && zone.trim()) areaSet.add(zone)
+  }
+  const areas = Array.from(areaSet)
 
   return {
     designId: design.id,
     previewUrl: design.previewUrl,
     summary,
     areas,
-    hasLogo: Boolean(config.hasLogo),
-    hasEmbroidery: Boolean(config.hasEmbroidery),
+    hasLogo: Boolean(config.hasLogo) || logoElements.length > 0,
+    hasEmbroidery: Boolean(config.hasEmbroidery) || patchElements.length > 0,
     embroideredName:
       typeof config.embroideredName === 'string' ? config.embroideredName : null,
   }
@@ -218,9 +252,15 @@ export function mapCartToGql(cart: CartWithRelations): CartGql {
 export function toConfigSnapshotJson(
   productSnapshot: CartProductSnapshotGql,
   customizationSnapshot: CartCustomizationSnapshotGql,
+  extras?: CartConfigSnapshotJson,
 ): Prisma.InputJsonValue {
+  const normalizedExtras = extras
+    ? (JSON.parse(JSON.stringify(extras)) as Prisma.InputJsonObject)
+    : {}
+
   return {
     productSnapshot,
     customizationSnapshot,
-  } satisfies CartConfigSnapshotJson
+    ...normalizedExtras,
+  } as Prisma.InputJsonObject
 }

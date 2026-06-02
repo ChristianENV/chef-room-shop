@@ -19,7 +19,7 @@ Storefront cart surfaces read from the GraphQL Cart BFF (`myCart` and mutations)
 ## Hooks
 
 - `useMyCartQuery({ enabled? })` — fetch active cart
-- `useAddCartItemMutation` — not wired in UI yet (PDP pending)
+- `useAddCartItemMutation` — usado por customizador (`/customize`) con `designId`
 - `useUpdateCartItemQuantityMutation` — quantity on `/cart`
 - `useRemoveCartItemMutation` — remove line on `/cart`
 - `useClearCartMutation` — available; no UI button yet
@@ -38,6 +38,14 @@ All mutations invalidate `cartQueryKeys.myCart()`.
 
 Mobile cart icon links to `routes.cart` (no popover). Badge uses the same `useCartBadgeCount()` as the desktop popover trigger.
 
+## Diseño personalizado en UI
+
+- `cart-ui.mapper.ts` prioriza `customizationSnapshot.previewUrl` como thumbnail del item personalizado.
+- El resumen de personalización muestra:
+  - badge de personalizado,
+  - áreas,
+  - y líneas de texto derivadas de `configJson.elements` (hasta 3).
+
 ## Pending
 
 - PDP add-to-cart with `designId` (customizer) — see [product-add-to-cart.md](./product-add-to-cart.md)
@@ -45,7 +53,7 @@ Mobile cart icon links to `routes.cart` (no popover). Badge uses the same `useCa
 - Conekta payments
 - Guest → auth cart merge on login
 - Mobile cart sheet (instead of link to `/cart`)
-- Real customizer / design previews
+- PDP add-to-cart con designId (fuera del customizador)
 - `clearCart` UI button
 
 ## Related docs

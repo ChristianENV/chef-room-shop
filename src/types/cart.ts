@@ -7,6 +7,7 @@ export type CartPreviewCustomizationSummary = {
   hasEmbroidery?: boolean
   embroideredName?: string
   areas?: string[]
+  lines?: string[]
 }
 
 /** Lightweight cart line item for navbar popover preview. */
