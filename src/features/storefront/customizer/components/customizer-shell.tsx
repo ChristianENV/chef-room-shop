@@ -15,6 +15,7 @@ import { useUpdateDesignMutation } from '../api/use-update-design'
 import { ensureDesignPreviews } from '../lib/ensure-design-previews'
 import { readPreviewsFromConfig } from '../lib/design-preview-config'
 import { uploadDesignPreviewBlobs } from '../lib/upload-design-previews'
+import { buildDesignConfigJson } from '../lib/build-design-config'
 import { DesignerLayout } from './designer-layout'
 import type { ViewportCaptureHandle } from './viewport-3d'
 import '../customizer.css'
@@ -100,12 +101,10 @@ export function CustomizerShell({
   }, [product, initFromProduct])
 
   const configJson = useMemo(
-    () => ({
-      productId: product?.id ?? null,
-      productSlug: product?.slug ?? null,
-      productName: product?.name ?? null,
-      productVariantId: selectedVariantId,
-      style: {
+    () =>
+      buildDesignConfigJson({
+        product,
+        productVariantId: selectedVariantId,
         baseColor,
         detailColor,
         collarStyle,
@@ -114,14 +113,12 @@ export function CustomizerShell({
         buttonStyle,
         size,
         quantity,
-      },
-      view: { mode: viewMode, angle: viewAngle },
-      layers,
-    }),
+        viewMode,
+        viewAngle,
+        layers,
+      }),
     [
-      product?.id,
-      product?.name,
-      product?.slug,
+      product,
       selectedVariantId,
       baseColor,
       detailColor,

@@ -7,7 +7,7 @@ import {
   FALLBACK_PERSONALIZATION_ZONES,
   type PersonalizationOptionKind,
 } from '../../lib/customizer-defaults'
-import { formatPriceMxn } from '../../lib/customizer-utils'
+import { formatPriceMxn, zoneFromAreaSlug } from '../../lib/customizer-utils'
 
 type ZoneOption = {
   key: string
@@ -43,7 +43,8 @@ function inferKind(text: string): PersonalizationOptionKind {
 }
 
 export function PersonalizationSection() {
-  const { product, customizationRuleAvailability, addElement } = useCustomizerStore()
+  const { product, customizationRuleAvailability, addElement, addTextElement, addNameElement } =
+    useCustomizerStore()
 
   const bffZones: Zone[] = (product?.customizationAreas ?? []).map((area) => {
     const options = (product?.rules ?? [])
@@ -81,6 +82,20 @@ export function PersonalizationSection() {
       }))
     : bffZones
 
+  const handleAdd = (zoneSlug: string, option: ZoneOption) => {
+    const zone = zoneFromAreaSlug(zoneSlug)
+    const meta = KIND_META[option.kind]
+    if (option.kind === 'nombre') {
+      addNameElement({ zone })
+      return
+    }
+    if (option.kind === 'texto') {
+      addTextElement({ name: meta.elementName, zone })
+      return
+    }
+    addElement(meta.element, meta.elementName)
+  }
+
   return (
     <div className="space-y-5 p-4" data-testid="customizer-personalization-options">
       <div>
@@ -99,6 +114,12 @@ export function PersonalizationSection() {
             {zone.options.map((option) => {
               const meta = KIND_META[option.kind]
               const Icon = meta.icon
+              const addTestId =
+                option.kind === 'nombre'
+                  ? 'customizer-add-name-button'
+                  : option.kind === 'texto'
+                  ? 'customizer-add-text-button'
+                  : undefined
               return (
                 <div
                   key={option.key}
@@ -121,8 +142,10 @@ export function PersonalizationSection() {
                   <button
                     type="button"
                     disabled={!option.available}
-                    onClick={() => addElement(meta.element, meta.elementName)}
+                    onClick={() => handleAdd(zone.slug, option)}
+                    data-testid={addTestId}
                     title={option.available ? meta.cta : 'No disponible para esta prenda'}
+                    aria-label={meta.cta}
                     className="inline-flex shrink-0 items-center gap-1 rounded-md border border-primary/40 px-2 py-1 text-xs font-medium text-primary transition hover:bg-primary/10 disabled:cursor-not-allowed disabled:border-border/40 disabled:text-muted-foreground/50 disabled:hover:bg-transparent"
                   >
                     <Plus className="size-3.5" />

@@ -14,6 +14,8 @@ interface ElementAddSectionProps {
   elementName: string
   matchTypes: LayerType[]
   note?: string
+  /** Usa flujo de nombre con placeholder predeterminado. */
+  variant?: 'text' | 'name' | 'default'
 }
 
 export function ElementAddSection({
@@ -24,9 +26,30 @@ export function ElementAddSection({
   elementName,
   matchTypes,
   note,
+  variant = 'default',
 }: ElementAddSectionProps) {
-  const { layers, selectedLayerId, selectLayer, addElement } = useCustomizerStore()
+  const { layers, selectedLayerId, selectLayer, addElement, addTextElement, addNameElement } =
+    useCustomizerStore()
   const items = layers.filter((layer) => matchTypes.includes(layer.type))
+
+  const handleAdd = () => {
+    if (variant === 'name') {
+      addNameElement()
+      return
+    }
+    if (elementType === 'text') {
+      addTextElement({ name: elementName })
+      return
+    }
+    addElement(elementType, elementName)
+  }
+
+  const testId =
+    variant === 'name'
+      ? 'customizer-add-name-button'
+      : elementType === 'text'
+      ? 'customizer-add-text-button'
+      : undefined
 
   return (
     <div className="space-y-4 p-4">
@@ -35,7 +58,7 @@ export function ElementAddSection({
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
 
-      <Button className="w-full" onClick={() => addElement(elementType, elementName)}>
+      <Button className="w-full" onClick={handleAdd} data-testid={testId}>
         <Plus className="mr-1 size-4" />
         {ctaLabel}
       </Button>
@@ -57,7 +80,7 @@ export function ElementAddSection({
                   : 'border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground',
               )}
             >
-              <span className="truncate">{item.name}</span>
+              <span className="truncate">{item.text?.trim() || item.name}</span>
               <span className="text-[11px] text-muted-foreground">Editar</span>
             </button>
           ))}

@@ -9,6 +9,7 @@ import {
   ViewportCaptureBridge,
   type ViewportCaptureHandle,
 } from './viewport-capture-bridge'
+import { ViewportElementOverlay } from './viewport-element-overlay'
 
 function JacketModel() {
   const ref = useRef<THREE.Group>(null)
@@ -97,17 +98,18 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
 
   if (viewMode !== '3D') {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#080810] via-[#0c0c18] to-[#080810]">
-        <div className="customizer-glass flex items-center gap-3 rounded-xl px-6 py-4 text-muted-foreground">
-          {heroImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={heroImage}
-              alt={product?.name ?? 'Producto'}
-              className="h-14 w-14 rounded-md object-cover"
-            />
-          ) : null}
-          <span>Vista 2D: cambia a 3D para generar vistas previas al guardar.</span>
+      <div className="relative flex h-full w-full items-center justify-center bg-gradient-to-br from-[#080810] via-[#0c0c18] to-[#080810]">
+        {heroImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={heroImage}
+            alt={product?.name ?? 'Producto'}
+            className="absolute inset-0 h-full w-full object-contain opacity-40"
+          />
+        ) : null}
+        <ViewportElementOverlay />
+        <div className="customizer-glass relative z-20 flex max-w-sm items-center gap-3 rounded-xl px-6 py-4 text-center text-sm text-muted-foreground">
+          <span>Vista 2D con overlay de elementos. Usa 3D para vistas previas al guardar.</span>
         </div>
       </div>
     )
@@ -116,6 +118,7 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
   return (
     <div className="relative h-full w-full bg-gradient-to-br from-[#080810] via-[#0c0c18] to-[#080810]">
       <div className="customizer-noise absolute inset-0" />
+      <ViewportElementOverlay />
       <Canvas
         camera={{ position: [0, 0.3, 3.2], fov: 32 }}
         className="relative z-10"

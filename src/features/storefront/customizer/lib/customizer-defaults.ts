@@ -8,7 +8,6 @@ export type NamedColor = {
 
 /**
  * Fallback colors used when the product BFF has no color variants.
- * Chef Room azul (#2B3280) replaces the prototype gold accent.
  */
 export const FALLBACK_COLORS: NamedColor[] = [
   { id: 'blanco', name: 'Blanco', hex: '#FFFFFF' },
@@ -37,10 +36,6 @@ export type FallbackPersonalizationZone = {
   options: FallbackPersonalizationOption[]
 }
 
-/**
- * Visual fallback for personalization zones when customizationRulesByProduct
- * has no data yet. TODO: replace fully with BFF rules per garment.
- */
 export const FALLBACK_PERSONALIZATION_ZONES: FallbackPersonalizationZone[] = [
   {
     slug: 'pecho',
@@ -77,32 +72,8 @@ export const FALLBACK_PERSONALIZATION_ZONES: FallbackPersonalizationZone[] = [
   },
 ]
 
-/**
- * TODO: reemplazar por Design BFF (elementos editables reales).
- */
-export const DEFAULT_LAYERS: Layer[] = [
-  {
-    id: 'logo',
-    name: 'Logo',
-    type: 'logo',
-    visible: true,
-    locked: false,
-    position: { x: 12.5, y: 8.3 },
-    size: { width: 8.6, height: 8.6 },
-    rotation: 0,
-    opacity: 100,
-  },
-  {
-    id: 'name',
-    name: 'Nombre',
-    type: 'text',
-    visible: true,
-    locked: false,
-    position: { x: 12.5, y: 18 },
-    size: { width: 10, height: 2 },
-    rotation: 0,
-    opacity: 100,
-  },
+/** Capas estructurales de la prenda (no editables ni eliminables). */
+export const STRUCTURAL_LAYERS: Layer[] = [
   {
     id: 'vivos',
     name: 'Vivos',
@@ -137,3 +108,6 @@ export const DEFAULT_LAYERS: Layer[] = [
     opacity: 100,
   },
 ]
+
+/** @deprecated Use STRUCTURAL_LAYERS */
+export const DEFAULT_LAYERS = STRUCTURAL_LAYERS

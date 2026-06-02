@@ -67,6 +67,7 @@ function CategoryContent({
           elementType="text"
           elementName="Texto"
           matchTypes={['text']}
+          variant="text"
         />
       )
     case 'logotipos':
@@ -90,6 +91,7 @@ function CategoryContent({
           elementType="text"
           elementName="Nombre"
           matchTypes={['text']}
+          variant="name"
         />
       )
     case 'extras':

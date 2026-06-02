@@ -20,6 +20,12 @@ export type SavePhase =
 
 export type LayerType = 'logo' | 'text' | 'patch' | 'vivos' | 'buttons' | 'base'
 
+export type TextAlign = 'left' | 'center' | 'right'
+
+export type DesignZone = 'pecho' | 'espalda' | 'manga-izquierda' | 'manga-derecha' | 'general'
+
+export type DesignTool = 'select' | 'move' | 'scale' | 'rotate'
+
 export type Layer = {
   id: string
   name: string
@@ -30,4 +36,36 @@ export type Layer = {
   size: { width: number; height: number }
   rotation: number
   opacity: number
+  /** Contenido visible para texto / nombre / etiqueta de logo. */
+  text?: string
+  fontSize?: number
+  textColor?: string
+  fontFamily?: string
+  textAlign?: TextAlign
+  zone?: DesignZone
 }
+
+export type TextElementInput = {
+  text?: string
+  name?: string
+  zone?: DesignZone
+  position?: { x: number; y: number }
+}
+
+export type LayerPatch = Partial<
+  Pick<
+    Layer,
+    | 'name'
+    | 'text'
+    | 'fontSize'
+    | 'textColor'
+    | 'fontFamily'
+    | 'textAlign'
+    | 'zone'
+    | 'position'
+    | 'size'
+    | 'rotation'
+    | 'opacity'
+    | 'visible'
+  >
+>

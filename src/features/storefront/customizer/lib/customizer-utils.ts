@@ -1,4 +1,16 @@
-import type { LayerType } from '../types/customizer.types'
+import type { DesignZone, LayerType } from '../types/customizer.types'
+
+export function zoneFromAreaSlug(slug: string): DesignZone {
+  if (slug.includes('espalda')) return 'espalda'
+  if (slug.includes('manga-izquierda') || slug.includes('manga_izquierda')) {
+    return 'manga-izquierda'
+  }
+  if (slug.includes('manga-derecha') || slug.includes('manga_derecha')) {
+    return 'manga-derecha'
+  }
+  if (slug.includes('pecho')) return 'pecho'
+  return 'general'
+}
 
 /** Element types that represent fixed garment structure (not destructible). */
 const BASE_ELEMENT_TYPES: LayerType[] = ['base', 'vivos', 'buttons']

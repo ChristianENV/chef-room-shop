@@ -1,10 +1,6 @@
 'use client'
 
-import { useState } from 'react'
 import {
-  AlignCenter,
-  AlignLeft,
-  AlignRight,
   CircleDot,
   Copy,
   Eye,
@@ -25,9 +21,8 @@ import { Slider } from '@/components/ui/slider'
 import { cn } from '@/lib/utils'
 import { useCustomizerStore } from '../store/customizer.store'
 import { getLayerDescription, isEditableElement } from '../lib/customizer-utils'
-import type { Layer, LayerType } from '../types/customizer.types'
-
-type Tool = 'select' | 'move' | 'scale' | 'rotate'
+import type { DesignTool, Layer, LayerType } from '../types/customizer.types'
+import { TextPropertiesPanel } from './text-properties-panel'
 
 const ELEMENT_ICON: Record<LayerType, LucideIcon> = {
   logo: Sticker,
@@ -44,11 +39,21 @@ function ElementRow({ layer }: { layer: Layer }) {
   const Icon = ELEMENT_ICON[layer.type] ?? Shirt
   const editable = isEditableElement(layer.type)
   const isSelected = selectedLayerId === layer.id
+  const preview =
+    editable && layer.text?.trim()
+      ? layer.text
+      : editable
+      ? 'Sin contenido'
+      : getLayerDescription(layer.type)
 
   return (
     <div
       role="button"
       tabIndex={0}
+      data-testid={
+        isSelected ? 'customizer-selected-element' : 'customizer-design-element'
+      }
+      aria-label={`Elemento ${layer.name}`}
       onClick={() => selectLayer(layer.id)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -69,15 +74,14 @@ function ElementRow({ layer }: { layer: Layer }) {
       </span>
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-medium text-foreground">{layer.name}</div>
-        <div className="truncate text-[11px] text-muted-foreground">
-          {getLayerDescription(layer.type)}
-        </div>
+        <div className="truncate text-[11px] text-muted-foreground">{preview}</div>
       </div>
       {editable ? (
         <div className="flex items-center gap-0.5">
           <button
             type="button"
             title={layer.visible ? 'Ocultar' : 'Mostrar'}
+            aria-label={layer.visible ? 'Ocultar elemento' : 'Mostrar elemento'}
             onClick={(event) => {
               event.stopPropagation()
               toggleLayerVisibility(layer.id)
@@ -89,6 +93,8 @@ function ElementRow({ layer }: { layer: Layer }) {
           <button
             type="button"
             title="Duplicar"
+            aria-label="Duplicar elemento"
+            data-testid="customizer-duplicate-element"
             onClick={(event) => {
               event.stopPropagation()
               duplicateLayer(layer.id)
@@ -100,6 +106,8 @@ function ElementRow({ layer }: { layer: Layer }) {
           <button
             type="button"
             title="Eliminar"
+            aria-label="Eliminar elemento"
+            data-testid="customizer-delete-element"
             onClick={(event) => {
               event.stopPropagation()
               deleteLayer(layer.id)
@@ -110,24 +118,24 @@ function ElementRow({ layer }: { layer: Layer }) {
           </button>
         </div>
       ) : (
-        <Lock className="size-3.5 text-muted-foreground/60" />
+        <Lock className="size-3.5 text-muted-foreground/60" aria-hidden />
       )}
     </div>
   )
 }
 
-const TOOLS: { id: Tool; label: string; icon: LucideIcon }[] = [
-  { id: 'select', label: 'Seleccionar', icon: MousePointer2 },
-  { id: 'move', label: 'Mover', icon: Move },
-  { id: 'scale', label: 'Escalar', icon: Scaling },
-  { id: 'rotate', label: 'Rotar', icon: RotateCw },
+const TOOLS: { id: DesignTool; label: string; icon: LucideIcon; testId: string }[] = [
+  { id: 'select', label: 'Seleccionar', icon: MousePointer2, testId: 'customizer-tool-select' },
+  { id: 'move', label: 'Mover', icon: Move, testId: 'customizer-tool-move' },
+  { id: 'scale', label: 'Escalar', icon: Scaling, testId: 'customizer-tool-scale' },
+  { id: 'rotate', label: 'Rotar', icon: RotateCw, testId: 'customizer-tool-rotate' },
 ]
 
 function PropertyBlock({ children }: { children: React.ReactNode }) {
   return <div className="space-y-2">{children}</div>
 }
 
-function ElementProperties({ layer, tool }: { layer: Layer; tool: Tool }) {
+function ElementProperties({ layer, tool }: { layer: Layer; tool: DesignTool }) {
   const {
     updateLayerPosition,
     updateLayerSize,
@@ -138,9 +146,12 @@ function ElementProperties({ layer, tool }: { layer: Layer; tool: Tool }) {
   } = useCustomizerStore()
 
   const showAll = tool === 'select'
+  const isTextLike = layer.type === 'text' || layer.type === 'logo' || layer.type === 'patch'
 
   return (
     <div className="space-y-5">
+      {isTextLike ? <TextPropertiesPanel layer={layer} /> : null}
+
       {(showAll || tool === 'move') && (
         <PropertyBlock>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -220,39 +231,10 @@ function ElementProperties({ layer, tool }: { layer: Layer; tool: Tool }) {
         />
       </PropertyBlock>
 
-      <div>
-        <div className="mb-1.5 text-xs text-muted-foreground">Alineación</div>
-        <div className="flex gap-1.5">
-          <button
-            type="button"
-            title="Izquierda"
-            onClick={() => updateLayerPosition(layer.id, { x: 8, y: layer.position.y })}
-            className="flex-1 rounded-md border border-border py-1.5 text-muted-foreground hover:border-primary/40 hover:text-foreground"
-          >
-            <AlignLeft className="mx-auto size-4" />
-          </button>
-          <button
-            type="button"
-            title="Centro"
-            onClick={() => updateLayerPosition(layer.id, { x: 50, y: layer.position.y })}
-            className="flex-1 rounded-md border border-border py-1.5 text-muted-foreground hover:border-primary/40 hover:text-foreground"
-          >
-            <AlignCenter className="mx-auto size-4" />
-          </button>
-          <button
-            type="button"
-            title="Derecha"
-            onClick={() => updateLayerPosition(layer.id, { x: 92, y: layer.position.y })}
-            className="flex-1 rounded-md border border-border py-1.5 text-muted-foreground hover:border-primary/40 hover:text-foreground"
-          >
-            <AlignRight className="mx-auto size-4" />
-          </button>
-        </div>
-      </div>
-
       <div className="flex gap-2">
         <button
           type="button"
+          data-testid="customizer-duplicate-element"
           onClick={() => duplicateLayer(layer.id)}
           className="flex flex-1 items-center justify-center gap-1 rounded-md border border-border py-2 text-xs font-medium hover:border-primary/40"
         >
@@ -261,6 +243,7 @@ function ElementProperties({ layer, tool }: { layer: Layer; tool: Tool }) {
         </button>
         <button
           type="button"
+          data-testid="customizer-delete-element"
           onClick={() => deleteLayer(layer.id)}
           className="flex flex-1 items-center justify-center gap-1 rounded-md border border-destructive/40 py-2 text-xs font-medium text-destructive hover:bg-destructive/10"
         >
@@ -273,11 +256,26 @@ function ElementProperties({ layer, tool }: { layer: Layer; tool: Tool }) {
 }
 
 export function RightSidebar() {
-  const { layers, selectedLayerId } = useCustomizerStore()
-  const [tool, setTool] = useState<Tool>('select')
+  const {
+    layers,
+    selectedLayerId,
+    activeTool,
+    setActiveTool,
+    duplicateLayer,
+    deleteLayer,
+  } = useCustomizerStore()
 
   const selectedLayer = layers.find((item) => item.id === selectedLayerId) ?? null
   const selectedEditable = selectedLayer && isEditableElement(selectedLayer.type)
+  const editableCount = layers.filter((layer) => isEditableElement(layer.type)).length
+
+  const handleDuplicateTool = () => {
+    if (selectedLayerId && selectedEditable) duplicateLayer(selectedLayerId)
+  }
+
+  const handleDeleteTool = () => {
+    if (selectedLayerId && selectedEditable) deleteLayer(selectedLayerId)
+  }
 
   return (
     <aside className="flex h-full w-80 flex-col border-l border-border/40 bg-card/30">
@@ -286,11 +284,17 @@ export function RightSidebar() {
         <p className="mt-0.5 text-xs text-muted-foreground">
           Organiza logos, nombres y detalles de tu prenda.
         </p>
-        <div className="mt-3 space-y-2">
-          {layers.map((layer) => (
-            <ElementRow key={layer.id} layer={layer} />
-          ))}
-        </div>
+        {editableCount === 0 ? (
+          <p className="mt-3 rounded-lg border border-dashed border-border/60 bg-card/40 p-3 text-center text-xs text-muted-foreground">
+            Agrega un texto o logotipo para editarlo aquí.
+          </p>
+        ) : (
+          <div className="mt-3 space-y-2">
+            {layers.map((layer) => (
+              <ElementRow key={layer.id} layer={layer} />
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="border-b border-border/40 p-4">
@@ -305,14 +309,14 @@ export function RightSidebar() {
                 key={item.id}
                 type="button"
                 title={item.label}
-                disabled={!selectedEditable}
-                onClick={() => setTool(item.id)}
+                aria-label={item.label}
+                data-testid={item.testId}
+                onClick={() => setActiveTool(item.id)}
                 className={cn(
                   'flex flex-col items-center gap-1 rounded-md border py-2 text-[10px] transition',
-                  tool === item.id && selectedEditable
+                  activeTool === item.id
                     ? 'border-primary bg-primary/10 text-primary'
                     : 'border-border text-muted-foreground hover:text-foreground',
-                  !selectedEditable && 'cursor-not-allowed opacity-40',
                 )}
               >
                 <Icon className="size-4" />
@@ -320,6 +324,48 @@ export function RightSidebar() {
               </button>
             )
           })}
+        </div>
+        <div className="mt-2 grid grid-cols-2 gap-1.5">
+          <button
+            type="button"
+            title={
+              selectedEditable
+                ? 'Duplicar elemento seleccionado'
+                : 'Selecciona un elemento editable para duplicar'
+            }
+            disabled={!selectedEditable}
+            onClick={handleDuplicateTool}
+            data-testid="customizer-duplicate-element"
+            className={cn(
+              'flex items-center justify-center gap-1 rounded-md border py-2 text-[10px] font-medium transition',
+              selectedEditable
+                ? 'border-border hover:border-primary/40'
+                : 'cursor-not-allowed border-border/40 opacity-40',
+            )}
+          >
+            <Copy className="size-3.5" />
+            Duplicar
+          </button>
+          <button
+            type="button"
+            title={
+              selectedEditable
+                ? 'Eliminar elemento seleccionado'
+                : 'Selecciona un elemento editable para eliminar'
+            }
+            disabled={!selectedEditable}
+            onClick={handleDeleteTool}
+            data-testid="customizer-delete-element"
+            className={cn(
+              'flex items-center justify-center gap-1 rounded-md border py-2 text-[10px] font-medium transition',
+              selectedEditable
+                ? 'border-destructive/40 text-destructive hover:bg-destructive/10'
+                : 'cursor-not-allowed border-border/40 opacity-40',
+            )}
+          >
+            <Trash2 className="size-3.5" />
+            Eliminar
+          </button>
         </div>
       </div>
 
@@ -336,7 +382,7 @@ export function RightSidebar() {
             Este elemento es parte de la prenda y no se puede mover ni eliminar.
           </p>
         ) : (
-          <ElementProperties layer={selectedLayer} tool={tool} />
+          <ElementProperties layer={selectedLayer} tool={activeTool} />
         )}
       </div>
     </aside>

@@ -1,12 +1,17 @@
 import { create } from 'zustand'
-import { DEFAULT_LAYERS } from '../lib/customizer-defaults'
+import { STRUCTURAL_LAYERS } from '../lib/customizer-defaults'
+import { isEditableElement } from '../lib/customizer-utils'
 import type { CustomizerProductData } from '../types/customizer-product.types'
 import type {
   ButtonStyle,
   CollarStyle,
+  DesignTool,
+  DesignZone,
   Layer,
+  LayerPatch,
   Size,
   SleeveStyle,
+  TextElementInput,
   ViewAngle,
   ViewMode,
   SaveStatus,
@@ -24,6 +29,7 @@ type DesignSnapshot = {
   quantity: number
   layers: Layer[]
   selectedLayerId: string | null
+  activeTool: DesignTool
 }
 
 type CustomizerState = DesignSnapshot & {
@@ -63,14 +69,19 @@ type CustomizerState = DesignSnapshot & {
   setViewAngle: (angle: ViewAngle) => void
   setCaptureInstant: (value: boolean) => void
   selectLayer: (id: string | null) => void
+  setActiveTool: (tool: DesignTool) => void
   toggleLayerVisibility: (id: string) => void
+  updateLayer: (id: string, patch: LayerPatch) => void
   updateLayerPosition: (id: string, position: { x: number; y: number }) => void
   updateLayerSize: (id: string, size: { width: number; height: number }) => void
   updateLayerRotation: (id: string, rotation: number) => void
   updateLayerOpacity: (id: string, opacity: number) => void
+  updateTextElement: (id: string, patch: LayerPatch) => void
   duplicateLayer: (id: string) => void
   deleteLayer: (id: string) => void
   addElement: (type: 'logo' | 'text' | 'patch', name?: string) => void
+  addTextElement: (input?: TextElementInput) => void
+  addNameElement: (input?: Omit<TextElementInput, 'name'> & { zone?: DesignZone }) => void
   undo: () => void
   redo: () => void
 }
@@ -92,8 +103,9 @@ const INITIAL_STATE = {
   viewMode: '3D' as ViewMode,
   viewAngle: 'front' as ViewAngle,
   captureInstant: false,
-  layers: DEFAULT_LAYERS,
-  selectedLayerId: 'logo' as string | null,
+  layers: STRUCTURAL_LAYERS,
+  selectedLayerId: null as string | null,
+  activeTool: 'select' as DesignTool,
   customizationRuleAvailability: {} as Record<string, boolean>,
   designId: null as string | null,
   isDirty: false,
@@ -118,6 +130,7 @@ function snapshot(state: CustomizerState): DesignSnapshot {
     quantity: state.quantity,
     layers: state.layers,
     selectedLayerId: state.selectedLayerId,
+    activeTool: state.activeTool,
   }
 }
 
@@ -155,8 +168,9 @@ function buildProductState(product: CustomizerProductData) {
     buttonStyle: INITIAL_STATE.buttonStyle,
     size: (firstSize as Size) ?? INITIAL_STATE.size,
     quantity: 1,
-    layers: DEFAULT_LAYERS,
-    selectedLayerId: 'logo' as string | null,
+    layers: STRUCTURAL_LAYERS,
+    selectedLayerId: null as string | null,
+    activeTool: 'select' as DesignTool,
     customizationRuleAvailability: Object.fromEntries(
       product.customizationAvailability.map((item) => [
         `${item.areaSlug}:${item.optionSlug}`,
@@ -172,14 +186,42 @@ function buildProductState(product: CustomizerProductData) {
   }
 }
 
+function createTextLayer(input?: TextElementInput): Layer {
+  const id = `text-${Date.now()}`
+  return {
+    id,
+    name: input?.name ?? 'Texto',
+    type: 'text',
+    visible: true,
+    locked: false,
+    position: input?.position ?? { x: 22, y: 28 },
+    size: { width: 28, height: 8 },
+    rotation: 0,
+    opacity: 100,
+    text: input?.text ?? '',
+    fontSize: 18,
+    textColor: '#FFFFFF',
+    fontFamily: 'sans-serif',
+    textAlign: 'center',
+    zone: input?.zone ?? 'pecho',
+  }
+}
+
 export const useCustomizerStore = create<CustomizerState>((set, get) => {
-  /** Push the current design snapshot onto the undo stack before mutating. */
   const commitHistory = () => {
     const state = get()
     set({
       past: [...state.past, snapshot(state)].slice(-MAX_HISTORY),
       future: [],
     })
+  }
+
+  const patchLayer = (id: string, patch: LayerPatch, withHistory: boolean) => {
+    if (withHistory) commitHistory()
+    set((state) => ({
+      layers: state.layers.map((layer) => (layer.id === id ? { ...layer, ...patch } : layer)),
+      isDirty: true,
+    }))
   }
 
   return {
@@ -287,6 +329,8 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
     setViewAngle: (angle) => set({ viewAngle: angle }),
     setCaptureInstant: (value) => set({ captureInstant: value }),
     selectLayer: (id) => set({ selectedLayerId: id }),
+    setActiveTool: (tool) => set({ activeTool: tool }),
+
     toggleLayerVisibility: (id) => {
       commitHistory()
       set((state) => ({
@@ -296,44 +340,26 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
         isDirty: true,
       }))
     },
-    updateLayerPosition: (id, position) => {
-      commitHistory()
-      set((state) => ({
-        layers: state.layers.map((layer) => (layer.id === id ? { ...layer, position } : layer)),
-        isDirty: true,
-      }))
+    updateLayer: (id, patch) => patchLayer(id, patch, true),
+    updateLayerPosition: (id, position) => patchLayer(id, { position }, true),
+    updateLayerSize: (id, size) => patchLayer(id, { size }, true),
+    updateLayerRotation: (id, rotation) => patchLayer(id, { rotation }, true),
+    updateLayerOpacity: (id, opacity) => patchLayer(id, { opacity }, true),
+    updateTextElement: (id, patch) => {
+      const typingOnly = Object.keys(patch).length === 1 && 'text' in patch
+      patchLayer(id, patch, !typingOnly)
     },
-    updateLayerSize: (id, size) => {
-      commitHistory()
-      set((state) => ({
-        layers: state.layers.map((layer) => (layer.id === id ? { ...layer, size } : layer)),
-        isDirty: true,
-      }))
-    },
-    updateLayerRotation: (id, rotation) => {
-      commitHistory()
-      set((state) => ({
-        layers: state.layers.map((layer) => (layer.id === id ? { ...layer, rotation } : layer)),
-        isDirty: true,
-      }))
-    },
-    updateLayerOpacity: (id, opacity) => {
-      commitHistory()
-      set((state) => ({
-        layers: state.layers.map((layer) => (layer.id === id ? { ...layer, opacity } : layer)),
-        isDirty: true,
-      }))
-    },
+
     duplicateLayer: (id) => {
       const layer = get().layers.find((item) => item.id === id)
-      if (!layer || layer.type === 'base') return
+      if (!layer || !isEditableElement(layer.type)) return
       commitHistory()
       set((state) => {
         const duplicate: Layer = {
           ...layer,
-          id: `${layer.id}-${Date.now()}`,
+          id: `${layer.type}-${Date.now()}`,
           name: `${layer.name} (copia)`,
-          position: { x: layer.position.x + 2, y: layer.position.y + 2 },
+          position: { x: layer.position.x + 3, y: layer.position.y + 3 },
         }
         return {
           layers: [duplicate, ...state.layers],
@@ -344,7 +370,7 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
     },
     deleteLayer: (id) => {
       const layer = get().layers.find((item) => item.id === id)
-      if (!layer || layer.type === 'base') return
+      if (!layer || !isEditableElement(layer.type)) return
       commitHistory()
       set((state) => ({
         layers: state.layers.filter((item) => item.id !== id),
@@ -352,11 +378,45 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
         isDirty: true,
       }))
     },
+    addTextElement: (input) => {
+      commitHistory()
+      const layer = createTextLayer(input)
+      set((state) => ({
+        layers: [layer, ...state.layers],
+        selectedLayerId: layer.id,
+        activeTool: 'select',
+        isDirty: true,
+      }))
+    },
+    addNameElement: (input) => {
+      commitHistory()
+      const layer = createTextLayer({
+        name: 'Nombre',
+        text: input?.text ?? 'Nombre del chef',
+        zone: input?.zone ?? 'pecho',
+        position: input?.position ?? { x: 18, y: 32 },
+      })
+      set((state) => ({
+        layers: [layer, ...state.layers],
+        selectedLayerId: layer.id,
+        activeTool: 'select',
+        isDirty: true,
+      }))
+    },
     addElement: (type, name) => {
       commitHistory()
       set((state) => {
-        const id = `${type}-${Date.now()}`
         const defaultName = type === 'logo' ? 'Logo' : type === 'patch' ? 'Bordado' : 'Texto'
+        if (type === 'text') {
+          const layer = createTextLayer({ name: name ?? defaultName })
+          return {
+            layers: [layer, ...state.layers],
+            selectedLayerId: layer.id,
+            activeTool: 'select',
+            isDirty: true,
+          }
+        }
+        const id = `${type}-${Date.now()}`
         const layer: Layer = {
           id,
           name: name ?? defaultName,
@@ -364,16 +424,16 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
           visible: true,
           locked: false,
           position: { x: 12.5, y: 12 },
-          size:
-            type === 'text'
-              ? { width: 12, height: 3 }
-              : { width: 8.6, height: 8.6 },
+          size: { width: 8.6, height: 8.6 },
           rotation: 0,
           opacity: 100,
+          text: type === 'logo' ? '[Logo]' : '',
+          zone: 'pecho',
         }
         return {
           layers: [layer, ...state.layers],
           selectedLayerId: id,
+          activeTool: 'select',
           isDirty: true,
         }
       })
@@ -402,3 +462,11 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
     },
   }
 })
+
+export function selectCanUndo(state: CustomizerState): boolean {
+  return state.past.length > 0
+}
+
+export function selectCanRedo(state: CustomizerState): boolean {
+  return state.future.length > 0
+}
