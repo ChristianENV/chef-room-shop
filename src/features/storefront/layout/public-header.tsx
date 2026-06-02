@@ -287,7 +287,7 @@ export function PublicHeader({
             ) : null}
 
             <Button variant="ghost" size="icon" className="relative h-9 w-9" asChild>
-              <Link href={routes.cart}>
+              <Link href={routes.cart} data-testid="cart-link">
                 <ShoppingBag className="h-4 w-4" />
                 <CartBadge count={cartBadgeCount} />
                 <span className="sr-only">Carrito</span>

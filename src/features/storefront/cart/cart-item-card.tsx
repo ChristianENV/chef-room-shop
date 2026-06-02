@@ -41,6 +41,7 @@ export function CartItemCard({
 
   return (
     <div
+      data-testid="cart-item-card"
       className={cn(
         'rounded-lg border border-border bg-card p-4 md:p-6',
         className,
