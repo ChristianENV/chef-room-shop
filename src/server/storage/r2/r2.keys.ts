@@ -4,6 +4,7 @@ import { ALLOWED_INPUT_CONTENT_TYPES, MAX_UPLOAD_BYTES, requireR2Config } from '
 import { r2FileTooLarge, r2InvalidContentType, r2InvalidSize } from './r2.errors'
 import type {
   AllowedImageContentType,
+  DesignPreviewView,
   R2ObjectKeys,
   R2PublicUrls,
   UploadKind,
@@ -35,6 +36,31 @@ export function buildProductImageObjectKeys(
     webp: `${base}/image.webp`,
     jpg: `${base}/image.jpg`,
     thumb: `${base}/thumb.webp`,
+  }
+}
+
+/** Object keys for a single design preview view (front or back). */
+export function buildDesignPreviewObjectKeys(
+  designId: string,
+  view: DesignPreviewView,
+): Required<Pick<R2ObjectKeys, 'webp' | 'jpg'>> {
+  const base = `designs/${designId}/previews/${view}`
+  return {
+    webp: `${base}.webp`,
+    jpg: `${base}.jpg`,
+  }
+}
+
+export type DesignPreviewUploadKeys = {
+  front: Required<Pick<R2ObjectKeys, 'webp' | 'jpg'>>
+  back: Required<Pick<R2ObjectKeys, 'webp' | 'jpg'>>
+}
+
+/** Presigned PUT targets for front + back design previews. */
+export function buildDesignPreviewUploadKeys(designId: string): DesignPreviewUploadKeys {
+  return {
+    front: buildDesignPreviewObjectKeys(designId, 'front'),
+    back: buildDesignPreviewObjectKeys(designId, 'back'),
   }
 }
 

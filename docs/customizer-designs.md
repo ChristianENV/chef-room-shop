@@ -69,14 +69,47 @@ Store (`customizer.store.ts`) ahora incluye:
 - Autosave con debounce (~1200ms) cuando hay cambios (`isDirty=true`).
 - Si no existe `designId` crea draft; si existe, actualiza `configJson`.
 
-## Preview
+## Preview frontal y trasera
 
-`saveDesignPreview` ya está implementado en BFF + hook frontend.
+Flujo al **Guardar diseño** (manual):
 
-Pendiente en esta fase:
+1. Persistir `configJson` (`createDesignDraft` / `updateDesign`).
+2. Capturar canvas WebGL (vista 3D) frente y espalda (`preserveDrawingBuffer: true`).
+3. Optimizar a WebP (máx. 1200px, calidad 0.82, fondo `#0c0c18`).
+4. `createDesignPreviewUpload` → PUT presigned a R2 → `confirmDesignPreviewUpload`.
 
-- Exportar imagen real del viewport (webp/png) y subirla a R2.
-- Invocar `saveDesignPreview` con URL pública al terminar export/upload.
+### Almacenamiento (sin migración Prisma)
+
+| Vista | Campo principal |
+| --- | --- |
+| Frontal | `Design.previewUrl` + `Design.previewPublicId` |
+| Trasera | `DesignAsset` (`type: PREVIEW`, `sortOrder: 10`) |
+| Ambas | `configJson.previews.front` / `configJson.previews.back` |
+
+Keys R2:
+
+- `designs/{designId}/previews/front.webp` (+ `.jpg` opcional)
+- `designs/{designId}/previews/back.webp` (+ `.jpg` opcional)
+
+### GraphQL
+
+- `createDesignPreviewUpload(input: CreateDesignPreviewUploadInput!)`
+- `confirmDesignPreviewUpload(input: ConfirmDesignPreviewUploadInput!)`
+- `saveDesignPreview` (legacy, una sola URL) sigue disponible.
+
+### Autosave
+
+El autosave solo guarda `configJson` (no captura previews en cada cambio).
+
+### Carrito (preparado)
+
+`ensureDesignPreviews()` en `lib/ensure-design-previews.ts` captura y sube si faltan previews antes de agregar al carrito.
+
+### Limitaciones
+
+- Vista 2D no genera capturas (mensaje al usuario).
+- `preserveDrawingBuffer` puede tener impacto leve en rendimiento WebGL.
+- Logos/textos en capas aún no se renderizan sobre el modelo 3D.
 
 ## Estado de checks
 

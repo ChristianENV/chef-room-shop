@@ -1,37 +1,57 @@
 import type { LayerType } from '../types/customizer.types'
 
-export function getLayerIcon(type: LayerType): string {
+/** Element types that represent fixed garment structure (not destructible). */
+const BASE_ELEMENT_TYPES: LayerType[] = ['base', 'vivos', 'buttons']
+
+export function isBaseElement(type: LayerType): boolean {
+  return BASE_ELEMENT_TYPES.includes(type)
+}
+
+export function isEditableElement(type: LayerType): boolean {
+  return !isBaseElement(type)
+}
+
+export function getLayerLabel(type: LayerType): string {
   switch (type) {
     case 'logo':
-      return '🏷️'
+      return 'Logo'
     case 'text':
-      return '📝'
+      return 'Texto'
     case 'patch':
-      return '🎨'
+      return 'Bordado'
     case 'vivos':
-      return '✨'
+      return 'Vivos'
     case 'buttons':
-      return '⚫'
+      return 'Botones'
     case 'base':
-      return '👕'
+      return 'Base'
     default:
-      return '📄'
+      return 'Elemento'
   }
 }
 
 export function getLayerDescription(type: LayerType): string {
   switch (type) {
     case 'logo':
-      return 'Frente - pecho izquierdo'
+      return 'Frente · pecho izquierdo'
     case 'text':
-      return 'Frente - pecho izquierdo'
+      return 'Frente · pecho izquierdo'
+    case 'patch':
+      return 'Bordado premium'
     case 'vivos':
-      return 'Cuello y punos'
+      return 'Cuello y puños'
     case 'buttons':
       return 'Frontales'
     case 'base':
-      return 'Filipina'
+      return 'Prenda base'
     default:
       return ''
   }
+}
+
+export function formatPriceMxn(cents: number): string {
+  return `$${(cents / 100).toLocaleString('es-MX', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  })} MXN`
 }

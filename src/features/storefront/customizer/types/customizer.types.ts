@@ -6,6 +6,18 @@ export type ViewMode = '2D' | '3D'
 export type ViewAngle = 'front' | 'back'
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
+/** Granular UI phases while saving design + previews. */
+export type SavePhase =
+  | 'idle'
+  | 'saving_config'
+  | 'capturing_front'
+  | 'capturing_back'
+  | 'uploading_previews'
+  | 'confirming_previews'
+  | 'saved'
+  | 'preview_failed'
+  | 'error'
+
 export type LayerType = 'logo' | 'text' | 'patch' | 'vivos' | 'buttons' | 'base'
 
 export type Layer = {
@@ -18,10 +30,4 @@ export type Layer = {
   size: { width: number; height: number }
   rotation: number
   opacity: number
-}
-
-export type CustomizerMockProduct = {
-  garmentType: 'chef-jacket'
-  name: string
-  priceLabel: string
 }

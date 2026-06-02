@@ -58,6 +58,36 @@ Admin UI                         Next.js BFF                     Cloudflare R2
 - Reorden: `reorderAdminProductImages(productId, imageIds)` — primera = principal.
 - Pendiente: borrado físico R2 al eliminar; EXIF explícito; CORS bucket para re-editar.
 
+## Design previews — customizador (frente / espalda)
+
+Captura del **canvas WebGL** (React Three Fiber), no screenshot del DOM completo.
+
+```
+Customizer                         Next.js BFF                     Cloudflare R2
+  |                                   |                                |
+  |-- createDesignPreviewUpload ------>|  ownership designId            |
+  |<-- presigned front/back webp ------|                                |
+  |-- PUT front.webp / back.webp ------------------------------------>|
+  |-- confirmDesignPreviewUpload ----->|  Design.previewUrl + Asset     |
+```
+
+| Archivo | Max lado | Formato | Calidad |
+|---------|----------|---------|---------|
+| `front.webp` / `back.webp` | 1200px | WebP | 0.82 |
+
+Keys:
+
+```
+designs/{designId}/previews/front.webp
+designs/{designId}/previews/front.jpg
+designs/{designId}/previews/back.webp
+designs/{designId}/previews/back.jpg
+```
+
+Límite de subida: **3 MB** por vista (`UploadKind: design`). TTL presigned: 10 min.
+
+Persistencia: frontal en `Design.previewUrl`; trasera en `DesignAsset` (`PREVIEW`, `sortOrder: 10`) y `configJson.previews`.
+
 ---
 
 Reusable foundation for uploading images (user avatars and product images) to
@@ -127,6 +157,10 @@ Products ({imageId} is a server UUID, reused as ProductImage.id):
   products/{productId}/images/{imageId}/image.webp
   products/{productId}/images/{imageId}/image.jpg
   products/{productId}/images/{imageId}/thumb.webp
+
+Design previews (customizer, deterministic per design):
+  designs/{designId}/previews/front.webp
+  designs/{designId}/previews/back.webp
 ```
 
 Avatar keys are stable, so cache busting uses a `?v=<timestamp>` query param on

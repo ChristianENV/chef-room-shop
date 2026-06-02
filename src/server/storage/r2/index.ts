@@ -12,12 +12,15 @@ export {
 } from './r2.config'
 export {
   buildAvatarObjectKeys,
+  buildDesignPreviewObjectKeys,
+  buildDesignPreviewUploadKeys,
   buildProductImageObjectKeys,
   buildPublicR2Url,
   buildPublicUrlsForKeys,
   validateUploadContentType,
   validateUploadSize,
 } from './r2.keys'
+export type { DesignPreviewUploadKeys } from './r2.keys'
 export { getR2Client, r2DeleteObject, r2HeadObject } from './r2.client'
 export {
   createPresignedPutUrlsForKeys,

@@ -24,3 +24,15 @@ export const deleteDesignDraftSchema = z.object({
 export const designByIdSchema = z.object({
   designId: z.string().uuid(),
 })
+
+export const createDesignPreviewUploadSchema = z.object({
+  designId: z.string().uuid(),
+  frontWebpSizeBytes: z.number().int().positive(),
+  backWebpSizeBytes: z.number().int().positive(),
+  frontJpgSizeBytes: z.number().int().positive().nullish(),
+  backJpgSizeBytes: z.number().int().positive().nullish(),
+})
+
+export const confirmDesignPreviewUploadSchema = z.object({
+  uploadId: z.string().min(1).max(4096),
+})

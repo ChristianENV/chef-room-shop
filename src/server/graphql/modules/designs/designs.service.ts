@@ -1,4 +1,5 @@
 import {
+  DesignAssetType,
   DesignEventType,
   DesignStatus,
   ProductStatus,
@@ -8,18 +9,35 @@ import {
 import { GraphQLError } from 'graphql'
 
 import { getOrCreateGuestSession } from '@/src/server/guest/guest-session'
+import {
+  buildDesignPreviewUploadKeys,
+  buildPublicR2Url,
+  buildPublicUrlsForKeys,
+  createPresignedPutUrlsForKeys,
+  PRESIGNED_PUT_TTL_SECONDS,
+  requireR2Config,
+  r2HeadObject,
+  validateUploadSize,
+} from '@/src/server/storage/r2'
 
 import type { GraphQLContext } from '../../context'
 import { mapDesignToGql, mapProductForDesign } from '../account/account.mappers'
 import type { AccountDesignGql } from '../account/account.types'
+import { decodeDesignPreviewUploadToken, encodeDesignPreviewUploadToken } from './designs.preview-token'
 import type {
+  ConfirmDesignPreviewUploadInput,
+  CreateDesignPreviewUploadInput,
   CreateDesignDraftInput,
   DeleteDesignDraftInput,
+  DesignPreviewUploadPayloadGql,
+  DesignPreviewViewUrlsGql,
   SaveDesignPreviewInput,
   UpdateDesignInput,
 } from './designs.types'
 import {
+  confirmDesignPreviewUploadSchema,
   createDesignDraftSchema,
+  createDesignPreviewUploadSchema,
   deleteDesignDraftSchema,
   designByIdSchema,
   saveDesignPreviewSchema,
@@ -33,6 +51,48 @@ type DesignActor = {
 
 type DesignConfigRecord = Record<string, unknown>
 type InputJsonValue = Prisma.InputJsonValue
+
+/** sortOrder for back preview in DesignAsset (front lives on Design.previewUrl). */
+const BACK_PREVIEW_ASSET_SORT_ORDER = 10
+
+function expiresAtIso(ttlSeconds = PRESIGNED_PUT_TTL_SECONDS): string {
+  return new Date(Date.now() + ttlSeconds * 1000).toISOString()
+}
+
+function mapViewKeysToGql(keys: { webp: string; jpg: string }): DesignPreviewViewUrlsGql {
+  return { webp: keys.webp, jpg: keys.jpg }
+}
+
+function mapViewUrlsToGql(urls: { webp: string; jpg: string }): DesignPreviewViewUrlsGql {
+  return { webp: urls.webp, jpg: urls.jpg }
+}
+
+function mapViewPresignedToGql(presigned: {
+  webp: { url: string }
+  jpg: { url: string }
+}): DesignPreviewViewUrlsGql {
+  return { webp: presigned.webp.url, jpg: presigned.jpg.url }
+}
+
+function mergePreviewConfig(
+  configJson: unknown,
+  previews: {
+    front: { url: string; publicId: string }
+    back: { url: string; publicId: string }
+  },
+): InputJsonValue {
+  const base =
+    configJson && typeof configJson === 'object' && !Array.isArray(configJson)
+      ? { ...(configJson as DesignConfigRecord) }
+      : {}
+  return {
+    ...base,
+    previews: {
+      front: previews.front,
+      back: previews.back,
+    },
+  } as InputJsonValue
+}
 
 const productForDesignInclude = {
   productType: true,
@@ -199,6 +259,126 @@ export async function updateDesign(
 
   await createDesignEvent(context, design.id, DesignEventType.UPDATED, {
     action: 'config',
+  })
+
+  return mapDesignPayload(context, design)
+}
+
+/**
+ * Issues presigned PUT URLs for front and back design preview images.
+ * Ownership is verified server-side; keys are deterministic per designId.
+ */
+export async function createDesignPreviewUpload(
+  context: GraphQLContext,
+  input: CreateDesignPreviewUploadInput,
+): Promise<DesignPreviewUploadPayloadGql> {
+  const parsed = createDesignPreviewUploadSchema.parse(input)
+  const actor = await resolveDesignActor(context)
+  await assertDesignOwnership(context, actor, parsed.designId)
+
+  requireR2Config()
+  validateUploadSize(parsed.frontWebpSizeBytes, 'design')
+  validateUploadSize(parsed.backWebpSizeBytes, 'design')
+  if (parsed.frontJpgSizeBytes != null) {
+    validateUploadSize(parsed.frontJpgSizeBytes, 'design')
+  }
+  if (parsed.backJpgSizeBytes != null) {
+    validateUploadSize(parsed.backJpgSizeBytes, 'design')
+  }
+
+  const keys = buildDesignPreviewUploadKeys(parsed.designId)
+  const [frontPresigned, backPresigned] = await Promise.all([
+    createPresignedPutUrlsForKeys(keys.front),
+    createPresignedPutUrlsForKeys(keys.back),
+  ])
+  const frontPublic = buildPublicUrlsForKeys(keys.front)
+  const backPublic = buildPublicUrlsForKeys(keys.back)
+
+  return {
+    uploadId: encodeDesignPreviewUploadToken(parsed.designId),
+    keys: {
+      front: mapViewKeysToGql(keys.front),
+      back: mapViewKeysToGql(keys.back),
+    },
+    publicUrls: {
+      front: mapViewUrlsToGql(frontPublic),
+      back: mapViewUrlsToGql(backPublic),
+    },
+    presignedUrls: {
+      front: mapViewPresignedToGql(frontPresigned),
+      back: mapViewPresignedToGql(backPresigned),
+    },
+    expiresAt: expiresAtIso(),
+  }
+}
+
+/**
+ * Confirms front/back preview uploads in R2 and persists URLs on Design + DesignAsset.
+ */
+export async function confirmDesignPreviewUpload(
+  context: GraphQLContext,
+  input: ConfirmDesignPreviewUploadInput,
+): Promise<AccountDesignGql> {
+  const parsed = confirmDesignPreviewUploadSchema.parse(input)
+  const token = decodeDesignPreviewUploadToken(parsed.uploadId)
+  const actor = await resolveDesignActor(context)
+  const existing = await assertDesignOwnership(context, actor, token.designId)
+
+  requireR2Config()
+  const keys = buildDesignPreviewUploadKeys(token.designId)
+
+  const [frontExists, backExists] = await Promise.all([
+    r2HeadObject(keys.front.webp),
+    r2HeadObject(keys.back.webp),
+  ])
+
+  if (!frontExists || !backExists) {
+    throw designError(
+      'No encontramos las vistas previas subidas. Vuelve a intentar la subida.',
+      'BAD_USER_INPUT',
+    )
+  }
+
+  const frontUrl = buildPublicR2Url(keys.front.webp)
+  const backUrl = buildPublicR2Url(keys.back.webp)
+  const nextConfig = mergePreviewConfig(existing.configJson, {
+    front: { url: frontUrl, publicId: keys.front.webp },
+    back: { url: backUrl, publicId: keys.back.webp },
+  })
+
+  const design = await context.prisma.$transaction(async (tx) => {
+    await tx.designAsset.deleteMany({
+      where: {
+        designId: token.designId,
+        type: DesignAssetType.PREVIEW,
+        sortOrder: BACK_PREVIEW_ASSET_SORT_ORDER,
+      },
+    })
+
+    await tx.designAsset.create({
+      data: {
+        designId: token.designId,
+        type: DesignAssetType.PREVIEW,
+        url: backUrl,
+        publicId: keys.back.webp,
+        sortOrder: BACK_PREVIEW_ASSET_SORT_ORDER,
+      },
+    })
+
+    return tx.design.update({
+      where: { id: token.designId },
+      data: {
+        previewUrl: frontUrl,
+        previewPublicId: keys.front.webp,
+        configJson: nextConfig,
+        status: DesignStatus.SAVED,
+      },
+    })
+  })
+
+  await createDesignEvent(context, design.id, DesignEventType.UPDATED, {
+    action: 'preview',
+    views: ['front', 'back'],
   })
 
   return mapDesignPayload(context, design)

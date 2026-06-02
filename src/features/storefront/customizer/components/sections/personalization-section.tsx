@@ -1,0 +1,145 @@
+'use client'
+
+import { Plus, Tag, Type as TypeIcon, Sticker, Sparkles } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import { useCustomizerStore } from '../../store/customizer.store'
+import {
+  FALLBACK_PERSONALIZATION_ZONES,
+  type PersonalizationOptionKind,
+} from '../../lib/customizer-defaults'
+import { formatPriceMxn } from '../../lib/customizer-utils'
+
+type ZoneOption = {
+  key: string
+  name: string
+  kind: PersonalizationOptionKind
+  description: string
+  priceLabel: string
+  available: boolean
+}
+
+type Zone = {
+  slug: string
+  name: string
+  options: ZoneOption[]
+}
+
+const KIND_META: Record<
+  PersonalizationOptionKind,
+  { icon: LucideIcon; cta: string; element: 'logo' | 'text' | 'patch'; elementName: string }
+> = {
+  logo: { icon: Sticker, cta: 'Agregar logo', element: 'logo', elementName: 'Logo' },
+  texto: { icon: TypeIcon, cta: 'Agregar texto', element: 'text', elementName: 'Texto' },
+  nombre: { icon: Tag, cta: 'Agregar nombre', element: 'text', elementName: 'Nombre' },
+  bordado: { icon: Sparkles, cta: 'Agregar bordado', element: 'patch', elementName: 'Bordado' },
+}
+
+function inferKind(text: string): PersonalizationOptionKind {
+  const value = text.toLowerCase()
+  if (value.includes('bordado')) return 'bordado'
+  if (value.includes('nombre')) return 'nombre'
+  if (value.includes('texto') || value.includes('frase')) return 'texto'
+  return 'logo'
+}
+
+export function PersonalizationSection() {
+  const { product, customizationRuleAvailability, addElement } = useCustomizerStore()
+
+  const bffZones: Zone[] = (product?.customizationAreas ?? []).map((area) => {
+    const options = (product?.rules ?? [])
+      .filter((rule) => rule.area.slug === area.slug)
+      .map<ZoneOption>((rule) => {
+        const enabled =
+          customizationRuleAvailability[`${rule.area.slug}:${rule.option.slug}`] ?? rule.enabled
+        return {
+          key: `${rule.area.slug}:${rule.option.slug}`,
+          name: rule.option.name,
+          kind: inferKind(`${rule.option.slug} ${rule.option.name}`),
+          description: rule.validationMessage ?? area.name,
+          priceLabel:
+            rule.basePriceCents > 0 ? `+ ${formatPriceMxn(rule.basePriceCents)}` : 'Incluido',
+          available: enabled,
+        }
+      })
+    return { slug: area.slug, name: area.name, options }
+  })
+
+  const usingFallback = bffZones.length === 0 || bffZones.every((zone) => zone.options.length === 0)
+
+  const zones: Zone[] = usingFallback
+    ? FALLBACK_PERSONALIZATION_ZONES.map((zone) => ({
+        slug: zone.slug,
+        name: zone.name,
+        options: zone.options.map((option) => ({
+          key: `${zone.slug}:${option.slug}`,
+          name: option.name,
+          kind: option.kind,
+          description: option.description,
+          priceLabel: 'Cotizar',
+          available: true,
+        })),
+      }))
+    : bffZones
+
+  return (
+    <div className="space-y-5 p-4" data-testid="customizer-personalization-options">
+      <div>
+        <h3 className="text-sm font-semibold text-foreground">Personalización</h3>
+        <p className="text-xs text-muted-foreground">
+          Agrega logos, textos y bordados por zona de la prenda.
+        </p>
+      </div>
+
+      {zones.map((zone) => (
+        <section key={zone.slug} className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {zone.name}
+          </p>
+          <div className="space-y-2">
+            {zone.options.map((option) => {
+              const meta = KIND_META[option.kind]
+              const Icon = meta.icon
+              return (
+                <div
+                  key={option.key}
+                  className="flex items-center gap-3 rounded-lg border border-border/60 bg-card p-3"
+                >
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+                    <Icon className="size-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-sm font-medium text-foreground">
+                        {option.name}
+                      </span>
+                      <span className="shrink-0 text-[11px] font-medium text-primary">
+                        {option.priceLabel}
+                      </span>
+                    </div>
+                    <p className="truncate text-xs text-muted-foreground">{option.description}</p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={!option.available}
+                    onClick={() => addElement(meta.element, meta.elementName)}
+                    title={option.available ? meta.cta : 'No disponible para esta prenda'}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-md border border-primary/40 px-2 py-1 text-xs font-medium text-primary transition hover:bg-primary/10 disabled:cursor-not-allowed disabled:border-border/40 disabled:text-muted-foreground/50 disabled:hover:bg-transparent"
+                  >
+                    <Plus className="size-3.5" />
+                    Agregar
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      ))}
+
+      {usingFallback ? (
+        <p className="text-[11px] text-muted-foreground/70">
+          Zonas sugeridas. Las reglas de personalización por prenda aún no están en catálogo (TODO BFF).
+        </p>
+      ) : null}
+    </div>
+  )
+}
