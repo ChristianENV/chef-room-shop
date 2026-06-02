@@ -18,6 +18,13 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { useCustomizerStore } from '../store/customizer.store'
 import { getLayerDescription, isEditableElement } from '../lib/customizer-utils'
@@ -40,7 +47,9 @@ function ElementRow({ layer }: { layer: Layer }) {
   const editable = isEditableElement(layer.type)
   const isSelected = selectedLayerId === layer.id
   const preview =
-    editable && layer.text?.trim()
+    layer.type === 'logo' && layer.assetUrl
+      ? 'Logotipo cargado'
+      : editable && layer.text?.trim()
       ? layer.text
       : editable
       ? 'Sin contenido'
@@ -141,12 +150,13 @@ function ElementProperties({ layer, tool }: { layer: Layer; tool: DesignTool }) 
     updateLayerSize,
     updateLayerRotation,
     updateLayerOpacity,
+    updateLayer,
     duplicateLayer,
     deleteLayer,
   } = useCustomizerStore()
 
   const showAll = tool === 'select'
-  const isTextLike = layer.type === 'text' || layer.type === 'logo' || layer.type === 'patch'
+  const isTextLike = layer.type === 'text' || layer.type === 'patch'
 
   return (
     <div className="space-y-5">
@@ -229,6 +239,29 @@ function ElementProperties({ layer, tool }: { layer: Layer; tool: DesignTool }) 
           step={1}
           onValueChange={([value]) => updateLayerOpacity(layer.id, value)}
         />
+      </PropertyBlock>
+
+      <PropertyBlock>
+        <div className="text-xs text-muted-foreground">Zona</div>
+        <Select
+          value={layer.zone ?? 'pecho'}
+          onValueChange={(value) =>
+            updateLayer(layer.id, {
+              zone: value as Layer['zone'],
+            })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="pecho">Pecho</SelectItem>
+            <SelectItem value="espalda">Espalda</SelectItem>
+            <SelectItem value="manga-izquierda">Manga izquierda</SelectItem>
+            <SelectItem value="manga-derecha">Manga derecha</SelectItem>
+            <SelectItem value="general">General</SelectItem>
+          </SelectContent>
+        </Select>
       </PropertyBlock>
 
       <div className="flex gap-2">

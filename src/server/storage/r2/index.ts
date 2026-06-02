@@ -14,6 +14,7 @@ export {
   buildAvatarObjectKeys,
   buildDesignPreviewObjectKeys,
   buildDesignPreviewUploadKeys,
+  buildDesignAssetLogoKeys,
   buildProductImageObjectKeys,
   buildPublicR2Url,
   buildPublicUrlsForKeys,

@@ -1190,6 +1190,42 @@ const designsTypeDefs = /* GraphQL */ `
   input ConfirmDesignPreviewUploadInput {
     uploadId: String!
   }
+
+  type DesignAssetUploadPayload {
+    uploadId: String!
+    assetId: ID!
+    expiresAt: String!
+    keys: DesignAssetUploadUrls!
+    publicUrls: DesignAssetUploadUrls!
+    presignedUrls: DesignAssetUploadUrls!
+  }
+
+  type DesignAssetUploadUrls {
+    webp: String!
+    png: String!
+  }
+
+  type DesignAsset {
+    id: ID!
+    designId: ID!
+    type: String!
+    url: String!
+    publicId: String
+    sortOrder: Int
+  }
+
+  input CreateDesignAssetUploadInput {
+    designId: ID!
+    assetType: String!
+    webpSizeBytes: Int!
+    pngSizeBytes: Int
+    originalFileName: String
+    originalContentType: String
+  }
+
+  input ConfirmDesignAssetUploadInput {
+    uploadId: String!
+  }
 `
 
 export const typeDefs = /* GraphQL */ `
@@ -1317,6 +1353,8 @@ export const typeDefs = /* GraphQL */ `
     saveDesignPreview(input: SaveDesignPreviewInput!): AccountDesign!
     createDesignPreviewUpload(input: CreateDesignPreviewUploadInput!): DesignPreviewUploadPayload!
     confirmDesignPreviewUpload(input: ConfirmDesignPreviewUploadInput!): AccountDesign!
+    createDesignAssetUpload(input: CreateDesignAssetUploadInput!): DesignAssetUploadPayload!
+    confirmDesignAssetUpload(input: ConfirmDesignAssetUploadInput!): DesignAsset!
     deleteDesignDraft(input: DeleteDesignDraftInput!): Boolean!
   }
 

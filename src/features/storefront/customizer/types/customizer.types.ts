@@ -43,6 +43,8 @@ export type Layer = {
   fontFamily?: string
   textAlign?: TextAlign
   zone?: DesignZone
+  assetUrl?: string
+  assetPublicId?: string
 }
 
 export type TextElementInput = {
@@ -62,6 +64,8 @@ export type LayerPatch = Partial<
     | 'fontFamily'
     | 'textAlign'
     | 'zone'
+    | 'assetUrl'
+    | 'assetPublicId'
     | 'position'
     | 'size'
     | 'rotation'

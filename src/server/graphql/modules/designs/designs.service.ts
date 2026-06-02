@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import {
   DesignAssetType,
   DesignEventType,
@@ -10,6 +11,7 @@ import { GraphQLError } from 'graphql'
 
 import { getOrCreateGuestSession } from '@/src/server/guest/guest-session'
 import {
+  buildDesignAssetLogoKeys,
   buildDesignPreviewUploadKeys,
   buildPublicR2Url,
   buildPublicUrlsForKeys,
@@ -23,19 +25,30 @@ import {
 import type { GraphQLContext } from '../../context'
 import { mapDesignToGql, mapProductForDesign } from '../account/account.mappers'
 import type { AccountDesignGql } from '../account/account.types'
-import { decodeDesignPreviewUploadToken, encodeDesignPreviewUploadToken } from './designs.preview-token'
+import {
+  decodeDesignAssetUploadToken,
+  decodeDesignPreviewUploadToken,
+  encodeDesignAssetUploadToken,
+  encodeDesignPreviewUploadToken,
+} from './designs.preview-token'
 import type {
+  ConfirmDesignAssetUploadInput,
   ConfirmDesignPreviewUploadInput,
+  CreateDesignAssetUploadInput,
   CreateDesignPreviewUploadInput,
   CreateDesignDraftInput,
   DeleteDesignDraftInput,
+  DesignAssetGql,
+  DesignAssetUploadPayloadGql,
   DesignPreviewUploadPayloadGql,
   DesignPreviewViewUrlsGql,
   SaveDesignPreviewInput,
   UpdateDesignInput,
 } from './designs.types'
 import {
+  confirmDesignAssetUploadSchema,
   confirmDesignPreviewUploadSchema,
+  createDesignAssetUploadSchema,
   createDesignDraftSchema,
   createDesignPreviewUploadSchema,
   deleteDesignDraftSchema,
@@ -54,6 +67,7 @@ type InputJsonValue = Prisma.InputJsonValue
 
 /** sortOrder for back preview in DesignAsset (front lives on Design.previewUrl). */
 const BACK_PREVIEW_ASSET_SORT_ORDER = 10
+const LOGO_ASSET_SORT_ORDER = 20
 
 function expiresAtIso(ttlSeconds = PRESIGNED_PUT_TTL_SECONDS): string {
   return new Date(Date.now() + ttlSeconds * 1000).toISOString()
@@ -72,6 +86,24 @@ function mapViewPresignedToGql(presigned: {
   jpg: { url: string }
 }): DesignPreviewViewUrlsGql {
   return { webp: presigned.webp.url, jpg: presigned.jpg.url }
+}
+
+function mapDesignAssetToGql(asset: {
+  id: string
+  designId: string
+  type: DesignAssetType
+  url: string
+  publicId: string | null
+  sortOrder: number | null
+}): DesignAssetGql {
+  return {
+    id: asset.id,
+    designId: asset.designId,
+    type: asset.type,
+    url: asset.url,
+    publicId: asset.publicId,
+    sortOrder: asset.sortOrder,
+  }
 }
 
 function mergePreviewConfig(
@@ -382,6 +414,90 @@ export async function confirmDesignPreviewUpload(
   })
 
   return mapDesignPayload(context, design)
+}
+
+/**
+ * Issues presigned PUT URLs for a logo asset tied to a design.
+ */
+export async function createDesignAssetUpload(
+  context: GraphQLContext,
+  input: CreateDesignAssetUploadInput,
+): Promise<DesignAssetUploadPayloadGql> {
+  const parsed = createDesignAssetUploadSchema.parse(input)
+  if (parsed.assetType !== 'LOGO') {
+    throw designError('Tipo de asset no soportado.', 'BAD_USER_INPUT')
+  }
+  const actor = await resolveDesignActor(context)
+  await assertDesignOwnership(context, actor, parsed.designId)
+
+  requireR2Config()
+  validateUploadSize(parsed.webpSizeBytes, 'designAsset')
+  if (parsed.pngSizeBytes != null) {
+    validateUploadSize(parsed.pngSizeBytes, 'designAsset')
+  }
+
+  const assetId = randomUUID()
+  const keys = buildDesignAssetLogoKeys(parsed.designId, assetId)
+  const publicUrls = buildPublicUrlsForKeys(keys)
+  const presignedUrls = await createPresignedPutUrlsForKeys(keys)
+
+  return {
+    uploadId: encodeDesignAssetUploadToken(parsed.designId, assetId),
+    assetId,
+    expiresAt: expiresAtIso(),
+    keys: { webp: keys.webp, png: keys.jpg },
+    publicUrls: { webp: publicUrls.webp, png: publicUrls.jpg },
+    presignedUrls: { webp: presignedUrls.webp.url, png: presignedUrls.jpg.url },
+  }
+}
+
+/**
+ * Confirms a logo upload and persists DesignAsset metadata.
+ */
+export async function confirmDesignAssetUpload(
+  context: GraphQLContext,
+  input: ConfirmDesignAssetUploadInput,
+): Promise<DesignAssetGql> {
+  const parsed = confirmDesignAssetUploadSchema.parse(input)
+  const token = decodeDesignAssetUploadToken(parsed.uploadId)
+  const actor = await resolveDesignActor(context)
+  await assertDesignOwnership(context, actor, token.designId)
+
+  requireR2Config()
+  const keys = buildDesignAssetLogoKeys(token.designId, token.assetId)
+  const exists = await r2HeadObject(keys.webp)
+  if (!exists) {
+    throw designError(
+      'No encontramos el logotipo subido. Intenta de nuevo.',
+      'BAD_USER_INPUT',
+    )
+  }
+
+  const url = buildPublicR2Url(keys.webp)
+  const asset = await context.prisma.designAsset.upsert({
+    where: { id: token.assetId },
+    update: {
+      type: DesignAssetType.LOGO,
+      url,
+      publicId: keys.webp,
+      sortOrder: LOGO_ASSET_SORT_ORDER,
+    },
+    create: {
+      id: token.assetId,
+      designId: token.designId,
+      type: DesignAssetType.LOGO,
+      url,
+      publicId: keys.webp,
+      sortOrder: LOGO_ASSET_SORT_ORDER,
+    },
+  })
+
+  await createDesignEvent(context, token.designId, DesignEventType.UPDATED, {
+    action: 'logo-upload',
+    assetId: asset.id,
+  })
+
+  return mapDesignAssetToGql(asset)
 }
 
 /**

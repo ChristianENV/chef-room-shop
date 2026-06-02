@@ -16,6 +16,7 @@ import { ensureDesignPreviews } from '../lib/ensure-design-previews'
 import { readPreviewsFromConfig } from '../lib/design-preview-config'
 import { uploadDesignPreviewBlobs } from '../lib/upload-design-previews'
 import { buildDesignConfigJson } from '../lib/build-design-config'
+import { uploadDesignLogo } from '../lib/upload-design-logo'
 import { DesignerLayout } from './designer-layout'
 import type { ViewportCaptureHandle } from './viewport-3d'
 import '../customizer.css'
@@ -80,6 +81,7 @@ export function CustomizerShell({
     viewMode,
     viewAngle,
     layers,
+    addLogoElement,
   } = useCustomizerStore()
 
   const createDraft = useCreateDesignDraftMutation()
@@ -95,6 +97,7 @@ export function CustomizerShell({
   const [savePhase, setSavePhase] = useState<SavePhase>('idle')
   const [previewWarning, setPreviewWarning] = useState<string | null>(null)
   const [lastPreviewSuccess, setLastPreviewSuccess] = useState(false)
+  const [logoUploadError, setLogoUploadError] = useState<string | null>(null)
 
   useEffect(() => {
     initFromProduct(product)
@@ -331,6 +334,35 @@ export function CustomizerShell({
     quantity,
   ])
 
+  const handleUploadLogo = useCallback(
+    async (file: File) => {
+      setLogoUploadError(null)
+      const ensuredDesignId = designId ?? (await persistConfig())
+      if (!ensuredDesignId) {
+        throw new Error('No pudimos preparar el diseño para subir el logotipo.')
+      }
+
+      try {
+        const uploaded = await uploadDesignLogo({
+          file,
+          designId: ensuredDesignId,
+        })
+        addLogoElement({
+          name: 'Logotipo',
+          assetUrl: uploaded.assetUrl,
+          assetPublicId: uploaded.assetPublicId,
+          zone: 'pecho',
+        })
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'No pudimos subir el logotipo.'
+        setLogoUploadError(message)
+        throw error
+      }
+    },
+    [addLogoElement, designId, persistConfig],
+  )
+
   useEffect(() => {
     if (!isDirty || !product) return
     if (savePhase !== 'idle' && savePhase !== 'saved' && savePhase !== 'preview_failed') {
@@ -398,6 +430,11 @@ export function CustomizerShell({
           {cartActionError}
         </div>
       ) : null}
+      {logoUploadError ? (
+        <div className="border-b border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+          {logoUploadError}
+        </div>
+      ) : null}
       {addedToCart ? (
         <div className="flex flex-wrap items-center gap-2 border-b border-success/30 bg-success/10 px-4 py-2">
           <span className="font-sans text-sm text-foreground">
@@ -430,6 +467,7 @@ export function CustomizerShell({
           productOptions={productOptions}
           selectedProductSlug={selectedProductSlug ?? product.slug}
           onSelectProduct={onSelectProduct}
+          onUploadLogo={handleUploadLogo}
         />
       </div>
     </div>

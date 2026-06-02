@@ -43,6 +43,8 @@ function serializeElement(layer: Layer) {
     textColor: layer.textColor ?? '#FFFFFF',
     fontFamily: layer.fontFamily ?? 'sans-serif',
     textAlign: layer.textAlign ?? 'center',
+    assetUrl: layer.assetUrl ?? null,
+    assetPublicId: layer.assetPublicId ?? null,
   }
 }
 

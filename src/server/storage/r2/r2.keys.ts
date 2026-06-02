@@ -64,6 +64,18 @@ export function buildDesignPreviewUploadKeys(designId: string): DesignPreviewUpl
   }
 }
 
+/** Object keys for a design logo asset (webp required, png optional fallback). */
+export function buildDesignAssetLogoKeys(
+  designId: string,
+  assetId: string,
+): Required<Pick<R2ObjectKeys, 'webp' | 'jpg'>> {
+  const base = `designs/${designId}/assets/${assetId}/logo`
+  return {
+    webp: `${base}.webp`,
+    jpg: `${base}.png`,
+  }
+}
+
 /** Builds the public CDN URL for a single object key. */
 export function buildPublicR2Url(key: string): string {
   const { publicBaseUrl } = requireR2Config()

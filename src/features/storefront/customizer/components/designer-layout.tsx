@@ -37,6 +37,7 @@ interface DesignerLayoutProps {
   productOptions?: CatalogProduct[]
   selectedProductSlug?: string | null
   onSelectProduct?: (slug: string) => void
+  onUploadLogo?: (file: File) => Promise<void>
 }
 
 export function DesignerLayout({
@@ -49,6 +50,7 @@ export function DesignerLayout({
   productOptions = [],
   selectedProductSlug,
   onSelectProduct,
+  onUploadLogo,
 }: DesignerLayoutProps) {
   return (
     <div className="relative flex h-full w-full overflow-hidden bg-background">
@@ -63,6 +65,7 @@ export function DesignerLayout({
           productOptions={productOptions}
           selectedProductSlug={selectedProductSlug}
           onSelectProduct={onSelectProduct}
+          onUploadLogo={onUploadLogo}
         />
       </motion.div>
 
@@ -98,6 +101,7 @@ export function DesignerLayout({
                   productOptions={productOptions}
                   selectedProductSlug={selectedProductSlug}
                   onSelectProduct={onSelectProduct}
+                  onUploadLogo={onUploadLogo}
                 />
               </div>
             </SheetContent>

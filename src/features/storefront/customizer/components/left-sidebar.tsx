@@ -15,11 +15,13 @@ import { GarmentStyleSection } from './sections/garment-style-section'
 import { PersonalizationSection } from './sections/personalization-section'
 import { SavedDesignsSection } from './sections/saved-designs-section'
 import { ElementAddSection } from './sections/element-add-section'
+import { LogoUploadSection } from './sections/logo-upload-section'
 
 interface LeftSidebarProps {
   productOptions?: CatalogProduct[]
   selectedProductSlug?: string | null
   onSelectProduct?: (slug: string) => void
+  onUploadLogo?: (file: File) => Promise<void>
 }
 
 function CategoryContent({
@@ -27,11 +29,13 @@ function CategoryContent({
   productOptions,
   selectedProductSlug,
   onSelectProduct,
+  onUploadLogo,
 }: {
   category: CustomizerCategory
   productOptions: CatalogProduct[]
   selectedProductSlug?: string | null
   onSelectProduct?: (slug: string) => void
+  onUploadLogo?: (file: File) => Promise<void>
 }) {
   const product = useCustomizerStore((state) => state.product)
 
@@ -71,17 +75,7 @@ function CategoryContent({
         />
       )
     case 'logotipos':
-      return (
-        <ElementAddSection
-          title="Logotipos"
-          description="Coloca el logo de tu marca en la prenda."
-          ctaLabel="Agregar logo"
-          elementType="logo"
-          elementName="Logo"
-          matchTypes={['logo']}
-          note="La carga de archivos de logo llegará pronto."
-        />
-      )
+      return onUploadLogo ? <LogoUploadSection onUploadLogo={onUploadLogo} /> : null
     case 'nombres':
       return (
         <ElementAddSection
@@ -115,6 +109,7 @@ export function LeftSidebar({
   productOptions = [],
   selectedProductSlug,
   onSelectProduct,
+  onUploadLogo,
 }: LeftSidebarProps) {
   const [active, setActive] = useState<CustomizerCategory>('producto')
   const [collapsed, setCollapsed] = useState(false)
@@ -153,6 +148,7 @@ export function LeftSidebar({
             productOptions={productOptions}
             selectedProductSlug={selectedProductSlug}
             onSelectProduct={onSelectProduct}
+            onUploadLogo={onUploadLogo}
           />
         </div>
       </div>

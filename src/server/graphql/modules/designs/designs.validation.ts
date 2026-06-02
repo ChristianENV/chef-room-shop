@@ -36,3 +36,26 @@ export const createDesignPreviewUploadSchema = z.object({
 export const confirmDesignPreviewUploadSchema = z.object({
   uploadId: z.string().min(1).max(4096),
 })
+
+const allowedDesignAssetMime = ['image/png', 'image/jpeg', 'image/webp'] as const
+
+export const createDesignAssetUploadSchema = z.object({
+  designId: z.string().uuid(),
+  assetType: z.literal('LOGO'),
+  webpSizeBytes: z.number().int().positive(),
+  pngSizeBytes: z.number().int().positive().nullish(),
+  originalFileName: z.string().trim().max(255).nullish(),
+  originalContentType: z
+    .string()
+    .trim()
+    .max(120)
+    .nullish()
+    .refine((value) => {
+      if (!value) return true
+      return allowedDesignAssetMime.includes(value as (typeof allowedDesignAssetMime)[number])
+    }, 'Formato no soportado. Usa PNG, JPG o WebP.'),
+})
+
+export const confirmDesignAssetUploadSchema = z.object({
+  uploadId: z.string().trim().min(1).max(4096),
+})

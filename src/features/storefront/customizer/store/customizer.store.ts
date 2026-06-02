@@ -80,6 +80,12 @@ type CustomizerState = DesignSnapshot & {
   duplicateLayer: (id: string) => void
   deleteLayer: (id: string) => void
   addElement: (type: 'logo' | 'text' | 'patch', name?: string) => void
+  addLogoElement: (input: {
+    name?: string
+    assetUrl: string
+    assetPublicId: string
+    zone?: DesignZone
+  }) => void
   addTextElement: (input?: TextElementInput) => void
   addNameElement: (input?: Omit<TextElementInput, 'name'> & { zone?: DesignZone }) => void
   undo: () => void
@@ -437,6 +443,31 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
           isDirty: true,
         }
       })
+    },
+    addLogoElement: (input) => {
+      commitHistory()
+      const id = `logo-${Date.now()}`
+      const layer: Layer = {
+        id,
+        name: input.name ?? 'Logotipo',
+        type: 'logo',
+        visible: true,
+        locked: false,
+        position: { x: 24, y: 30 },
+        size: { width: 16, height: 16 },
+        rotation: 0,
+        opacity: 100,
+        zone: input.zone ?? 'pecho',
+        assetUrl: input.assetUrl,
+        assetPublicId: input.assetPublicId,
+        text: 'Logotipo',
+      }
+      set((state) => ({
+        layers: [layer, ...state.layers],
+        selectedLayerId: layer.id,
+        activeTool: 'select',
+        isDirty: true,
+      }))
     },
     undo: () => {
       const state = get()

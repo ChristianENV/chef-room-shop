@@ -1,6 +1,8 @@
 import type { GraphQLContext } from '../context'
 import {
+  confirmDesignAssetUpload,
   confirmDesignPreviewUpload,
+  createDesignAssetUpload,
   createDesignDraft,
   createDesignPreviewUpload,
   deleteDesignDraft,
@@ -9,7 +11,9 @@ import {
   updateDesign,
 } from '../modules/designs/designs.service'
 import type {
+  ConfirmDesignAssetUploadInput,
   ConfirmDesignPreviewUploadInput,
+  CreateDesignAssetUploadInput,
   CreateDesignDraftInput,
   CreateDesignPreviewUploadInput,
   DeleteDesignDraftInput,
@@ -22,6 +26,8 @@ type UpdateDesignArgs = { input: UpdateDesignInput }
 type SaveDesignPreviewArgs = { input: SaveDesignPreviewInput }
 type CreateDesignPreviewUploadArgs = { input: CreateDesignPreviewUploadInput }
 type ConfirmDesignPreviewUploadArgs = { input: ConfirmDesignPreviewUploadInput }
+type CreateDesignAssetUploadArgs = { input: CreateDesignAssetUploadInput }
+type ConfirmDesignAssetUploadArgs = { input: ConfirmDesignAssetUploadInput }
 type DeleteDesignDraftArgs = { input: DeleteDesignDraftInput }
 type DesignByIdArgs = { designId: string }
 
@@ -63,6 +69,18 @@ export const designsResolvers = {
       args: ConfirmDesignPreviewUploadArgs,
       context: GraphQLContext,
     ) => confirmDesignPreviewUpload(context, args.input),
+
+    createDesignAssetUpload: (
+      _parent: unknown,
+      args: CreateDesignAssetUploadArgs,
+      context: GraphQLContext,
+    ) => createDesignAssetUpload(context, args.input),
+
+    confirmDesignAssetUpload: (
+      _parent: unknown,
+      args: ConfirmDesignAssetUploadArgs,
+      context: GraphQLContext,
+    ) => confirmDesignAssetUpload(context, args.input),
 
     deleteDesignDraft: (
       _parent: unknown,

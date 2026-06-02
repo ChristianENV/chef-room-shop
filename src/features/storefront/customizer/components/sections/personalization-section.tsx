@@ -120,6 +120,11 @@ export function PersonalizationSection() {
                   : option.kind === 'texto'
                   ? 'customizer-add-text-button'
                   : undefined
+              const canAddFromZone = option.available && option.kind !== 'logo'
+              const disabledReason =
+                option.kind === 'logo'
+                  ? 'Sube tu logotipo desde la sección Logotipos.'
+                  : 'No disponible para esta prenda'
               return (
                 <div
                   key={option.key}
@@ -141,10 +146,10 @@ export function PersonalizationSection() {
                   </div>
                   <button
                     type="button"
-                    disabled={!option.available}
+                    disabled={!canAddFromZone}
                     onClick={() => handleAdd(zone.slug, option)}
                     data-testid={addTestId}
-                    title={option.available ? meta.cta : 'No disponible para esta prenda'}
+                    title={canAddFromZone ? meta.cta : disabledReason}
                     aria-label={meta.cta}
                     className="inline-flex shrink-0 items-center gap-1 rounded-md border border-primary/40 px-2 py-1 text-xs font-medium text-primary transition hover:bg-primary/10 disabled:cursor-not-allowed disabled:border-border/40 disabled:text-muted-foreground/50 disabled:hover:bg-transparent"
                   >

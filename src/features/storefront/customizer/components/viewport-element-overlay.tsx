@@ -7,7 +7,7 @@ import type { Layer } from '../types/customizer.types'
 
 function layerDisplayText(layer: Layer): string {
   if (layer.type === 'logo') {
-    return layer.text?.trim() ? layer.text : '[Logo]'
+    return layer.text?.trim() ? layer.text : 'Logotipo'
   }
   if (layer.type === 'text' || layer.type === 'patch') {
     return layer.text?.trim() ? layer.text : 'Escribe el texto aquí'
@@ -48,6 +48,7 @@ function DesignElementChip({
       style={{
         left: `${layer.position.x}%`,
         top: `${layer.position.y}%`,
+        width: `${Math.max(6, layer.size.width)}%`,
         transform: `translate(-50%, -50%) rotate(${layer.rotation}deg)`,
         opacity: layer.opacity / 100,
         fontSize: `${Math.max(10, fontSize * 0.55)}px`,
@@ -57,9 +58,19 @@ function DesignElementChip({
         pointerEvents: 'auto',
       }}
     >
-      <span className="block whitespace-pre-wrap break-words leading-tight">
-        {layerDisplayText(layer)}
-      </span>
+      {layer.type === 'logo' && layer.assetUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={layer.assetUrl}
+          alt={layer.name}
+          className="max-h-24 w-full object-contain"
+          draggable={false}
+        />
+      ) : (
+        <span className="block whitespace-pre-wrap break-words leading-tight">
+          {layerDisplayText(layer)}
+        </span>
+      )}
     </button>
   )
 }
