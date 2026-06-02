@@ -5,8 +5,10 @@ import type { ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Palette, ChevronDown, ChevronLeft, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import type { CatalogProduct } from '@/src/features/storefront/catalog/types'
 import { useCustomizerStore } from '../store/customizer.store'
 import type { ButtonStyle, CollarStyle, Size, SleeveStyle } from '../types/customizer.types'
+import { CustomizerProductSelector } from './customizer-product-selector'
 
 function ColorSwatch({
   color,
@@ -105,7 +107,15 @@ function OptionRow<T extends string>({
   )
 }
 
-export function LeftSidebar() {
+export function LeftSidebar({
+  productOptions = [],
+  selectedProductSlug,
+  onSelectProduct,
+}: {
+  productOptions?: CatalogProduct[]
+  selectedProductSlug?: string | null
+  onSelectProduct?: (slug: string) => void
+}) {
   const [collapsed, setCollapsed] = useState(false)
   const {
     baseColor,
@@ -143,8 +153,19 @@ export function LeftSidebar() {
       </div>
       {!collapsed ? (
         <div className="w-72 overflow-y-auto border-r border-border/30 bg-card/30">
-          <div className="border-b border-border/30 px-4 py-3 text-sm font-semibold">
-            {product?.name ?? 'Producto'}
+          {productOptions.length > 0 && onSelectProduct ? (
+            <CustomizerProductSelector
+              products={productOptions}
+              selectedSlug={selectedProductSlug ?? product?.slug ?? null}
+              onSelectProduct={onSelectProduct}
+            />
+          ) : (
+            <div className="border-b border-border/30 px-4 py-3 text-sm font-semibold">
+              {product?.name ?? 'Producto'}
+            </div>
+          )}
+          <div className="border-b border-border/30 px-4 py-3 text-xs text-muted-foreground">
+            Opciones de diseño
           </div>
           <Section title="Colores principales">
             <div className="flex flex-wrap gap-2">

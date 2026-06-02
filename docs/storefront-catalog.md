@@ -42,6 +42,10 @@ Filter state stores **BFF slugs** in `categories`, `colors`, `sizes`.
 |-------|------|
 | `/shop` | TanStack: filters + products |
 | `/products/[slug]` | TanStack: `useProductQuery` + related from `useProductsQuery` |
+| `/customize` | TanStack: `useCustomizableProductsQuery` + default filipina via `useProductQuery` |
+| `/customize/[slug]` | TanStack: `useProductQuery(slug)` + reglas de personalización |
+
+CTAs de producto deben usar `routes.customizeProduct(slug)`. CTAs genéricos usan `routes.customize`.
 
 Both are client components with loading / error / empty states. User-facing errors are generic (no GraphQL internals).
 

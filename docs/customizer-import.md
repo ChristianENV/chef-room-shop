@@ -74,3 +74,20 @@ Navegacion actualizada:
 
 - `routes.customizeProduct(slug)` en `src/config/routes.ts`
 - CTA de PDP ahora dirige a `/customize/[productSlug]`
+
+## Flujo correcto del customizador
+
+- `/customize` abre directamente el customizador con una filipina (chef-jacket) por defecto.
+- `/customize/[productSlug]` abre el customizador con el producto especifico del slug.
+- Los CTAs globales (`routes.customize`) entran al customizador en un solo click.
+- Los CTAs de producto (`routes.customizeProduct(slug)`) abren el customizador con esa prenda.
+- No hay pantalla intermedia que pida ir al detalle del producto.
+- El selector interno (`customizer-product-selector`) permite cambiar entre filipinas, mandiles y pantalones.
+- Al cambiar de prenda con diseño sucio, se muestra confirmacion antes de reiniciar.
+
+Archivos clave del flujo:
+
+- `src/features/storefront/customizer/components/customizer-experience.tsx`
+- `src/features/storefront/customizer/components/customizer-product-selector.tsx`
+- `src/app/(storefront)/customize/page.tsx`
+- `src/app/(storefront)/customize/[productSlug]/page.tsx`

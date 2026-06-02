@@ -29,7 +29,7 @@ export const shopNavChildren: NavLink[] = [
 export const publicNavItems: NavEntry[] = [
   { label: 'Inicio', href: routes.home },
   { label: 'Tienda', href: routes.shop, children: shopNavChildren },
-  { label: 'Personaliza', href: routes.customize },
+  { label: 'Diseña tu uniforme', href: routes.customize },
   { label: 'Restaurantes', href: routes.restaurants },
   { label: 'Guía de tallas', href: routes.sizeGuide },
   { label: 'Contacto', href: routes.contact },

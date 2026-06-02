@@ -69,6 +69,8 @@ export function mapProductToCustomizer(
     id: product.id,
     name: product.name,
     slug: product.slug,
+    productTypeSlug: product.productType.slug,
+    productTypeName: product.productType.name,
     basePriceCents: product.basePriceCents,
     images: product.images,
     colors,

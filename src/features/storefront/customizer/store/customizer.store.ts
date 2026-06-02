@@ -14,6 +14,9 @@ import type {
 
 type CustomizerState = {
   product: CustomizerProductData | null
+  selectedProductId: string | null
+  selectedProductSlug: string | null
+  selectedGarmentType: string | null
   selectedVariantId: string | null
   baseColor: string
   detailColor: string
@@ -32,6 +35,8 @@ type CustomizerState = {
   lastSavedAt: string | null
   saveStatus: SaveStatus
   initFromProduct: (product: CustomizerProductData) => void
+  setSelectedProduct: (product: CustomizerProductData) => void
+  resetDesignForProduct: (product: CustomizerProductData) => void
   resetCustomizer: () => void
   setSelectedVariant: (variantId: string | null) => void
   setBaseColor: (color: string) => void
@@ -60,6 +65,9 @@ type CustomizerState = {
 
 const INITIAL_STATE = {
   product: null,
+  selectedProductId: null,
+  selectedProductSlug: null,
+  selectedGarmentType: null,
   selectedVariantId: null,
   baseColor: '#FFFFFF',
   detailColor: '#1a1a1a',
@@ -88,36 +96,51 @@ function computeFirstVariant(product: CustomizerProductData) {
   )
 }
 
+function buildProductState(product: CustomizerProductData) {
+  const firstVariant = computeFirstVariant(product)
+  const firstColor =
+    product.colors.find((color) => color.id === firstVariant?.colorId)?.hex ??
+    product.colors[0]?.hex ??
+    INITIAL_STATE.baseColor
+  const firstSize =
+    product.sizes.find((size) => size.id === firstVariant?.sizeId)?.name ??
+    product.sizes[0]?.name ??
+    INITIAL_STATE.size
+
+  return {
+    product,
+    selectedProductId: product.id,
+    selectedProductSlug: product.slug,
+    selectedGarmentType: product.productTypeSlug,
+    selectedVariantId: firstVariant?.id ?? null,
+    baseColor: firstColor,
+    detailColor: INITIAL_STATE.detailColor,
+    collarStyle: INITIAL_STATE.collarStyle,
+    sleeveStyle: INITIAL_STATE.sleeveStyle,
+    sleeveOption: null,
+    buttonStyle: INITIAL_STATE.buttonStyle,
+    size: (firstSize as Size) ?? INITIAL_STATE.size,
+    layers: DEFAULT_LAYERS,
+    selectedLayerId: 'logo',
+    customizationRuleAvailability: Object.fromEntries(
+      product.customizationAvailability.map((item) => [
+        `${item.areaSlug}:${item.optionSlug}`,
+        item.enabled,
+      ]),
+    ),
+    designId: null,
+    isDirty: false,
+    lastSavedAt: null,
+    saveStatus: 'idle' as SaveStatus,
+  }
+}
+
 export const useCustomizerStore = create<CustomizerState>((set) => ({
   ...INITIAL_STATE,
 
-  initFromProduct: (product) =>
-    set(() => {
-      const firstVariant = computeFirstVariant(product)
-      const firstColor =
-        product.colors.find((color) => color.id === firstVariant?.colorId)?.hex ??
-        product.colors[0]?.hex ??
-        INITIAL_STATE.baseColor
-      const firstSize =
-        product.sizes.find((size) => size.id === firstVariant?.sizeId)?.name ??
-        product.sizes[0]?.name ??
-        INITIAL_STATE.size
-
-      return {
-        product,
-        selectedVariantId: firstVariant?.id ?? null,
-        baseColor: firstColor,
-        size: (firstSize as Size) ?? INITIAL_STATE.size,
-        customizationRuleAvailability: Object.fromEntries(
-          product.customizationAvailability.map((item) => [
-            `${item.areaSlug}:${item.optionSlug}`,
-            item.enabled,
-          ]),
-        ),
-        isDirty: false,
-        saveStatus: 'idle',
-      }
-    }),
+  initFromProduct: (product) => set(() => buildProductState(product)),
+  setSelectedProduct: (product) => set(() => buildProductState(product)),
+  resetDesignForProduct: (product) => set(() => buildProductState(product)),
   resetCustomizer: () => set(() => ({ ...INITIAL_STATE })),
   setSelectedVariant: (variantId) => set({ selectedVariantId: variantId }),
 

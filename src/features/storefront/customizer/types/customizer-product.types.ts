@@ -32,6 +32,8 @@ export type CustomizerProductData = {
   id: string
   name: string
   slug: string
+  productTypeSlug: string
+  productTypeName: string
   basePriceCents: number
   images: CatalogProductImage[]
   colors: CustomizerProductColor[]

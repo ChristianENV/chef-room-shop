@@ -156,7 +156,7 @@ export default function ShopPage() {
                     key={product.id}
                     product={product}
                     onView={() => router.push(routes.productDetail(product.slug))}
-                    onCustomize={() => router.push(routes.customize)}
+                    onCustomize={() => router.push(routes.customizeProduct(product.slug))}
                     onQuickView={() => {
                       router.push(routes.productDetail(product.slug))
                     }}

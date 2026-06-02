@@ -129,7 +129,7 @@ export default function MandilesPersonalizadosPage() {
         subtitle="Mandiles Profesionales"
         title="Mandiles Personalizados con Logo"
         description="Destaca la imagen de tu restaurante con mandiles personalizados. Bordado de logo, nombre y colores corporativos. Ideales para equipos de cocina y servicio."
-        primaryCta={{ label: 'Diseñar Mandil', href: `${routes.customize}?tipo=mandiles` }}
+        primaryCta={{ label: 'Diseñar Mandil', href: routes.customize }}
         secondaryCta={{ label: 'Ver Estilos', href: shopCategoryUrl('mandiles') }}
       />
 
@@ -233,7 +233,7 @@ export default function MandilesPersonalizadosPage() {
       <SeoCTA
         title="Disena el Mandil Perfecto"
         description="Agrega tu logo y crea una imagen profesional para tu restaurante. Pedidos individuales o para equipo."
-        primaryCta={{ label: 'Comenzar Diseño', href: `${routes.customize}?tipo=mandiles` }}
+        primaryCta={{ label: 'Comenzar Diseño', href: routes.customize }}
         secondaryCta={{ label: 'Cotizar Mayoreo', href: routes.contact }}
       />
     </SeoLandingLayout>

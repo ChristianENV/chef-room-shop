@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { routes } from '@/src/config/routes'
+import type { CatalogProduct } from '@/src/features/storefront/catalog/types'
 import type { CustomizerProductData } from '../types/customizer-product.types'
 import { useCustomizerStore } from '../store/customizer.store'
 import { useCreateDesignDraftMutation } from '../api/use-create-design-draft'
@@ -14,13 +15,20 @@ import { DesignerLayout } from './designer-layout'
 import '../customizer.css'
 
 interface CustomizerShellProps {
-  product?: CustomizerProductData | null
+  product: CustomizerProductData
+  productOptions?: CatalogProduct[]
+  selectedProductSlug?: string | null
+  onSelectProduct?: (slug: string) => void
 }
 
-export function CustomizerShell({ product }: CustomizerShellProps) {
+export function CustomizerShell({
+  product,
+  productOptions = [],
+  selectedProductSlug,
+  onSelectProduct,
+}: CustomizerShellProps) {
   const {
     initFromProduct,
-    resetCustomizer,
     setDesignId,
     setSaveStatus,
     setLastSavedAt,
@@ -48,12 +56,8 @@ export function CustomizerShell({ product }: CustomizerShellProps) {
   const [addedToCart, setAddedToCart] = useState(false)
 
   useEffect(() => {
-    if (product) {
-      initFromProduct(product)
-      return
-    }
-    resetCustomizer()
-  }, [product, initFromProduct, resetCustomizer])
+    initFromProduct(product)
+  }, [product, initFromProduct])
 
   const configJson = useMemo(
     () => ({
@@ -190,7 +194,7 @@ export function CustomizerShell({ product }: CustomizerShellProps) {
       ? 'Guardado'
       : saveStatus === 'error'
       ? 'Error al guardar'
-      : 'Demo tecnica'
+      : 'Listo para diseñar'
 
   return (
     <div
@@ -204,7 +208,7 @@ export function CustomizerShell({ product }: CustomizerShellProps) {
             Volver a tienda
           </Link>
         </Button>
-        <p className="text-xs text-muted-foreground">Customizador conectado a diseños y carrito</p>
+        <p className="text-xs text-muted-foreground">Diseña tu uniforme</p>
       </header>
       {cartActionError ? (
         <div className="border-b border-destructive/30 bg-destructive/10 px-4 py-2 font-serif text-sm text-destructive">
@@ -239,6 +243,9 @@ export function CustomizerShell({ product }: CustomizerShellProps) {
           isSaving={saveStatus === 'saving'}
           isAddingToCart={addToCart.isPending}
           saveStatusLabel={saveStatusLabel}
+          productOptions={productOptions}
+          selectedProductSlug={selectedProductSlug ?? product.slug}
+          onSelectProduct={onSelectProduct}
         />
       </div>
     </div>

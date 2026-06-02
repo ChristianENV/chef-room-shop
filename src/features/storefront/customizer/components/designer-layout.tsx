@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'
+import type { CatalogProduct } from '@/src/features/storefront/catalog/types'
 import { LeftSidebar } from './left-sidebar'
 import { RightSidebar } from './right-sidebar'
 import { TopToolbar, ViewportControls, BottomActionBar } from './toolbar'
@@ -22,6 +23,9 @@ interface DesignerLayoutProps {
   isSaving?: boolean
   isAddingToCart?: boolean
   saveStatusLabel?: string
+  productOptions?: CatalogProduct[]
+  selectedProductSlug?: string | null
+  onSelectProduct?: (slug: string) => void
 }
 
 export function DesignerLayout({
@@ -30,6 +34,9 @@ export function DesignerLayout({
   isSaving,
   isAddingToCart,
   saveStatusLabel,
+  productOptions = [],
+  selectedProductSlug,
+  onSelectProduct,
 }: DesignerLayoutProps) {
   return (
     <div className="relative flex h-full w-full overflow-hidden bg-background">
@@ -40,7 +47,11 @@ export function DesignerLayout({
         transition={{ duration: 0.3 }}
         className="relative z-10 hidden h-full md:block"
       >
-        <LeftSidebar />
+        <LeftSidebar
+          productOptions={productOptions}
+          selectedProductSlug={selectedProductSlug}
+          onSelectProduct={onSelectProduct}
+        />
       </motion.div>
 
       {/* Main viewport area */}
