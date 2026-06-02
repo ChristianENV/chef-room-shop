@@ -63,6 +63,7 @@ function DesignElementChip({
         <img
           src={layer.assetUrl}
           alt={layer.name}
+          crossOrigin="anonymous"
           className="max-h-24 w-full object-contain"
           draggable={false}
         />

@@ -1,3 +1,5 @@
+import { toCanvas } from 'html-to-image'
+
 /** Max dimension (longest side) for exported design previews. */
 export const DESIGN_PREVIEW_MAX_DIMENSION = 1200
 
@@ -56,4 +58,29 @@ export async function captureWebGLCanvasAsWebp(
   quality: number,
 ): Promise<Blob> {
   return canvasToWebpBlob(canvas, canvas.width, canvas.height, maxDimension, quality)
+}
+
+/**
+ * Captures a composed viewport node (WebGL canvas + DOM overlays).
+ * Requires CORS-enabled image assets to avoid tainted canvas errors.
+ */
+export async function captureCompositeViewportAsWebp(
+  viewportRoot: HTMLElement,
+  maxDimension: number,
+  quality: number,
+): Promise<Blob> {
+  const rect = viewportRoot.getBoundingClientRect()
+  const width = Math.max(1, Math.round(rect.width))
+  const height = Math.max(1, Math.round(rect.height))
+  const ratio = window.devicePixelRatio > 1 ? Math.min(2, window.devicePixelRatio) : 1
+
+  const rendered = await toCanvas(viewportRoot, {
+    cacheBust: true,
+    pixelRatio: ratio,
+    width,
+    height,
+    backgroundColor: DESIGN_PREVIEW_BACKGROUND,
+  })
+
+  return canvasToWebpBlob(rendered, rendered.width, rendered.height, maxDimension, quality)
 }

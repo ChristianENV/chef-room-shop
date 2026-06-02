@@ -85,6 +85,7 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
 ) {
   const { viewMode, product } = useCustomizerStore()
   const internalCaptureRef = useRef<ViewportCaptureHandle>(null)
+  const viewportRootRef = useRef<HTMLDivElement>(null)
   const heroImage =
     product?.images.find((image) => image.isPrimary)?.url ?? product?.images[0]?.url ?? null
 
@@ -98,12 +99,16 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
 
   if (viewMode !== '3D') {
     return (
-      <div className="relative flex h-full w-full items-center justify-center bg-gradient-to-br from-[#080810] via-[#0c0c18] to-[#080810]">
+      <div
+        ref={viewportRootRef}
+        className="relative flex h-full w-full items-center justify-center bg-gradient-to-br from-[#080810] via-[#0c0c18] to-[#080810]"
+      >
         {heroImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={heroImage}
             alt={product?.name ?? 'Producto'}
+            crossOrigin="anonymous"
             className="absolute inset-0 h-full w-full object-contain opacity-40"
           />
         ) : null}
@@ -116,7 +121,10 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
   }
 
   return (
-    <div className="relative h-full w-full bg-gradient-to-br from-[#080810] via-[#0c0c18] to-[#080810]">
+    <div
+      ref={viewportRootRef}
+      className="relative h-full w-full bg-gradient-to-br from-[#080810] via-[#0c0c18] to-[#080810]"
+    >
       <div className="customizer-noise absolute inset-0" />
       <ViewportElementOverlay />
       <Canvas
@@ -124,7 +132,7 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
         className="relative z-10"
         gl={{ preserveDrawingBuffer: true, antialias: true }}
       >
-        <ViewportCaptureBridge ref={internalCaptureRef} />
+        <ViewportCaptureBridge ref={internalCaptureRef} viewportRootRef={viewportRootRef} />
         <ambientLight intensity={0.35} />
         <directionalLight position={[4, 6, 4]} intensity={0.9} />
         <directionalLight position={[-4, 3, -3]} intensity={0.25} />

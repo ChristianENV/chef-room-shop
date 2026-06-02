@@ -209,7 +209,7 @@ export function CustomizerShell({
 
         previewUrlRef.current = result.previewUrl
         configJsonRef.current = result.configJson
-        setPreviewWarning(null)
+        setPreviewWarning(result.warning ?? null)
         setLastPreviewSuccess(true)
         return true
       } catch {

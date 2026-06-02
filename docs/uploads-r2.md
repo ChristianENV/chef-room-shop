@@ -60,7 +60,7 @@ Admin UI                         Next.js BFF                     Cloudflare R2
 
 ## Design previews — customizador (frente / espalda)
 
-Captura del **canvas WebGL** (React Three Fiber), no screenshot del DOM completo.
+Captura compuesta del viewport (**WebGL + overlays DOM**) con fallback a WebGL si falla.
 
 ```
 Customizer                         Next.js BFF                     Cloudflare R2
@@ -87,6 +87,17 @@ designs/{designId}/previews/back.jpg
 Límite de subida: **3 MB** por vista (`UploadKind: design`). TTL presigned: 10 min.
 
 Persistencia: frontal en `Design.previewUrl`; trasera en `DesignAsset` (`PREVIEW`, `sortOrder: 10`) y `configJson.previews`.
+
+### CORS requerido para captura compuesta
+
+Para que la captura compuesta incluya logotipos/textos sobre el modelo, las imágenes externas (por ejemplo logos en R2) deben poder leerse desde el canvas sin taint:
+
+- Habilitar `GET` con CORS en el bucket/cdn de R2.
+- Permitir origen del storefront (ej. `https://chefroom.mx` y `http://localhost:3000` en dev).
+- Incluir `Access-Control-Allow-Origin` válido para esos orígenes.
+
+Si CORS no está configurado, el customizador hace fallback a captura solo WebGL y muestra aviso:
+`No pudimos incluir algunos elementos por CORS de imágenes (R2). Guardamos la prenda, pero texto/logotipos podrían faltar en la vista previa.`
 
 ---
 

@@ -14,7 +14,7 @@ export async function uploadDesignPreviewBlobs(
   designId: string,
   blobs: DesignPreviewBlobs,
   onPhase?: (phase: DesignPreviewUploadPhase) => void,
-): Promise<{ previewUrl: string | null; configJson: unknown }> {
+): Promise<{ previewUrl: string | null; configJson: unknown; warning?: string | null }> {
   onPhase?.('uploading')
   const payload = await createDesignPreviewUpload({
     designId,
@@ -40,5 +40,6 @@ export async function uploadDesignPreviewBlobs(
   return {
     previewUrl: design.previewUrl,
     configJson: design.configJson,
+    warning: blobs.warning ?? null,
   }
 }
