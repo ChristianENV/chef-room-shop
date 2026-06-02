@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { routes } from '@/src/config/routes'
 
+import { CheckoutConektaPay } from './checkout-conekta-pay'
 import type { PaymentConfirmationUxState } from './lib/payment-confirmation-state'
 import { getPaymentConfirmationActions } from './lib/payment-confirmation-state'
 import { PAID_ORDER_REDIRECT_SECONDS } from './lib/use-paid-order-redirect-countdown'
@@ -30,6 +31,9 @@ type CheckoutSuccessActionsProps = {
   paidRedirectSecondsLeft?: number | null
   paidRedirectUrl?: string | null
   onCancelPaidRedirect?: () => void
+  returnToken?: string | null
+  legacyEmail?: string
+  showManualRetryPayment?: boolean
 }
 
 export function CheckoutSuccessActions({
@@ -50,6 +54,9 @@ export function CheckoutSuccessActions({
   paidRedirectSecondsLeft = null,
   paidRedirectUrl = null,
   onCancelPaidRedirect,
+  returnToken,
+  legacyEmail,
+  showManualRetryPayment = false,
 }: CheckoutSuccessActionsProps) {
   const actions = getPaymentConfirmationActions(confirmationState)
 
@@ -58,9 +65,18 @@ export function CheckoutSuccessActions({
     accountOrderUrl ??
     (isAuthenticated ? routes.accountOrderDetail(orderNumber) : null)
 
+  const isPendingLikeState =
+    confirmationState === 'pendingAfterTimeout' ||
+    confirmationState === 'failed' ||
+    confirmationState === 'expired' ||
+    confirmationState === 'cancelled'
+
   const showViewOrder =
-    Boolean(orderDetailHref && canViewDetails) ||
+    Boolean(orderDetailHref && (canViewDetails || isPendingLikeState)) ||
     (!isAuthenticated && !canViewDetails && onGuestDetailsClick)
+
+  const viewOrderLabel =
+    confirmationState === 'pendingAfterTimeout' ? 'Ver detalle de compra' : 'Ver pedido'
 
   const paidRedirectProgress =
     paidRedirectSecondsLeft !== null
@@ -139,6 +155,15 @@ export function CheckoutSuccessActions({
         </div>
       )}
 
+      {showManualRetryPayment && (returnToken || (orderNumber && legacyEmail)) && (
+        <CheckoutConektaPay
+          returnToken={returnToken}
+          orderNumber={orderNumber}
+          email={legacyEmail}
+          autoRedirect={false}
+        />
+      )}
+
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         {showViewOrder && orderDetailHref && canViewDetails && (
           actions.disableViewOrder ? (
@@ -148,7 +173,7 @@ export function CheckoutSuccessActions({
           ) : (
             <Button asChild className="font-sans">
               <Link href={orderDetailHref}>
-                Ver pedido
+                {viewOrderLabel}
                 {actions.viewOrderPendingBadge && (
                   <Badge
                     variant="outline"
@@ -190,7 +215,11 @@ export function CheckoutSuccessActions({
         {!isAuthenticated && (
           <>
             <Button asChild variant="outline" className="font-sans">
-              <Link href={loginUrl}>Iniciar sesión</Link>
+              <Link href={loginUrl}>
+                {confirmationState === 'pendingAfterTimeout'
+                  ? 'Iniciar sesión para ver el pedido'
+                  : 'Iniciar sesión'}
+              </Link>
             </Button>
             <Button asChild variant="outline" className="font-sans">
               <Link href={registerUrl}>Crear cuenta</Link>

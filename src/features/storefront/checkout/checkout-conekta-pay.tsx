@@ -13,7 +13,10 @@ type CheckoutConektaPayProps = {
   orderNumber?: string
   email?: string
   disabled?: boolean
-  /** Auto-redirect to Conekta on mount (retry flow) */
+  /**
+   * When true, redirects to Conekta on mount. Must stay false on /checkout/success;
+   * retry is always user-initiated there.
+   */
   autoRedirect?: boolean
 }
 
@@ -25,7 +28,7 @@ export function CheckoutConektaPay({
   orderNumber,
   email,
   disabled = false,
-  autoRedirect = true,
+  autoRedirect = false,
 }: CheckoutConektaPayProps) {
   const retryCheckout = useRetryCheckoutPaymentMutation()
   const legacyCheckout = useCreateConektaCheckoutMutation()
@@ -77,7 +80,7 @@ export function CheckoutConektaPay({
     return (
       <div className="mt-6 flex items-center gap-2 font-serif text-sm text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" />
-        Preparando tu pago seguro…
+        Generando nuevo enlace de pago…
       </div>
     )
   }
@@ -129,7 +132,7 @@ export function CheckoutConektaPay({
         ) : (
           <RefreshCw className="mr-2 h-4 w-4" />
         )}
-        Reintentar pago
+        {autoRedirect ? 'Reintentar pago' : 'Generar nuevo enlace de pago'}
       </Button>
     </div>
   )

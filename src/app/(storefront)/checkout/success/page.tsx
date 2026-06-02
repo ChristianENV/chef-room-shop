@@ -30,10 +30,11 @@ import {
   resolvePaymentConfirmationUxState,
   type PaymentConfirmationUxState,
 } from '@/src/features/storefront/checkout/lib/payment-confirmation-state'
+import { CHECKOUT_CONFIRMATION_VISUAL_MS } from '@/src/features/storefront/checkout/lib/checkout-polling.config'
+import { useCheckoutResultPolling } from '@/src/features/storefront/checkout/lib/use-checkout-result-polling'
 import { usePaymentConfirmationElapsed } from '@/src/features/storefront/checkout/lib/use-payment-confirmation-elapsed'
 import { resolvePaidOrderRedirectUrl } from '@/src/features/storefront/checkout/lib/resolve-paid-order-redirect'
 import { usePaidOrderRedirectCountdown } from '@/src/features/storefront/checkout/lib/use-paid-order-redirect-countdown'
-import { CheckoutConektaPay } from '@/src/features/storefront/checkout/checkout-conekta-pay'
 import { CheckoutPaymentStatusBanner } from '@/src/features/storefront/checkout/checkout-payment-status-banner'
 import { CheckoutSuccessActions } from '@/src/features/storefront/checkout/checkout-success-actions'
 import { resolvePaymentMethodLabel } from '@/src/config/payment-vars'
@@ -103,16 +104,12 @@ type OrderConfirmationCardProps = {
   orderNumber: string
   confirmationState: PaymentConfirmationUxState
   elapsedMs: number
-  canRetryPayment: boolean
   totalPesos: number
   paymentMethodLabel: string
   customerEmail?: string
   items?: OrderItem[]
   paymentReturnHint?: string | null
   isPolling?: boolean
-  returnToken?: string | null
-  legacyOrderNumber?: string
-  legacyEmail?: string
   paymentReference?: string | null
   paymentExpiresAt?: string | null
   cashPaymentLocations?: string[] | null
@@ -122,31 +119,16 @@ function OrderConfirmationCard({
   orderNumber,
   confirmationState,
   elapsedMs,
-  canRetryPayment,
   totalPesos,
   paymentMethodLabel,
   customerEmail,
   items,
   paymentReturnHint,
   isPolling,
-  returnToken,
-  legacyOrderNumber,
-  legacyEmail,
   paymentReference,
   paymentExpiresAt,
   cashPaymentLocations,
 }: OrderConfirmationCardProps) {
-  const canUseRetryFlow = Boolean(
-    returnToken || (legacyOrderNumber && legacyEmail),
-  )
-  const showRetry =
-    canUseRetryFlow &&
-    (canRetryPayment ||
-      confirmationState === 'pendingAfterTimeout' ||
-      confirmationState === 'failed' ||
-      confirmationState === 'expired' ||
-      confirmationState === 'cancelled')
-
   return (
     <div className="rounded-lg border border-border bg-card p-6 md:p-8">
       <p className="font-serif text-sm text-muted-foreground">
@@ -225,15 +207,16 @@ function OrderConfirmationCard({
         </>
       )}
 
-      {showRetry && (
-        <CheckoutConektaPay
-          returnToken={returnToken}
-          orderNumber={legacyOrderNumber}
-          email={legacyEmail}
-          autoRedirect={Boolean(returnToken || (legacyOrderNumber && legacyEmail))}
-        />
-      )}
     </div>
+  )
+}
+
+function shouldShowManualRetryPayment(state: PaymentConfirmationUxState): boolean {
+  return (
+    state === 'failed' ||
+    state === 'expired' ||
+    state === 'cancelled' ||
+    state === 'pendingAfterTimeout'
   )
 }
 
@@ -287,14 +270,14 @@ function CheckoutSuccessContent() {
   const tokenQuery = useCheckoutResultByTokenQuery({
     token: effectiveToken,
     enabled: effectiveToken.length > 0,
-    pollWhilePending: true,
+    pollWhilePending: false,
   })
 
   const legacyQuery = useOrderByNumberQuery({
     orderNumber: orderNumberLegacy,
     email,
     enabled: !effectiveToken && orderNumberLegacy.length > 0 && email.length > 0,
-    pollWhilePending: true,
+    pollWhilePending: false,
   })
 
   const checkoutResult = tokenQuery.data
@@ -363,6 +346,30 @@ function CheckoutSuccessContent() {
       }),
     [confirmationState, statusUi.canRetryPayment],
   )
+
+  const shouldPollCheckout = useMemo(() => {
+    if (!isAwaitingConfirmation) return false
+    if (elapsedMs >= CHECKOUT_CONFIRMATION_VISUAL_MS) return false
+    return confirmationActions.shouldPoll
+  }, [isAwaitingConfirmation, elapsedMs, confirmationActions.shouldPoll])
+
+  useCheckoutResultPolling({
+    shouldPoll: shouldPollCheckout && effectiveToken.length > 0,
+    refetch: tokenQuery.refetch,
+    resetKey: `token:${effectiveToken}:${shouldPollCheckout}`,
+  })
+
+  useCheckoutResultPolling({
+    shouldPoll:
+      shouldPollCheckout &&
+      effectiveToken.length === 0 &&
+      orderNumberLegacy.length > 0 &&
+      email.length > 0,
+    refetch: legacyQuery.refetch,
+    resetKey: `legacy:${orderNumberLegacy}:${email}:${shouldPollCheckout}`,
+  })
+
+  const showManualRetry = shouldShowManualRetryPayment(confirmationState)
 
   const handleVerifyAgain = async () => {
     setIsVerifying(true)
@@ -447,7 +454,7 @@ function CheckoutSuccessContent() {
     usePaidOrderRedirectCountdown(confirmationState === 'paid', paidRedirectUrl)
 
   const isPolling =
-    confirmationActions.shouldPoll &&
+    shouldPollCheckout &&
     ((tokenQuery.isFetching && Boolean(effectiveToken)) ||
       (legacyQuery.isFetching && !effectiveToken))
 
@@ -501,14 +508,12 @@ function CheckoutSuccessContent() {
             orderNumber={checkoutResult.orderNumber}
             confirmationState={confirmationState}
             elapsedMs={elapsedMs}
-            canRetryPayment={statusUi.canRetryPayment}
             totalPesos={totalPesos}
             paymentMethodLabel={paymentMethodLabel}
             customerEmail={storedSession?.email}
             items={checkoutResult.items}
             paymentReturnHint={paymentReturnHint}
             isPolling={isPolling}
-            returnToken={effectiveToken}
             paymentReference={checkoutResult.paymentReference}
             paymentExpiresAt={checkoutResult.paymentExpiresAt}
             cashPaymentLocations={checkoutResult.cashPaymentLocations}
@@ -531,6 +536,9 @@ function CheckoutSuccessContent() {
             paidRedirectSecondsLeft={paidRedirectSecondsLeft}
             paidRedirectUrl={paidRedirectUrl}
             onCancelPaidRedirect={cancelPaidRedirect}
+            returnToken={effectiveToken}
+            legacyEmail={storedSession?.email ?? email}
+            showManualRetryPayment={showManualRetry}
           />
         </div>
 
@@ -617,15 +625,12 @@ function CheckoutSuccessContent() {
             orderNumber={legacyOrder.orderNumber}
             confirmationState={confirmationState}
             elapsedMs={elapsedMs}
-            canRetryPayment={statusUi.canRetryPayment}
             totalPesos={totalPesos}
             paymentMethodLabel={paymentMethodLabel}
             customerEmail={legacyOrder.customerEmail}
             items={legacyOrder.items}
             paymentReturnHint={paymentReturnHint}
             isPolling={isPolling}
-            legacyOrderNumber={legacyOrder.orderNumber}
-            legacyEmail={legacyOrder.customerEmail}
           />
           <CheckoutSuccessActions
             confirmationState={confirmationState}
@@ -640,6 +645,8 @@ function CheckoutSuccessContent() {
             paidRedirectSecondsLeft={paidRedirectSecondsLeft}
             paidRedirectUrl={paidRedirectUrl}
             onCancelPaidRedirect={cancelPaidRedirect}
+            legacyEmail={legacyOrder.customerEmail}
+            showManualRetryPayment={showManualRetry}
           />
         </div>
       </CheckoutLayout>
@@ -655,15 +662,11 @@ function CheckoutSuccessContent() {
             orderNumber={storedSession.orderNumber}
             confirmationState={confirmationState}
             elapsedMs={elapsedMs}
-            canRetryPayment={statusUi.canRetryPayment}
             totalPesos={totalPesos}
             paymentMethodLabel={resolvePaymentMethodLabel(storedSession.paymentMethod)}
             customerEmail={storedSession.email}
             paymentReturnHint={paymentReturnHint}
             isPolling={isPolling}
-            returnToken={storedSession.returnToken}
-            legacyOrderNumber={storedSession.orderNumber}
-            legacyEmail={storedSession.email}
           />
 
           {legacyQuery.isError && (
@@ -688,6 +691,9 @@ function CheckoutSuccessContent() {
             paidRedirectSecondsLeft={paidRedirectSecondsLeft}
             paidRedirectUrl={paidRedirectUrl}
             onCancelPaidRedirect={cancelPaidRedirect}
+            returnToken={storedSession.returnToken}
+            legacyEmail={storedSession.email}
+            showManualRetryPayment={showManualRetry}
           />
         </div>
       </CheckoutLayout>
