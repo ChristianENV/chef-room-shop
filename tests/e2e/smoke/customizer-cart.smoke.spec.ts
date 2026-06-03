@@ -1,65 +1,39 @@
 import { expect, test } from '@playwright/test'
+import { ensureCustomizer3DReady } from '../helpers/ensure-customizer-3d-ready'
+import {
+  mockCustomizerPreviewFlow,
+  shouldMockCustomizerPreviews,
+} from '../helpers/mock-customizer-previews'
+import { selectCustomizerColorAndSize } from '../helpers/select-customizer-variant'
+
+const CUSTOMIZER_SLUG =
+  process.env.E2E_CUSTOMIZER_SLUG ?? 'demo-filipina-executive-blanca'
 
 test('customizer smoke flow to checkout pre-payment', async ({ page }) => {
+  if (shouldMockCustomizerPreviews()) {
+    await mockCustomizerPreviewFlow(page)
+  }
+
   await page.goto('/shop')
   await page.waitForLoadState('networkidle')
+  await expect(page.getByRole('button', { name: /ver producto/i }).first()).toBeVisible()
 
-  const viewProductButtons = page.getByRole('button', { name: /ver producto/i })
-  const productCount = await viewProductButtons.count()
-  expect(productCount).toBeGreaterThan(0)
-
-  let openedCustomizer = false
-  let fallbackSlug: string | null = null
-  for (let i = 0; i < Math.min(productCount, 8); i += 1) {
-    await viewProductButtons.nth(i).click()
-    await expect(page).toHaveURL(/\/products\//)
-    if (!fallbackSlug) {
-      fallbackSlug = page.url().split('/products/')[1] ?? null
-    }
-
-    const customizePdpButton = page
-      .getByRole('button', { name: /personalizar( ahora)?/i })
-      .first()
-    if (await customizePdpButton.isVisible()) {
-      await customizePdpButton.click()
-      openedCustomizer = true
-      break
-    }
-
-    await page.goto('/shop')
-    await page.waitForLoadState('networkidle')
-  }
-
-  if (!openedCustomizer && fallbackSlug) {
-    await page.goto(`/customize/${fallbackSlug}`)
-    openedCustomizer = true
-  }
-  expect(openedCustomizer).toBeTruthy()
-
-  await expect(page).toHaveURL(/\/customize\//)
+  // Use a slug with variantes demo válidas (ver E2E_CUSTOMIZER_SLUG en docs/qa-e2e.md).
+  await page.goto(`/customize/${CUSTOMIZER_SLUG}`)
   await expect(page.getByTestId('customizer-root')).toBeVisible()
 
-  const colorOptions = page.getByTestId('customizer-color-option')
-  const colorCount = await colorOptions.count()
-  if (colorCount > 1) {
-    await colorOptions.nth(1).click()
-  } else if (colorCount === 1) {
-    await colorOptions.first().click()
-  }
-
-  const sizeOptions = page.getByTestId('customizer-size-option')
-  const sizeCount = await sizeOptions.count()
-  if (sizeCount > 1) {
-    await sizeOptions.nth(1).click()
-  } else if (sizeCount === 1) {
-    await sizeOptions.first().click()
-  }
+  await selectCustomizerColorAndSize(page)
+  await ensureCustomizer3DReady(page)
 
   await page.getByTestId('customizer-save-button').click()
-  await expect(page.getByText(/guardado/i)).toBeVisible()
+  await expect(
+    page.getByText(/dise[ñn]o guardado con vistas frontal y trasera/i).first(),
+  ).toBeVisible({ timeout: 60_000 })
 
   await page.getByTestId('customizer-add-to-cart-button').click()
-  await expect(page.getByText(/agregado al carrito/i)).toBeVisible()
+  await expect(page.getByText(/tu dise[ñn]o se agreg[oó] al carrito/i)).toBeVisible({
+    timeout: 60_000,
+  })
 
   await page.getByRole('link', { name: /ver carrito/i }).click()
   await expect(page).toHaveURL(/\/cart/)
