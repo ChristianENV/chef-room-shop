@@ -33,11 +33,11 @@ function inferCartCategory(
  * Resolves the display image for a cart line (product image, then design preview).
  */
 export function getCartItemDisplayImage(item: CartItem): string | undefined {
-  const productUrl = item.productSnapshot?.imageUrl
-  if (productUrl) return productUrl
-
   const previewUrl = item.customizationSnapshot?.previewUrl
   if (previewUrl) return previewUrl
+
+  const productUrl = item.productSnapshot?.imageUrl
+  if (productUrl) return productUrl
 
   return undefined
 }
@@ -65,6 +65,7 @@ export function getCartItemCustomizationSummary(
     hasEmbroidery: snap.hasEmbroidery,
     embroideredName: snap.embroideredName ?? undefined,
     areas: snap.areas.length > 0 ? snap.areas : undefined,
+    lines: snap.summary.length > 0 ? snap.summary.slice(0, 3) : undefined,
   }
 }
 

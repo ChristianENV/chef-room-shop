@@ -13,23 +13,24 @@ export function usePaidOrderRedirectCountdown(
   redirectUrl: string | null,
 ): { secondsLeft: number | null; cancelRedirect: () => void } {
   const router = useRouter()
-  const active = enabled && Boolean(redirectUrl?.trim())
+  const trimmedRedirectUrl = redirectUrl?.trim() ?? ''
+  const active = enabled && trimmedRedirectUrl.length > 0
+  const activeKey = active ? trimmedRedirectUrl : null
+
+  const [trackedActiveKey, setTrackedActiveKey] = useState(activeKey)
   const [secondsLeft, setSecondsLeft] = useState(PAID_ORDER_REDIRECT_SECONDS)
   const [cancelled, setCancelled] = useState(false)
   const hasRedirectedRef = useRef(false)
 
-  useEffect(() => {
-    if (!active) {
-      hasRedirectedRef.current = false
-      setCancelled(false)
-      setSecondsLeft(PAID_ORDER_REDIRECT_SECONDS)
-      return
-    }
-
-    hasRedirectedRef.current = false
-    setCancelled(false)
+  if (trackedActiveKey !== activeKey) {
+    setTrackedActiveKey(activeKey)
     setSecondsLeft(PAID_ORDER_REDIRECT_SECONDS)
-  }, [active, redirectUrl])
+    setCancelled(false)
+  }
+
+  useEffect(() => {
+    hasRedirectedRef.current = false
+  }, [activeKey])
 
   useEffect(() => {
     if (!active || cancelled) return
@@ -39,15 +40,15 @@ export function usePaidOrderRedirectCountdown(
     }, 1000)
 
     return () => window.clearInterval(intervalId)
-  }, [active, cancelled, redirectUrl])
+  }, [active, cancelled, activeKey])
 
   useEffect(() => {
-    if (!active || cancelled || secondsLeft > 0 || !redirectUrl) return
+    if (!active || cancelled || secondsLeft > 0) return
     if (hasRedirectedRef.current) return
 
     hasRedirectedRef.current = true
-    router.push(redirectUrl)
-  }, [active, cancelled, secondsLeft, redirectUrl, router])
+    router.push(trimmedRedirectUrl)
+  }, [active, cancelled, secondsLeft, trimmedRedirectUrl, router])
 
   const cancelRedirect = useCallback(() => {
     setCancelled(true)

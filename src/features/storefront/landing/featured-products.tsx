@@ -40,7 +40,11 @@ export function FeaturedProducts({ className }: FeaturedProductsProps) {
           {featuredProducts.map((product) => (
             <Link
               key={product.id}
-              href={`/products/${product.slug}`}
+              href={
+                product.customizable
+                  ? routes.customizeProduct(product.slug)
+                  : routes.productDetail(product.slug)
+              }
               className="group"
             >
               <article className="overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 group-hover:border-primary/30 group-hover:shadow-lg group-hover:shadow-primary/5">

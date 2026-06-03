@@ -111,7 +111,7 @@ export default function FilipinasPersonalizadasPage() {
         subtitle="Personalizacion Profesional"
         title="Filipinas Personalizadas con Bordado"
         description="Destaca en la cocina con filipinas bordadas con tu nombre o logo. Disena tu filipina ideal en minutos con nuestro configurador visual."
-        primaryCta={{ label: 'Diseñar Mi Filipina', href: `${routes.customize}?tipo=filipinas` }}
+        primaryCta={{ label: 'Diseñar Mi Filipina', href: routes.customize }}
         secondaryCta={{ label: 'Ver Modelos', href: shopCategoryUrl('filipinas') }}
       />
 
@@ -203,7 +203,7 @@ export default function FilipinasPersonalizadasPage() {
       <SeoCTA
         title="Crea Tu Filipina Unica"
         description="Disena una filipina que refleje tu estilo y profesionalismo. Bordado de calidad garantizado."
-        primaryCta={{ label: 'Personalizar Ahora', href: `${routes.customize}?tipo=filipinas` }}
+        primaryCta={{ label: 'Personalizar Ahora', href: routes.customize }}
         secondaryCta={{ label: 'Ver Catálogo', href: shopCategoryUrl('filipinas') }}
       />
     </SeoLandingLayout>

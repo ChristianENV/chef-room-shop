@@ -41,6 +41,7 @@ export function CartItemCard({
 
   return (
     <div
+      data-testid="cart-item-card"
       className={cn(
         'rounded-lg border border-border bg-card p-4 md:p-6',
         className,
@@ -57,7 +58,7 @@ export function CartItemCard({
           />
           {item.isCustomized && (
             <div className="absolute left-2 top-2">
-              <Badge className="gap-1 bg-accent text-white">
+              <Badge className="gap-1 bg-accent text-white" data-testid="cart-custom-design-badge">
                 <Palette className="h-3 w-3" />
                 Personalizado
               </Badge>

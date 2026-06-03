@@ -22,7 +22,7 @@ export function CartCustomizationSummary({
   if (!summary && !designId) return null
 
   return (
-    <div className={className}>
+    <div className={className} data-testid="cart-customization-summary">
       <p className="mb-2 flex items-center gap-1.5 font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         <Sparkles className="h-3 w-3" />
         Personalización
@@ -41,6 +41,9 @@ export function CartCustomizationSummary({
           )}
           {summary.areas && summary.areas.length > 0 && (
             <li>Áreas: {summary.areas.join(', ')}</li>
+          )}
+          {summary.lines && summary.lines.length > 0 && (
+            <li>Texto: {summary.lines.join(' · ')}</li>
           )}
         </ul>
       )}

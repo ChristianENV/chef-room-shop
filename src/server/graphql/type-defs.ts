@@ -1139,6 +1139,95 @@ const orderClaimTypeDefs = /* GraphQL */ `
   }
 `
 
+const designsTypeDefs = /* GraphQL */ `
+  input CreateDesignDraftInput {
+    productId: ID!
+    productVariantId: ID
+    configJson: JSON!
+  }
+
+  input UpdateDesignInput {
+    designId: ID!
+    configJson: JSON!
+  }
+
+  input SaveDesignPreviewInput {
+    designId: ID!
+    previewUrl: String!
+    previewPublicId: String
+  }
+
+  input DeleteDesignDraftInput {
+    designId: ID!
+  }
+
+  type DesignPreviewViewUrls {
+    webp: String!
+    jpg: String!
+  }
+
+  type DesignPreviewUploadPayload {
+    uploadId: String!
+    keys: DesignPreviewUploadKeys!
+    publicUrls: DesignPreviewUploadKeys!
+    presignedUrls: DesignPreviewUploadKeys!
+    expiresAt: String!
+  }
+
+  type DesignPreviewUploadKeys {
+    front: DesignPreviewViewUrls!
+    back: DesignPreviewViewUrls!
+  }
+
+  input CreateDesignPreviewUploadInput {
+    designId: ID!
+    frontWebpSizeBytes: Int!
+    backWebpSizeBytes: Int!
+    frontJpgSizeBytes: Int
+    backJpgSizeBytes: Int
+  }
+
+  input ConfirmDesignPreviewUploadInput {
+    uploadId: String!
+  }
+
+  type DesignAssetUploadPayload {
+    uploadId: String!
+    assetId: ID!
+    expiresAt: String!
+    keys: DesignAssetUploadUrls!
+    publicUrls: DesignAssetUploadUrls!
+    presignedUrls: DesignAssetUploadUrls!
+  }
+
+  type DesignAssetUploadUrls {
+    webp: String!
+    png: String!
+  }
+
+  type DesignAsset {
+    id: ID!
+    designId: ID!
+    type: String!
+    url: String!
+    publicId: String
+    sortOrder: Int
+  }
+
+  input CreateDesignAssetUploadInput {
+    designId: ID!
+    assetType: String!
+    webpSizeBytes: Int!
+    pngSizeBytes: Int
+    originalFileName: String
+    originalContentType: String
+  }
+
+  input ConfirmDesignAssetUploadInput {
+    uploadId: String!
+  }
+`
+
 export const typeDefs = /* GraphQL */ `
   """
   Business BFF — authentication is handled by Better Auth at /api/auth/*.
@@ -1206,6 +1295,7 @@ export const typeDefs = /* GraphQL */ `
     orderByNumber(orderNumber: String!, email: String!): PublicOrder
     checkoutResultByToken(token: String!): CheckoutResult
     orderClaimPreview(token: String!): OrderClaimPreview
+    designById(designId: ID!): AccountDesign
   }
 
   type Mutation {
@@ -1258,6 +1348,14 @@ export const typeDefs = /* GraphQL */ `
     confirmAvatarUpload(input: ConfirmAvatarUploadInput!): UserAvatarPayload!
     createProductImageUpload(input: CreateProductImageUploadInput!): ProductImageUploadPayload!
     confirmProductImageUpload(input: ConfirmProductImageUploadInput!): ProductImage!
+    createDesignDraft(input: CreateDesignDraftInput!): AccountDesign!
+    updateDesign(input: UpdateDesignInput!): AccountDesign!
+    saveDesignPreview(input: SaveDesignPreviewInput!): AccountDesign!
+    createDesignPreviewUpload(input: CreateDesignPreviewUploadInput!): DesignPreviewUploadPayload!
+    confirmDesignPreviewUpload(input: ConfirmDesignPreviewUploadInput!): AccountDesign!
+    createDesignAssetUpload(input: CreateDesignAssetUploadInput!): DesignAssetUploadPayload!
+    confirmDesignAssetUpload(input: ConfirmDesignAssetUploadInput!): DesignAsset!
+    deleteDesignDraft(input: DeleteDesignDraftInput!): Boolean!
   }
 
   ${catalogTypeDefs}
@@ -1273,4 +1371,5 @@ export const typeDefs = /* GraphQL */ `
   ${adminProductsTypeDefs}
   ${adminCustomizationTypeDefs}
   ${uploadsTypeDefs}
+  ${designsTypeDefs}
 `

@@ -1,249 +1,230 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { 
-  Undo2,
-  Redo2,
-  Share2,
-  Download,
-  Save,
-  Maximize,
-  RotateCcw,
-  ZoomIn,
-  ZoomOut,
-  Scan,
-  RefreshCw
-} from 'lucide-react'
+import { Minus, Plus, Redo2, RotateCcw, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useDesignerStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
+import { useCustomizerStore } from '../store/customizer.store'
+import { formatPriceMxn } from '../lib/customizer-utils'
 
-function ToolbarButton({ 
-  icon: Icon, 
-  label, 
-  onClick,
-  variant = 'ghost'
-}: { 
-  icon: typeof Undo2
-  label?: string
-  onClick?: () => void
-  variant?: 'ghost' | 'default'
-}) {
-  return (
-    <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      onClick={onClick}
-      className={cn(
-        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all",
-        variant === 'ghost' 
-          ? "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
-          : "bg-primary text-primary-foreground hover:bg-primary/90"
-      )}
-    >
-      <Icon className="size-4" />
-      {label && <span>{label}</span>}
-    </motion.button>
-  )
+interface TopToolbarProps {
+  onSaveDesign?: () => void
+  onAddToCart?: () => void
+  isSaving?: boolean
+  isAddingToCart?: boolean
+  saveStatusLabel?: string
 }
 
-export function TopToolbar() {
+export function TopToolbar({
+  onSaveDesign,
+  onAddToCart,
+  isSaving = false,
+  isAddingToCart = false,
+  saveStatusLabel,
+}: TopToolbarProps) {
+  const { undo, redo, past, future, isDirty, saveStatus } = useCustomizerStore()
+
+  const statusLabel =
+    saveStatusLabel ??
+    (saveStatus === 'saving'
+      ? 'Guardando…'
+      : saveStatus === 'error'
+      ? 'Error al guardar'
+      : isDirty
+      ? 'Cambios sin guardar'
+      : saveStatus === 'saved'
+      ? 'Guardado'
+      : 'Listo para diseñar')
+
+  const statusTone =
+    saveStatus === 'error' || saveStatusLabel?.includes('Error')
+      ? 'text-destructive'
+      : saveStatusLabel?.includes('sin vista') || saveStatusLabel?.includes('no pudimos')
+      ? 'text-amber-600'
+      : isDirty && !isSaving
+      ? 'text-amber-600'
+      : saveStatus === 'saved' || saveStatusLabel?.includes('guardado')
+      ? 'text-emerald-600'
+      : 'text-muted-foreground'
+
   return (
-    <motion.div
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 py-3"
-    >
-      {/* Spacer */}
-      <div className="w-48" />
-
-      {/* Center controls */}
-      <div className="flex items-center gap-2">
-        <div className="glass flex items-center gap-1 rounded-xl px-2 py-1">
-          <ToolbarButton icon={Undo2} />
-          <ToolbarButton icon={Redo2} />
-        </div>
-        
-        <div className="glass flex items-center gap-2 rounded-xl px-3 py-1.5">
-          <div className="size-2 rounded-full bg-green-500" />
-          <span className="text-xs text-muted-foreground">Guardado automaticamente</span>
-        </div>
+    <div className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between gap-2 px-4 py-3">
+      <div className="customizer-glass flex items-center gap-1 rounded-xl p-1">
+        <button
+          type="button"
+          title="Deshacer"
+          onClick={undo}
+          disabled={past.length === 0}
+          className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-30"
+        >
+          <Undo2 className="size-4" />
+        </button>
+        <button
+          type="button"
+          title="Rehacer"
+          onClick={redo}
+          disabled={future.length === 0}
+          className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-30"
+        >
+          <Redo2 className="size-4" />
+        </button>
       </div>
 
-      {/* Right actions */}
-      <div className="flex items-center gap-2">
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="glass flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-foreground transition-all hover:bg-secondary/50"
-        >
-          <Save className="size-4" />
-          Guardar diseno
-        </motion.button>
-        
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="glass flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-foreground transition-all hover:bg-secondary/50"
-        >
-          <Share2 className="size-4" />
-          Compartir
-        </motion.button>
-        
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
-        >
-          <Download className="size-4" />
-          Agregar al carrito
-        </motion.button>
+      <div className={cn('customizer-glass rounded-xl px-3 py-2 text-xs font-medium', statusTone)}>
+        {statusLabel}
       </div>
-    </motion.div>
+
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onSaveDesign}
+          disabled={isSaving}
+          data-testid="customizer-save-button"
+        >
+          {isSaving ? 'Guardando…' : 'Guardar diseño'}
+        </Button>
+        <Button
+          size="sm"
+          onClick={onAddToCart}
+          disabled={isAddingToCart}
+          className="hidden sm:inline-flex"
+          data-testid="customizer-add-to-cart-button"
+        >
+          {isAddingToCart ? 'Agregando…' : 'Agregar al carrito'}
+        </Button>
+      </div>
+    </div>
   )
 }
 
 export function ViewportControls() {
-  const { viewMode, setViewMode, viewAngle, setViewAngle } = useDesignerStore()
+  const { viewMode, setViewMode, viewAngle, setViewAngle } = useCustomizerStore()
 
   return (
     <>
-      {/* View mode toggle */}
-      <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="absolute top-20 left-1/2 z-20 -translate-x-1/2"
-      >
-        <div className="glass flex items-center gap-1 rounded-xl p-1">
-          <button
-            onClick={() => setViewMode('2D')}
-            className={cn(
-              "rounded-lg px-4 py-1.5 text-sm font-medium transition-all",
-              viewMode === '2D' 
-                ? "bg-secondary text-foreground" 
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            2D
-          </button>
-          <button
-            onClick={() => setViewMode('3D')}
-            className={cn(
-              "rounded-lg px-4 py-1.5 text-sm font-medium transition-all",
-              viewMode === '3D' 
-                ? "bg-secondary text-foreground" 
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            3D
-          </button>
-          <button className="rounded-lg px-2 py-1.5 text-muted-foreground hover:text-foreground">
-            <Scan className="size-4" />
-          </button>
-        </div>
-      </motion.div>
-
-      {/* Bottom viewport controls */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="absolute bottom-24 left-1/2 z-20 -translate-x-1/2"
-      >
-        <div className="glass flex items-center gap-2 rounded-xl px-4 py-2">
-          <button className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-all hover:bg-secondary/50 hover:text-foreground">
-            <RotateCcw className="size-4" />
-            Rotar
-          </button>
-          <button className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-all hover:bg-secondary/50 hover:text-foreground">
-            <ZoomIn className="size-4" />
-            Acercar
-          </button>
-          <button className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-all hover:bg-secondary/50 hover:text-foreground">
-            <ZoomOut className="size-4" />
-            Alejar
-          </button>
-          <button className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-all hover:bg-secondary/50 hover:text-foreground">
-            <Maximize className="size-4" />
-            Panoramica
-          </button>
-          <button className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-all hover:bg-secondary/50 hover:text-foreground">
-            <RefreshCw className="size-4" />
-            Reset
-          </button>
-        </div>
-      </motion.div>
-
-      {/* View angle toggle */}
-      <motion.div
-        initial={{ x: 20, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="absolute bottom-24 right-24 z-20"
-      >
+      <div className="customizer-glass absolute left-1/2 top-20 z-20 flex -translate-x-1/2 items-center gap-1 rounded-xl p-1">
         <button
-          onClick={() => setViewAngle(viewAngle === 'front' ? 'back' : 'front')}
-          className="glass flex flex-col items-center gap-1 rounded-xl p-3 transition-all hover:bg-secondary/50"
+          type="button"
+          onClick={() => setViewMode('2D')}
+          className={cn(
+            'rounded-md px-3 py-1 text-xs font-medium transition',
+            viewMode === '2D' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground',
+          )}
         >
-          <div className="flex size-12 items-center justify-center rounded-lg bg-secondary/50">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="text-foreground">
-              <rect x="8" y="4" width="16" height="24" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none" />
-              <rect x="4" y="8" width="6" height="8" rx="1" stroke="currentColor" strokeWidth="1.5" fill="none" />
-              <rect x="22" y="8" width="6" height="8" rx="1" stroke="currentColor" strokeWidth="1.5" fill="none" />
-            </svg>
-          </div>
-          <span className="text-xs text-muted-foreground">
-            Vista {viewAngle === 'front' ? 'trasera' : 'frontal'}
-          </span>
+          2D
         </button>
-      </motion.div>
+        <button
+          type="button"
+          onClick={() => setViewMode('3D')}
+          className={cn(
+            'rounded-md px-3 py-1 text-xs font-medium transition',
+            viewMode === '3D' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground',
+          )}
+        >
+          3D
+        </button>
+      </div>
+
+      <div className="customizer-glass absolute bottom-28 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-xl p-1">
+        <button
+          type="button"
+          onClick={() => setViewAngle('front')}
+          data-testid="customizer-front-back-toggle"
+          className={cn(
+            'rounded-md px-3 py-1 text-xs font-medium transition',
+            viewAngle === 'front' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground',
+          )}
+        >
+          Frente
+        </button>
+        <button
+          type="button"
+          onClick={() => setViewAngle('back')}
+          className={cn(
+            'rounded-md px-3 py-1 text-xs font-medium transition',
+            viewAngle === 'back' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground',
+          )}
+        >
+          Espalda
+        </button>
+        <button
+          type="button"
+          title="Reiniciar vista"
+          onClick={() => setViewAngle('front')}
+          className="rounded-md p-1.5 text-muted-foreground hover:text-foreground"
+        >
+          <RotateCcw className="size-4" />
+        </button>
+      </div>
+
+      {viewMode === '3D' ? (
+        <div className="absolute bottom-[5.5rem] left-1/2 z-10 hidden -translate-x-1/2 text-[11px] text-muted-foreground md:block">
+          Arrastra para rotar · usa scroll para acercar
+        </div>
+      ) : (
+        <div className="absolute bottom-[5.5rem] left-1/2 z-10 -translate-x-1/2 text-[11px] text-muted-foreground">
+          Vista 2D detallada disponible próximamente
+        </div>
+      )}
     </>
   )
 }
 
-export function BottomActionBar() {
-  const { size } = useDesignerStore()
+interface BottomActionBarProps {
+  onAddToCart?: () => void
+  isAddingToCart?: boolean
+}
+
+export function BottomActionBar({ onAddToCart, isAddingToCart = false }: BottomActionBarProps) {
+  const { size, product, quantity, setQuantity } = useCustomizerStore()
+  const unitPriceCents = product?.basePriceCents ?? 0
 
   return (
-    <motion.div
-      initial={{ y: 20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.4 }}
-      className="absolute bottom-0 left-0 right-0 z-20"
-    >
-      <div className="glass mx-auto flex max-w-2xl items-center justify-between rounded-t-2xl px-6 py-4">
-        <div className="flex items-center gap-4">
-          <div>
-            <div className="text-xs text-muted-foreground">Producto</div>
-            <div className="text-sm font-semibold">Filipina Clasica</div>
-          </div>
-          <div className="h-8 w-px bg-border/50" />
-          <div>
-            <div className="text-xs text-muted-foreground">Talla</div>
-            <div className="text-sm font-semibold">{size}</div>
+    <div className="absolute bottom-0 left-0 right-0 z-20">
+      <div className="customizer-glass mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 rounded-t-2xl px-4 py-3">
+        <div className="min-w-0">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Producto</div>
+          <div className="truncate text-sm font-semibold text-foreground">
+            {product?.name ?? 'Producto'}
           </div>
         </div>
-
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <div className="text-xs text-muted-foreground">Precio</div>
-            <div className="text-lg font-bold text-primary">$89.00 USD</div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <div className="flex items-center rounded-lg border border-border/50 bg-secondary/30">
-              <button className="px-3 py-2 text-muted-foreground hover:text-foreground">-</button>
-              <span className="w-8 text-center text-sm font-medium">1</span>
-              <button className="px-3 py-2 text-muted-foreground hover:text-foreground">+</button>
-            </div>
-            
-            <Button size="lg" className="rounded-xl px-6 font-semibold">
-              Agregar al carrito
-            </Button>
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Talla</div>
+          <div className="text-sm font-semibold text-foreground">{size}</div>
+        </div>
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Precio</div>
+          <div className="text-sm font-semibold text-primary">
+            {product ? formatPriceMxn(unitPriceCents) : '—'}
           </div>
         </div>
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Cantidad</div>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              title="Disminuir"
+              onClick={() => setQuantity(quantity - 1)}
+              disabled={quantity <= 1}
+              className="flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground disabled:opacity-30"
+            >
+              <Minus className="size-3.5" />
+            </button>
+            <span className="w-6 text-center text-sm font-semibold">{quantity}</span>
+            <button
+              type="button"
+              title="Aumentar"
+              onClick={() => setQuantity(quantity + 1)}
+              className="flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground"
+            >
+              <Plus className="size-3.5" />
+            </button>
+          </div>
+        </div>
+        <Button onClick={onAddToCart} disabled={isAddingToCart}>
+          {isAddingToCart ? 'Agregando…' : 'Agregar al carrito'}
+        </Button>
       </div>
-    </motion.div>
+    </div>
   )
 }

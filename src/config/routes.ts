@@ -5,6 +5,7 @@ export const routes = {
   aprons: '/shop/aprons',
   pants: '/shop/pants',
   customize: '/customize',
+  customizeProduct: (slug: string) => `/customize/${slug}`,
   products: '/products',
   productDetail: (slug: string) => `/products/${slug}`,
   cart: '/cart',

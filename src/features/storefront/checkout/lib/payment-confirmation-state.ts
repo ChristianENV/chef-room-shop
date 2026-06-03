@@ -36,7 +36,11 @@ function isPaid(orderStatus: string, paymentStatus: string): boolean {
 }
 
 function isFailed(orderStatus: string, paymentStatus: string): boolean {
-  return paymentStatus === 'FAILED' || orderStatus === 'PAYMENT_FAILED'
+  return (
+    paymentStatus === 'FAILED' ||
+    paymentStatus === 'DECLINED' ||
+    orderStatus === 'PAYMENT_FAILED'
+  )
 }
 
 function isExpired(paymentStatus: string): boolean {
@@ -232,7 +236,7 @@ export function getPaymentConfirmationActions(
         showVerifyAgain: true,
         showWaitingNote: false,
         viewOrderPendingBadge: true,
-        shouldPoll: true,
+        shouldPoll: false,
       }
     default:
       return getPaymentConfirmationActions('confirming')

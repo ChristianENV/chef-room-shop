@@ -216,7 +216,9 @@ function CartPopoverContent({ cart }: { cart: CartPreview }) {
           <Link href={routes.checkout}>Finalizar compra</Link>
         </Button>
         <Button variant="outline" className="w-full font-sans" asChild>
-          <Link href={routes.cart}>Ver carrito</Link>
+          <Link href={routes.cart} data-testid="cart-link">
+            Ver carrito
+          </Link>
         </Button>
       </div>
 

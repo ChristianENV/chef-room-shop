@@ -5,7 +5,10 @@ export type AllowedImageContentType = 'image/jpeg' | 'image/png' | 'image/webp'
 export type StoredImageContentType = 'image/webp' | 'image/jpeg'
 
 /** Logical kind of an upload, used for size limits and key building. */
-export type UploadKind = 'avatar' | 'product'
+export type UploadKind = 'avatar' | 'product' | 'design' | 'designAsset'
+
+/** Front or back design preview captured from the customizer viewport. */
+export type DesignPreviewView = 'front' | 'back'
 
 /** Resolved R2 configuration (all values present and validated). */
 export type R2Config = {

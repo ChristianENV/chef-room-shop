@@ -76,7 +76,22 @@ The Prisma `Cart` model does **not** store cent columns. Totals are computed whe
 - `totalCents` = subtotal + customization + shipping − discount
 - `totalItems` = Σ `quantity`
 
-`customizationPriceCents` for a design is `max(0, design.configJson.finalPriceCents − basePrice)` when `finalPriceCents` is set.
+`customizationPriceCents` for a design is recalculated server-side from `design.configJson.elements` + reglas (`ProductCustomizationRule.option.priceCents`), with fallback a `finalPriceCents` si existe.
+
+## addCartItem con designId
+
+Cuando `designId` se envía en `addCartItem`:
+
+1. Se valida ownership por `userId` o `guestSessionId` (nunca por input cliente).
+2. Se valida que el diseño no esté eliminado y pertenezca al producto seleccionado.
+3. Se valida variante activa y con stock.
+4. Se guarda `configSnapshotJson` con:
+   - `productSnapshot`
+   - `customizationSnapshot`
+   - `designSnapshot` (`previewUrl`, `previewBackUrl`, `configJson`, `elements`, `selectedOptions`)
+   - `customizationPriceCents`
+5. Se actualiza `Design.status = IN_CART`.
+6. Se registra `DesignEventType.ADDED_TO_CART`.
 
 ## Security
 

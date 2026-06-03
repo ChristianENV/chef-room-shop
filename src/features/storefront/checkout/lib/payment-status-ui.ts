@@ -38,7 +38,11 @@ export function getPaymentStatusUi(input: {
     }
   }
 
-  if (paymentStatus === 'FAILED' || orderStatus === 'PAYMENT_FAILED') {
+  if (
+    paymentStatus === 'FAILED' ||
+    paymentStatus === 'DECLINED' ||
+    orderStatus === 'PAYMENT_FAILED'
+  ) {
     return {
       tone: 'error',
       title: 'Pago no completado',
