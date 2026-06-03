@@ -249,6 +249,9 @@ importers:
       '@types/react-dom':
         specifier: ^19
         version: 19.2.3(@types/react@19.2.14)
+      '@types/three':
+        specifier: ^0.184.1
+        version: 0.184.1
       dotenv:
         specifier: ^16.6.1
         version: 16.6.1
