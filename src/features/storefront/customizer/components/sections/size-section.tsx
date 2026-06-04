@@ -12,6 +12,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useCustomizerStore } from '../../store/customizer.store'
 import { FALLBACK_SIZES } from '../../lib/customizer-defaults'
+import { findColorByHex, findSizeByLabel } from '../../lib/resolve-customizer-variant'
 import type { Size } from '../../types/customizer.types'
 
 const SIZE_GUIDE: { size: string; chest: string; length: string }[] = [
@@ -26,13 +27,25 @@ const SIZE_GUIDE: { size: string; chest: string; length: string }[] = [
 export function SizeSection() {
   const { product, size, baseColor, setSize } = useCustomizerStore()
 
-  const bffSizes = product?.sizes ?? []
+  if (!product) {
+    return (
+      <div className="p-4 text-xs text-muted-foreground" data-testid="customizer-size-options">
+        Cargando tallas del producto…
+      </div>
+    )
+  }
+
+  const requiresVariant = product.variants.length > 0
+  const bffSizes = product.sizes
   const sizes: { id: string; name: Size }[] =
     bffSizes.length > 0
       ? bffSizes.map((item) => ({ id: item.id, name: item.name as Size }))
-      : FALLBACK_SIZES.map((name) => ({ id: name, name }))
+      : requiresVariant
+        ? []
+        : FALLBACK_SIZES.map((name) => ({ id: name, name }))
 
-  const selectedColorId = product?.colors.find((color) => color.hex === baseColor)?.id ?? null
+  const selectedColorId = findColorByHex(product.colors, baseColor)?.id ?? null
+  const selectedSizeRow = findSizeByLabel(product.sizes, size)
 
   const isOutOfStock = (sizeId: string): boolean => {
     if (!product || product.variants.length === 0) return false
@@ -93,7 +106,9 @@ export function SizeSection() {
       <div className="grid grid-cols-3 gap-2">
         {sizes.map((item) => {
           const disabled = isOutOfStock(item.id)
-          const selected = size === item.name
+          const selected = selectedSizeRow
+            ? selectedSizeRow.id === item.id
+            : size === item.name
           return (
             <button
               key={item.id}
@@ -114,6 +129,11 @@ export function SizeSection() {
           )
         })}
       </div>
+      {requiresVariant && bffSizes.length === 0 ? (
+        <p className="text-[11px] text-destructive/80">
+          Este producto no tiene tallas configuradas en catálogo.
+        </p>
+      ) : null}
     </div>
   )
 }

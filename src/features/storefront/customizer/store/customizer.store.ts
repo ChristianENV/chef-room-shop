@@ -1,6 +1,12 @@
 import { create } from 'zustand'
 import { STRUCTURAL_LAYERS } from '../lib/customizer-defaults'
 import { isEditableElement } from '../lib/customizer-utils'
+import {
+  computeDefaultCustomizerVariant,
+  findColorByHex,
+  findSizeByLabel,
+  resolveCustomizerVariant,
+} from '../lib/resolve-customizer-variant'
 import type { CustomizerProductData } from '../types/customizer-product.types'
 import type {
   ButtonStyle,
@@ -48,6 +54,7 @@ type CustomizerState = DesignSnapshot & {
   past: DesignSnapshot[]
   future: DesignSnapshot[]
   initFromProduct: (product: CustomizerProductData) => void
+  syncProductCatalog: (product: CustomizerProductData) => void
   setSelectedProduct: (product: CustomizerProductData) => void
   resetDesignForProduct: (product: CustomizerProductData) => void
   resetCustomizer: () => void
@@ -140,39 +147,35 @@ function snapshot(state: CustomizerState): DesignSnapshot {
   }
 }
 
-function computeFirstVariant(product: CustomizerProductData) {
-  return (
-    product.variants.find((variant) => variant.isActive && variant.stockQty > 0) ??
-    product.variants.find((variant) => variant.isActive) ??
-    product.variants[0] ??
-    null
-  )
-}
-
 function buildProductState(product: CustomizerProductData) {
-  const firstVariant = computeFirstVariant(product)
+  const firstVariant = computeDefaultCustomizerVariant(product)
   const firstColor =
     product.colors.find((color) => color.id === firstVariant?.colorId)?.hex ??
     product.colors[0]?.hex ??
     INITIAL_STATE.baseColor
   const firstSize =
-    product.sizes.find((size) => size.id === firstVariant?.sizeId)?.name ??
-    product.sizes[0]?.name ??
-    INITIAL_STATE.size
+    (product.sizes.find((size) => size.id === firstVariant?.sizeId)?.name ??
+      product.sizes[0]?.name ??
+      INITIAL_STATE.size) as Size
+
+  const resolved = resolveCustomizerVariant(product, {
+    baseColor: firstColor,
+    size: firstSize,
+  })
 
   return {
     product,
     selectedProductId: product.id,
     selectedProductSlug: product.slug,
     selectedGarmentType: product.productTypeSlug,
-    selectedVariantId: firstVariant?.id ?? null,
+    selectedVariantId: resolved?.id ?? firstVariant?.id ?? null,
     baseColor: firstColor,
     detailColor: INITIAL_STATE.detailColor,
     collarStyle: INITIAL_STATE.collarStyle,
     sleeveStyle: INITIAL_STATE.sleeveStyle,
     sleeveOption: null,
     buttonStyle: INITIAL_STATE.buttonStyle,
-    size: (firstSize as Size) ?? INITIAL_STATE.size,
+    size: firstSize,
     quantity: 1,
     layers: STRUCTURAL_LAYERS,
     selectedLayerId: null as string | null,
@@ -234,6 +237,28 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
     ...INITIAL_STATE,
 
     initFromProduct: (product) => set(() => buildProductState(product)),
+    syncProductCatalog: (product) =>
+      set((state) => {
+        if (state.product?.id !== product.id) {
+          return buildProductState(product)
+        }
+
+        const resolved = resolveCustomizerVariant(product, {
+          baseColor: state.baseColor,
+          size: state.size,
+        })
+
+        return {
+          product,
+          selectedVariantId: resolved?.id ?? state.selectedVariantId,
+          customizationRuleAvailability: Object.fromEntries(
+            product.customizationAvailability.map((item) => [
+              `${item.areaSlug}:${item.optionSlug}`,
+              item.enabled,
+            ]),
+          ),
+        }
+      }),
     setSelectedProduct: (product) => set(() => buildProductState(product)),
     resetDesignForProduct: (product) => set(() => buildProductState(product)),
     resetCustomizer: () => set(() => ({ ...INITIAL_STATE })),
@@ -243,27 +268,20 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
       commitHistory()
       set((state) => {
         if (!state.product) return { baseColor: color, isDirty: true }
-        const selectedColor = state.product.colors.find((item) => item.hex === color)
-        const matchingVariant =
-          state.product.variants.find(
-            (variant) =>
-              variant.colorId === selectedColor?.id &&
-              variant.sizeId ===
-                state.product?.sizes.find((size) => size.name === state.size)?.id &&
-              variant.isActive,
-          ) ??
-          state.product.variants.find(
-            (variant) => variant.colorId === selectedColor?.id && variant.isActive,
-          ) ??
-          null
+        const matchedColor = findColorByHex(state.product.colors, color)
+        const baseColor = matchedColor?.hex ?? color
+        const resolved = resolveCustomizerVariant(state.product, {
+          baseColor,
+          size: state.size,
+        })
         const nextSize =
-          state.product.sizes.find((size) => size.id === matchingVariant?.sizeId)?.name ??
-          state.size
+          (state.product.sizes.find((size) => size.id === resolved?.sizeId)?.name ??
+            state.size) as Size
 
         return {
-          baseColor: color,
-          selectedVariantId: matchingVariant?.id ?? state.selectedVariantId,
-          size: nextSize as Size,
+          baseColor,
+          selectedVariantId: resolved?.id ?? null,
+          size: nextSize,
           isDirty: true,
         }
       })
@@ -291,28 +309,17 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
     setSize: (size) => {
       commitHistory()
       set((state) => {
-        if (!state.product) return { size, isDirty: true }
-        const selectedColorId =
-          state.product.colors.find((color) => color.hex === state.baseColor)?.id ?? null
-        const nextVariant =
-          state.product.variants.find(
-            (variant) =>
-              variant.sizeId ===
-                state.product?.sizes.find((item) => item.name === size)?.id &&
-              variant.colorId === selectedColorId &&
-              variant.isActive,
-          ) ??
-          state.product.variants.find(
-            (variant) =>
-              variant.sizeId ===
-                state.product?.sizes.find((item) => item.name === size)?.id &&
-              variant.isActive,
-          ) ??
-          null
+        if (!state.product) return { size: size as Size, isDirty: true }
+        const matchedSize = findSizeByLabel(state.product.sizes, size)
+        const nextSize = (matchedSize?.name ?? size) as Size
+        const resolved = resolveCustomizerVariant(state.product, {
+          baseColor: state.baseColor,
+          size: nextSize,
+        })
 
         return {
-          size,
-          selectedVariantId: nextVariant?.id ?? state.selectedVariantId,
+          size: nextSize,
+          selectedVariantId: resolved?.id ?? null,
           isDirty: true,
         }
       })

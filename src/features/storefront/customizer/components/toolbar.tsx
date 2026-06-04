@@ -11,6 +11,7 @@ interface TopToolbarProps {
   onAddToCart?: () => void
   isSaving?: boolean
   isAddingToCart?: boolean
+  isAddToCartDisabled?: boolean
   saveStatusLabel?: string
 }
 
@@ -19,6 +20,7 @@ export function TopToolbar({
   onAddToCart,
   isSaving = false,
   isAddingToCart = false,
+  isAddToCartDisabled = false,
   saveStatusLabel,
 }: TopToolbarProps) {
   const { undo, redo, past, future, isDirty, saveStatus } = useCustomizerStore()
@@ -86,7 +88,7 @@ export function TopToolbar({
         <Button
           size="sm"
           onClick={onAddToCart}
-          disabled={isAddingToCart}
+          disabled={isAddingToCart || isAddToCartDisabled}
           className="hidden sm:inline-flex"
           data-testid="customizer-add-to-cart-button"
         >
@@ -173,9 +175,14 @@ export function ViewportControls() {
 interface BottomActionBarProps {
   onAddToCart?: () => void
   isAddingToCart?: boolean
+  isAddToCartDisabled?: boolean
 }
 
-export function BottomActionBar({ onAddToCart, isAddingToCart = false }: BottomActionBarProps) {
+export function BottomActionBar({
+  onAddToCart,
+  isAddingToCart = false,
+  isAddToCartDisabled = false,
+}: BottomActionBarProps) {
   const { size, product, quantity, setQuantity } = useCustomizerStore()
   const unitPriceCents = product?.basePriceCents ?? 0
 
@@ -221,7 +228,7 @@ export function BottomActionBar({ onAddToCart, isAddingToCart = false }: BottomA
             </button>
           </div>
         </div>
-        <Button onClick={onAddToCart} disabled={isAddingToCart}>
+        <Button onClick={onAddToCart} disabled={isAddingToCart || isAddToCartDisabled}>
           {isAddingToCart ? 'Agregando…' : 'Agregar al carrito'}
         </Button>
       </div>

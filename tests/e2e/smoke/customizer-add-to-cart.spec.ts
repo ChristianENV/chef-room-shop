@@ -34,11 +34,11 @@ test('customize -> add to cart smoke', async ({ page }) => {
   await ensureCustomizer3DReady(page)
 
   await page.getByTestId('customizer-add-to-cart-button').click()
-  await expect(page.getByText(/tu dise[ñn]o se agreg[oó] al carrito/i)).toBeVisible({
-    timeout: 60_000,
-  })
+  const successDialog = page.getByTestId('customizer-add-to-cart-success-dialog')
+  await expect(successDialog).toBeVisible({ timeout: 60_000 })
+  await expect(successDialog.getByRole('heading', { name: /tu diseño está en el carrito/i })).toBeVisible()
 
-  await page.getByRole('link', { name: /ver carrito/i }).click()
+  await page.getByTestId('customizer-go-to-cart-button').click()
   await expect(page).toHaveURL(/\/cart/)
 
   const cartItems = page.getByTestId('cart-item-card')
