@@ -56,8 +56,16 @@ export function inspectGltf(id: string, root: THREE.Object3D): void {
     })
   })
 
+  const uniqueMaterials = [
+    ...new Set(meshes.flatMap((entry) => entry.materials.map((m) => m.name))),
+  ]
+
   console.groupCollapsed(`[customizer-3d] inspect "${id}"`)
   console.log('scene children:', childNames)
+  console.log('unique materials:', uniqueMaterials)
+  console.log(
+    'suggested mapping — body: FABRIC/cloth/jacket | buttons: Button/default | detail: (none in this export)',
+  )
   console.table(
     meshes.flatMap((entry) =>
       entry.materials.map((material) => ({

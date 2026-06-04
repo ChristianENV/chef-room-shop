@@ -24,6 +24,10 @@ export type TintableMaterialGroups = {
   buttons: THREE.MeshStandardMaterial[]
 }
 
+/**
+ * Chef-jacket local glTF (see model-registry): body = `FABRIC 1_2333`,
+ * buttons = `Default Button_2335`; no separate trim material in v1 export.
+ */
 /** Case-insensitive substring match against a list of hints. */
 export function materialNameMatchesHints(name: string, hints: string[]): boolean {
   if (!name || hints.length === 0) return false

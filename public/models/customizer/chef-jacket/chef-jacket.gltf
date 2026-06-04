@@ -2693,7 +2693,7 @@
   "buffers": [
     {
       "byteLength": 2136232,
-      "uri": "MV2_Chef Jacket_gltf_thick.bin"
+      "uri": "chef-jacket.bin"
     }
   ],
   "extensionsUsed": [
@@ -2701,13 +2701,13 @@
   ],
   "images": [
     {
-      "uri": "MV2_Chef Jacket_gltf_thick_diffuse_1001.png"
+      "uri": "chef-jacket-diffuse.png"
     },
     {
-      "uri": "MV2_Chef Jacket_gltf_thick_normal_1001.png"
+      "uri": "chef-jacket-normal.png"
     },
     {
-      "uri": "MV2_Chef Jacket_gltf_thick_metallicroughness_1001.png"
+      "uri": "chef-jacket-metallicroughness.png"
     }
   ],
   "materials": [

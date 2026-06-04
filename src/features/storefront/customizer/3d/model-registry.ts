@@ -35,44 +35,61 @@ export type CustomizerModelDefinition = {
   }
 }
 
+const CHEF_JACKET_LOCAL_PATH = '/models/customizer/chef-jacket/chef-jacket.gltf'
+
 /**
- * Resolves the URL for the mock GLB, in priority order:
+ * CLO export uses ~cm coordinates (Y ≈ 91–167). Scale/position center the jacket
+ * in the viewport (~1.5 units tall) without changing the procedural camera.
+ */
+const CHEF_JACKET_TRANSFORM = {
+  scale: 0.02,
+  position: [0, -2.55, 0] as [number, number, number],
+  rotation: [0, 0, 0] as [number, number, number],
+}
+
+/**
+ * Material/mesh hints for MV2 Chef Jacket (chef-jacket.gltf).
+ * - body: FABRIC 1_2333 on Cloth_mesh
+ * - buttons: Default Button_2335 on Button_* meshes
+ * - detail: no separate trim material in this export
+ */
+const CHEF_JACKET_MATERIAL_HINTS: ModelNameHints = {
+  body: ['fabric', 'cloth', 'jacket', 'chef', 'thick', '2333'],
+  detail: ['collar', 'cuff', 'trim', 'placket', 'vivo', 'detail', 'piping'],
+  buttons: ['button', 'default button', '2335'],
+}
+
+const CHEF_JACKET_MESH_HINTS: ModelNameHints = {
+  body: ['cloth', 'fabric', 'jacket', 'chef'],
+}
+
+/**
+ * Resolves the URL for the local chef-jacket glTF mock, in priority order:
  *
  * 1. `NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL` — exact URL (R2/CDN/local override).
- * 2. `NEXT_PUBLIC_CUSTOMIZER_MODEL_BASE_URL` — base URL; appends the relative path.
- * 3. Default local `/public/` path (works in local dev; absent on Vercel → fallback).
+ * 2. `NEXT_PUBLIC_CUSTOMIZER_MODEL_BASE_URL` — base URL; appends chef-jacket path.
+ * 3. Default local `/public/` path.
  */
-function resolveMockGlbUrl(): string {
+function resolveChefJacketMockUrl(): string {
   const exact = process.env.NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL
   if (exact) return exact
 
   const base = process.env.NEXT_PUBLIC_CUSTOMIZER_MODEL_BASE_URL
-  if (base) return `${base.replace(/\/$/, '')}/mock-dress-combi/mock-dress-combi.glb`
+  if (base) return `${base.replace(/\/$/, '')}/chef-jacket/chef-jacket.gltf`
 
-  return '/models/customizer/mock-dress-combi/mock-dress-combi.glb'
+  return CHEF_JACKET_LOCAL_PATH
 }
 
 export const CUSTOMIZER_MODEL_REGISTRY: Record<string, CustomizerModelDefinition> = {
-  mockDressCombi: {
-    id: 'mock-dress-combi',
-    label: 'Mock técnico vestido',
-    modelUrl: resolveMockGlbUrl(),
-    productTypes: ['chef-jacket'],
+  chefJacketLocal: {
+    id: 'chef-jacket-local',
+    label: 'Filipina 3D (local)',
+    modelUrl: resolveChefJacketMockUrl(),
+    productTypes: ['chef-jacket', 'filipina'],
     isMock: true,
-    scale: 1,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-    // Detected via GLB inspection (see docs/customizer-3d-mock.md):
-    //  - material "Dress_Womens_Combi_short_1002" -> body
-    //  - material "Material__32"                  -> detail
-    materialHints: {
-      body: ['dress', 'body', 'garment', 'fabric', 'cloth'],
-      detail: ['material__32', 'material_', 'trim', 'detail', 'collar', 'cuff', 'placket'],
-      buttons: ['button', 'snap', 'zipper'],
-    },
-    meshHints: {
-      body: ['dress', 'body', 'garment'],
-    },
+    ...CHEF_JACKET_TRANSFORM,
+    materialHints: CHEF_JACKET_MATERIAL_HINTS,
+    meshHints: CHEF_JACKET_MESH_HINTS,
     anchors: {
       frontLeftChest: null,
       backCenter: null,
@@ -105,7 +122,7 @@ type ProductLike = Pick<CustomizerProductData, 'productTypeSlug'> & {
  * 1. `product.model3d.url` — real model from DB/R2.
  * 2. `NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL` / `NEXT_PUBLIC_CUSTOMIZER_MODEL_BASE_URL`
  *    if the mock pipeline is enabled.
- * 3. Local mock GLB (dev only, if mock enabled and no remote URL set).
+ * 3. Local chef-jacket glTF (dev only, if mock enabled and no remote URL set).
  * 4. Returns `null` → procedural fallback.
  */
 export function getCustomizerModelForProduct(
@@ -118,16 +135,18 @@ export function getCustomizerModelForProduct(
     const m3d = product.model3d
     const productType = product.productTypeSlug
 
-    // Parse hints stored in DB or fall back to registry hints for this product type.
     const registryMatch = Object.values(CUSTOMIZER_MODEL_REGISTRY).find((m) =>
       m.productTypes.includes(productType),
     )
-    const baseMaterialHints = registryMatch?.materialHints ?? {
-      body: ['body', 'fabric', 'cloth', 'garment'],
-      detail: ['detail', 'trim', 'collar', 'cuff'],
-      buttons: ['button', 'snap', 'zipper'],
-    }
-    const baseMeshHints = registryMatch?.meshHints ?? { body: ['body', 'garment'] }
+    const baseMaterialHints = registryMatch?.materialHints ?? CHEF_JACKET_MATERIAL_HINTS
+    const baseMeshHints = registryMatch?.meshHints ?? CHEF_JACKET_MESH_HINTS
+    const baseTransform = registryMatch
+      ? {
+          scale: registryMatch.scale,
+          position: registryMatch.position,
+          rotation: registryMatch.rotation,
+        }
+      : CHEF_JACKET_TRANSFORM
 
     return {
       id: m3d.id,
@@ -135,9 +154,7 @@ export function getCustomizerModelForProduct(
       modelUrl: m3d.url,
       productTypes: [productType],
       isMock: false,
-      scale: 1,
-      position: [0, 0, 0],
-      rotation: [0, 0, 0],
+      ...baseTransform,
       materialHints:
         m3d.materialHintsJson && typeof m3d.materialHintsJson === 'object'
           ? (m3d.materialHintsJson as typeof baseMaterialHints)

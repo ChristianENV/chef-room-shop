@@ -165,7 +165,7 @@ Prioridad de resolución (implementada en `model-registry.ts`):
 
 1. `NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL` (URL exacta)
 2. `NEXT_PUBLIC_CUSTOMIZER_MODEL_BASE_URL` + ruta relativa del registry
-3. `/models/customizer/mock-dress-combi/mock-dress-combi.glb` (local)
+3. `/models/customizer/chef-jacket/chef-jacket.gltf` (local)
 
 ---
 
@@ -247,7 +247,21 @@ El GLB optimizado para producción se aloja en R2. El repo solo contiene código
 
 ---
 
-## 9. Admin upload — flujo desde la interfaz
+## 9. Modelo local filipina (`chef-jacket`)
+
+Desarrollo usa el glTF en `public/models/customizer/chef-jacket/`:
+
+| Material | Mapeo |
+|----------|--------|
+| `FABRIC 1_2333` | body → `baseColor` |
+| `Default Button_2335` | buttons → `detailColor` |
+
+Mesh principal: `Cloth_mesh`. Decals usan zonas en `customizer-zones.ts` (aprox.).
+Detalle en [`docs/customizer-3d-mock.md`](./customizer-3d-mock.md).
+
+---
+
+## 10. Admin upload — flujo desde la interfaz
 
 El proceso descrito en las secciones anteriores también se puede ejecutar directamente
 desde Admin Products, sin scripts locales:
@@ -263,7 +277,7 @@ Ver checklist detallado de QA manual en `docs/admin-products-ui.md`.
 
 ---
 
-## 10. E2E smoke del upload admin
+## 11. E2E smoke del upload admin
 
 Spec: `tests/e2e/smoke/admin-product-model-upload.spec.ts`
 

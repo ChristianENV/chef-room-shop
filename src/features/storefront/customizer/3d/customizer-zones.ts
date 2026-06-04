@@ -18,37 +18,41 @@ export type ZoneDefinition = {
   targetMeshHints: string[]
 }
 
-/** Fallback zones calibrated for the mock-dress-combi model. */
+/**
+ * Fallback decal zones for the local chef-jacket glTF (CLO coordinates, ~cm).
+ * Calibrated from Cloth_mesh bounds (Y ≈ 91–162, front ≈ +Z).
+ * Pending: anchors from ProductModelAsset.anchorsJson for the final model.
+ */
 export const CUSTOMIZER_ZONES: Record<ZoneId, ZoneDefinition> = {
   'front-left-chest': {
-    position: new THREE.Vector3(-0.18, 0.55, 0.18),
+    position: new THREE.Vector3(-6, 142, 11),
     rotation: new THREE.Euler(0, 0, 0),
-    scale: new THREE.Vector3(0.28, 0.18, 0.3),
-    targetMeshHints: ['dress', 'body', '1001', '1002'],
+    scale: new THREE.Vector3(16, 12, 14),
+    targetMeshHints: ['cloth', 'fabric', 'jacket', 'chef'],
   },
   'front-right-chest': {
-    position: new THREE.Vector3(0.18, 0.55, 0.18),
+    position: new THREE.Vector3(14, 142, 11),
     rotation: new THREE.Euler(0, 0, 0),
-    scale: new THREE.Vector3(0.28, 0.18, 0.3),
-    targetMeshHints: ['dress', 'body', '1001', '1002'],
+    scale: new THREE.Vector3(16, 12, 14),
+    targetMeshHints: ['cloth', 'fabric', 'jacket', 'chef'],
   },
   'back-center': {
-    position: new THREE.Vector3(0, 0.35, -0.18),
+    position: new THREE.Vector3(7, 132, -1),
     rotation: new THREE.Euler(0, Math.PI, 0),
-    scale: new THREE.Vector3(0.5, 0.36, 0.3),
-    targetMeshHints: ['dress', 'body', '1001', '1002'],
+    scale: new THREE.Vector3(22, 16, 14),
+    targetMeshHints: ['cloth', 'fabric', 'jacket', 'chef'],
   },
   'left-sleeve': {
-    position: new THREE.Vector3(-0.38, 0.5, 0),
+    position: new THREE.Vector3(-18, 118, 3),
     rotation: new THREE.Euler(0, -Math.PI / 2, 0),
-    scale: new THREE.Vector3(0.22, 0.14, 0.25),
-    targetMeshHints: ['sleeve', 'arm', 'dress', 'body'],
+    scale: new THREE.Vector3(12, 10, 12),
+    targetMeshHints: ['cloth', 'sleeve', 'arm', 'jacket'],
   },
   'right-sleeve': {
-    position: new THREE.Vector3(0.38, 0.5, 0),
+    position: new THREE.Vector3(25, 118, 3),
     rotation: new THREE.Euler(0, Math.PI / 2, 0),
-    scale: new THREE.Vector3(0.22, 0.14, 0.25),
-    targetMeshHints: ['sleeve', 'arm', 'dress', 'body'],
+    scale: new THREE.Vector3(12, 10, 12),
+    targetMeshHints: ['cloth', 'sleeve', 'arm', 'jacket'],
   },
 }
 
