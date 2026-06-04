@@ -11,7 +11,7 @@ Slots definidos en `src/features/storefront/landing/lib/landing-media.ts`.
 | `categoryFilipinas` | Card categoría destacada | 4:5 | WebP 1200×1500 | Placeholder SVG |
 | `categoryMandiles` | Card categoría | 4:5 | WebP 800×1000 | Placeholder SVG |
 | `categoryPantalones` | Card categoría | 4:5 | WebP 800×1000 | Placeholder SVG |
-| `categoryAccesorios` | Card categoría | 4:5 | WebP 800×1000 | Placeholder SVG |
+| `categoryAccesorios` | *(no usado en landing)* | 4:5 | — | Reservado / opcional |
 | `customizer` | Bloque personalización | 16:10 | WebP 1400×875 o captura UI | Placeholder SVG |
 | `story` | Historia de marca | 4:5 | WebP 1200×1500 editorial | Placeholder SVG |
 | `finalCta` | Fondo CTA (opcional) | 21:9 | WebP ancho | Placeholder SVG |

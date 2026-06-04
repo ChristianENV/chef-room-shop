@@ -25,6 +25,7 @@ import {
 
 type CartPopoverProps = {
   triggerClassName?: string
+  triggerTestId?: string
 }
 
 function CartTriggerBadge({ count }: { count: number }) {
@@ -232,7 +233,7 @@ function CartPopoverContent({ cart }: { cart: CartPreview }) {
 /**
  * Desktop cart popover. Shares `myCart` query with navbar badge (see `useCartBadgeCount`).
  */
-export function CartPopover({ triggerClassName }: CartPopoverProps) {
+export function CartPopover({ triggerClassName, triggerTestId }: CartPopoverProps) {
   const [open, setOpen] = useState(false)
   const { data, isLoading, isError, refetch, isFetching } = useMyCartQuery()
   const badgeCount = data?.totalItems ?? 0
@@ -247,6 +248,7 @@ export function CartPopover({ triggerClassName }: CartPopoverProps) {
           size="icon"
           className={cn('relative h-9 w-9', triggerClassName)}
           aria-label={`Carrito (${badgeCount} productos)`}
+          data-testid={triggerTestId}
         >
           <ShoppingBag className="h-4 w-4" />
           <CartTriggerBadge count={badgeCount} />

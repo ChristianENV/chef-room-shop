@@ -17,53 +17,68 @@ export function isNavGroup(entry: NavEntry): entry is NavGroup {
   return 'children' in entry
 }
 
-/** Shop sub-links for Tienda dropdown, mobile menu, and footer */
-export const shopNavChildren: NavLink[] = [
-  { label: 'Ver todo', href: routes.shop },
+/** Shop categories for navbar dropdown and mobile accordion */
+export const shopDropdownChildren: NavLink[] = [
   { label: 'Filipinas', href: routes.chefJackets },
   { label: 'Mandiles', href: routes.aprons },
   { label: 'Pantalones', href: routes.pants },
 ]
 
-/** Primary storefront header navigation */
+/** Shop links for footer (includes catalog root) */
+export const shopNavChildren: NavLink[] = [
+  { label: 'Ver todo', href: routes.shop },
+  ...shopDropdownChildren,
+]
+
+/** Desktop header — logo is home; no "Inicio" link */
 export const publicNavItems: NavEntry[] = [
-  { label: 'Inicio', href: routes.home },
-  { label: 'Tienda', href: routes.shop, children: shopNavChildren },
-  { label: 'Diseña tu uniforme', href: routes.customize },
-  { label: 'Restaurantes', href: routes.restaurants },
-  { label: 'Guía de tallas', href: routes.sizeGuide },
+  { label: 'Tienda', href: routes.shop, children: shopDropdownChildren },
+  { label: 'Personalizar', href: routes.customize },
+  { label: 'Empresas', href: routes.restaurants },
+  { label: 'Tallas', href: routes.sizeGuide },
   { label: 'Contacto', href: routes.contact },
 ]
 
-/** Flattened links for mobile menu (includes shop children) */
-export const mobileNavLinks: NavLink[] = publicNavItems.flatMap((entry) => {
-  if (isNavGroup(entry)) {
-    return [
-      { label: entry.label, href: entry.href },
-      ...entry.children.filter((child) => child.href !== entry.href),
-    ]
-  }
-  return [entry]
-})
+export const mobileShopGroup: NavGroup = {
+  label: 'Tienda',
+  href: routes.shop,
+  children: shopDropdownChildren,
+}
+
+/** Mobile primary navigation (includes Inicio) */
+export const mobileNavMainLinks: NavLink[] = [
+  { label: 'Inicio', href: routes.home },
+  { label: 'Personalizar', href: routes.customize },
+  { label: 'Empresas', href: routes.restaurants },
+  { label: 'Tallas', href: routes.sizeGuide },
+  { label: 'Contacto', href: routes.contact },
+]
+
+/** @deprecated Use mobileNavMainLinks + mobileShopGroup — kept for any legacy imports */
+export const mobileNavLinks: NavLink[] = [
+  { label: 'Inicio', href: routes.home },
+  { label: 'Tienda', href: routes.shop },
+  ...shopDropdownChildren,
+  ...mobileNavMainLinks.filter((link) => link.href !== routes.home),
+]
 
 export const ctaNav = {
-  label: 'Diseña tu uniforme',
+  label: 'Diseñar ahora',
   href: routes.customize,
 } as const
 
 export const authNav = {
-  login: { label: 'Iniciar Sesión', href: routes.login },
-  register: { label: 'Registro', href: routes.register },
+  login: { label: 'Iniciar sesión', href: routes.login },
+  register: { label: 'Crear cuenta', href: routes.register },
 } as const
 
 export const accountNav = {
-  profile: { label: 'Mi Perfil', href: routes.account },
-  orders: { label: 'Mis Pedidos', href: `${routes.account}/orders` },
-  designs: { label: 'Diseños Guardados', href: `${routes.account}/designs` },
+  profile: { label: 'Mi perfil', href: routes.account },
+  orders: { label: 'Mis pedidos', href: `${routes.account}/orders` },
+  designs: { label: 'Diseños guardados', href: `${routes.account}/designs` },
   addresses: { label: 'Direcciones', href: `${routes.account}/addresses` },
 } as const
 
-/** Account links for mobile drawer and sidebars */
 export const accountNavLinks: NavLink[] = [
   accountNav.profile,
   accountNav.orders,
@@ -71,14 +86,13 @@ export const accountNavLinks: NavLink[] = [
   accountNav.addresses,
 ]
 
-/** Footer product column — reuses shop categories */
 export const footerProductLinks: NavLink[] = [
   ...shopNavChildren.filter((link) => link.href !== routes.shop),
   { label: 'Personalización', href: routes.customize },
 ]
 
 export const footerCompanyLinks: NavLink[] = [
-  { label: 'Restaurantes', href: routes.restaurants },
+  { label: 'Empresas', href: routes.restaurants },
   { label: 'Contacto', href: routes.contact },
-  { label: 'Guía de tallas', href: routes.sizeGuide },
+  { label: 'Tallas', href: routes.sizeGuide },
 ]
