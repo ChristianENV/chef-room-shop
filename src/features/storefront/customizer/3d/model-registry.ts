@@ -35,11 +35,28 @@ export type CustomizerModelDefinition = {
   }
 }
 
+/**
+ * Resolves the URL for the mock GLB, in priority order:
+ *
+ * 1. `NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL` — exact URL (R2/CDN/local override).
+ * 2. `NEXT_PUBLIC_CUSTOMIZER_MODEL_BASE_URL` — base URL; appends the relative path.
+ * 3. Default local `/public/` path (works in local dev; absent on Vercel → fallback).
+ */
+function resolveMockGlbUrl(): string {
+  const exact = process.env.NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL
+  if (exact) return exact
+
+  const base = process.env.NEXT_PUBLIC_CUSTOMIZER_MODEL_BASE_URL
+  if (base) return `${base.replace(/\/$/, '')}/mock-dress-combi/mock-dress-combi.glb`
+
+  return '/models/customizer/mock-dress-combi/mock-dress-combi.glb'
+}
+
 export const CUSTOMIZER_MODEL_REGISTRY: Record<string, CustomizerModelDefinition> = {
   mockDressCombi: {
     id: 'mock-dress-combi',
     label: 'Mock técnico vestido',
-    modelUrl: '/models/customizer/mock-dress-combi/mock-dress-combi.glb',
+    modelUrl: resolveMockGlbUrl(),
     productTypes: ['chef-jacket'],
     isMock: true,
     scale: 1,

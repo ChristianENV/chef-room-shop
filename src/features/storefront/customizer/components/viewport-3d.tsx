@@ -2,7 +2,7 @@
 
 import { forwardRef, useImperativeHandle, useMemo, useRef, useState, type RefObject } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { ContactShadows, Environment, Float, OrbitControls, RoundedBox } from '@react-three/drei'
+import { ContactShadows, Environment, Float, Html, OrbitControls, RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
 import { useCustomizerStore } from '../store/customizer.store'
 import { getCustomizerModelForProduct } from '../3d/model-registry'
@@ -12,6 +12,18 @@ import {
   type ViewportCaptureHandle,
 } from './viewport-capture-bridge'
 import { ViewportElementOverlay } from './viewport-element-overlay'
+
+/** Shown inside the <Canvas> while the GLB is downloading. */
+function GlbLoadingFallback() {
+  return (
+    <Html center>
+      <div className="flex flex-col items-center gap-2 text-center">
+        <span className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+        <p className="text-xs text-white/60">Cargando modelo 3D…</p>
+      </div>
+    </Html>
+  )
+}
 
 function JacketModel() {
   const ref = useRef<THREE.Group>(null)
@@ -104,7 +116,8 @@ function GarmentScene({ onGlbActive }: GarmentSceneProps) {
       detailColor={detailColor}
       sleeveStyle={sleeveStyle}
       layers={layers}
-      fallback={<JacketModel />}
+      suspenseFallback={<GlbLoadingFallback />}
+      errorFallback={<JacketModel />}
       onModelReady={() => onGlbActive(true)}
       onModelError={() => onGlbActive(false)}
     />

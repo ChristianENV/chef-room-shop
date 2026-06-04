@@ -45,8 +45,8 @@ Implicaciones:
 - **Producción (Vercel):** el GLB no existe → el customizador usa el **modelo
   procedural de fallback** automáticamente (sin romper nada).
 
-Para el modelo final se definirá una estrategia de hosting (R2/CDN o GLB optimizado
-y comprimido con Draco/meshopt < límite aceptable) en otro PR.
+Para el modelo final, consulta el pipeline completo en
+[`docs/customizer-3d-model-pipeline.md`](./customizer-3d-model-pipeline.md).
 
 ## Cómo convertir `.max` -> `.glb`
 
@@ -65,11 +65,17 @@ Requiere 3ds Max:
 
 ## Cómo activar el mock
 
-Variables (editar en `.env.local` — no existe `.env.example`, todas las variables del proyecto viven en `.env.local`):
+Variables (editar en `.env.local` — no existe `.env.example`):
 
-```
+```bash
 # Forzar GLB para chef-jacket
 NEXT_PUBLIC_CUSTOMIZER_USE_MOCK_GLB=true
+
+# URL remota (R2/CDN). Si está definida, useGLTF la usa en vez de la ruta local.
+NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL=https://pub-xxxx.r2.dev/models/mock-dress-combi.glb
+
+# Alternativa: base URL para todos los modelos
+NEXT_PUBLIC_CUSTOMIZER_MODEL_BASE_URL=https://pub-xxxx.r2.dev/customizer-models
 ```
 
 Reglas de `getCustomizerModelForProduct`:
@@ -77,6 +83,11 @@ Reglas de `getCustomizerModelForProduct`:
 - `NEXT_PUBLIC_CUSTOMIZER_USE_MOCK_GLB=true` → siempre intenta el GLB.
 - `=false` → nunca (siempre fallback procedural).
 - sin definir → solo en `NODE_ENV=development`.
+
+Resolución de URL en `model-registry.ts` (prioridad):
+1. `NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL` (URL exacta).
+2. `NEXT_PUBLIC_CUSTOMIZER_MODEL_BASE_URL` + ruta relativa.
+3. `/models/customizer/mock-dress-combi/mock-dress-combi.glb` (ruta local `/public/`).
 
 El registry mapea `productTypes: ["chef-jacket"]`, así que el mock aplica a filipinas.
 

@@ -175,18 +175,31 @@ class GarmentModelErrorBoundary extends Component<
 }
 
 export type GarmentModelLoaderProps = GarmentModelProps & {
-  /** Procedural model rendered while loading or if the GLB fails. */
-  fallback: ReactNode
+  /**
+   * Shown inside the <Canvas> while the GLB is downloading (Suspense fallback).
+   * Use a lightweight R3F-compatible element (e.g. an <Html> spinner).
+   */
+  suspenseFallback?: ReactNode
+  /**
+   * Rendered when the GLB fails to load or parse (error boundary fallback).
+   * Should be the procedural model so the viewport never breaks.
+   */
+  errorFallback: ReactNode
 }
 
 /**
- * Renders the GLB garment with Suspense + error boundary. Falls back to the
- * procedural model on load/parse errors so the viewport never breaks.
+ * Renders the GLB garment with Suspense + error boundary.
+ * - While downloading: shows `suspenseFallback` (spinner).
+ * - On load/parse error: shows `errorFallback` (procedural model).
  */
-export function GarmentModelLoader({ fallback, ...props }: GarmentModelLoaderProps) {
+export function GarmentModelLoader({
+  suspenseFallback,
+  errorFallback,
+  ...props
+}: GarmentModelLoaderProps) {
   return (
-    <GarmentModelErrorBoundary fallback={fallback} onError={props.onModelError}>
-      <Suspense fallback={fallback}>
+    <GarmentModelErrorBoundary fallback={errorFallback} onError={props.onModelError}>
+      <Suspense fallback={suspenseFallback ?? errorFallback}>
         <GarmentModelInner {...props} />
       </Suspense>
     </GarmentModelErrorBoundary>
