@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { useCustomizerStore } from '../../store/customizer.store'
 import { FALLBACK_COLORS } from '../../lib/customizer-defaults'
 import type { NamedColor } from '../../lib/customizer-defaults'
+import { normalizeHex } from '../../lib/resolve-customizer-variant'
 
 /** True for very light swatches that need a dark check/border for contrast. */
 function isLightColor(hex: string): boolean {
@@ -59,13 +60,23 @@ function ColorSwatch({
 export function ColorSection() {
   const { product, baseColor, detailColor, setBaseColor, setDetailColor } = useCustomizerStore()
 
-  const fromBff = (product?.colors ?? []).map((color) => ({
+  if (!product) {
+    return (
+      <div className="p-4 text-xs text-muted-foreground" data-testid="customizer-base-colors">
+        Cargando colores del producto…
+      </div>
+    )
+  }
+
+  const requiresVariant = product.variants.length > 0
+  const fromBff = product.colors.map((color) => ({
     id: color.id,
     name: color.name,
     hex: color.hex,
   }))
-  const colors: NamedColor[] = fromBff.length > 0 ? fromBff : FALLBACK_COLORS
-  const usingFallback = fromBff.length === 0
+  const colors: NamedColor[] =
+    fromBff.length > 0 ? fromBff : requiresVariant ? [] : FALLBACK_COLORS
+  const usingFallback = fromBff.length === 0 && !requiresVariant
 
   return (
     <div className="space-y-6 p-4">
@@ -79,7 +90,7 @@ export function ColorSection() {
             <ColorSwatch
               key={`base-${color.id}`}
               color={color}
-              selected={baseColor.toLowerCase() === color.hex.toLowerCase()}
+              selected={normalizeHex(baseColor) === normalizeHex(color.hex)}
               onSelect={() => setBaseColor(color.hex)}
             />
           ))}
@@ -96,7 +107,7 @@ export function ColorSection() {
             <ColorSwatch
               key={`detail-${color.id}`}
               color={color}
-              selected={detailColor.toLowerCase() === color.hex.toLowerCase()}
+              selected={normalizeHex(detailColor) === normalizeHex(color.hex)}
               onSelect={() => setDetailColor(color.hex)}
             />
           ))}
@@ -105,7 +116,13 @@ export function ColorSection() {
 
       {usingFallback ? (
         <p className="text-[11px] text-muted-foreground/70">
-          Mostrando colores sugeridos. Esta prenda aún no tiene variantes de color en catálogo.
+          Mostrando colores sugeridos. Esta prenda no requiere variante de color en catálogo.
+        </p>
+      ) : null}
+      {requiresVariant && fromBff.length === 0 ? (
+        <p className="text-[11px] text-destructive/80">
+          Este producto no tiene colores configurados en catálogo. Contacta a ventas para
+          completar el catálogo.
         </p>
       ) : null}
     </div>

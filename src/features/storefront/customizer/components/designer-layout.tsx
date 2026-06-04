@@ -32,6 +32,7 @@ interface DesignerLayoutProps {
   onAddToCart?: () => void
   isSaving?: boolean
   isAddingToCart?: boolean
+  isAddToCartDisabled?: boolean
   saveStatusLabel?: string
   viewportCaptureRef?: RefObject<ViewportCaptureHandle | null>
   productOptions?: CatalogProduct[]
@@ -45,6 +46,7 @@ export function DesignerLayout({
   onAddToCart,
   isSaving,
   isAddingToCart,
+  isAddToCartDisabled = false,
   saveStatusLabel,
   viewportCaptureRef,
   productOptions = [],
@@ -76,6 +78,7 @@ export function DesignerLayout({
           onAddToCart={onAddToCart}
           isSaving={isSaving}
           isAddingToCart={isAddingToCart}
+          isAddToCartDisabled={isAddToCartDisabled}
           saveStatusLabel={saveStatusLabel}
         />
 
@@ -123,7 +126,11 @@ export function DesignerLayout({
           </Sheet>
         </div>
 
-        <BottomActionBar onAddToCart={onAddToCart} isAddingToCart={isAddingToCart} />
+        <BottomActionBar
+          onAddToCart={onAddToCart}
+          isAddingToCart={isAddingToCart}
+          isAddToCartDisabled={isAddToCartDisabled}
+        />
       </div>
 
       {/* Right panel — large screens */}

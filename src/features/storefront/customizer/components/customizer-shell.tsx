@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { routes } from '@/src/config/routes'
 import type { CatalogProduct } from '@/src/features/storefront/catalog/types'
@@ -16,6 +16,10 @@ import { ensureDesignPreviews } from '../lib/ensure-design-previews'
 import { readPreviewsFromConfig } from '../lib/design-preview-config'
 import { uploadDesignPreviewBlobs } from '../lib/upload-design-previews'
 import { buildDesignConfigJson } from '../lib/build-design-config'
+import {
+  CUSTOMIZER_CART_VARIANT_MESSAGES,
+  validateCustomizerCartVariant,
+} from '../lib/resolve-customizer-variant'
 import { uploadDesignLogo } from '../lib/upload-design-logo'
 import { DesignerLayout } from './designer-layout'
 import type { ViewportCaptureHandle } from './viewport-3d'
@@ -62,6 +66,7 @@ export function CustomizerShell({
 }: CustomizerShellProps) {
   const {
     initFromProduct,
+    syncProductCatalog,
     setDesignId,
     setSaveStatus,
     setLastSavedAt,
@@ -70,6 +75,7 @@ export function CustomizerShell({
     isDirty,
     saveStatus,
     selectedVariantId,
+    setSelectedVariant,
     baseColor,
     detailColor,
     collarStyle,
@@ -83,6 +89,13 @@ export function CustomizerShell({
     layers,
     addLogoElement,
   } = useCustomizerStore()
+
+  const storeProduct = useCustomizerStore((state) => state.product)
+
+  const catalogProduct = useMemo(() => {
+    if (storeProduct?.id === product.id) return storeProduct
+    return product
+  }, [storeProduct, product])
 
   const createDraft = useCreateDesignDraftMutation()
   const updateDesign = useUpdateDesignMutation()
@@ -99,17 +112,23 @@ export function CustomizerShell({
   const [lastPreviewSuccess, setLastPreviewSuccess] = useState(false)
   const [logoUploadError, setLogoUploadError] = useState<string | null>(null)
 
-  const selectedVariant = useMemo(
-    () =>
-      selectedVariantId
-        ? product.variants.find((variant) => variant.id === selectedVariantId) ?? null
-        : null,
-    [product.variants, selectedVariantId],
+  const cartVariantValidation = useMemo(
+    () => validateCustomizerCartVariant(catalogProduct, { baseColor, size }),
+    [catalogProduct, baseColor, size],
   )
 
-  useEffect(() => {
+  const canAddToCart = cartVariantValidation.status === 'ok'
+
+  // Initialize store before paint so color/size panels never use fallback on first frame.
+  useLayoutEffect(() => {
     initFromProduct(product)
-  }, [product, initFromProduct])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset only when switching products
+  }, [product.id, product.slug, initFromProduct])
+
+  // Keep catalog variants/colors/sizes in sync when BFF data refreshes (rules, stock).
+  useEffect(() => {
+    syncProductCatalog(product)
+  }, [product, syncProductCatalog])
 
   const configJson = useMemo(
     () =>
@@ -290,13 +309,20 @@ export function CustomizerShell({
     setCartActionError(null)
     setAddedToCart(false)
 
-    if (!selectedVariantId || !selectedVariant) {
-      setCartActionError('Selecciona talla y color para continuar.')
+    const validation = validateCustomizerCartVariant(catalogProduct, {
+      baseColor,
+      size,
+    })
+
+    if (validation.status === 'error') {
+      setCartActionError(CUSTOMIZER_CART_VARIANT_MESSAGES[validation.reason])
       return
     }
-    if (!selectedVariant.isActive || selectedVariant.stockQty <= 0) {
-      setCartActionError('La variante seleccionada no tiene stock disponible.')
-      return
+
+    const resolvedVariant = validation.variant
+
+    if (resolvedVariant && resolvedVariant.id !== selectedVariantId) {
+      setSelectedVariant(resolvedVariant.id)
     }
 
     let ensuredDesignId = designId
@@ -334,7 +360,7 @@ export function CustomizerShell({
     try {
       await addToCart.mutateAsync({
         productId: product.id,
-        productVariantId: selectedVariantId,
+        productVariantId: resolvedVariant?.id ?? null,
         designId: ensuredDesignId,
         quantity,
       })
@@ -345,6 +371,7 @@ export function CustomizerShell({
     }
   }, [
     product,
+    catalogProduct,
     designId,
     isDirty,
     runSaveConfig,
@@ -352,7 +379,9 @@ export function CustomizerShell({
     viewMode,
     addToCart,
     selectedVariantId,
-    selectedVariant,
+    setSelectedVariant,
+    baseColor,
+    size,
     quantity,
   ])
 
@@ -484,6 +513,7 @@ export function CustomizerShell({
           }}
           isSaving={isSaving}
           isAddingToCart={addToCart.isPending}
+          isAddToCartDisabled={!canAddToCart}
           saveStatusLabel={saveStatusLabel}
           viewportCaptureRef={viewportCaptureRef}
           productOptions={productOptions}
