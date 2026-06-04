@@ -2,26 +2,31 @@
 
 Slots definidos en `src/features/storefront/landing/lib/landing-media.ts`.
 
-## Checklist de assets definitivos
+## Assets en producción (`public/images/landing/`)
 
-| Slot | Uso | Relación | Formato sugerido | Estado |
-|------|-----|----------|------------------|--------|
-| `hero` | Hero principal | 3:4 o 4:5 | WebP 1600×2000 | Placeholder SVG |
-| `heroPoster` | Video hero (opcional) | 16:9 | MP4 + poster WebP | Pendiente |
-| `categoryFilipinas` | Card categoría destacada | 4:5 | WebP 1200×1500 | Placeholder SVG |
-| `categoryMandiles` | Card categoría | 4:5 | WebP 800×1000 | Placeholder SVG |
-| `categoryPantalones` | Card categoría | 4:5 | WebP 800×1000 | Placeholder SVG |
-| `categoryAccesorios` | *(no usado en landing)* | 4:5 | — | Reservado / opcional |
-| `customizer` | Bloque personalización | 16:10 | WebP 1400×875 o captura UI | Placeholder SVG |
-| `story` | Historia de marca | 4:5 | WebP 1200×1500 editorial | Placeholder SVG |
-| `finalCta` | Fondo CTA (opcional) | 21:9 | WebP ancho | Placeholder SVG |
+| Archivo | Sección | Alt |
+|---------|---------|-----|
+| `landing-hero-customizer.png` | Hero (visual principal) | Configurador premium de uniforme Chef Room |
+| `customizer-ss.png` | Bloque “Diseña tu uniforme” | Captura real del personalizador de uniformes Chef Room |
+| `avatars/chef-avatar-01.png` … `05.png` | Hero — stack “+500 chefs” | Chef profesional usando uniforme Chef Room |
+| `landing-category-filipina.png` | Categoría Filipinas | Filipina blanca premium Chef Room |
+| `landing-category-mandil.png` | Categoría Mandiles | Mandil azul premium Chef Room |
+| `landing-category-pantalon.png` | Categoría Pantalones | Pantalón profesional para chef Chef Room |
+| `landing-brand-story-atelier.png` | Historia de marca | Taller de diseño y confección Chef Room |
+
+## Slots opcionales / pendientes
+
+| Slot | Uso | Estado |
+|------|-----|--------|
+| `heroPoster` | Video hero (opcional) | Pendiente |
+| `categoryAccesorios` | *(no usado en landing)* | SVG reservado |
+| `finalCta` | Fondo CTA (opcional) | SVG placeholder |
 
 ## Cómo reemplazar
 
-1. Exportar imágenes optimizadas a `public/images/landing/`.
-2. Actualizar `src` en `LANDING_MEDIA` (misma ruta o nuevo nombre).
-3. Verificar `alt` en español para accesibilidad.
-4. Ejecutar `pnpm exec next build` y revisar LCP en hero.
+1. Exportar imágenes optimizadas a `public/images/landing/` (kebab-case, sin espacios).
+2. Actualizar `src` y `alt` en `LANDING_MEDIA` / `LANDING_CATEGORIES`.
+3. Ejecutar `pnpm exec next build` y revisar LCP en hero (`priority` solo en hero).
 
 ## Productos destacados
 

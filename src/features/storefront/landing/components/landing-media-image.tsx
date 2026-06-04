@@ -13,6 +13,8 @@ type LandingMediaImageProps = {
   priority?: boolean
   sizes?: string
   overlay?: 'none' | 'soft' | 'dramatic'
+  fit?: 'cover' | 'contain'
+  frameClassName?: string
 }
 
 export function LandingMediaImage({
@@ -22,6 +24,8 @@ export function LandingMediaImage({
   priority = false,
   sizes = '(max-width: 768px) 100vw, 50vw',
   overlay = 'soft',
+  fit = 'cover',
+  frameClassName,
 }: LandingMediaImageProps) {
   const [failed, setFailed] = useState(false)
   const hasSrc = Boolean(asset.src?.trim()) && !failed
@@ -31,6 +35,7 @@ export function LandingMediaImage({
       className={cn(
         'relative overflow-hidden bg-secondary',
         asset.aspectClass,
+        frameClassName,
         className,
       )}
       data-landing-slot={asset.slot}
@@ -42,7 +47,10 @@ export function LandingMediaImage({
           fill
           priority={priority}
           sizes={sizes}
-          className={cn('object-cover', imageClassName)}
+          className={cn(
+            fit === 'contain' ? 'object-contain object-center' : 'object-cover object-center',
+            imageClassName,
+          )}
           onError={() => setFailed(true)}
         />
       ) : (

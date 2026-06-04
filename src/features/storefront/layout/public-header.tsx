@@ -312,6 +312,10 @@ export function PublicHeader({
 
           <div className="hidden items-center gap-1 lg:flex">
             <div className="mr-1 flex items-center gap-0.5 border-r border-white/10 pr-2">
+              <ThemeToggle
+                className={ICON_BTN}
+                data-testid="storefront-theme-toggle"
+              />
               <AccountMenu
                 isLoggedIn={isLoggedIn}
                 isAdmin={isAdmin}
@@ -335,6 +339,11 @@ export function PublicHeader({
           </div>
 
           <div className="flex items-center gap-0.5 lg:hidden">
+            <ThemeToggle
+              className={ICON_BTN}
+              data-testid="storefront-theme-toggle"
+            />
+
             <Button variant="ghost" size="icon" className={cn('relative', ICON_BTN)} asChild>
               <Link href={routes.cart} data-testid="storefront-cart-link">
                 <ShoppingBag className="size-4" />

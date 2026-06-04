@@ -35,12 +35,18 @@ export function CustomizerTeaser({ className }: CustomizerTeaserProps) {
         <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-20">
           <LandingReveal className="order-2 lg:order-1">
             <div className="relative">
-              <div className="overflow-hidden rounded-2xl border border-border/70 shadow-2xl shadow-primary/10 ring-1 ring-border/50">
+              <div className="overflow-hidden rounded-2xl border border-primary/20 bg-[#121421] p-2 shadow-2xl shadow-primary/20 ring-1 ring-primary/15 sm:p-3">
+                <div
+                  className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(90,111,221,0.18)_0%,transparent_65%)]"
+                  aria-hidden
+                />
                 <LandingMediaImage
                   asset={LANDING_MEDIA.customizer}
+                  fit="contain"
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   overlay="none"
-                  className="!aspect-[16/10] min-h-[240px]"
+                  frameClassName="rounded-xl bg-[#0f1118]"
+                  className="relative z-10 min-h-[220px] sm:min-h-[280px] md:min-h-[320px] lg:min-h-[360px] !aspect-auto"
                 />
               </div>
               <div className="absolute -bottom-5 -right-4 hidden rounded-xl border border-border bg-card px-4 py-3 shadow-lg md:block">

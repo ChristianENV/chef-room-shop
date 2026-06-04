@@ -10,12 +10,14 @@ interface ThemeToggleProps {
   className?: string
   variant?: 'ghost' | 'outline'
   showLabel?: boolean
+  'data-testid'?: string
 }
 
 export function ThemeToggle({
   className,
   variant = 'ghost',
   showLabel = false,
+  'data-testid': testId,
 }: ThemeToggleProps) {
   const { resolvedTheme, setTheme } = useTheme()
   const mounted = useSyncExternalStore(
@@ -35,6 +37,7 @@ export function ThemeToggle({
         className={cn(showLabel ? 'w-full justify-start gap-2' : 'h-9 w-9', className)}
         disabled
         aria-label="Cambiar tema"
+        data-testid={testId}
       >
         <Sun className="h-4 w-4" />
         {showLabel && <span className="font-sans text-sm">Tema</span>}
@@ -53,6 +56,7 @@ export function ThemeToggle({
       )}
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       aria-label={label}
+      data-testid={testId}
     >
       {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
       {showLabel && <span className="font-sans text-sm">{isDark ? 'Modo claro' : 'Modo oscuro'}</span>}

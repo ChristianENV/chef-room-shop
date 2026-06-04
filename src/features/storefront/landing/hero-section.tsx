@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button'
 import { routes } from '@/src/config/routes'
 import { cn } from '@/lib/utils'
 
+import { ChefAvatarStack } from './components/chef-avatar-stack'
 import { LandingFloat, LandingReveal } from './components/landing-reveal'
 import { LandingMediaImage } from './components/landing-media-image'
-import { LANDING_MEDIA } from './lib/landing-media'
+import { LANDING_CHEF_AVATARS, LANDING_MEDIA } from './lib/landing-media'
 
 const floatingFeatures = [
   { icon: Palette, label: 'Colores', detail: 'Paleta premium' },
@@ -38,7 +39,7 @@ export function HeroSection() {
       />
 
       <div className="mx-auto max-w-7xl px-6 pb-16 pt-12 md:pb-24 md:pt-16 lg:px-8 lg:pb-28 lg:pt-20">
-        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16 xl:gap-20">
+        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(520px,1.1fr)] lg:gap-14 xl:gap-16">
           <LandingReveal className="relative z-10 max-w-xl lg:max-w-none">
             <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-card/80 px-4 py-1.5 shadow-sm backdrop-blur-sm">
               <Sparkles className="size-3.5 text-primary" aria-hidden />
@@ -80,16 +81,19 @@ export function HeroSection() {
               </Button>
             </div>
 
-            <div className="mt-14 flex flex-wrap items-center gap-6 border-t border-border/60 pt-10">
-              <div className="flex -space-x-2.5">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div
-                    key={i}
-                    className="size-10 rounded-full border-2 border-background bg-gradient-to-br from-primary/20 to-secondary ring-1 ring-border/50"
-                    aria-hidden
-                  />
-                ))}
-              </div>
+            <div className="mt-14 flex flex-wrap items-center gap-5 border-t border-border/60 pt-10 sm:gap-6">
+              <ChefAvatarStack
+                avatars={LANDING_CHEF_AVATARS}
+                size={36}
+                overlap={9}
+                className="sm:hidden"
+              />
+              <ChefAvatarStack
+                avatars={LANDING_CHEF_AVATARS}
+                size={44}
+                overlap={11}
+                className="hidden sm:block"
+              />
               <div>
                 <p className="font-sans text-sm font-semibold text-foreground">
                   +500 chefs profesionales
@@ -101,15 +105,17 @@ export function HeroSection() {
             </div>
           </LandingReveal>
 
-          <LandingReveal className="relative lg:pl-4" delay={0.12}>
-            <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-              <div className="relative overflow-hidden rounded-[1.75rem] border border-border/60 bg-card shadow-2xl shadow-primary/10 ring-1 ring-border/40">
+          <LandingReveal className="relative lg:pl-2 xl:pl-4" delay={0.12}>
+            <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
+              <div className="relative overflow-hidden rounded-[1.75rem] border border-border/60 bg-[#121421] shadow-2xl shadow-primary/10 ring-1 ring-border/40">
                 <LandingMediaImage
                   asset={LANDING_MEDIA.hero}
                   priority
-                  sizes="(max-width: 1024px) 90vw, 45vw"
-                  overlay="dramatic"
-                  className="!aspect-[4/5] min-h-[420px] md:min-h-[520px]"
+                  fit="contain"
+                  sizes="(max-width: 1024px) 92vw, 52vw"
+                  overlay="none"
+                  frameClassName="bg-[#121421]"
+                  className="min-h-[300px] sm:min-h-[380px] md:min-h-[460px] lg:min-h-[520px] !aspect-auto"
                 />
 
                 {heroVideoReady ? (
