@@ -21,6 +21,7 @@ import {
   validateCustomizerCartVariant,
 } from '../lib/resolve-customizer-variant'
 import { uploadDesignLogo } from '../lib/upload-design-logo'
+import { CustomizerAddToCartSuccessDialog } from './customizer-add-to-cart-success-dialog'
 import { DesignerLayout } from './designer-layout'
 import type { ViewportCaptureHandle } from './viewport-3d'
 import '../customizer.css'
@@ -106,7 +107,10 @@ export function CustomizerShell({
   const configJsonRef = useRef<unknown>(null)
 
   const [cartActionError, setCartActionError] = useState<string | null>(null)
-  const [addedToCart, setAddedToCart] = useState(false)
+  const [addToCartSuccessOpen, setAddToCartSuccessOpen] = useState(false)
+  const [addToCartSuccessPreviewUrl, setAddToCartSuccessPreviewUrl] = useState<string | null>(
+    null,
+  )
   const [savePhase, setSavePhase] = useState<SavePhase>('idle')
   const [previewWarning, setPreviewWarning] = useState<string | null>(null)
   const [lastPreviewSuccess, setLastPreviewSuccess] = useState(false)
@@ -307,7 +311,7 @@ export function CustomizerShell({
   const handleAddToCart = useCallback(async () => {
     if (!product) return
     setCartActionError(null)
-    setAddedToCart(false)
+    setAddToCartSuccessOpen(false)
 
     const validation = validateCustomizerCartVariant(catalogProduct, {
       baseColor,
@@ -364,7 +368,12 @@ export function CustomizerShell({
         designId: ensuredDesignId,
         quantity,
       })
-      setAddedToCart(true)
+
+      const previewFromConfig = readPreviewsFromConfig(configJsonRef.current)?.front?.url
+      setAddToCartSuccessPreviewUrl(
+        previewUrlRef.current ?? previewFromConfig ?? previewResult.previewUrl ?? null,
+      )
+      setAddToCartSuccessOpen(true)
       setSavePhase('idle')
     } catch {
       setCartActionError('No pudimos agregar el diseño personalizado al carrito.')
@@ -486,23 +495,17 @@ export function CustomizerShell({
           {logoUploadError}
         </div>
       ) : null}
-      {addedToCart ? (
-        <div className="flex flex-wrap items-center gap-2 border-b border-success/30 bg-success/10 px-4 py-2">
-          <span className="font-sans text-sm text-foreground">
-            Tu diseño se agregó al carrito.
-          </span>
-          <Button size="sm" variant="outline" asChild>
-            <Link href={routes.cart}>Ver carrito</Link>
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setAddedToCart(false)}
-          >
-            Seguir diseñando
-          </Button>
-        </div>
-      ) : null}
+      <CustomizerAddToCartSuccessDialog
+        open={addToCartSuccessOpen && !addToCart.isPending}
+        onOpenChange={setAddToCartSuccessOpen}
+        productName={product.name}
+        previewUrl={addToCartSuccessPreviewUrl}
+        cartHref={routes.cart}
+        onContinueDesigning={() => {
+          setAddToCartSuccessOpen(false)
+          setAddToCartSuccessPreviewUrl(null)
+        }}
+      />
       <div className="min-h-0 flex-1">
         <DesignerLayout
           onSaveDesign={() => {
