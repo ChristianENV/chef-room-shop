@@ -16,3 +16,8 @@ node_modules
 *.tsbuildinfo
 playwright-report/
 test-results/
+
+# Heavy 3D mock assets (convert + place locally; do not commit). See README in folder.
+/public/models/customizer/mock-dress-combi/*.glb
+/public/models/customizer/mock-dress-combi/*.glb.log
+/public/models/customizer/mock-dress-combi/*.max
