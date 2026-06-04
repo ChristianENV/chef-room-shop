@@ -244,3 +244,35 @@ filipinaExecutiva: {
 ```
 
 El GLB optimizado para producción se aloja en R2. El repo solo contiene código y docs.
+
+---
+
+## 9. Admin upload — flujo desde la interfaz
+
+El proceso descrito en las secciones anteriores también se puede ejecutar directamente
+desde Admin Products, sin scripts locales:
+
+1. **Admin → Editar Producto → General → "Modelo 3D del producto".**
+2. Seleccionar `.glb` (máximo 120 MB original).
+3. El navegador optimiza (dedup, prune, weld, reorder, quantize) y muestra comparación.
+4. Si el archivo optimizado supera 25 MB → error; usar `pnpm glb:optimize` offline.
+5. Clic "Subir modelo optimizado" → presigned PUT a R2 → `confirmAdminProductModelUpload`.
+6. El `ProductModelAsset` queda `ACTIVE` en DB y el customizador lo usa automáticamente.
+
+Ver checklist detallado de QA manual en `docs/admin-products-ui.md`.
+
+---
+
+## 10. E2E smoke del upload admin
+
+Spec: `tests/e2e/smoke/admin-product-model-upload.spec.ts`
+
+Cubre login admin → abrir formulario → subir fixture GLB → estado success, todo
+con mocks de GraphQL y R2 (sin credenciales reales).
+
+```bash
+PLAYWRIGHT_SKIP_WEBSERVER=true PLAYWRIGHT_BASE_URL=http://localhost:3000 \
+  pnpm exec playwright test tests/e2e/smoke/admin-product-model-upload.spec.ts
+```
+
+Ver `docs/qa-e2e.md` para variables de entorno y detalles completos.

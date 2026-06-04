@@ -125,7 +125,11 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
   // ── No product saved yet ────────────────────────────────────────────────────
   if (!productId) {
     return (
-      <div className="rounded-lg border border-dashed border-[#E2E0DB] bg-[#fafaf8] p-6 text-center">
+      <div
+        data-testid="admin-product-model-uploader"
+        data-state="no-product"
+        className="rounded-lg border border-dashed border-[#E2E0DB] bg-[#fafaf8] p-6 text-center"
+      >
         <Box className="mx-auto mb-3 h-8 w-8 text-[#2B3280]/30" />
         <p className="text-sm font-medium text-muted-foreground">
           Guarda el producto para subir un modelo 3D.
@@ -137,8 +141,8 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
   // ── Success ─────────────────────────────────────────────────────────────────
   if (stage === 'success' && result) {
     return (
-      <div className="space-y-3">
-        <Card className="border-[#E2E0DB] bg-[#fafaf8]">
+      <div data-testid="admin-product-model-uploader" data-state="success" className="space-y-3">
+        <Card data-testid="admin-product-model-success" className="border-[#E2E0DB] bg-[#fafaf8]">
           <CardContent className="flex items-start gap-4 p-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#2B3280]/10">
               <Box className="h-5 w-5 text-[#2B3280]" />
@@ -146,7 +150,7 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
             <div className="min-w-0 flex-1">
               <div className="mb-1 flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
-                <span className="truncate text-sm font-medium">{result.fileName}</span>
+                <span className="truncate text-sm font-medium" data-testid="admin-product-model-filename">{result.fileName}</span>
                 <Badge variant="secondary" className="shrink-0 text-xs">GLB</Badge>
                 {result.isActive && (
                   <Badge className="shrink-0 bg-emerald-100 text-xs text-emerald-700">Activo</Badge>
@@ -167,6 +171,7 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
                 href={result.url}
                 target="_blank"
                 rel="noopener noreferrer"
+                data-testid="admin-product-model-url"
                 className="mt-1 block truncate text-xs text-[#2B3280] underline underline-offset-2 hover:opacity-80"
               >
                 Ver en R2
@@ -179,6 +184,7 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
               <Button
                 size="sm"
                 variant="ghost"
+                data-testid="admin-product-model-delete"
                 className="text-destructive hover:text-destructive"
                 onClick={handleDelete}
                 disabled={isDeleting}
@@ -203,7 +209,7 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
   // ── Optimizing ──────────────────────────────────────────────────────────────
   if (stage === 'optimizing') {
     return (
-      <Card className="border-[#E2E0DB] bg-[#fafaf8]">
+      <Card data-testid="admin-product-model-optimizing" className="border-[#E2E0DB] bg-[#fafaf8]">
         <CardContent className="space-y-4 p-6">
           <div className="flex items-center gap-3">
             <Loader2 className="h-5 w-5 animate-spin text-[#2B3280]" />
@@ -250,8 +256,18 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
         : stage === 'uploading'
           ? 'Subiendo modelo 3D a R2…'
           : 'Confirmando archivo…'
+    const testId =
+      stage === 'validating'
+        ? 'admin-product-model-validating'
+        : stage === 'uploading'
+          ? 'admin-product-model-uploading'
+          : 'admin-product-model-confirming'
     return (
-      <Card className="border-[#E2E0DB] bg-[#fafaf8]">
+      <Card
+        data-testid={testId}
+        data-state={stage}
+        className="border-[#E2E0DB] bg-[#fafaf8]"
+      >
         <CardContent className="flex items-center gap-3 p-6">
           <Loader2 className="h-5 w-5 animate-spin text-[#2B3280]" />
           <span className="text-sm font-medium text-[#2B3280]">{msg}</span>
@@ -263,10 +279,12 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
   // ── Error ───────────────────────────────────────────────────────────────────
   if (stage === 'error') {
     return (
-      <div className="space-y-3">
+      <div data-testid="admin-product-model-error" className="space-y-3">
         <Alert variant="destructive">
           <X className="h-4 w-4" />
-          <AlertDescription className="text-xs">{error}</AlertDescription>
+          <AlertDescription className="text-xs" data-testid="admin-product-model-error-message">
+            {error}
+          </AlertDescription>
         </Alert>
         <Button
           size="sm"
@@ -282,11 +300,12 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
 
   // ── Idle / Dropzone ─────────────────────────────────────────────────────────
   return (
-    <div className="space-y-3">
+    <div data-testid="admin-product-model-uploader" data-state="idle" className="space-y-3">
       <div
         role="button"
         tabIndex={0}
         aria-label="Subir modelo 3D GLB"
+        data-testid="admin-product-model-dropzone"
         className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all ${
           isDragging
             ? 'border-[#2B3280] bg-[#2B3280]/5'
@@ -303,6 +322,7 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
           type="file"
           accept=".glb"
           className="hidden"
+          data-testid="admin-product-model-file-input"
           onChange={handleInputChange}
         />
         <div className="flex flex-col items-center gap-3">
