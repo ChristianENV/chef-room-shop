@@ -15,11 +15,19 @@ import {
   upsertAdminProductImage,
   upsertAdminProductVariant,
 } from '../modules/admin-products/admin-products.service'
+import {
+  confirmAdminProductModelUpload,
+  createAdminProductModelUpload,
+  deleteAdminProductModelAsset,
+  setActiveAdminProductModelAsset,
+} from '../modules/admin-products/admin-products.model-3d.service'
 import type {
   AdminProductImageInput,
   AdminProductInput,
   AdminProductVariantInput,
   AdminProductsListInput,
+  ConfirmAdminProductModelUploadInput,
+  CreateAdminProductModelUploadInput,
 } from '../modules/admin-products/admin-products.types'
 
 type ListArgs = AdminProductsListInput
@@ -131,5 +139,29 @@ export const adminProductsResolvers = {
       args: ReorderImagesArgs,
       context: GraphQLContext,
     ) => reorderAdminProductImages(context, args.productId, args.imageIds),
+
+    createAdminProductModelUpload: (
+      _parent: unknown,
+      args: { input: CreateAdminProductModelUploadInput },
+      context: GraphQLContext,
+    ) => createAdminProductModelUpload(context, args.input),
+
+    confirmAdminProductModelUpload: (
+      _parent: unknown,
+      args: { input: ConfirmAdminProductModelUploadInput },
+      context: GraphQLContext,
+    ) => confirmAdminProductModelUpload(context, args.input),
+
+    deleteAdminProductModelAsset: (
+      _parent: unknown,
+      args: { modelAssetId: string },
+      context: GraphQLContext,
+    ) => deleteAdminProductModelAsset(context, args.modelAssetId),
+
+    setActiveAdminProductModelAsset: (
+      _parent: unknown,
+      args: { modelAssetId: string },
+      context: GraphQLContext,
+    ) => setActiveAdminProductModelAsset(context, args.modelAssetId),
   },
 }

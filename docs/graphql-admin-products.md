@@ -137,3 +137,17 @@ Admin: `cnoriega+2@gmail.com` / `12345678`
 4. `upsertAdminProductVariant` / `upsertAdminProductImage`
 5. `archiveAdminProduct`
 6. Customer: queries admin → `FORBIDDEN`
+
+## Mutations 3D model (ProductModelAsset)
+
+createAdminProductModelUpload(input: CreateAdminProductModelUploadInput!): ProductModelUploadPayload!
+confirmAdminProductModelUpload(input: ConfirmAdminProductModelUploadInput!): AdminProductModel3d!
+deleteAdminProductModelAsset(modelAssetId: ID!): Boolean!
+setActiveAdminProductModelAsset(modelAssetId: ID!): AdminProductModel3d!
+
+Flujo: crear (obtiene presigned URL) → PUT directo a R2 → confirmar (HEAD para verificar). Solo ADMIN/SUPERADMIN.
+El confirm desactiva modelos anteriores del producto y activa el nuevo.
+El delete hace soft delete y borra de R2 (best-effort).
+
+AdminProduct ahora incluye: model3d: AdminProductModel3d
+

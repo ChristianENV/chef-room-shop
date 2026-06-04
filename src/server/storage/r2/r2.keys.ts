@@ -76,6 +76,15 @@ export function buildDesignAssetLogoKeys(
   }
 }
 
+/**
+ * Object key for a product's 3D model (GLB).
+ * `modelAssetId` is a server-generated UUID so keys are unique and
+ * a re-upload never overwrites an existing confirmed asset.
+ */
+export function buildProductModelObjectKey(productId: string, modelAssetId: string): string {
+  return `products/${productId}/models/${modelAssetId}/model.glb`
+}
+
 /** Builds the public CDN URL for a single object key. */
 export function buildPublicR2Url(key: string): string {
   const { publicBaseUrl } = requireR2Config()

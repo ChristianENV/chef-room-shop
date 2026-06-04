@@ -46,6 +46,24 @@ export type AdminProductVariant = {
   updatedAt: string
 }
 
+export type AdminProductModel3d = {
+  id: string
+  productId: string
+  url: string
+  publicId: string
+  fileName: string
+  originalFileName: string | null
+  format: string
+  contentType: string
+  sizeBytes: number
+  originalSizeBytes: number | null
+  compressionRatio: number | null
+  isActive: boolean
+  status: string
+  createdAt: string
+  updatedAt: string
+}
+
 export type AdminProduct = {
   id: string
   slug: string
@@ -64,6 +82,7 @@ export type AdminProduct = {
   productType: AdminProductType
   images: AdminProductImage[]
   variants: AdminProductVariant[]
+  model3d: AdminProductModel3d | null
 }
 
 export type AdminProductsPayload = {

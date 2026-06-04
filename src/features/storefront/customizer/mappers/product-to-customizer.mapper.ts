@@ -6,6 +6,7 @@ import type {
   CustomizerAreaOptionAvailability,
   CustomizerProductColor,
   CustomizerProductData,
+  CustomizerProductModel3d,
   CustomizerProductSize,
   CustomizerProductVariant,
 } from '../types/customizer-product.types'
@@ -65,6 +66,21 @@ export function mapProductToCustomizer(
   const sizes = mapSizes(product)
   const variants = mapVariants(product)
 
+  const rawModel = product.model3d
+  const model3d: CustomizerProductModel3d | null = rawModel
+    ? {
+        id: rawModel.id,
+        url: rawModel.url,
+        publicId: rawModel.publicId,
+        fileName: rawModel.fileName,
+        sizeBytes: rawModel.sizeBytes,
+        format: rawModel.format,
+        materialHintsJson: rawModel.materialHintsJson ?? null,
+        meshHintsJson: rawModel.meshHintsJson ?? null,
+        anchorsJson: rawModel.anchorsJson ?? null,
+      }
+    : null
+
   return {
     id: product.id,
     name: product.name,
@@ -81,5 +97,6 @@ export function mapProductToCustomizer(
       new Map(rules.map((rule) => [rule.area.slug, rule.area])).values(),
     ).map((area) => ({ slug: area.slug, name: area.name })),
     customizationAvailability: mapRuleAvailability(rules),
+    model3d,
   }
 }

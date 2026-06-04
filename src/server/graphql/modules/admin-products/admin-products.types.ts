@@ -46,6 +46,56 @@ export type AdminProductVariantGql = {
   updatedAt: string
 }
 
+export type AdminProductModel3dGql = {
+  id: string
+  productId: string
+  url: string
+  publicId: string
+  fileName: string
+  originalFileName: string | null
+  format: string
+  contentType: string
+  sizeBytes: number
+  originalSizeBytes: number | null
+  compressionRatio: number | null
+  isActive: boolean
+  status: string
+  metadataJson: unknown | null
+  materialHintsJson: unknown | null
+  meshHintsJson: unknown | null
+  anchorsJson: unknown | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type ProductModelUploadPayloadGql = {
+  uploadId: string
+  modelAssetId: string
+  publicId: string
+  publicUrl: string
+  presignedUrl: string
+  expiresAt: string
+}
+
+export type CreateAdminProductModelUploadInput = {
+  productId: string
+  fileName: string
+  originalFileName?: string | null
+  sizeBytes: number
+  originalSizeBytes?: number | null
+  contentType: string
+  compressionRatio?: number | null
+  optimizationReportJson?: unknown | null
+}
+
+export type ConfirmAdminProductModelUploadInput = {
+  uploadId: string
+  metadataJson?: unknown | null
+  materialHintsJson?: unknown | null
+  meshHintsJson?: unknown | null
+  anchorsJson?: unknown | null
+}
+
 export type AdminProductGql = {
   id: string
   slug: string
@@ -64,6 +114,7 @@ export type AdminProductGql = {
   productType: AdminProductTypeGql
   images: AdminProductImageGql[]
   variants: AdminProductVariantGql[]
+  model3d: AdminProductModel3dGql | null
 }
 
 export type AdminProductsPayloadGql = {

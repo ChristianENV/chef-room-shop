@@ -94,3 +94,22 @@ Solo productos `ACTIVE` con `deletedAt: null` en catálogo. Borrador y archivado
 ## Smoke manual
 
 Ver checklist en `docs/graphql-admin-products.md` (sección UI conectada).
+
+## Subir modelo 3D GLB
+
+Solo se acepta .glb. Proceso desde Admin > Editar Producto > General:
+
+1. Guardar el producto primero (se requiere productId).
+2. Arrastrar o seleccionar el .glb (max 120 MB original).
+3. El cliente valida magic bytes GLB.
+4. Optimizacion automatica: dedup, prune, weld, reorder, quantize.
+5. Si el optimizado > 25 MB se bloquea y se pide usar pnpm glb:optimize offline.
+6. Se muestra comparacion: Original / Optimizado / Ahorro %.
+7. El GLB optimizado se sube directo a R2 con presigned PUT URL.
+8. confirmAdminProductModelUpload valida con HEAD y activa el ProductModelAsset.
+9. El customizador usa product.model3d.url automaticamente (prioridad 1).
+
+### Optimizacion offline
+
+pnpm glb:optimize input.glb output.glb
+

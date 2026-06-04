@@ -5,6 +5,7 @@ import type {
   Product,
   ProductCustomizationRule,
   ProductImage,
+  ProductModelAsset,
   ProductType,
   ProductVariant,
   Size,
@@ -15,6 +16,7 @@ import type {
   CatalogProductCustomizationRuleGql,
   CatalogProductGql,
   CatalogProductImageGql,
+  CatalogProductModel3dGql,
   CatalogProductTypeGql,
   CatalogProductVariantGql,
   CatalogSizeGql,
@@ -28,6 +30,7 @@ type ProductWithRelations = Product & {
     area: CustomizationArea
     option: CustomizationOption
   })[]
+  modelAssets?: ProductModelAsset[]
 }
 
 type RuleConfigJson = {
@@ -163,9 +166,31 @@ export function mapCustomizationRuleToGql(
 }
 
 /**
+ * Maps the active (non-deleted) model asset to the catalog GraphQL type.
+ */
+export function mapProductModel3dToGql(asset: ProductModelAsset): CatalogProductModel3dGql {
+  return {
+    id: asset.id,
+    url: asset.url,
+    publicId: asset.publicId,
+    fileName: asset.fileName,
+    originalFileName: asset.originalFileName,
+    sizeBytes: asset.sizeBytes,
+    originalSizeBytes: asset.originalSizeBytes,
+    compressionRatio: asset.compressionRatio,
+    format: asset.format,
+    metadataJson: asset.metadataJson ?? null,
+    materialHintsJson: asset.materialHintsJson ?? null,
+    meshHintsJson: asset.meshHintsJson ?? null,
+    anchorsJson: asset.anchorsJson ?? null,
+  }
+}
+
+/**
  * Maps a Prisma product graph to the catalog GraphQL product type.
  */
 export function mapProductToGql(product: ProductWithRelations): CatalogProductGql {
+  const activeModel = (product.modelAssets ?? []).find((a) => a.isActive && !a.deletedAt) ?? null
   return {
     id: product.id,
     slug: product.slug,
@@ -185,5 +210,6 @@ export function mapProductToGql(product: ProductWithRelations): CatalogProductGq
       mapProductVariantToGql(variant, product.basePriceCents),
     ),
     customizationRules: product.customizationRules.map(mapCustomizationRuleToGql),
+    model3d: activeModel ? mapProductModel3dToGql(activeModel) : null,
   }
 }

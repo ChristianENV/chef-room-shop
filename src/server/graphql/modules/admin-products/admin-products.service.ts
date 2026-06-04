@@ -51,6 +51,10 @@ const productInclude = {
     include: { color: true, size: true },
     orderBy: { sku: 'asc' as const },
   },
+  modelAssets: {
+    where: { deletedAt: null },
+    orderBy: { createdAt: 'desc' as const },
+  },
 } satisfies Prisma.ProductInclude
 
 function notFoundError(entity = 'Producto'): GraphQLError {

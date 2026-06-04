@@ -3,8 +3,10 @@ export * from './r2.errors'
 export {
   ALLOWED_INPUT_CONTENT_TYPES,
   MAX_PRODUCT_IMAGES,
+  MAX_PRODUCT_MODEL_ORIGINAL_BYTES,
   MAX_UPLOAD_BYTES,
   PRESIGNED_PUT_TTL_SECONDS,
+  RECOMMENDED_PRODUCT_MODEL_BYTES,
   STORED_CONTENT_TYPES,
   getR2ConfigOrNull,
   isR2Configured,
@@ -16,6 +18,7 @@ export {
   buildDesignPreviewUploadKeys,
   buildDesignAssetLogoKeys,
   buildProductImageObjectKeys,
+  buildProductModelObjectKey,
   buildPublicR2Url,
   buildPublicUrlsForKeys,
   validateUploadContentType,

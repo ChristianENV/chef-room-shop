@@ -46,6 +46,21 @@ export type CatalogProductVariant = {
 }
 
 /** Product list item from catalog BFF. */
+export type CatalogProductModel3d = {
+  id: string
+  url: string
+  publicId: string
+  fileName: string
+  originalFileName?: string | null
+  sizeBytes: number
+  originalSizeBytes?: number | null
+  compressionRatio?: number | null
+  format: string
+  materialHintsJson?: unknown | null
+  meshHintsJson?: unknown | null
+  anchorsJson?: unknown | null
+}
+
 export type CatalogProduct = {
   id: string
   slug: string
@@ -59,6 +74,7 @@ export type CatalogProduct = {
   productType: CatalogProductType
   images: CatalogProductImage[]
   variants: CatalogProductVariant[]
+  model3d?: CatalogProductModel3d | null
 }
 
 /** Filter reference data for storefront catalog UI. */

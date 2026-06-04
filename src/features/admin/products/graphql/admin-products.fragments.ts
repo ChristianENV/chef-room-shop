@@ -50,6 +50,24 @@ export const ADMIN_PRODUCT_VARIANT_FIELDS = /* GraphQL */ `
   }
 `
 
+export const ADMIN_PRODUCT_MODEL_3D_FIELDS = /* GraphQL */ `
+  id
+  productId
+  url
+  publicId
+  fileName
+  originalFileName
+  format
+  contentType
+  sizeBytes
+  originalSizeBytes
+  compressionRatio
+  isActive
+  status
+  createdAt
+  updatedAt
+`
+
 export const ADMIN_PRODUCT_FIELDS = /* GraphQL */ `
   id
   slug
@@ -73,5 +91,8 @@ export const ADMIN_PRODUCT_FIELDS = /* GraphQL */ `
   }
   variants {
     ${ADMIN_PRODUCT_VARIANT_FIELDS}
+  }
+  model3d {
+    ${ADMIN_PRODUCT_MODEL_3D_FIELDS}
   }
 `

@@ -32,6 +32,11 @@ const productInclude = {
     include: { area: true, option: true },
     orderBy: [{ area: { sortOrder: 'asc' } }, { option: { slug: 'asc' } }],
   },
+  modelAssets: {
+    where: { deletedAt: null, isActive: true },
+    orderBy: { createdAt: 'desc' as const },
+    take: 1,
+  },
 } satisfies Prisma.ProductInclude
 
 function activeProductWhere(): Prisma.ProductWhereInput {
