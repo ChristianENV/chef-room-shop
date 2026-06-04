@@ -29,6 +29,7 @@ export const PRODUCTS_QUERY = /* GraphQL */ `
         images {
           id
           url
+          publicId
           alt
           sortOrder
           isPrimary

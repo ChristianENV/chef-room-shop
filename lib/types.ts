@@ -27,6 +27,10 @@ export interface ProductImage {
   url: string
   alt: string
   isPrimary: boolean
+  thumbnailUrl?: string
+  imageUrl?: string
+  publicId?: string | null
+  sortOrder?: number | null
 }
 
 export interface ProductColor {

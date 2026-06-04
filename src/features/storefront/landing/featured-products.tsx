@@ -6,22 +6,66 @@ import { ArrowRight, Star } from 'lucide-react'
 import { ProductImageDisplay } from '@/components/shared/product-image'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import { MOCK_PRODUCTS } from '@/lib/mock-data'
 import { routes } from '@/src/config/routes'
+import { useProductsQuery } from '@/src/features/storefront/catalog/api/use-products-query'
 
 import { LandingReveal, LandingStagger, LandingStaggerItem } from './components/landing-reveal'
 import { SectionHeader } from './components/section-header'
+import {
+  mapCatalogProductToFeaturedCard,
+  type FeaturedProductCardUi,
+} from './mappers/featured-product.mapper'
 
-const featuredProducts = MOCK_PRODUCTS.slice(0, 4)
+const FEATURED_LIMIT = 4
 
 interface FeaturedProductsProps {
   className?: string
 }
 
-export function FeaturedProducts({ className }: FeaturedProductsProps) {
+function FeaturedProductsSkeleton() {
   return (
-    <section className={cn('bg-card py-24 md:py-32', className)}>
+    <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {Array.from({ length: FEATURED_LIMIT }).map((_, i) => (
+        <div
+          key={i}
+          className="overflow-hidden rounded-2xl border border-border/70 bg-background"
+        >
+          <Skeleton className="aspect-[3/4] w-full rounded-none" />
+          <div className="space-y-3 p-5">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-5 w-full" />
+            <Skeleton className="h-6 w-24" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function badgeLabel(badge: FeaturedProductCardUi['badge']) {
+  if (badge === 'popular') return 'Popular'
+  if (badge === 'nuevo') return 'Nuevo'
+  if (badge === 'personalizable') return 'Personalizable'
+  return null
+}
+
+export function FeaturedProducts({ className }: FeaturedProductsProps) {
+  const { data, isLoading, isError, refetch, isFetching } = useProductsQuery({
+    limit: FEATURED_LIMIT,
+    offset: 0,
+    sortField: 'createdAt',
+    sortDirection: 'desc',
+  })
+
+  const featuredProducts = (data?.items ?? []).map(mapCatalogProductToFeaturedCard)
+
+  return (
+    <section
+      className={cn('bg-card py-24 md:py-32', className)}
+      data-testid="featured-products-section"
+    >
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <LandingReveal>
           <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-end">
@@ -44,35 +88,60 @@ export function FeaturedProducts({ className }: FeaturedProductsProps) {
           </div>
         </LandingReveal>
 
-        <LandingStagger className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {featuredProducts.map((product, index) => (
-            <LandingStaggerItem key={product.id}>
-              <Link
-                href={
-                  product.customizable
-                    ? routes.customizeProduct(product.slug)
-                    : routes.productDetail(product.slug)
-                }
-                className="group block h-full"
-              >
+        {isLoading ? <FeaturedProductsSkeleton /> : null}
+
+        {isError && !isLoading ? (
+          <div className="mt-14 rounded-2xl border border-border/70 bg-background px-6 py-10 text-center">
+            <p className="font-serif text-muted-foreground">
+              No pudimos cargar la selección destacada. Intenta de nuevo.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-6"
+              onClick={() => void refetch()}
+              disabled={isFetching}
+            >
+              Reintentar
+            </Button>
+          </div>
+        ) : null}
+
+        {!isLoading && !isError && featuredProducts.length === 0 ? (
+          <p className="mt-14 text-center font-serif text-muted-foreground">
+            Aún estamos preparando la selección destacada.
+          </p>
+        ) : null}
+
+        {!isLoading && !isError && featuredProducts.length > 0 ? (
+          <LandingStagger className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {featuredProducts.map((product, index) => (
+              <LandingStaggerItem key={product.id}>
                 <article
+                  data-testid="featured-product-card"
                   className={cn(
-                    'flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-background shadow-sm transition-all duration-500',
+                    'group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-background shadow-sm transition-all duration-500',
                     'hover:-translate-y-1 hover:border-primary/25 hover:shadow-xl hover:shadow-primary/5',
                     index === 0 && 'lg:rounded-3xl',
                   )}
                 >
-                  <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
-                    <ProductImageDisplay
-                      images={product.images}
-                      alt={product.name}
-                      className="absolute inset-0 transition-transform duration-700 group-hover:scale-[1.04]"
-                      placeholderIconClassName="size-16"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div
+                    className="relative aspect-[3/4] overflow-hidden bg-secondary"
+                    data-testid="featured-product-image"
+                  >
+                    <Link href={product.href} className="absolute inset-0 z-0 block">
+                      <ProductImageDisplay
+                        src={product.imageUrl}
+                        alt={product.alt}
+                        className="absolute inset-0 !bg-transparent transition-transform duration-700 group-hover:scale-[1.04]"
+                        imgClassName="object-cover object-center"
+                        placeholderIconClassName="size-16"
+                      />
+                    </Link>
+                    <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-background/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-                    <div className="absolute left-3 top-3 flex flex-col gap-2">
-                      {product.badge ? (
+                    {product.badge ? (
+                      <div className="absolute left-3 top-3 z-[2]">
                         <Badge
                           className={cn(
                             'border-0 font-sans text-[10px] font-semibold tracking-wider uppercase',
@@ -82,54 +151,61 @@ export function FeaturedProducts({ className }: FeaturedProductsProps) {
                               'bg-card/95 text-primary shadow-sm backdrop-blur-sm',
                           )}
                         >
-                          {product.badge === 'popular'
-                            ? 'Popular'
-                            : product.badge === 'nuevo'
-                              ? 'Nuevo'
-                              : 'Personalizable'}
+                          {badgeLabel(product.badge)}
                         </Badge>
-                      ) : null}
-                    </div>
-
-                    <div className="absolute inset-x-3 bottom-3 translate-y-3 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                      <div className="rounded-xl bg-primary py-2.5 text-center font-sans text-[13px] font-semibold text-primary-foreground shadow-lg">
-                        {product.customizable ? 'Personalizar' : 'Ver producto'}
                       </div>
+                    ) : null}
+
+                    <div className="absolute inset-x-3 bottom-3 z-[3] flex translate-y-3 gap-2 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                      <Link
+                        href={product.href}
+                        className="flex-1 rounded-xl bg-primary py-2.5 text-center font-sans text-[13px] font-semibold text-primary-foreground shadow-lg"
+                      >
+                        Ver producto
+                      </Link>
+                      {product.customizable ? (
+                        <Link
+                          href={product.customizeHref}
+                          className="rounded-xl border border-primary/30 bg-card/95 px-3 py-2.5 font-sans text-[12px] font-semibold text-primary backdrop-blur-sm"
+                        >
+                          Personalizar
+                        </Link>
+                      ) : null}
                     </div>
                   </div>
 
                   <div className="flex flex-1 flex-col p-5 md:p-6">
                     <p className="font-serif text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
-                      {product.category}
+                      {product.categoryLabel}
                     </p>
-                    <h3 className="mt-2 font-sans text-base font-semibold leading-snug text-foreground line-clamp-2">
-                      {product.name}
-                    </h3>
+                    <Link href={product.href}>
+                      <h3 className="mt-2 font-sans text-base font-semibold leading-snug text-foreground line-clamp-2 transition-colors hover:text-primary">
+                        {product.title}
+                      </h3>
+                    </Link>
 
-                    {product.rating ? (
-                      <div className="mt-2.5 flex items-center gap-1">
-                        <Star className="size-3.5 fill-warning text-warning" aria-hidden />
-                        <span className="font-sans text-xs font-medium">{product.rating}</span>
-                        <span className="font-serif text-xs text-muted-foreground">
-                          ({product.reviewCount})
-                        </span>
-                      </div>
-                    ) : null}
+                    <div className="mt-2.5 flex items-center gap-1">
+                      <Star className="size-3.5 fill-warning text-warning" aria-hidden />
+                      <span className="font-sans text-xs font-medium">{product.rating}</span>
+                      <span className="font-serif text-xs text-muted-foreground">
+                        ({product.reviewCount})
+                      </span>
+                    </div>
 
                     <div className="mt-auto pt-4">
                       <span className="font-sans text-xl font-bold tracking-tight text-foreground">
-                        ${product.price.toLocaleString('es-MX')}
+                        {product.priceLabel}
                       </span>
-                      {product.originalPrice ? (
+                      {product.compareAtPriceLabel ? (
                         <span className="ml-2 font-serif text-sm text-muted-foreground line-through">
-                          ${product.originalPrice.toLocaleString('es-MX')}
+                          {product.compareAtPriceLabel}
                         </span>
                       ) : null}
                     </div>
 
-                    {product.colors.length > 1 ? (
+                    {product.colorSwatches.length > 1 ? (
                       <div className="mt-3 flex items-center gap-1.5">
-                        {product.colors.slice(0, 4).map((color) => (
+                        {product.colorSwatches.slice(0, 4).map((color) => (
                           <div
                             key={color.id}
                             className="size-4 rounded-full border border-border shadow-sm"
@@ -141,10 +217,10 @@ export function FeaturedProducts({ className }: FeaturedProductsProps) {
                     ) : null}
                   </div>
                 </article>
-              </Link>
-            </LandingStaggerItem>
-          ))}
-        </LandingStagger>
+              </LandingStaggerItem>
+            ))}
+          </LandingStagger>
+        ) : null}
       </div>
     </section>
   )
