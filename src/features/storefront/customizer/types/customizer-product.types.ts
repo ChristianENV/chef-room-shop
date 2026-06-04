@@ -28,6 +28,18 @@ export type CustomizerAreaOptionAvailability = {
   enabled: boolean
 }
 
+export type CustomizerProductModel3d = {
+  id: string
+  url: string
+  publicId: string
+  fileName: string
+  sizeBytes: number
+  format: string
+  materialHintsJson: unknown | null
+  meshHintsJson: unknown | null
+  anchorsJson: unknown | null
+}
+
 export type CustomizerProductData = {
   id: string
   name: string
@@ -42,4 +54,5 @@ export type CustomizerProductData = {
   rules: ProductCustomizationRule[]
   customizationAreas: { slug: string; name: string }[]
   customizationAvailability: CustomizerAreaOptionAvailability[]
+  model3d: CustomizerProductModel3d | null
 }

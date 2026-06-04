@@ -88,3 +88,110 @@ pnpm run test:e2e:smoke
 
 - Este smoke no toca checkout externo ni pagos (Conekta) ni envíos (Skydropx).
 - Valida flujo crítico de personalización y render en carrito.
+
+---
+
+## Admin Product 3D Model Upload smoke
+
+Spec:
+
+- `tests/e2e/smoke/admin-product-model-upload.spec.ts`
+
+Flujo cubierto:
+
+1. Login como admin (`cnoriegava+1@gmail.com` por defecto).
+2. Abre `/admin/products`.
+3. Abre el formulario de edición del producto demo.
+4. Selecciona el fixture GLB (`tests/fixtures/models/minimal-valid.glb`, 48 bytes).
+5. Observa estados `validating` / `optimizing`.
+6. Recibe respuesta mock de `createAdminProductModelUpload` (presigned URL falsa).
+7. El PUT a R2 es interceptado y devuelve 200.
+8. Recibe respuesta mock de `confirmAdminProductModelUpload`.
+9. Verifica el estado `success`: nombre de archivo, URL pública, botón eliminar.
+
+También cubre el caso negativo: subir un archivo `.txt` muestra error de validación.
+
+### Cómo correr (con servidor ya activo)
+
+```bash
+PLAYWRIGHT_SKIP_WEBSERVER=true PLAYWRIGHT_BASE_URL=http://localhost:3000 \
+  pnpm exec playwright test tests/e2e/smoke/admin-product-model-upload.spec.ts
+```
+
+PowerShell:
+
+```powershell
+$env:PLAYWRIGHT_SKIP_WEBSERVER='true'
+$env:PLAYWRIGHT_BASE_URL='http://localhost:3000'
+pnpm exec playwright test tests/e2e/smoke/admin-product-model-upload.spec.ts
+```
+
+### Variables útiles (modelo 3D)
+
+| Variable | Defecto | Descripción |
+|---|---|---|
+| `E2E_ADMIN_EMAIL` | `cnoriegava+1@gmail.com` | Email del usuario admin para login |
+| `E2E_ADMIN_PASSWORD` | `12345678` | Contraseña del admin |
+| `E2E_PRODUCT_SLUG` | `demo-filipina-executive-blanca` | Slug del producto demo a editar |
+
+### Fixture GLB
+
+- **Path**: `tests/fixtures/models/minimal-valid.glb` (48 bytes, commiteado)
+- **Regenerar**: `node tests/fixtures/models/generate-minimal-glb.mjs`
+- El fixture es un GLB 2.0 válido sin geometría (solo `{"asset":{"version":"2.0"}}`).
+
+### Mocks de red
+
+El helper `tests/e2e/helpers/mock-product-model-upload.ts` intercepta:
+
+| URL / operación | Mock |
+|---|---|
+| `POST /api/graphql` con `createAdminProductModelUpload` | Devuelve `uploadId`, `presignedUrl` falsa |
+| `PUT https://mock-r2.example.com/**` | Devuelve 200 OK |
+| `POST /api/graphql` con `confirmAdminProductModelUpload` | Devuelve asset con `status: ACTIVE` |
+
+No se requiere R2 real ni credenciales para correr este smoke.
+
+### QA manual del upload GLB (sin E2E)
+
+Ver checklist completo en `docs/admin-products-ui.md` → sección "QA manual — Modelo 3D".
+
+### GraphQL smoke queries
+
+Para validar manualmente que el BFF expone `model3d`:
+
+**Storefront**
+
+```graphql
+query ProductModelSmoke {
+  productBySlug(slug: "demo-filipina-executive-blanca") {
+    id
+    name
+    model3d {
+      id
+      url
+      sizeBytes
+      compressionRatio
+    }
+  }
+}
+```
+
+**Admin**
+
+```graphql
+query AdminProductModelSmoke {
+  adminProductBySlug(slug: "demo-filipina-executive-blanca") {
+    id
+    model3d {
+      id
+      url
+      originalSizeBytes
+      sizeBytes
+      compressionRatio
+    }
+  }
+}
+```
+
+Endpoints: `http://localhost:3000/api/graphql` (storefront) y `http://localhost:3000/api/admin/graphql` (admin, requiere sesión ADMIN).

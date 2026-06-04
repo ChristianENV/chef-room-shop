@@ -1,15 +1,29 @@
 'use client'
 
-import { forwardRef, useImperativeHandle, useMemo, useRef, type RefObject } from 'react'
+import { forwardRef, useImperativeHandle, useMemo, useRef, useState, type RefObject } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { ContactShadows, Environment, Float, OrbitControls, RoundedBox } from '@react-three/drei'
+import { ContactShadows, Environment, Float, Html, OrbitControls, RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
 import { useCustomizerStore } from '../store/customizer.store'
+import { getCustomizerModelForProduct } from '../3d/model-registry'
+import { GarmentModelLoader } from '../3d/garment-model'
 import {
   ViewportCaptureBridge,
   type ViewportCaptureHandle,
 } from './viewport-capture-bridge'
 import { ViewportElementOverlay } from './viewport-element-overlay'
+
+/** Shown inside the <Canvas> while the GLB is downloading. */
+function GlbLoadingFallback() {
+  return (
+    <Html center>
+      <div className="flex flex-col items-center gap-2 text-center">
+        <span className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+        <p className="text-xs text-white/60">Cargando modelo 3D…</p>
+      </div>
+    </Html>
+  )
+}
 
 function JacketModel() {
   const ref = useRef<THREE.Group>(null)
@@ -75,6 +89,41 @@ function JacketModel() {
   )
 }
 
+type GarmentSceneProps = {
+  /** Called with true when a real GLB model successfully loads (decals active). */
+  onGlbActive: (active: boolean) => void
+}
+
+/**
+ * Renders the GLB garment when a model is registered for the product (and the
+ * mock pipeline is enabled), otherwise the procedural fallback. On GLB load
+ * failure the loader swaps back to the procedural model automatically.
+ * Notifies the parent whether a GLB with 3D decals is active so the DOM
+ * overlay can be suppressed to avoid double-rendering elements.
+ */
+function GarmentScene({ onGlbActive }: GarmentSceneProps) {
+  const { product, baseColor, detailColor, sleeveStyle, layers } = useCustomizerStore()
+  const modelConfig = useMemo(() => getCustomizerModelForProduct(product), [product])
+
+  if (!modelConfig) {
+    return <JacketModel />
+  }
+
+  return (
+    <GarmentModelLoader
+      modelConfig={modelConfig}
+      baseColor={baseColor}
+      detailColor={detailColor}
+      sleeveStyle={sleeveStyle}
+      layers={layers}
+      suspenseFallback={<GlbLoadingFallback />}
+      errorFallback={<JacketModel />}
+      onModelReady={() => onGlbActive(true)}
+      onModelError={() => onGlbActive(false)}
+    />
+  )
+}
+
 type Viewport3DProps = {
   captureRef?: RefObject<ViewportCaptureHandle | null>
 }
@@ -86,6 +135,9 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
   const { viewMode, product } = useCustomizerStore()
   const internalCaptureRef = useRef<ViewportCaptureHandle>(null)
   const viewportRootRef = useRef<HTMLDivElement>(null)
+  // True once a real GLB model has loaded — decals are inside WebGL, so the
+  // DOM overlay is suppressed to avoid rendering elements twice.
+  const [glbActive, setGlbActive] = useState(false)
   const heroImage =
     product?.images.find((image) => image.isPrimary)?.url ?? product?.images[0]?.url ?? null
 
@@ -126,7 +178,8 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
       className="relative h-full w-full bg-gradient-to-br from-[#080810] via-[#0c0c18] to-[#080810]"
     >
       <div className="customizer-noise absolute inset-0" />
-      <ViewportElementOverlay />
+      {/* DOM overlay: shown only when no GLB is active (fallback or 2D). */}
+      {!glbActive && <ViewportElementOverlay />}
       <Canvas
         camera={{ position: [0, 0.3, 3.2], fov: 32 }}
         className="relative z-10"
@@ -136,7 +189,7 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
         <ambientLight intensity={0.35} />
         <directionalLight position={[4, 6, 4]} intensity={0.9} />
         <directionalLight position={[-4, 3, -3]} intensity={0.25} />
-        <JacketModel />
+        <GarmentScene onGlbActive={setGlbActive} />
         <ContactShadows position={[0, -0.85, 0]} opacity={0.35} scale={4} blur={2} far={3} />
         <Environment preset="studio" environmentIntensity={0.4} />
         <OrbitControls

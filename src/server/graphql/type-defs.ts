@@ -72,6 +72,22 @@ export const catalogTypeDefs = /* GraphQL */ `
     option: CustomizationOption!
   }
 
+  type ProductModel3d {
+    id: ID!
+    url: String!
+    publicId: String!
+    fileName: String!
+    originalFileName: String
+    sizeBytes: Int!
+    originalSizeBytes: Int
+    compressionRatio: Float
+    format: String!
+    metadataJson: JSON
+    materialHintsJson: JSON
+    meshHintsJson: JSON
+    anchorsJson: JSON
+  }
+
   type Product {
     id: ID!
     slug: String!
@@ -89,6 +105,7 @@ export const catalogTypeDefs = /* GraphQL */ `
     images: [ProductImage!]!
     variants: [ProductVariant!]!
     customizationRules: [ProductCustomizationRule!]!
+    model3d: ProductModel3d
   }
 
   input ProductsFilterInput {
@@ -396,6 +413,56 @@ export const adminProductsTypeDefs = /* GraphQL */ `
     updatedAt: String!
   }
 
+  type AdminProductModel3d {
+    id: ID!
+    productId: ID!
+    url: String!
+    publicId: String!
+    fileName: String!
+    originalFileName: String
+    format: String!
+    contentType: String!
+    sizeBytes: Int!
+    originalSizeBytes: Int
+    compressionRatio: Float
+    isActive: Boolean!
+    status: String!
+    metadataJson: JSON
+    materialHintsJson: JSON
+    meshHintsJson: JSON
+    anchorsJson: JSON
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type ProductModelUploadPayload {
+    uploadId: String!
+    modelAssetId: ID!
+    publicId: String!
+    publicUrl: String!
+    presignedUrl: String!
+    expiresAt: String!
+  }
+
+  input CreateAdminProductModelUploadInput {
+    productId: ID!
+    fileName: String!
+    originalFileName: String
+    sizeBytes: Int!
+    originalSizeBytes: Int
+    contentType: String!
+    compressionRatio: Float
+    optimizationReportJson: JSON
+  }
+
+  input ConfirmAdminProductModelUploadInput {
+    uploadId: String!
+    metadataJson: JSON
+    materialHintsJson: JSON
+    meshHintsJson: JSON
+    anchorsJson: JSON
+  }
+
   type AdminProduct {
     id: ID!
     slug: String!
@@ -414,6 +481,7 @@ export const adminProductsTypeDefs = /* GraphQL */ `
     productType: AdminProductType!
     images: [AdminProductImage!]!
     variants: [AdminProductVariant!]!
+    model3d: AdminProductModel3d
   }
 
   type AdminProductsPayload {
@@ -1348,6 +1416,10 @@ export const typeDefs = /* GraphQL */ `
     confirmAvatarUpload(input: ConfirmAvatarUploadInput!): UserAvatarPayload!
     createProductImageUpload(input: CreateProductImageUploadInput!): ProductImageUploadPayload!
     confirmProductImageUpload(input: ConfirmProductImageUploadInput!): ProductImage!
+    createAdminProductModelUpload(input: CreateAdminProductModelUploadInput!): ProductModelUploadPayload!
+    confirmAdminProductModelUpload(input: ConfirmAdminProductModelUploadInput!): AdminProductModel3d!
+    deleteAdminProductModelAsset(modelAssetId: ID!): Boolean!
+    setActiveAdminProductModelAsset(modelAssetId: ID!): AdminProductModel3d!
     createDesignDraft(input: CreateDesignDraftInput!): AccountDesign!
     updateDesign(input: UpdateDesignInput!): AccountDesign!
     saveDesignPreview(input: SaveDesignPreviewInput!): AccountDesign!

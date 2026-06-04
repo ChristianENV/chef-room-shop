@@ -2,6 +2,7 @@ import type {
   Color,
   Product,
   ProductImage,
+  ProductModelAsset,
   ProductType,
   ProductVariant,
   Size,
@@ -11,15 +12,18 @@ import type {
   AdminColorGql,
   AdminProductGql,
   AdminProductImageGql,
+  AdminProductModel3dGql,
   AdminProductTypeGql,
   AdminProductVariantGql,
   AdminSizeGql,
 } from './admin-products.types'
+import { mapProductModelAssetToGql } from './admin-products.model-3d.service'
 
 export type AdminProductWithRelations = Product & {
   productType: ProductType
   images: ProductImage[]
   variants: (ProductVariant & { color: Color; size: Size })[]
+  modelAssets?: ProductModelAsset[]
 }
 
 function toIso(date: Date | null | undefined): string | null {
@@ -109,6 +113,7 @@ export function mapAdminProductVariantToGql(
  * Maps a full Prisma product graph to admin GraphQL product type.
  */
 export function mapAdminProductToGql(product: AdminProductWithRelations): AdminProductGql {
+  const activeModel = (product.modelAssets ?? []).find((a) => a.isActive && !a.deletedAt) ?? null
   return {
     id: product.id,
     slug: product.slug,
@@ -127,5 +132,6 @@ export function mapAdminProductToGql(product: AdminProductWithRelations): AdminP
     productType: mapAdminProductTypeToGql(product.productType),
     images: product.images.map(mapAdminProductImageToGql),
     variants: product.variants.map((v) => mapAdminProductVariantToGql(v, product.basePriceCents)),
+    model3d: activeModel ? mapProductModelAssetToGql(activeModel) : null,
   }
 }

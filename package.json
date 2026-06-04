@@ -15,7 +15,8 @@
     "db:seed": "prisma db seed",
     "db:seed:demo": "tsx prisma/seed-demo.ts",
     "db:seed:all": "tsx prisma/seed.ts && tsx prisma/seed-demo.ts",
-    "test:e2e:smoke": "playwright test"
+    "test:e2e:smoke": "playwright test",
+    "glb:optimize": "tsx scripts/optimize-glb.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -97,6 +98,9 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@gltf-transform/core": "^4.3.0",
+    "@gltf-transform/extensions": "^4.3.0",
+    "@gltf-transform/functions": "^4.3.0",
     "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4.2.0",
     "@types/bcryptjs": "^2.4.6",
@@ -107,6 +111,7 @@
     "dotenv": "^16.6.1",
     "eslint": "^9",
     "eslint-config-next": "^16.2.6",
+    "meshoptimizer": "^1.1.1",
     "postcss": "^8.5",
     "prisma": "^6.19.0",
     "tailwindcss": "^4.2.0",

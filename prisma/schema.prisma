@@ -428,6 +428,7 @@ model Product {
   variants             ProductVariant[]
   customizationRules   ProductCustomizationRule[]
   cartItems            CartItem[]
+  modelAssets          ProductModelAsset[]
 
   @@index([productTypeId])
   @@index([status])
@@ -450,6 +451,46 @@ model ProductImage {
 
   @@index([productId, sortOrder])
   @@map("product_images")
+}
+
+enum ProductModelAssetStatus {
+  ACTIVE
+  INACTIVE
+  PROCESSING
+  FAILED
+}
+
+model ProductModelAsset {
+  id                   String                   @id @default(uuid()) @db.Uuid
+  productId            String                   @db.Uuid
+  url                  String
+  publicId             String
+  fileName             String
+  originalFileName     String?
+  format               String                   @default("glb")
+  contentType          String                   @default("model/gltf-binary")
+  sizeBytes            Int
+  originalSizeBytes    Int?
+  compressionRatio     Float?
+  optimizerVersion     String?
+  isActive             Boolean                  @default(true)
+  status               ProductModelAssetStatus  @default(ACTIVE)
+  metadataJson         Json?
+  materialHintsJson    Json?
+  meshHintsJson        Json?
+  anchorsJson          Json?
+  optimizationReportJson Json?
+  createdByUserId      String?                  @db.Uuid
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
+  deletedAt            DateTime?
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([productId, isActive])
+  @@index([status])
+  @@map("product_model_assets")
 }
 
 model Color {

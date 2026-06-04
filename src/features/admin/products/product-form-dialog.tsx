@@ -36,6 +36,7 @@ import { useUpsertAdminProductVariantMutation } from './api/use-upsert-admin-pro
 import { useDeleteAdminProductVariantMutation } from './api/use-delete-admin-product-variant-mutation'
 import { ProductImageUploader } from './components/product-image-uploader'
 import type { ProductImageUploaderHandle } from './components/product-image-uploader.types'
+import { ProductModel3DUploader } from './components/product-model-3d-uploader'
 import {
   mapAdminProductToFormValues,
   mapFormValuesToAdminProductInput,
@@ -61,6 +62,7 @@ type ProductFormDrawerBodyProps = {
   selectOptions: ReturnType<typeof mapFormOptionsToSelectOptions>
   onOpenChange: (open: boolean) => void
   onSaved?: (productId: string) => void
+  initialModel3d?: import('./types').AdminProductModel3d | null
 }
 
 function newTempId(): string {
@@ -82,6 +84,7 @@ function ProductFormDrawerBody({
   selectOptions,
   onOpenChange,
   onSaved,
+  initialModel3d,
 }: ProductFormDrawerBodyProps) {
   const isEditing = !!productId
   const createMutation = useCreateAdminProductMutation()
@@ -238,6 +241,21 @@ function ProductFormDrawerBody({
                   initialImages={formValues.images}
                   disabled={isSaving}
                 />
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <div>
+                    <p className="font-sans text-sm font-medium text-foreground">Modelo 3D del producto</p>
+                    <p className="font-serif text-xs text-muted-foreground">
+                      Sube un archivo GLB optimizado para usarlo en el customizador.
+                    </p>
+                  </div>
+                  <ProductModel3DUploader
+                    productId={productId}
+                    initialModel3d={initialModel3d ?? null}
+                  />
+                </div>
 
                 <Separator />
 
@@ -656,6 +674,7 @@ export function ProductFormDialog({
               selectOptions={selectOptions}
               onOpenChange={onOpenChange}
               onSaved={onSaved}
+              initialModel3d={productQuery.data?.model3d ?? null}
             />
           ) : null}
         </div>

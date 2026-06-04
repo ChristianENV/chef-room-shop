@@ -72,6 +72,22 @@ export type CatalogProductCustomizationRuleGql = {
   option: CatalogCustomizationOptionGql
 }
 
+export type CatalogProductModel3dGql = {
+  id: string
+  url: string
+  publicId: string
+  fileName: string
+  originalFileName: string | null
+  sizeBytes: number
+  originalSizeBytes: number | null
+  compressionRatio: number | null
+  format: string
+  metadataJson: unknown | null
+  materialHintsJson: unknown | null
+  meshHintsJson: unknown | null
+  anchorsJson: unknown | null
+}
+
 export type CatalogProductGql = {
   id: string
   slug: string
@@ -89,6 +105,7 @@ export type CatalogProductGql = {
   images: CatalogProductImageGql[]
   variants: CatalogProductVariantGql[]
   customizationRules: CatalogProductCustomizationRuleGql[]
+  model3d: CatalogProductModel3dGql | null
 }
 
 export type ProductsFilterInput = {

@@ -140,7 +140,7 @@ Layers:
 
 ## Environment variables
 
-See [`docs/configuration.md`](./configuration.md) and `.env.example`.
+See [`docs/configuration.md`](./configuration.md). Todas las variables de entorno viven en `.env.local` — no existe ni se debe crear `.env.example` en este proyecto.
 
 | Var | Notes |
 |-----|-------|

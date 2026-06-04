@@ -29,7 +29,15 @@ export const MAX_UPLOAD_BYTES: Record<UploadKind, number> = {
   design: 3 * 1024 * 1024,
   /** Uploaded logo assets for customizer layers. */
   designAsset: 8 * 1024 * 1024,
+  /** Optimized GLB product models (25 MB max after optimization). */
+  productModel: 25 * 1024 * 1024,
 }
+
+/** Original GLB size limit accepted for optimization (120 MB). */
+export const MAX_PRODUCT_MODEL_ORIGINAL_BYTES = 120 * 1024 * 1024
+
+/** Recommended max size for a final product model (12 MB). */
+export const RECOMMENDED_PRODUCT_MODEL_BYTES = 12 * 1024 * 1024
 
 /** Maximum number of images allowed per product (v1). */
 export const MAX_PRODUCT_IMAGES = 10

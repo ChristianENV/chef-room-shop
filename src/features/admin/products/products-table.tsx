@@ -113,6 +113,9 @@ export function ProductsTable({
             return (
               <TableRow
                 key={row.id}
+                data-testid="admin-product-row"
+                data-product-slug={row.slug}
+                data-product-name={row.name}
                 className={cn(
                   'transition-colors hover:bg-muted/40',
                   isSelected && 'bg-muted/50',
@@ -178,7 +181,11 @@ export function ProductsTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-44">
-                      <DropdownMenuItem onClick={() => onEdit(row)}>
+                      <DropdownMenuItem
+                        data-testid="admin-product-edit-button"
+                        data-product-slug={row.slug}
+                        onClick={() => onEdit(row)}
+                      >
                         <Pencil className="mr-2 h-4 w-4" />
                         Editar
                       </DropdownMenuItem>

@@ -94,3 +94,111 @@ Solo productos `ACTIVE` con `deletedAt: null` en catálogo. Borrador y archivado
 ## Smoke manual
 
 Ver checklist en `docs/graphql-admin-products.md` (sección UI conectada).
+
+## Subir modelo 3D GLB
+
+Solo se acepta `.glb`. Flujo desde **Admin → Editar Producto → pestaña General → sección "Modelo 3D del producto"**:
+
+1. Guardar el producto primero (se requiere `productId`).
+2. Arrastrar o seleccionar el `.glb` (máximo 120 MB original).
+3. El cliente valida magic bytes GLB (`0x46 0x54 0x6C 0x67`).
+4. Optimización automática: `dedup → prune → weld → reorder → quantize`.
+5. Si el optimizado queda > 25 MB → error y se pide optimizar offline.
+6. Se muestra comparación: Original / Optimizado / Ahorro estimado.
+7. El GLB optimizado se sube directo a R2 con presigned `PUT` URL.
+8. `confirmAdminProductModelUpload` valida con HEAD en R2 y activa el `ProductModelAsset`.
+9. El customizador usa `product.model3d.url` automáticamente (prioridad 1).
+
+### Límites de tamaño
+
+| Límite | Valor |
+|---|---|
+| Tamaño original máximo | 120 MB |
+| Tamaño optimizado máximo | 25 MB |
+| Tamaño recomendado | < 12 MB |
+
+### Optimización offline
+
+```bash
+pnpm glb:optimize input.glb output.glb
+```
+
+Usar cuando el navegador no puede optimizar o el GLB viene directamente del modelador.
+
+### QA manual — Modelo 3D
+
+Checklist para validar de punta a punta sin E2E automatizado:
+
+**1. Admin Upload**
+
+- [ ] Ir a `/admin/products` → buscar producto demo.
+- [ ] Abrir edición → pestaña General → sección "Modelo 3D del producto".
+- [ ] Seleccionar un `.glb` válido (o usar `tests/fixtures/models/minimal-valid.glb`).
+- [ ] Estado **Validando** aparece brevemente.
+- [ ] Estado **Optimizando** aparece con barra de progreso y comparativa.
+- [ ] Estado **Listo para subir** muestra tamaño original vs optimizado.
+- [ ] Clic "Subir modelo optimizado" → estado **Subiendo a R2…**.
+- [ ] Estado **Confirmando…**.
+- [ ] Estado **success**: nombre de archivo, enlace "Ver en R2", botón "Reemplazar", botón eliminar.
+
+**2. Validar en DB**
+
+```sql
+SELECT id, url, size_bytes, original_size_bytes, compression_ratio, status, is_active
+FROM product_model_assets
+WHERE product_id = '<product-uuid>'
+ORDER BY created_at DESC
+LIMIT 3;
+```
+
+Esperado: fila con `status = 'ACTIVE'`, `is_active = true`, `url` apuntando a R2.
+
+**3. Validar en R2**
+
+Con las credenciales configuradas o desde la consola de Cloudflare:
+
+```
+products/{productId}/models/{modelAssetId}/model.glb
+```
+
+Verificar que el objeto existe y que `Content-Type` es `model/gltf-binary`.
+
+**4. Validar en el customizador**
+
+- [ ] Ir a `/customize/demo-filipina-executive-blanca`.
+- [ ] El modelo debe cargar desde la URL de R2 (no desde fallback local).
+- [ ] Abrir DevTools → Network → buscar `model.glb` → verificar URL.
+- [ ] Cambiar colores → el material cambia en el modelo 3D.
+- [ ] Agregar texto/logo → decals se adhieren al modelo.
+
+**5. GraphQL smoke**
+
+```graphql
+# Storefront
+query ProductModelSmoke {
+  productBySlug(slug: "demo-filipina-executive-blanca") {
+    id name
+    model3d { id url sizeBytes compressionRatio }
+  }
+}
+
+# Admin (requiere sesión ADMIN)
+query AdminProductModelSmoke {
+  adminProductBySlug(slug: "demo-filipina-executive-blanca") {
+    id
+    model3d { id url originalSizeBytes sizeBytes compressionRatio }
+  }
+}
+```
+
+**6. Errores comunes**
+
+| Error | Causa probable | Solución |
+|---|---|---|
+| "Solo se permiten archivos .glb" | Archivo con extensión incorrecta | Subir un `.glb` válido |
+| "El archivo no es un GLB válido" | Magic bytes incorrectos (ZIP, FBX, etc.) | Exportar correctamente desde el modelador |
+| "El modelo sigue siendo demasiado pesado" | Optimizado > 25 MB | Reducir polígonos/texturas; usar `pnpm glb:optimize` offline |
+| "Optimización fallida" | `gltf-transform` o Meshopt no disponible en el navegador | Usar `pnpm glb:optimize` offline y subir el resultado |
+| R2 CORS error al cargar en customizador | Bucket sin regla CORS para GET | Agregar regla CORS (ver `docs/uploads-r2.md`) |
+| "Presigned URL expirada" | Más de 10 min entre `create` y `PUT` | Reintentar la subida completa |
+
