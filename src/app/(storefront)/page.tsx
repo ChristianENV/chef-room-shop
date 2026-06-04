@@ -11,12 +11,13 @@ import {
 
 export const metadata = {
   title: 'Chef Room by Bedolla | Uniformes de Chef Personalizables',
-  description: 'Diseña uniformes profesionales para chef con colores, bordados, logotipos y detalles pensados para tu estilo de cocina. Tu cocina te define, tu uniforme te distingue.',
+  description:
+    'Diseña uniformes profesionales para chef con colores, bordados, logotipos y detalles pensados para tu estilo de cocina. Tu cocina te define, tu uniforme te distingue.',
 }
 
 export default function LandingPage() {
   return (
-    <>
+    <main className="flex flex-col">
       <HeroSection />
       <TrustStrip />
       <CategorySection />
@@ -25,6 +26,6 @@ export default function LandingPage() {
       <HowItWorks />
       <BrandStorySection />
       <FinalCTA />
-    </>
+    </main>
   )
 }

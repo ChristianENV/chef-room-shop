@@ -1,39 +1,59 @@
-﻿import Link from 'next/link'
+'use client'
+
+import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
 import { routes } from '@/src/config/routes'
 
-const categories = [
+import { LandingMediaImage } from './components/landing-media-image'
+import {
+  LandingReveal,
+  LandingStagger,
+  LandingStaggerItem,
+} from './components/landing-reveal'
+import { SectionHeader } from './components/section-header'
+import { LANDING_MEDIA, type LandingMediaKey } from './lib/landing-media'
+
+type LandingCategory = {
+  id: string
+  title: string
+  subtitle: string
+  description: string
+  href: string
+  mediaKey: Extract<
+    LandingMediaKey,
+    'categoryFilipinas' | 'categoryMandiles' | 'categoryPantalones'
+  >
+  featured?: boolean
+}
+
+const categories: LandingCategory[] = [
   {
     id: 'filipinas',
     title: 'Filipinas',
     subtitle: 'Uniformes de chef',
-    description: 'Ejecutivas, slim fit y clásicas. Personalizables con bordados, logos y colores a tu medida.',
+    description:
+      'Ejecutivas, slim fit y clásicas. Bordados, logos y colores a la medida de tu restaurante.',
     href: routes.chefJackets,
+    mediaKey: 'categoryFilipinas',
     featured: true,
   },
   {
     id: 'mandiles',
     title: 'Mandiles',
     subtitle: 'Protección con estilo',
-    description: 'Profesionales con bolsillos funcionales y materiales de alta durabilidad.',
+    description: 'Funcionales, resistentes y listos para personalizar con tu identidad.',
     href: routes.aprons,
+    mediaKey: 'categoryMandiles',
   },
   {
     id: 'pantalones',
     title: 'Pantalones',
-    subtitle: 'Comodidad diaria',
-    description: 'Resistentes y cómodos para las jornadas más intensas en cocina.',
+    subtitle: 'Jornadas intensas',
+    description: 'Comodidad y durabilidad para el ritmo de cocina profesional.',
     href: routes.pants,
-  },
-  {
-    id: 'accesorios',
-    title: 'Accesorios',
-    subtitle: 'Detalles que importan',
-    description: 'Gorros, pañuelos y complementos para completar tu look profesional.',
-    href: routes.shop,
-    comingSoon: true,
+    mediaKey: 'categoryPantalones',
   },
 ]
 
@@ -41,107 +61,104 @@ interface CategorySectionProps {
   className?: string
 }
 
-export function CategorySection({ className }: CategorySectionProps) {
+function CategoryCard({ cat }: { cat: LandingCategory }) {
+  const media = LANDING_MEDIA[cat.mediaKey]
+  const isFeatured = Boolean(cat.featured)
+
   return (
-    <section className={cn('bg-background py-20 md:py-28', className)}>
+    <Link
+      href={cat.href}
+      className={cn(
+        'group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] shadow-sm transition-all duration-500',
+        'hover:-translate-y-1 hover:border-primary/25 hover:shadow-xl hover:shadow-primary/10',
+        isFeatured ? 'min-h-[420px] lg:min-h-0' : 'min-h-[320px] lg:min-h-0',
+      )}
+    >
+      <div
+        className={cn(
+          'relative w-full shrink-0 overflow-hidden',
+          isFeatured
+            ? 'aspect-[4/5] min-h-[280px] sm:min-h-[320px] lg:min-h-[360px] lg:flex-1'
+            : 'aspect-[16/9] min-h-[200px] lg:h-[280px] lg:min-h-[280px] lg:aspect-auto',
+        )}
+      >
+        <LandingMediaImage
+          asset={media}
+          fit="cover"
+          overlay="none"
+          className="absolute inset-0 h-full w-full !aspect-auto"
+          imageClassName="transition-transform duration-700 group-hover:scale-[1.04]"
+          sizes={
+            isFeatured
+              ? '(max-width: 1024px) 100vw, 50vw'
+              : '(max-width: 1024px) 100vw, 28vw'
+          }
+        />
+
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[38%] bg-gradient-to-t from-[#0c0f24]/90 via-[#0c0f24]/15 to-transparent lg:h-[32%]" />
+
+        <div className="absolute inset-x-0 bottom-0 z-20 flex items-end justify-between p-4 opacity-100 transition-opacity duration-300 lg:p-5">
+          <span className="inline-flex items-center gap-2 font-sans text-xs font-semibold tracking-wide text-white/90 opacity-0 transition-opacity group-hover:opacity-100 sm:text-sm">
+            Explorar colección
+            <ArrowRight className="size-3.5" />
+          </span>
+        </div>
+      </div>
+
+      <div className={cn('relative z-10 bg-card/95 p-5 backdrop-blur-sm md:p-6', isFeatured && 'md:p-7')}>
+        <p className="font-serif text-xs tracking-[0.2em] uppercase text-muted-foreground">
+          {cat.subtitle}
+        </p>
+        <h3
+          className={cn(
+            'mt-2 font-sans font-semibold tracking-tight text-foreground',
+            isFeatured ? 'text-2xl md:text-3xl' : 'text-xl',
+          )}
+        >
+          {cat.title}
+        </h3>
+        <p className="mt-2 max-w-md font-serif text-sm leading-relaxed text-muted-foreground">
+          {cat.description}
+        </p>
+        <span className="mt-4 inline-flex items-center gap-1.5 font-sans text-[13px] font-semibold text-primary transition-all group-hover:gap-2.5">
+          Ver colección
+          <ArrowRight className="size-3.5" />
+        </span>
+      </div>
+    </Link>
+  )
+}
+
+export function CategorySection({ className }: CategorySectionProps) {
+  const [filipinas, mandiles, pantalones] = categories
+
+  return (
+    <section className={cn('relative bg-muted/40 py-24 md:py-32', className)}>
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent"
+        aria-hidden
+      />
+
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="max-w-2xl">
-          <p className="font-sans text-[13px] font-semibold tracking-[0.2em] uppercase text-primary">
-            Nuestras categorias
-          </p>
-          <h2 className="brand-underline mt-4 font-sans text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-            Encuentra tu prenda ideal
-          </h2>
-          <p className="mt-6 font-serif text-lg leading-relaxed text-muted-foreground">
-            Cada pieza esta pensada para la exigencia de una cocina profesional.
-          </p>
-        </div>
+        <LandingReveal>
+          <SectionHeader
+            eyebrow="Colecciones"
+            title="Encuentra tu prenda ideal"
+            description="Una curaduría editorial de piezas pensadas para la exigencia de cocinas de alto nivel."
+          />
+        </LandingReveal>
 
-        {/* Categories Grid - asymmetric editorial layout */}
-        <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={cat.comingSoon ? '#' : cat.href}
-              className={cn(
-                'group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300',
-                cat.featured && 'lg:col-span-2 lg:row-span-2',
-                !cat.comingSoon && 'hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5'
-              )}
-            >
-              {/* Image area */}
-              <div
-                className={cn(
-                  'relative overflow-hidden bg-secondary',
-                  cat.featured ? 'aspect-[16/9]' : 'aspect-[4/3]'
-                )}
-              >
-                {/* Premium photography placeholder */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div
-                      className={cn(
-                        'mx-auto rounded-lg bg-gradient-to-b from-muted/80 to-secondary',
-                        cat.featured ? 'h-28 w-20' : 'h-20 w-14'
-                      )}
-                    />
-                    <p className="mt-3 font-sans text-[11px] font-medium tracking-wider uppercase text-muted-foreground/50">
-                      {cat.id}
-                    </p>
-                  </div>
-                </div>
-
-                {cat.comingSoon && (
-                  <div className="absolute right-4 top-4">
-                    <Badge className="border-0 bg-primary/90 font-sans text-[10px] font-semibold tracking-wider uppercase text-primary-foreground">
-                      Proximamente
-                    </Badge>
-                  </div>
-                )}
-
-                {/* Hover overlay */}
-                {!cat.comingSoon && (
-                  <div className="absolute inset-0 bg-primary/80 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                    <div className="flex h-full items-center justify-center">
-                      <span className="flex items-center gap-2 font-sans text-sm font-semibold tracking-wide text-white">
-                        Explorar
-                        <ArrowRight className="h-4 w-4" />
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Content */}
-              <div className={cn('flex flex-1 flex-col p-6', cat.featured && 'p-8')}>
-                <p className="font-serif text-xs tracking-wider uppercase text-muted-foreground">
-                  {cat.subtitle}
-                </p>
-                <h3
-                  className={cn(
-                    'mt-2 font-sans font-semibold tracking-tight text-foreground',
-                    cat.featured ? 'text-2xl' : 'text-lg'
-                  )}
-                >
-                  {cat.title}
-                </h3>
-                <p className="mt-2 font-serif text-sm leading-relaxed text-muted-foreground">
-                  {cat.description}
-                </p>
-
-                {!cat.comingSoon && (
-                  <div className="mt-auto pt-5">
-                    <span className="inline-flex items-center gap-1.5 font-sans text-[13px] font-semibold text-primary transition-all group-hover:gap-2.5">
-                      Ver coleccion
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </span>
-                  </div>
-                )}
-              </div>
-            </Link>
-          ))}
-        </div>
+        <LandingStagger className="mt-16 grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-2 lg:grid-rows-2 lg:gap-6">
+          <LandingStaggerItem className="lg:row-span-2">
+            <CategoryCard cat={filipinas} />
+          </LandingStaggerItem>
+          <LandingStaggerItem>
+            <CategoryCard cat={mandiles} />
+          </LandingStaggerItem>
+          <LandingStaggerItem>
+            <CategoryCard cat={pantalones} />
+          </LandingStaggerItem>
+        </LandingStagger>
       </div>
     </section>
   )

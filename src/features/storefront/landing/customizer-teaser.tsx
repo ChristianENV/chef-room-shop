@@ -1,16 +1,23 @@
-import { routes } from '@/src/config/routes'
+'use client'
+
 import Link from 'next/link'
+import { ArrowRight, Check, Layers, MousePointer2, Wand2 } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { routes } from '@/src/config/routes'
+
+import { LandingMediaImage } from './components/landing-media-image'
+import { LandingReveal } from './components/landing-reveal'
+import { SectionHeader } from './components/section-header'
+import { LANDING_MEDIA } from './lib/landing-media'
 
 const features = [
-  'Elige colores de la prenda',
-  'Agrega tu nombre o texto personalizado',
-  'Sube tu logotipo en alta resolucion',
-  'Visualiza cambios en tiempo real',
-  'Guarda y retoma tus disenos',
-]
+  { icon: Layers, text: 'Elige colores y detalles de la prenda' },
+  { icon: Wand2, text: 'Agrega nombre, texto o bordado' },
+  { icon: MousePointer2, text: 'Visualiza cambios en tiempo real' },
+  { icon: Check, text: 'Guarda y retoma tus diseños cuando quieras' },
+] as const
 
 interface CustomizerTeaserProps {
   className?: string
@@ -18,108 +25,81 @@ interface CustomizerTeaserProps {
 
 export function CustomizerTeaser({ className }: CustomizerTeaserProps) {
   return (
-    <section className={cn('bg-secondary py-20 md:py-28', className)}>
+    <section className={cn('relative overflow-x-clip bg-background py-24 md:py-32', className)}>
+      <div
+        className="pointer-events-none absolute right-0 top-0 h-[min(50vh,480px)] w-1/2 bg-[radial-gradient(circle_at_100%_0%,var(--primary)_0%,transparent_70%)] opacity-[0.06]"
+        aria-hidden
+      />
+
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid items-center gap-16 lg:grid-cols-2 lg:gap-20">
-          {/* Left - Customizer UI mockup */}
-          <div className="relative order-2 lg:order-1">
-            <div className="relative mx-auto max-w-lg overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
-              {/* Mockup header bar */}
-              <div className="flex items-center gap-2 border-b border-border px-5 py-3">
-                <div className="h-2.5 w-2.5 rounded-full bg-border" />
-                <div className="h-2.5 w-2.5 rounded-full bg-border" />
-                <div className="h-2.5 w-2.5 rounded-full bg-border" />
-                <div className="ml-4 h-5 w-48 rounded bg-accent" />
-              </div>
+        <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-20">
+          <LandingReveal className="order-2 lg:order-1">
+            <div className="relative overflow-visible pb-6 pr-2 sm:pb-8 sm:pr-4">
+              <div
+                className="pointer-events-none absolute -inset-3 rounded-[1.75rem] bg-[radial-gradient(ellipse_85%_65%_at_50%_30%,rgba(90,111,221,0.2)_0%,transparent_70%)]"
+                aria-hidden
+              />
 
-              {/* Mockup content */}
-              <div className="grid grid-cols-5">
-                {/* Sidebar panel */}
-                <div className="col-span-2 border-r border-border bg-accent/50 p-4">
-                  <div className="space-y-3">
-                    <div className="h-3 w-16 rounded bg-muted-foreground/20" />
-                    <div className="h-9 w-full rounded-lg border border-primary/30 bg-primary/5" />
-                    <div className="h-9 w-full rounded-lg bg-accent" />
-                    <div className="h-9 w-full rounded-lg bg-accent" />
-                  </div>
-                  <div className="mt-6 space-y-2">
-                    <div className="h-3 w-12 rounded bg-muted-foreground/20" />
-                    <div className="flex gap-2">
-                      <div className="h-7 w-7 rounded-full bg-primary" />
-                      <div className="h-7 w-7 rounded-full bg-foreground" />
-                      <div className="h-7 w-7 rounded-full border border-border bg-card" />
-                    </div>
-                  </div>
-                  <div className="mt-6 space-y-2">
-                    <div className="h-3 w-20 rounded bg-muted-foreground/20" />
-                    <div className="h-9 w-full rounded-lg bg-accent" />
-                  </div>
-                </div>
-
-                {/* Preview area */}
-                <div className="col-span-3 flex items-center justify-center p-8">
-                  <div className="relative">
-                    <div className="h-44 w-32 rounded-lg bg-gradient-to-b from-primary/15 to-primary/5">
-                      <div className="absolute left-1/2 top-6 h-3 w-3 -translate-x-1/2 rounded-full bg-primary/30" />
-                      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 rounded bg-card px-3 py-1 shadow-sm">
-                        <span className="font-sans text-[9px] font-bold tracking-widest text-primary">
-                          CHEF MARTINEZ
-                        </span>
-                      </div>
-                    </div>
-                    <div className="mt-3 text-center">
-                      <div className="mx-auto h-2 w-16 rounded bg-muted-foreground/15" />
-                    </div>
-                  </div>
+              <div className="relative overflow-visible rounded-2xl border border-white/10 bg-[#0d1024] p-1.5 shadow-2xl shadow-primary/25 ring-1 ring-primary/15 sm:p-2">
+                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-[#0d1024]">
+                  <LandingMediaImage
+                    asset={LANDING_MEDIA.customizer}
+                    fit="cover"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    overlay="none"
+                    frameClassName="bg-[#0d1024]"
+                    className="absolute inset-0 z-10 !aspect-auto"
+                  />
                 </div>
               </div>
 
-              {/* Mockup footer */}
-              <div className="flex items-center justify-between border-t border-border px-5 py-3">
-                <div className="h-3 w-24 rounded bg-muted-foreground/15" />
-                <div className="h-8 w-28 rounded-full bg-primary" />
+              <div className="absolute bottom-0 right-2 z-40 rounded-xl border border-white/10 bg-card/95 px-4 py-3 shadow-xl backdrop-blur-md sm:-bottom-1 sm:right-4 md:right-6">
+                <p className="font-sans text-[10px] font-semibold tracking-widest uppercase text-primary">
+                  Vista 3D
+                </p>
+                <p className="mt-0.5 font-serif text-xs text-muted-foreground">
+                  Previsualización en vivo
+                </p>
               </div>
             </div>
-          </div>
+          </LandingReveal>
 
-          {/* Right - Content */}
-          <div className="order-1 lg:order-2">
-            <p className="font-sans text-[13px] font-semibold tracking-[0.2em] uppercase text-primary">
-              Personalizador en linea
-            </p>
-            <h2 className="mt-4 font-sans text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-              Disena tu uniforme, exactamente como lo imaginas
-            </h2>
-            <p className="mt-6 font-serif text-lg leading-relaxed text-muted-foreground">
-              Nuestro personalizador te permite visualizar cada cambio al instante.
-              Colores, bordados, logotipos, tipografia. Todo en tiempo real antes de
-              confirmar tu pedido.
-            </p>
+          <LandingReveal className="order-1 lg:order-2" delay={0.1}>
+            <SectionHeader
+              eyebrow="Personalizador en línea"
+              title="Diseña tu uniforme, exactamente como lo imaginas"
+              description="Colores, bordados, logotipos y tipografía. Todo visible al instante antes de confirmar tu pedido."
+            />
 
             <ul className="mt-10 space-y-4">
-              {features.map((f) => (
-                <li key={f} className="flex items-center gap-3">
-                  <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
-                    <Check className="h-3.5 w-3.5 text-primary" />
+              {features.map(({ icon: Icon, text }) => (
+                <li
+                  key={text}
+                  className="flex items-start gap-4 rounded-xl border border-border/50 bg-card/60 px-4 py-3.5 backdrop-blur-sm"
+                >
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <Icon className="size-4 text-primary" aria-hidden />
                   </div>
-                  <span className="font-serif text-[15px] text-foreground">{f}</span>
+                  <span className="pt-1 font-serif text-[15px] leading-snug text-foreground">
+                    {text}
+                  </span>
                 </li>
               ))}
             </ul>
 
-            <div className="mt-10">
+            <div className="mt-10 flex flex-wrap gap-4">
               <Button
                 size="lg"
-                className="h-12 rounded-full bg-primary px-8 font-sans text-sm font-semibold tracking-wide text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-xl"
+                className="h-12 rounded-full px-8 font-sans text-sm font-semibold tracking-wide shadow-lg shadow-primary/20"
                 asChild
               >
                 <Link href={routes.customize}>
                   Probar el personalizador
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <ArrowRight className="ml-2 size-4" />
                 </Link>
               </Button>
             </div>
-          </div>
+          </LandingReveal>
         </div>
       </div>
     </section>

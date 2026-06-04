@@ -1,12 +1,17 @@
-import { Shield, Eye, CreditCard, Headphones } from 'lucide-react'
+'use client'
+
+import { CreditCard, Eye, Headphones, Shield } from 'lucide-react'
+
 import { cn } from '@/lib/utils'
 
+import { LandingReveal } from './components/landing-reveal'
+
 const trustItems = [
-  { icon: Eye, label: 'Personalizacion visual' },
-  { icon: Shield, label: 'Produccion profesional' },
+  { icon: Eye, label: 'Personalización visual' },
+  { icon: Shield, label: 'Producción profesional' },
   { icon: CreditCard, label: 'Pago seguro' },
-  { icon: Headphones, label: 'Atencion dedicada' },
-]
+  { icon: Headphones, label: 'Atención dedicada' },
+] as const
 
 interface TrustStripProps {
   className?: string
@@ -14,18 +19,27 @@ interface TrustStripProps {
 
 export function TrustStrip({ className }: TrustStripProps) {
   return (
-    <section className={cn('border-y border-border/60 bg-card py-5', className)}>
+    <section
+      className={cn(
+        'border-y border-border/50 bg-card/80 py-6 backdrop-blur-sm md:py-7',
+        className,
+      )}
+    >
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="flex flex-wrap items-center justify-center gap-8 md:justify-between md:gap-4">
-          {trustItems.map((item) => (
-            <div key={item.label} className="flex items-center gap-2.5">
-              <item.icon className="h-4 w-4 text-primary" />
-              <span className="font-sans text-[13px] font-medium tracking-wide text-foreground">
-                {item.label}
-              </span>
-            </div>
-          ))}
-        </div>
+        <LandingReveal>
+          <ul className="grid grid-cols-2 gap-6 md:flex md:flex-wrap md:items-center md:justify-between md:gap-4">
+            {trustItems.map(({ icon: Icon, label }) => (
+              <li key={label} className="flex items-center justify-center gap-2.5 md:justify-start">
+                <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
+                  <Icon className="size-4 text-primary" aria-hidden />
+                </span>
+                <span className="font-sans text-[12px] font-medium tracking-wide text-foreground md:text-[13px]">
+                  {label}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </LandingReveal>
       </div>
     </section>
   )
