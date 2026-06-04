@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Image, Palette, Play, Sparkles, Type } from 'lucide-react'
+import { ArrowRight, Image, Palette, Sparkles, Type } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { routes } from '@/src/config/routes'
@@ -19,13 +19,12 @@ const floatingFeatures = [
 ] as const
 
 const floatPositions = [
-  'left-0 top-[18%] md:-left-6 lg:-left-10',
-  'right-0 top-[38%] md:-right-6 lg:-right-8',
-  'left-4 bottom-[22%] md:left-0 lg:-left-4',
+  'left-0 top-[14%] md:-left-6 lg:-left-12',
+  'right-0 top-[32%] md:-right-6 lg:-right-10',
+  'left-4 bottom-[18%] md:left-0 lg:-left-6',
 ] as const
 
 export function HeroSection() {
-  const heroVideoReady = Boolean(LANDING_MEDIA.heroPoster.src?.trim())
 
   return (
     <section className="relative overflow-hidden bg-background">
@@ -39,7 +38,7 @@ export function HeroSection() {
       />
 
       <div className="mx-auto max-w-7xl px-6 pb-16 pt-12 md:pb-24 md:pt-16 lg:px-8 lg:pb-28 lg:pt-20">
-        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(520px,1.1fr)] lg:gap-14 xl:gap-16">
+        <div className="grid items-start gap-12 lg:grid-cols-[minmax(0,2fr)_minmax(440px,1fr)] lg:gap-12 xl:grid-cols-[minmax(0,2fr)_minmax(480px,1fr)] xl:gap-14">
           <LandingReveal className="relative z-10 max-w-xl lg:max-w-none">
             <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-card/80 px-4 py-1.5 shadow-sm backdrop-blur-sm">
               <Sparkles className="size-3.5 text-primary" aria-hidden />
@@ -105,42 +104,34 @@ export function HeroSection() {
             </div>
           </LandingReveal>
 
-          <LandingReveal className="relative lg:pl-2 xl:pl-4" delay={0.12}>
-            <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
-              <div className="relative overflow-hidden rounded-[1.75rem] border border-border/60 bg-[#121421] shadow-2xl shadow-primary/10 ring-1 ring-border/40">
-                <LandingMediaImage
-                  asset={LANDING_MEDIA.hero}
-                  priority
-                  fit="contain"
-                  sizes="(max-width: 1024px) 92vw, 52vw"
-                  overlay="none"
-                  frameClassName="bg-[#121421]"
-                  className="min-h-[300px] sm:min-h-[380px] md:min-h-[460px] lg:min-h-[520px] !aspect-auto"
-                />
+          <LandingReveal className="relative w-full lg:pl-0 xl:pl-2" delay={0.12}>
+            <div className="relative mx-auto w-full max-w-[min(100%,400px)] sm:max-w-[460px] md:max-w-[500px] lg:mx-0 lg:max-w-none">
+              <div
+                className="pointer-events-none absolute -inset-4 rounded-[2.25rem] bg-[radial-gradient(ellipse_70%_80%_at_50%_45%,rgba(90,111,221,0.24)_0%,transparent_72%)] blur-sm lg:-inset-8"
+                aria-hidden
+              />
 
-                {heroVideoReady ? (
-                  <button
-                    type="button"
-                    className="absolute left-1/2 top-1/2 flex size-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-primary/90 text-primary-foreground shadow-xl backdrop-blur-sm transition hover:scale-105"
-                    aria-label="Reproducir video"
-                  >
-                    <Play className="ml-0.5 size-7 fill-current" />
-                  </button>
-                ) : (
-                  <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-white backdrop-blur-md">
-                    <span className="font-sans text-[10px] font-medium tracking-widest uppercase opacity-80">
-                      Video editorial — próximamente
-                    </span>
-                    <Play className="size-4 opacity-50" aria-hidden />
-                  </div>
-                )}
+              <div className="relative overflow-visible rounded-[2rem] border border-white/10 bg-[#12162c]/75 shadow-2xl shadow-primary/15 ring-1 ring-white/5 backdrop-blur-sm">
+                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem] sm:aspect-[3/4] lg:aspect-[4/5]">
+                  <LandingMediaImage
+                    asset={LANDING_MEDIA.hero}
+                    priority
+                    fit="contain"
+                    sizes="(max-width: 1024px) min(95vw, 500px), min(58vw, 640px)"
+                    overlay="none"
+                    frameClassName="bg-[#12162c]"
+                    className="absolute inset-0 !aspect-auto"
+                    imageClassName="!p-0"
+                  />
+
+                </div>
               </div>
 
               {floatingFeatures.map((feat, i) => (
                 <LandingFloat
                   key={feat.label}
                   delay={0.2 + i * 0.12}
-                  className={cn('absolute z-20 hidden sm:block', floatPositions[i])}
+                  className={cn('absolute z-30 hidden sm:block', floatPositions[i])}
                 >
                   <div className="flex items-center gap-3 rounded-2xl border border-border/80 bg-card/95 px-4 py-3 shadow-lg backdrop-blur-md">
                     <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10">

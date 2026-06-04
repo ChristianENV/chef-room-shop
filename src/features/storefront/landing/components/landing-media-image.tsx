@@ -12,7 +12,7 @@ type LandingMediaImageProps = {
   imageClassName?: string
   priority?: boolean
   sizes?: string
-  overlay?: 'none' | 'soft' | 'dramatic'
+  overlay?: 'none' | 'soft' | 'dramatic' | 'category'
   fit?: 'cover' | 'contain'
   frameClassName?: string
 }
@@ -65,6 +65,8 @@ export function LandingMediaImage({
               'bg-gradient-to-t from-background/40 via-transparent to-transparent',
             overlay === 'dramatic' &&
               'bg-gradient-to-tr from-primary/30 via-transparent to-transparent',
+            overlay === 'category' &&
+              'bg-gradient-to-t from-[#0c0f24]/95 via-[#0c0f24]/25 to-transparent',
           )}
           aria-hidden
         />

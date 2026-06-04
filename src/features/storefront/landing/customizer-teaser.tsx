@@ -25,7 +25,7 @@ interface CustomizerTeaserProps {
 
 export function CustomizerTeaser({ className }: CustomizerTeaserProps) {
   return (
-    <section className={cn('relative overflow-hidden bg-background py-24 md:py-32', className)}>
+    <section className={cn('relative overflow-x-clip bg-background py-24 md:py-32', className)}>
       <div
         className="pointer-events-none absolute right-0 top-0 h-[min(50vh,480px)] w-1/2 bg-[radial-gradient(circle_at_100%_0%,var(--primary)_0%,transparent_70%)] opacity-[0.06]"
         aria-hidden
@@ -34,22 +34,26 @@ export function CustomizerTeaser({ className }: CustomizerTeaserProps) {
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-20">
           <LandingReveal className="order-2 lg:order-1">
-            <div className="relative">
-              <div className="overflow-hidden rounded-2xl border border-primary/20 bg-[#121421] p-2 shadow-2xl shadow-primary/20 ring-1 ring-primary/15 sm:p-3">
-                <div
-                  className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(90,111,221,0.18)_0%,transparent_65%)]"
-                  aria-hidden
-                />
-                <LandingMediaImage
-                  asset={LANDING_MEDIA.customizer}
-                  fit="contain"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  overlay="none"
-                  frameClassName="rounded-xl bg-[#0f1118]"
-                  className="relative z-10 min-h-[220px] sm:min-h-[280px] md:min-h-[320px] lg:min-h-[360px] !aspect-auto"
-                />
+            <div className="relative overflow-visible pb-6 pr-2 sm:pb-8 sm:pr-4">
+              <div
+                className="pointer-events-none absolute -inset-3 rounded-[1.75rem] bg-[radial-gradient(ellipse_85%_65%_at_50%_30%,rgba(90,111,221,0.2)_0%,transparent_70%)]"
+                aria-hidden
+              />
+
+              <div className="relative overflow-visible rounded-2xl border border-white/10 bg-[#0d1024] p-1.5 shadow-2xl shadow-primary/25 ring-1 ring-primary/15 sm:p-2">
+                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-[#0d1024]">
+                  <LandingMediaImage
+                    asset={LANDING_MEDIA.customizer}
+                    fit="cover"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    overlay="none"
+                    frameClassName="bg-[#0d1024]"
+                    className="absolute inset-0 z-10 !aspect-auto"
+                  />
+                </div>
               </div>
-              <div className="absolute -bottom-5 -right-4 hidden rounded-xl border border-border bg-card px-4 py-3 shadow-lg md:block">
+
+              <div className="absolute bottom-0 right-2 z-40 rounded-xl border border-white/10 bg-card/95 px-4 py-3 shadow-xl backdrop-blur-md sm:-bottom-1 sm:right-4 md:right-6">
                 <p className="font-sans text-[10px] font-semibold tracking-widest uppercase text-primary">
                   Vista 3D
                 </p>

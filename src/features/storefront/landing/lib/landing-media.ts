@@ -68,7 +68,7 @@ export const LANDING_MEDIA = {
     kind: 'image',
     src: `${LANDING_IMAGE_BASE}/landing-hero-customizer.png`,
     alt: 'Configurador premium de uniforme Chef Room',
-    aspectClass: 'aspect-[16/10] md:aspect-[4/3]',
+    aspectClass: 'aspect-[4/5]',
     label: 'Personalizador',
   },
   heroPoster: {
