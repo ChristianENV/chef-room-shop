@@ -8,6 +8,8 @@ import {
   resolveCustomizerVariant,
 } from '../lib/resolve-customizer-variant'
 import type { CustomizerProductData } from '../types/customizer-product.types'
+import { calculateCustomizerPrice } from '../pricing/calculate-customizer-price'
+import type { CustomizerPriceBreakdown } from '../pricing/customizer-pricing.types'
 import type {
   ButtonStyle,
   CollarStyle,
@@ -507,4 +509,47 @@ export function selectCanUndo(state: CustomizerState): boolean {
 
 export function selectCanRedo(state: CustomizerState): boolean {
   return state.future.length > 0
+}
+
+let priceBreakdownCache: { key: string; value: CustomizerPriceBreakdown } | null = null
+
+function pricingBreakdownCacheKey(state: CustomizerState): string {
+  const basePriceCents = state.product?.basePriceCents ?? 0
+  const layersKey = state.layers
+    .filter((layer) => isEditableElement(layer.type))
+    .map((layer) =>
+      [
+        layer.id,
+        layer.type,
+        layer.visible ? 1 : 0,
+        layer.zone ?? '',
+        layer.text ?? '',
+        layer.assetPublicId ?? '',
+        layer.assetUrl ?? '',
+      ].join(':'),
+    )
+    .join('|')
+  return `${basePriceCents}|${layersKey}`
+}
+
+export function selectPriceBreakdown(state: CustomizerState): CustomizerPriceBreakdown {
+  const key = pricingBreakdownCacheKey(state)
+  if (priceBreakdownCache?.key === key) {
+    return priceBreakdownCache.value
+  }
+
+  const value = calculateCustomizerPrice({
+    basePriceCents: state.product?.basePriceCents ?? 0,
+    layers: state.layers,
+  })
+  priceBreakdownCache = { key, value }
+  return value
+}
+
+export function selectCustomizationPriceCents(state: CustomizerState): number {
+  return selectPriceBreakdown(state).customizationPriceCents
+}
+
+export function selectTotalPriceCents(state: CustomizerState): number {
+  return selectPriceBreakdown(state).totalPriceCents
 }

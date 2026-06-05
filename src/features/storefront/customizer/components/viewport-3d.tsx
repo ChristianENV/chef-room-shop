@@ -1,12 +1,22 @@
 'use client'
 
-import { forwardRef, useImperativeHandle, useMemo, useRef, useState, type RefObject } from 'react'
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { ContactShadows, Environment, Float, Html, OrbitControls, RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
 import { useCustomizerStore } from '../store/customizer.store'
 import { getCustomizerModelForProduct } from '../3d/model-registry'
 import { GarmentModelLoader } from '../3d/garment-model'
+import { ModelCameraRig, type ModelReadyPayload } from '../3d/model-camera-rig'
 import {
   ViewportCaptureBridge,
   type ViewportCaptureHandle,
@@ -90,20 +100,25 @@ function JacketModel() {
 }
 
 type GarmentSceneProps = {
-  /** Called with true when a real GLB model successfully loads (decals active). */
   onGlbActive: (active: boolean) => void
+  onModelReady: (payload: ModelReadyPayload) => void
 }
 
-/**
- * Renders the GLB garment when a model is registered for the product (and the
- * mock pipeline is enabled), otherwise the procedural fallback. On GLB load
- * failure the loader swaps back to the procedural model automatically.
- * Notifies the parent whether a GLB with 3D decals is active so the DOM
- * overlay can be suppressed to avoid double-rendering elements.
- */
-function GarmentScene({ onGlbActive }: GarmentSceneProps) {
+function GarmentScene({ onGlbActive, onModelReady }: GarmentSceneProps) {
   const { product, baseColor, detailColor, sleeveStyle, layers } = useCustomizerStore()
   const modelConfig = useMemo(() => getCustomizerModelForProduct(product), [product])
+
+  const handleModelReady = useCallback(
+    (payload: ModelReadyPayload) => {
+      onGlbActive(true)
+      onModelReady(payload)
+    },
+    [onGlbActive, onModelReady],
+  )
+
+  const handleModelError = useCallback(() => {
+    onGlbActive(false)
+  }, [onGlbActive])
 
   if (!modelConfig) {
     return <JacketModel />
@@ -118,8 +133,8 @@ function GarmentScene({ onGlbActive }: GarmentSceneProps) {
       layers={layers}
       suspenseFallback={<GlbLoadingFallback />}
       errorFallback={<JacketModel />}
-      onModelReady={() => onGlbActive(true)}
-      onModelError={() => onGlbActive(false)}
+      onModelReady={handleModelReady}
+      onModelError={handleModelError}
     />
   )
 }
@@ -135,11 +150,24 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
   const { viewMode, product } = useCustomizerStore()
   const internalCaptureRef = useRef<ViewportCaptureHandle>(null)
   const viewportRootRef = useRef<HTMLDivElement>(null)
-  // True once a real GLB model has loaded — decals are inside WebGL, so the
-  // DOM overlay is suppressed to avoid rendering elements twice.
   const [glbActive, setGlbActive] = useState(false)
+  const [modelReady, setModelReady] = useState<ModelReadyPayload | null>(null)
+  const prevViewModeRef = useRef(viewMode)
+  const prevProductIdRef = useRef(product?.id)
   const heroImage =
     product?.images.find((image) => image.isPrimary)?.url ?? product?.images[0]?.url ?? null
+
+  useEffect(() => {
+    const entering3D = prevViewModeRef.current !== '3D' && viewMode === '3D'
+    const productChanged = prevProductIdRef.current !== product?.id
+    prevViewModeRef.current = viewMode
+    prevProductIdRef.current = product?.id
+
+    if (viewMode === '3D' && (entering3D || productChanged)) {
+      setGlbActive(false)
+      setModelReady(null)
+    }
+  }, [viewMode, product?.id])
 
   useImperativeHandle(ref, () => ({
     captureDesignPreviews: async () => {
@@ -153,6 +181,7 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
     return (
       <div
         ref={viewportRootRef}
+        data-testid="customizer-2d-viewport"
         className="relative flex h-full w-full items-center justify-center bg-gradient-to-br from-[#080810] via-[#0c0c18] to-[#080810]"
       >
         {heroImage ? (
@@ -175,24 +204,32 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
   return (
     <div
       ref={viewportRootRef}
+      data-testid="customizer-3d-viewport"
       className="relative h-full w-full bg-gradient-to-br from-[#080810] via-[#0c0c18] to-[#080810]"
     >
       <div className="customizer-noise absolute inset-0" />
-      {/* DOM overlay: shown only when no GLB is active (fallback or 2D). */}
       {!glbActive && <ViewportElementOverlay />}
       <Canvas
-        camera={{ position: [0, 0.3, 3.2], fov: 32 }}
+        camera={{ position: [0, 0.3, 3.2], fov: 32, near: 0.01, far: 100 }}
         className="relative z-10"
         gl={{ preserveDrawingBuffer: true, antialias: true }}
+        resize={{ debounce: 0, scroll: false }}
       >
         <ViewportCaptureBridge ref={internalCaptureRef} viewportRootRef={viewportRootRef} />
         <ambientLight intensity={0.35} />
         <directionalLight position={[4, 6, 4]} intensity={0.9} />
         <directionalLight position={[-4, 3, -3]} intensity={0.25} />
-        <GarmentScene onGlbActive={setGlbActive} />
+        <GarmentScene
+          onGlbActive={setGlbActive}
+          onModelReady={setModelReady}
+        />
+        <ModelCameraRig modelReady={modelReady} />
         <ContactShadows position={[0, -0.85, 0]} opacity={0.35} scale={4} blur={2} far={3} />
-        <Environment preset="studio" environmentIntensity={0.4} />
+        {modelReady?.bounds.valid ? (
+          <Environment preset="studio" environmentIntensity={0.4} />
+        ) : null}
         <OrbitControls
+          makeDefault
           enablePan={false}
           minDistance={2.2}
           maxDistance={5}

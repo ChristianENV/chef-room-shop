@@ -22,6 +22,8 @@ import {
   validateUploadSize,
 } from '@/src/server/storage/r2'
 
+import { applyServerPricingToConfigJson } from '@/src/server/customizer-pricing/apply-server-pricing'
+
 import type { GraphQLContext } from '../../context'
 import { mapDesignToGql, mapProductForDesign } from '../account/account.mappers'
 import type { AccountDesignGql } from '../account/account.types'
@@ -252,12 +254,14 @@ export async function createDesignDraft(
   const actor = await resolveDesignActor(context)
   await assertProductExists(context, parsed.productId, parsed.productVariantId)
 
+  const configWithPricing = await applyServerPricingToConfigJson(context, parsed.configJson)
+
   const design = await context.prisma.design.create({
     data: {
       userId: actor.userId,
       guestSessionId: actor.guestSessionId,
       status: DesignStatus.DRAFT,
-      configJson: parsed.configJson as InputJsonValue,
+      configJson: configWithPricing as InputJsonValue,
       name: 'Borrador',
     },
   })
@@ -281,10 +285,12 @@ export async function updateDesign(
   const actor = await resolveDesignActor(context)
   await assertDesignOwnership(context, actor, parsed.designId)
 
+  const configWithPricing = await applyServerPricingToConfigJson(context, parsed.configJson)
+
   const design = await context.prisma.design.update({
     where: { id: parsed.designId },
     data: {
-      configJson: parsed.configJson as InputJsonValue,
+      configJson: configWithPricing as InputJsonValue,
       status: DesignStatus.SAVED,
     },
   })

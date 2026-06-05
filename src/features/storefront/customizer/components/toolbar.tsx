@@ -3,8 +3,9 @@
 import { Minus, Plus, Redo2, RotateCcw, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { useCustomizerStore } from '../store/customizer.store'
+import { useCustomizerStore, selectPriceBreakdown } from '../store/customizer.store'
 import { formatPriceMxn } from '../lib/customizer-utils'
+import { CustomizerPriceBreakdownPopover } from './customizer-price-breakdown'
 
 interface TopToolbarProps {
   onSaveDesign?: () => void
@@ -108,6 +109,7 @@ export function ViewportControls() {
         <button
           type="button"
           onClick={() => setViewMode('2D')}
+          data-testid="customizer-render-mode-2d"
           className={cn(
             'rounded-md px-3 py-1 text-xs font-medium transition',
             viewMode === '2D' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground',
@@ -118,6 +120,7 @@ export function ViewportControls() {
         <button
           type="button"
           onClick={() => setViewMode('3D')}
+          data-testid="customizer-render-mode-3d"
           className={cn(
             'rounded-md px-3 py-1 text-xs font-medium transition',
             viewMode === '3D' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground',
@@ -184,51 +187,81 @@ export function BottomActionBar({
   isAddToCartDisabled = false,
 }: BottomActionBarProps) {
   const { size, product, quantity, setQuantity } = useCustomizerStore()
-  const unitPriceCents = product?.basePriceCents ?? 0
+  const breakdown = useCustomizerStore(selectPriceBreakdown)
 
   return (
     <div className="absolute bottom-0 left-0 right-0 z-20">
-      <div className="customizer-glass mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 rounded-t-2xl px-4 py-3">
-        <div className="min-w-0">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Producto</div>
-          <div className="truncate text-sm font-semibold text-foreground">
+      <div className="customizer-glass mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 rounded-t-2xl px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
+        <div className="min-w-0 flex-1 sm:flex-none">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground sm:text-[11px]">
+            Producto
+          </div>
+          <div className="truncate text-xs font-semibold text-foreground sm:text-sm">
             {product?.name ?? 'Producto'}
           </div>
         </div>
-        <div>
+        <div className="hidden sm:block">
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Talla</div>
           <div className="text-sm font-semibold text-foreground">{size}</div>
         </div>
-        <div>
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Precio</div>
-          <div className="text-sm font-semibold text-primary">
-            {product ? formatPriceMxn(unitPriceCents) : '—'}
+        <div className="min-w-[5.5rem]">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground sm:text-[11px]">
+            Base
+          </div>
+          <div className="text-xs font-semibold text-foreground sm:text-sm">
+            {product ? formatPriceMxn(breakdown.basePriceCents) : '—'}
           </div>
         </div>
+        <div className="min-w-[6.5rem]">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground sm:text-[11px]">
+            Personalización
+          </div>
+          <div className="text-xs font-semibold text-primary sm:text-sm">
+            {breakdown.customizationPriceCents > 0
+              ? `+${formatPriceMxn(breakdown.customizationPriceCents)}`
+              : formatPriceMxn(0)}
+          </div>
+        </div>
+        <div className="min-w-[5.5rem]">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground sm:text-[11px]">
+            Total
+          </div>
+          <div className="text-xs font-bold text-primary sm:text-sm">
+            {product ? formatPriceMxn(breakdown.totalPriceCents) : '—'}
+          </div>
+        </div>
+        <CustomizerPriceBreakdownPopover breakdown={breakdown} compact />
         <div>
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Cantidad</div>
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground sm:text-[11px]">
+            Cant.
+          </div>
           <div className="flex items-center gap-1">
             <button
               type="button"
               title="Disminuir"
               onClick={() => setQuantity(quantity - 1)}
               disabled={quantity <= 1}
-              className="flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground disabled:opacity-30"
+              className="flex size-6 items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground disabled:opacity-30 sm:size-7"
             >
               <Minus className="size-3.5" />
             </button>
-            <span className="w-6 text-center text-sm font-semibold">{quantity}</span>
+            <span className="w-5 text-center text-xs font-semibold sm:w-6 sm:text-sm">{quantity}</span>
             <button
               type="button"
               title="Aumentar"
               onClick={() => setQuantity(quantity + 1)}
-              className="flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground"
+              className="flex size-6 items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground sm:size-7"
             >
               <Plus className="size-3.5" />
             </button>
           </div>
         </div>
-        <Button onClick={onAddToCart} disabled={isAddingToCart || isAddToCartDisabled}>
+        <Button
+          size="sm"
+          onClick={onAddToCart}
+          disabled={isAddingToCart || isAddToCartDisabled}
+          className="w-full sm:w-auto"
+        >
           {isAddingToCart ? 'Agregando…' : 'Agregar al carrito'}
         </Button>
       </div>

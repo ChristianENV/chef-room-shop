@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useCustomizerStore } from '../../store/customizer.store'
+import { getEstimatedElementPrice } from '../../pricing/get-estimated-element-price'
 import type { LayerType } from '../../types/customizer.types'
 
 interface ElementAddSectionProps {
@@ -31,6 +32,11 @@ export function ElementAddSection({
   const { layers, selectedLayerId, selectLayer, addElement, addTextElement, addNameElement } =
     useCustomizerStore()
   const items = layers.filter((layer) => matchTypes.includes(layer.type))
+  const estimatedPrice = getEstimatedElementPrice({
+    type: elementType === 'logo' ? 'logo' : 'text',
+    zone: 'pecho',
+    layers,
+  })
 
   const handleAdd = () => {
     if (variant === 'name') {
@@ -61,6 +67,7 @@ export function ElementAddSection({
       <Button className="w-full" onClick={handleAdd} data-testid={testId}>
         <Plus className="mr-1 size-4" />
         {ctaLabel}
+        <span className="ml-auto text-xs font-medium opacity-90">{estimatedPrice.formatted}</span>
       </Button>
 
       {items.length > 0 ? (
@@ -87,6 +94,9 @@ export function ElementAddSection({
         </div>
       ) : null}
 
+      <p className="text-[11px] text-muted-foreground/70">
+        Solo bordado. {estimatedPrice.hint ?? 'Cada elemento bordado se suma al total en tiempo real.'}
+      </p>
       {note ? <p className="text-[11px] text-muted-foreground/70">{note}</p> : null}
     </div>
   )

@@ -1,6 +1,14 @@
 'use client'
 
-import { Component, Suspense, useEffect, useMemo, useRef, type ReactNode } from 'react'
+import {
+  Component,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  type ReactNode,
+} from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
@@ -15,6 +23,16 @@ import {
 import { CUSTOMIZER_ZONES, findZoneMesh, resolveZoneId } from './customizer-zones'
 import { TextDecal } from './text-decal'
 import { LogoDecal } from './logo-decal'
+import { logCustomizer3d } from './customizer-3d-debug'
+import {
+  applyModelFitTransform,
+  calculateModelFitTransform,
+  getSafeModelBounds,
+  logModelFit,
+} from './fit-model-to-viewport'
+import type { ModelReadyPayload } from './model-camera-rig'
+
+export type { ModelBounds } from './fit-model-to-viewport'
 
 export type GarmentModelProps = {
   modelConfig: CustomizerModelDefinition
@@ -22,7 +40,7 @@ export type GarmentModelProps = {
   detailColor: string
   sleeveStyle: SleeveStyle
   layers: Layer[]
-  onModelReady?: () => void
+  onModelReady?: (payload: ModelReadyPayload) => void
   onModelError?: (error: Error) => void
 }
 
@@ -33,17 +51,30 @@ function GarmentModelInner({
   layers,
   onModelReady,
 }: GarmentModelProps) {
-  const groupRef = useRef<THREE.Group>(null)
+  const rotationRef = useRef<THREE.Group>(null)
+  const modelRootRef = useRef<THREE.Group>(null)
+  const fitAppliedForModelRef = useRef<string | null>(null)
+  const onModelReadyRef = useRef(onModelReady)
+
+  useEffect(() => {
+    onModelReadyRef.current = onModelReady
+  }, [onModelReady])
+
   const { scene } = useGLTF(modelConfig.modelUrl)
 
-  // Clone the scene graph once (materials are shared until the resolver clones
-  // the ones we tint). Avoids mutating the cached GLTF across instances.
-  const model = useMemo(() => scene.clone(true), [scene])
+  const clonedScene = useMemo(() => {
+    const clone = scene.clone(true)
+    clone.traverse((object) => {
+      if (object instanceof THREE.Mesh && object.material) {
+        const materials = Array.isArray(object.material) ? object.material : [object.material]
+        object.material = materials.map((material) => material.clone())
+      }
+    })
+    return clone
+  }, [scene, modelConfig.modelUrl])
 
-  // Resolve + clone-once tintable materials (preserving PBR maps). The returned
-  // materials are mutated in place on color changes — never re-cloned per render.
   const tintGroups = useMemo(() => {
-    const groups = resolveTintableMaterialGroups(model, {
+    const groups = resolveTintableMaterialGroups(clonedScene, {
       body: modelConfig.materialHints.body,
       detail: modelConfig.materialHints.detail,
       buttons: modelConfig.materialHints.buttons,
@@ -56,28 +87,66 @@ function GarmentModelInner({
       )
     }
     return groups
-  }, [model, modelConfig])
+  }, [clonedScene, modelConfig])
+
+  useLayoutEffect(() => {
+    const root = modelRootRef.current
+    if (!root) return
+    if (fitAppliedForModelRef.current === modelConfig.modelUrl) return
+
+    const preBounds = getSafeModelBounds(clonedScene)
+    const registryTransform = {
+      scale: modelConfig.scale,
+      position: modelConfig.position,
+      rotation: modelConfig.rotation,
+    }
+
+    const registryFit = calculateModelFitTransform(preBounds, { registryTransform })
+    const transform = registryFit ?? calculateModelFitTransform(preBounds, { targetHeight: 1.5 })
+    const fitSource = registryFit ? 'registry' : 'computed'
+
+    if (!transform) {
+      logCustomizer3d('model-fit-skipped', {
+        modelUrl: modelConfig.modelUrl,
+        reason: 'invalid-bounds',
+        boundingBoxSize: preBounds.size.toArray(),
+      })
+      return
+    }
+
+    root.position.set(0, 0, 0)
+    root.rotation.set(0, 0, 0)
+    root.scale.setScalar(1)
+    applyModelFitTransform(root, transform)
+
+    const worldBounds = getSafeModelBounds(root)
+    fitAppliedForModelRef.current = modelConfig.modelUrl
+
+    logModelFit(modelConfig.modelUrl, worldBounds, transform, fitSource)
+    inspectGltf(modelConfig.id, clonedScene)
+    onModelReadyRef.current?.({
+      modelUrl: modelConfig.modelUrl,
+      bounds: worldBounds,
+    })
+  }, [clonedScene, modelConfig])
 
   useEffect(() => {
-    inspectGltf(modelConfig.id, model)
-    onModelReady?.()
-  }, [model, modelConfig.id, onModelReady])
+    if (fitAppliedForModelRef.current !== modelConfig.modelUrl) {
+      fitAppliedForModelRef.current = null
+    }
+  }, [modelConfig.modelUrl])
 
-  // baseColor -> body materials.
   useEffect(() => {
     tintGroups.body.forEach((material) => applyColorToMaterial(material, baseColor))
   }, [tintGroups, baseColor])
 
-  // detailColor -> detail + buttons materials (no dedicated buttonColor in store).
-  // If there are no detail/button materials, this is a no-op (won't break).
   useEffect(() => {
     tintGroups.detail.forEach((material) => applyColorToMaterial(material, detailColor))
     tintGroups.buttons.forEach((material) => applyColorToMaterial(material, detailColor))
   }, [tintGroups, detailColor])
 
-  // Rotate to front/back, matching the procedural fallback so capture works.
   useFrame(() => {
-    const group = groupRef.current
+    const group = rotationRef.current
     if (!group) return
     const { viewAngle, captureInstant } = useCustomizerStore.getState()
     const target = viewAngle === 'back' ? Math.PI : 0
@@ -88,59 +157,57 @@ function GarmentModelInner({
     group.rotation.y = THREE.MathUtils.lerp(group.rotation.y, target, 0.06)
   })
 
-  const visibleDecalLayers = layers.filter((layer: Layer) =>
-    layer.visible &&
-    (layer.type === 'text' || layer.type === 'logo') &&
-    (layer.type === 'logo' ? Boolean(layer.assetUrl) : Boolean(layer.text?.trim())),
+  const visibleDecalLayers = layers.filter(
+    (layer: Layer) =>
+      layer.visible &&
+      (layer.type === 'text' || layer.type === 'logo') &&
+      (layer.type === 'logo' ? Boolean(layer.assetUrl) : Boolean(layer.text?.trim())),
   )
 
   return (
-    <group
-      ref={groupRef}
-      position={modelConfig.position}
-      rotation={modelConfig.rotation}
-      scale={modelConfig.scale}
-    >
-      <primitive object={model} />
+    <group ref={rotationRef}>
+      <group ref={modelRootRef}>
+        <primitive object={clonedScene} />
 
-      {visibleDecalLayers.map((layer: Layer) => {
-        const zoneId = resolveZoneId(layer.zone)
-        const zone = CUSTOMIZER_ZONES[zoneId]
-        const mesh = findZoneMesh(model, zone.targetMeshHints)
+        {visibleDecalLayers.map((layer: Layer) => {
+          const zoneId = resolveZoneId(layer.zone)
+          const zone = CUSTOMIZER_ZONES[zoneId]
+          const mesh = findZoneMesh(clonedScene, zone.targetMeshHints)
 
-        if (!mesh) return null
+          if (!mesh) return null
 
-        if (layer.type === 'text') {
-          return (
-            <TextDecal
-              key={layer.id}
-              text={layer.text ?? ''}
-              fontSize={layer.fontSize ?? 18}
-              textColor={layer.textColor ?? '#ffffff'}
-              fontFamily={layer.fontFamily ?? 'sans-serif'}
-              opacity={layer.opacity}
-              zone={zone}
-              mesh={mesh}
-            />
-          )
-        }
-
-        if (layer.type === 'logo' && layer.assetUrl) {
-          return (
-            <Suspense key={layer.id} fallback={null}>
-              <LogoDecal
-                assetUrl={layer.assetUrl}
+          if (layer.type === 'text') {
+            return (
+              <TextDecal
+                key={layer.id}
+                text={layer.text ?? ''}
+                fontSize={layer.fontSize ?? 18}
+                textColor={layer.textColor ?? '#ffffff'}
+                fontFamily={layer.fontFamily ?? 'sans-serif'}
                 opacity={layer.opacity}
-                rotation={layer.rotation}
                 zone={zone}
                 mesh={mesh}
               />
-            </Suspense>
-          )
-        }
+            )
+          }
 
-        return null
-      })}
+          if (layer.type === 'logo' && layer.assetUrl) {
+            return (
+              <Suspense key={layer.id} fallback={null}>
+                <LogoDecal
+                  assetUrl={layer.assetUrl}
+                  opacity={layer.opacity}
+                  rotation={layer.rotation}
+                  zone={zone}
+                  mesh={mesh}
+                />
+              </Suspense>
+            )
+          }
+
+          return null
+        })}
+      </group>
     </group>
   )
 }
@@ -175,23 +242,10 @@ class GarmentModelErrorBoundary extends Component<
 }
 
 export type GarmentModelLoaderProps = GarmentModelProps & {
-  /**
-   * Shown inside the <Canvas> while the GLB is downloading (Suspense fallback).
-   * Use a lightweight R3F-compatible element (e.g. an <Html> spinner).
-   */
   suspenseFallback?: ReactNode
-  /**
-   * Rendered when the GLB fails to load or parse (error boundary fallback).
-   * Should be the procedural model so the viewport never breaks.
-   */
   errorFallback: ReactNode
 }
 
-/**
- * Renders the GLB garment with Suspense + error boundary.
- * - While downloading: shows `suspenseFallback` (spinner).
- * - On load/parse error: shows `errorFallback` (procedural model).
- */
 export function GarmentModelLoader({
   suspenseFallback,
   errorFallback,
