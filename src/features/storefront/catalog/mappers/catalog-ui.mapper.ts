@@ -1,5 +1,6 @@
 import type { Product, ProductCategory, ProductColor, ProductImage } from '@/lib/types'
 import { centsToPesos } from '@/src/lib/formatters'
+import { getProductMainImageUrl } from '@/src/lib/product/product-images'
 
 import type { ProductVariantOption } from '@/src/features/storefront/products/types'
 
@@ -32,13 +33,20 @@ function mapImages(images: CatalogProduct['images']): ProductImage[] {
   if (images.length === 0) return []
 
   return images
+    .map((image) => {
+      const mapped: ProductImage = {
+        id: image.id,
+        url: image.url?.trim() ?? '',
+        alt: image.alt ?? '',
+        isPrimary: image.isPrimary,
+        sortOrder: image.sortOrder ?? null,
+        publicId: image.publicId ?? null,
+      }
+      const resolved = getProductMainImageUrl(mapped)
+      if (resolved) mapped.url = resolved
+      return mapped
+    })
     .filter((image) => Boolean(image.url?.trim()))
-    .map((image) => ({
-      id: image.id,
-      url: image.url,
-      alt: image.alt ?? '',
-      isPrimary: image.isPrimary,
-    }))
 }
 
 function uniqueColorsFromVariants(variants: CatalogProductVariant[]): ProductColor[] {

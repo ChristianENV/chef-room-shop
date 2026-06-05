@@ -11,6 +11,7 @@ export type CatalogProductType = {
 export type CatalogProductImage = {
   id: string
   url: string
+  publicId?: string | null
   alt?: string | null
   sortOrder?: number | null
   isPrimary: boolean

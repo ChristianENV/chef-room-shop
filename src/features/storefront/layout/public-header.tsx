@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { Suspense, useState, type ReactNode } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { ChevronDown, Menu, ShoppingBag, User, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -27,6 +27,11 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ChefRoomLogo } from '@/components/brand/chef-room-logo'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
+import {
+  EMPTY_SEARCH_PARAMS,
+  isShopNavHrefActive,
+  type SearchParamsLike,
+} from '@/src/config/shop-category'
 import { routes } from '@/src/config/routes'
 import { CartPopover } from '@/src/features/storefront/cart/components/cart-popover'
 import { useCartBadgeCount } from '@/src/features/storefront/cart/api/use-my-cart-query'
@@ -37,6 +42,7 @@ import {
   mobileNavMainLinks,
   mobileShopGroup,
   publicNavItems,
+  shopCatalogNavLink,
   shopDropdownChildren,
   type NavLink,
 } from '@/src/config/navigation.storefront'
@@ -169,22 +175,26 @@ function DesktopNavLink({
 function MobileNavLink({
   link,
   pathname,
+  searchParams,
   onNavigate,
   testId,
   nested = false,
 }: {
   link: NavLink
   pathname: string
+  searchParams: SearchParamsLike
   onNavigate: () => void
   testId?: string
   nested?: boolean
 }) {
-  const active = isLinkActive(pathname, link.href)
+  const active = link.href.startsWith(routes.shop)
+    ? isShopNavHrefActive(pathname, searchParams, link.href)
+    : isLinkActive(pathname, link.href)
   return (
     <Link
       href={link.href}
       onClick={onNavigate}
-      data-testid={testId}
+      data-testid={testId ?? link.testId}
       className={cn(
         'block rounded-xl px-4 py-3 font-sans text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30',
         nested
@@ -222,12 +232,17 @@ export interface PublicHeaderProps {
   onSignOut?: () => void | Promise<void>
 }
 
-export function PublicHeader({
+type PublicHeaderInnerProps = PublicHeaderProps & {
+  searchParams: SearchParamsLike
+}
+
+function PublicHeaderInner({
   isLoggedIn = false,
   user,
   isAdmin = false,
   onSignOut,
-}: PublicHeaderProps) {
+  searchParams,
+}: PublicHeaderInnerProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
   const cartBadgeCount = useCartBadgeCount()
@@ -235,8 +250,11 @@ export function PublicHeader({
   const closeMobileMenu = () => setMobileMenuOpen(false)
 
   const shopActive =
-    isLinkActive(pathname, mobileShopGroup.href) ||
-    shopDropdownChildren.some((child) => isLinkActive(pathname, child.href))
+    pathname === routes.shop ||
+    isShopNavHrefActive(pathname, searchParams, shopCatalogNavLink.href) ||
+    shopDropdownChildren.some((child) =>
+      isShopNavHrefActive(pathname, searchParams, child.href),
+    )
 
   return (
     <header
@@ -271,7 +289,12 @@ export function PublicHeader({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className={cn('w-52', DROPDOWN_PANEL)}>
                 <DropdownMenuItem asChild className="focus:bg-white/10 focus:text-white">
-                  <Link href={routes.shop}>Ver catálogo</Link>
+                  <Link
+                    href={shopCatalogNavLink.href}
+                    data-testid={shopCatalogNavLink.testId}
+                  >
+                    {shopCatalogNavLink.label}
+                  </Link>
                 </DropdownMenuItem>
                 {shopDropdownChildren.map((child) => (
                   <DropdownMenuItem
@@ -279,7 +302,9 @@ export function PublicHeader({
                     asChild
                     className="focus:bg-white/10 focus:text-white"
                   >
-                    <Link href={child.href}>{child.label}</Link>
+                    <Link href={child.href} data-testid={child.testId}>
+                      {child.label}
+                    </Link>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -414,6 +439,7 @@ export function PublicHeader({
                     <MobileNavLink
                       link={{ label: 'Inicio', href: routes.home }}
                       pathname={pathname}
+                      searchParams={searchParams}
                       onNavigate={closeMobileMenu}
                     />
 
@@ -430,8 +456,9 @@ export function PublicHeader({
                         </AccordionTrigger>
                         <AccordionContent className="space-y-0.5 pb-2 pl-2">
                           <MobileNavLink
-                            link={{ label: 'Ver catálogo', href: routes.shop }}
+                            link={shopCatalogNavLink}
                             pathname={pathname}
+                            searchParams={searchParams}
                             onNavigate={closeMobileMenu}
                             nested
                           />
@@ -440,6 +467,7 @@ export function PublicHeader({
                               key={child.href}
                               link={child}
                               pathname={pathname}
+                              searchParams={searchParams}
                               onNavigate={closeMobileMenu}
                               nested
                             />
@@ -467,6 +495,7 @@ export function PublicHeader({
                             key={link.href}
                             link={link}
                             pathname={pathname}
+                            searchParams={searchParams}
                             onNavigate={closeMobileMenu}
                             testId={testId}
                           />
@@ -504,11 +533,13 @@ export function PublicHeader({
                           <MobileNavLink
                             link={authNav.login}
                             pathname={pathname}
+                            searchParams={searchParams}
                             onNavigate={closeMobileMenu}
                           />
                           <MobileNavLink
                             link={authNav.register}
                             pathname={pathname}
+                            searchParams={searchParams}
                             onNavigate={closeMobileMenu}
                           />
                         </>
@@ -534,5 +565,20 @@ export function PublicHeader({
         </div>
       </div>
     </header>
+  )
+}
+
+function PublicHeaderWithSearchParams(props: PublicHeaderProps) {
+  const searchParams = useSearchParams()
+  return <PublicHeaderInner {...props} searchParams={searchParams} />
+}
+
+export function PublicHeader(props: PublicHeaderProps) {
+  return (
+    <Suspense
+      fallback={<PublicHeaderInner {...props} searchParams={EMPTY_SEARCH_PARAMS} />}
+    >
+      <PublicHeaderWithSearchParams {...props} />
+    </Suspense>
   )
 }

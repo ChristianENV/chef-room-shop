@@ -6,7 +6,10 @@ import {
   ProductImageDisplay,
   ProductImageThumbnail,
 } from '@/components/shared/product-image'
-import { getVisibleProductImages } from '@/src/lib/product/product-images'
+import {
+  getProductMainImageUrl,
+  getVisibleProductImages,
+} from '@/src/lib/product/product-images'
 import { Badge } from '@/components/ui/badge'
 import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react'
 import type { ProductImage } from '@/lib/types'
@@ -48,11 +51,15 @@ export function ProductGallery({
   return (
     <div className={cn('flex flex-col gap-4', className)}>
       {/* Main Image */}
-      <div className="relative aspect-square overflow-hidden rounded-lg bg-secondary">
+      <div
+        className="relative aspect-square overflow-hidden rounded-lg bg-[#0d1024]"
+        data-testid="product-gallery-main"
+      >
         <ProductImageDisplay
-          src={currentImage?.url}
+          src={currentImage ? getProductMainImageUrl(currentImage) : null}
           alt={currentImage?.alt || productName}
           className="absolute inset-0"
+          imgClassName="object-contain object-center"
           placeholderIconClassName="h-24 w-24"
         />
 

@@ -5,6 +5,8 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import {
   getPrimaryProductImageUrl,
+  getProductImageUrl,
+  getProductMainImageUrl,
   getVisibleProductImages,
 } from '@/src/lib/product/product-images'
 import type { ProductImage as ProductImageType } from '@/lib/types'
@@ -66,7 +68,13 @@ export function ProductImageDisplay({
   }
 
   return (
-    <div className={cn(fill && 'relative', 'overflow-hidden bg-secondary', className)}>
+    <div
+      className={cn(
+        fill && 'relative h-full w-full',
+        'overflow-hidden bg-secondary',
+        className,
+      )}
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         key={resolvedSrc}
@@ -96,23 +104,30 @@ export function ProductImageThumbnail({
   className,
   onClick,
 }: ProductImageThumbnailProps) {
+  const thumbSrc = getProductImageUrl(image) ?? getProductMainImageUrl(image)
+
   return (
     <button
       type="button"
       onClick={onClick}
+      data-testid={
+        selected ? 'product-gallery-thumbnail-active' : 'product-gallery-thumbnail'
+      }
       className={cn(
-        'relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md bg-secondary transition-all',
+        'relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-border/60 bg-secondary transition-all',
         selected
-          ? 'ring-2 ring-primary ring-offset-2 ring-offset-background'
-          : 'opacity-60 hover:opacity-100',
+          ? 'z-10 ring-2 ring-primary ring-offset-2 ring-offset-background opacity-100'
+          : 'opacity-80 hover:border-primary/40 hover:opacity-100',
         className,
       )}
-      aria-label={`Ver ${image.alt || 'imagen'}`}
+      aria-label={`Ver ${image.alt || 'imagen del producto'}`}
+      aria-current={selected ? 'true' : undefined}
     >
       <ProductImageDisplay
-        src={image.url}
-        alt={image.alt || 'Miniatura'}
+        src={thumbSrc}
+        alt={image.alt || 'Miniatura del producto Chef Room'}
         fill
+        className="absolute inset-0"
         placeholderIconClassName="h-8 w-8"
       />
     </button>

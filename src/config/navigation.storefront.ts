@@ -1,8 +1,9 @@
-import { routes } from '@/src/config/routes'
+import { routes, shopCategoryUrl } from '@/src/config/routes'
 
 export type NavLink = {
   label: string
   href: string
+  testId?: string
 }
 
 export type NavGroup = {
@@ -17,11 +18,22 @@ export function isNavGroup(entry: NavEntry): entry is NavGroup {
   return 'children' in entry
 }
 
+/** Shop catalog root (navbar dropdown). */
+export const shopCatalogNavLink: NavLink = {
+  label: 'Ver catálogo',
+  href: routes.shop,
+  testId: 'storefront-nav-shop-all',
+}
+
 /** Shop categories for navbar dropdown and mobile accordion */
 export const shopDropdownChildren: NavLink[] = [
-  { label: 'Filipinas', href: routes.chefJackets },
-  { label: 'Mandiles', href: routes.aprons },
-  { label: 'Pantalones', href: routes.pants },
+  { label: 'Filipinas', href: shopCategoryUrl('filipinas'), testId: 'storefront-nav-shop-filipinas' },
+  { label: 'Mandiles', href: shopCategoryUrl('mandiles'), testId: 'storefront-nav-shop-mandiles' },
+  {
+    label: 'Pantalones',
+    href: shopCategoryUrl('pantalones'),
+    testId: 'storefront-nav-shop-pantalones',
+  },
 ]
 
 /** Shop links for footer (includes catalog root) */
