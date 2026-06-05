@@ -21,7 +21,6 @@ export const metadata: Metadata = {
   title: 'Chef Room by Bedolla | Uniformes de Chef Personalizados',
   description:
     'Tu cocina te define, tu uniforme te distingue. Plataforma premium de uniformes de chef personalizables con bordados, logotipos y colores a tu medida.',
-  generator: 'v0.app',
   keywords: [
     'chef',
     'uniformes',
@@ -31,21 +30,20 @@ export const metadata: Metadata = {
     'cocina profesional',
     'bordados',
   ],
+  appleWebApp: {
+    title: 'Chef Room',
+  },
   icons: {
     icon: [
-      { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
-      { url: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon0.svg', type: 'image/svg+xml' },
+      { url: '/icon1.png', sizes: '96x96', type: 'image/png' },
     ],
     apple: '/apple-icon.png',
   },
 }
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#F8F7F3' },
-    { media: '(prefers-color-scheme: dark)', color: '#0F1129' },
-  ],
+  themeColor: '#2b3280',
 }
 
 export default function RootLayout({
