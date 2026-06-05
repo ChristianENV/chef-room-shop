@@ -25,7 +25,8 @@ import { useProductsQuery } from '@/src/features/storefront/catalog/api/use-prod
 import { mapCatalogProductToCard } from '@/src/features/storefront/catalog/mappers/catalog-ui.mapper'
 import { useProductQuery } from '@/src/features/storefront/products/api/use-product-query'
 import { mapProductDetailToUi } from '@/src/features/storefront/products/mappers/product-ui.mapper'
-import { routes, shopCategoryUrl } from '@/src/config/routes'
+import { routes } from '@/src/config/routes'
+import { shopUrlFromProductCategory } from '@/src/config/shop-category'
 
 const categoryNames: Record<string, string> = {
   filipinas: 'Filipinas',
@@ -107,7 +108,7 @@ export default function ProductPage() {
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink
-                href={shopCategoryUrl(product.category)}
+                href={shopUrlFromProductCategory(product.category)}
                 className="font-serif text-muted-foreground hover:text-foreground"
               >
                 {categoryNames[product.category] || product.category}

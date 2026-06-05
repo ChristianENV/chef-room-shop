@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/sheet'
 import { SlidersHorizontal, X } from 'lucide-react'
 
+import { mapProductTypeSlugToCategory } from './mappers/catalog-ui.mapper'
 import {
   EMPTY_FILTER_OPTIONS,
   type CatalogFilterOptions,
@@ -93,6 +94,7 @@ function FilterContent({
                   <div key={cat.slug} className="flex items-center gap-2">
                     <Checkbox
                       id={`cat-${cat.slug}`}
+                      data-testid={`shop-category-filter-${mapProductTypeSlugToCategory(cat.slug)}`}
                       checked={filters.categories.includes(cat.slug)}
                       onCheckedChange={() => toggleArrayFilter('categories', cat.slug)}
                     />

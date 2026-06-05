@@ -1,8 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useMemo, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { routes } from '@/src/config/routes'
+import {
+  parseShopCategorySlug,
+  shopCategoryToFilterCategories,
+} from '@/src/config/shop-category'
 import {
   CatalogHero,
   CatalogFilters,
@@ -23,6 +27,7 @@ import {
 } from '@/src/features/storefront/catalog/api/catalog-query.utils'
 import { useCatalogFiltersQuery } from '@/src/features/storefront/catalog/api/use-catalog-filters-query'
 import { useProductsQuery } from '@/src/features/storefront/catalog/api/use-products-query'
+import { useShopCatalogUrl } from '@/src/features/storefront/catalog/hooks/use-shop-catalog-url'
 import { mapCatalogProductToCard } from '@/src/features/storefront/catalog/mappers/catalog-ui.mapper'
 
 const DEFAULT_FILTERS: FilterState = {
@@ -35,10 +40,23 @@ const DEFAULT_FILTERS: FilterState = {
   materials: [],
 }
 
-export default function ShopPage() {
+function buildInitialFilters(searchParams: ReturnType<typeof useSearchParams>): FilterState {
+  const category = parseShopCategorySlug(searchParams.get('category'))
+  return {
+    ...DEFAULT_FILTERS,
+    categories: shopCategoryToFilterCategories(category),
+  }
+}
+
+function ShopPageContent() {
   const router = useRouter()
-  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
+  const searchParams = useSearchParams()
+  const [filters, setFilters] = useState<FilterState>(() => buildInitialFilters(searchParams))
   const [sortBy, setSortBy] = useState<SortOption>('popular')
+
+  const { setFiltersWithUrl, clearFiltersWithUrl } = useShopCatalogUrl({
+    setFilters,
+  })
 
   const productsQueryParams = useMemo(
     () => buildProductsQueryParams(filters, sortBy),
@@ -89,12 +107,12 @@ export default function ShopPage() {
   }, [filters])
 
   const handleClearFilters = () => {
-    setFilters(DEFAULT_FILTERS)
+    clearFiltersWithUrl(DEFAULT_FILTERS)
   }
 
   const filterProps = {
     filters,
-    onFiltersChange: setFilters,
+    onFiltersChange: setFiltersWithUrl,
     filterOptions,
     isLoadingOptions: isFiltersLoading,
   }
@@ -125,7 +143,7 @@ export default function ShopPage() {
           <div className="mb-6">
             <ActiveFilters
               filters={filters}
-              onFiltersChange={setFilters}
+              onFiltersChange={setFiltersWithUrl}
               filterOptions={filterOptions}
             />
           </div>
@@ -168,5 +186,24 @@ export default function ShopPage() {
         </div>
       </div>
     </>
+  )
+}
+
+function ShopPageFallback() {
+  return (
+    <>
+      <CatalogHero />
+      <div className="mx-auto max-w-7xl px-4 py-8 md:px-6">
+        <CatalogSkeleton count={8} />
+      </div>
+    </>
+  )
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<ShopPageFallback />}>
+      <ShopPageContent />
+    </Suspense>
   )
 }

@@ -40,7 +40,14 @@ export const routes = {
 
 export type RoutePath = (typeof routes)[keyof typeof routes]
 
-/** Storefront shop filter query (English path, Spanish category slug). */
-export function shopCategoryUrl(category: string): string {
+export type { ShopCategorySlug } from './shop-category'
+
+/** Storefront shop filter: `/shop?category=filipinas|mandiles|pantalones`. */
+export function shopCategoryUrl(category: import('./shop-category').ShopCategorySlug): string {
   return `${routes.shop}?category=${encodeURIComponent(category)}`
+}
+
+/** Alias for shop catalog links with category filter. */
+export function shopWithCategory(category: import('./shop-category').ShopCategorySlug): string {
+  return shopCategoryUrl(category)
 }
