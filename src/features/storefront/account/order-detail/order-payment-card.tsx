@@ -12,12 +12,14 @@ import {
 
 type OrderPaymentCardProps = {
   order: AccountOrder
+  /** Hides account-only verify/retry actions (e.g. token-scoped purchase page). */
+  hideAccountActions?: boolean
 }
 
 /**
  * Payment summary with manual verify / continue / retry actions.
  */
-export function OrderPaymentCard({ order }: OrderPaymentCardProps) {
+export function OrderPaymentCard({ order, hideAccountActions = false }: OrderPaymentCardProps) {
   const payment = order.payments[0]
   const paymentActions = resolvePaymentActionsForOrder(order)
   const statusUi = getPaymentStatusUi({
@@ -88,15 +90,17 @@ export function OrderPaymentCard({ order }: OrderPaymentCardProps) {
         </p>
       )}
 
-      <div className="mt-6 border-t border-border pt-6">
-        <OrderPaymentActions
-          orderNumber={order.orderNumber}
-          paymentActions={paymentActions}
-          paymentStatus={order.paymentStatus}
-          orderStatus={order.status}
-          variant="detail"
-        />
-      </div>
+      {!hideAccountActions && (
+        <div className="mt-6 border-t border-border pt-6">
+          <OrderPaymentActions
+            orderNumber={order.orderNumber}
+            paymentActions={paymentActions}
+            paymentStatus={order.paymentStatus}
+            orderStatus={order.status}
+            variant="detail"
+          />
+        </div>
+      )}
     </section>
   )
 }

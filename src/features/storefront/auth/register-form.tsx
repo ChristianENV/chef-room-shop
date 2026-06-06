@@ -1,5 +1,9 @@
 'use client'
-import { routes } from '@/src/config/routes'
+import {
+  login as loginRoute,
+  routes,
+  verifyEmail as verifyEmailRoute,
+} from '@/src/config/routes'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -63,7 +67,11 @@ export function RegisterForm({
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  const oauthCallbackURL = routes.home
+  const safeCallbackUrl =
+    callbackFromQuery?.startsWith('/') && !callbackFromQuery.startsWith('//')
+      ? callbackFromQuery
+      : null
+  const oauthCallbackURL = safeCallbackUrl ?? routes.home
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -124,23 +132,20 @@ export function RegisterForm({
       onSuccess?.()
 
       if (!emailVerified) {
-        const verifyParams = new URLSearchParams()
-        if (callbackFromQuery?.startsWith('/')) {
-          verifyParams.set('callbackUrl', callbackFromQuery)
-        }
-        const verifyPath = verifyParams.toString()
-          ? `${routes.verifyEmail}?${verifyParams.toString()}`
-          : routes.verifyEmail
-        router.push(verifyPath)
+        router.replace(
+          safeCallbackUrl
+            ? verifyEmailRoute({ callbackUrl: safeCallbackUrl })
+            : routes.verifyEmail,
+        )
         router.refresh()
         return
       }
 
       void getPostLoginRedirectAction({
         source: 'storefront-register',
-        callbackUrl: callbackFromQuery,
+        callbackUrl: safeCallbackUrl,
       }).then((redirectTo) => {
-        router.push(redirectTo)
+        router.replace(redirectTo)
         router.refresh()
       })
     }, 1200)
@@ -475,7 +480,14 @@ export function RegisterForm({
       {/* Login Link */}
       <p className="text-center font-serif text-sm text-muted-foreground">
         Ya tienes cuenta?{' '}
-        <Link href={routes.login} className="font-sans font-medium text-accent hover:underline">
+        <Link
+          href={
+            safeCallbackUrl
+              ? loginRoute({ callbackUrl: safeCallbackUrl })
+              : routes.login
+          }
+          className="font-sans font-medium text-accent hover:underline"
+        >
           Iniciar sesión
         </Link>
       </p>

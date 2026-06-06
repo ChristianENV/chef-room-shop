@@ -1012,14 +1012,24 @@ export const checkoutTypeDefs = /* GraphQL */ `
     fulfillmentStatus: String!
     totalCents: Int!
     shippingCents: Int!
+    subtotalCents: Int!
+    customizationTotalCents: Int
+    discountTotalCents: Int
+    taxTotalCents: Int
     currency: String!
     paymentMethod: String!
     createdAt: String!
+    placedAt: String
+    maskedCustomerEmail: String!
     items: [PublicOrderItem!]!
     payments: [PublicOrderPayment!]!
+    shipments: [AccountShipment!]!
+    events: [AccountOrderEvent!]!
+    paymentActions: AccountOrderPaymentActions!
     claimUrl: String
     accountOrderUrl: String
     canViewDetails: Boolean!
+    viewerEmailMatchesOrder: Boolean!
     detailUrl: String
     paymentReference: String
     paymentExpiresAt: String
@@ -1051,6 +1061,8 @@ export const checkoutTypeDefs = /* GraphQL */ `
     status: String!
     amountCents: Int!
     currency: String!
+    paidAt: String
+    expiresAt: String
   }
 
   type PublicOrder {

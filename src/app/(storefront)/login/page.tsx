@@ -10,8 +10,13 @@ export const metadata: Metadata = {
     'Inicia sesión en tu cuenta de Chef Room para diseñar y comprar uniformes de chef personalizados.',
 }
 
-export default async function LoginPage() {
-  await redirectIfAuthenticated('storefront-login')
+type LoginPageProps = {
+  searchParams: Promise<{ callbackUrl?: string }>
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams
+  await redirectIfAuthenticated('storefront-login', params.callbackUrl)
 
   const googleEnabled = isGoogleAuthConfigured()
 

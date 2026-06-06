@@ -1,3 +1,4 @@
+import { OrderDetailLayout } from '@/src/features/storefront/orders/components/order-detail-layout'
 import type { AccountOrder } from '../types'
 import { OrderDetailHeader } from './order-detail-header'
 import { OrderEventsCard } from './order-events-card'
@@ -19,25 +20,23 @@ type OrderDetailPageContentProps = {
  */
 export function OrderDetailPageContent({ order }: OrderDetailPageContentProps) {
   return (
-    <div className="space-y-6">
-      <OrderDetailHeader orderNumber={order.orderNumber} />
-      <OrderStatusHero order={order} />
-
-      <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
-        <div className="space-y-6 lg:col-span-2">
-          <OrderProgressTimeline order={order} />
-          <OrderItemsCard order={order} />
-          <OrderEventsCard order={order} />
-        </div>
-
-        <aside className="space-y-6 lg:sticky lg:top-24">
-          <OrderNextActionsCard order={order} />
-          <OrderPaymentCard order={order} />
-          <OrderShippingCard order={order} />
-          <OrderTotalsCard order={order} />
-          <OrderSupportCard orderNumber={order.orderNumber} />
-        </aside>
-      </div>
+    <div data-testid="account-order-detail-page" className="space-y-6">
+      <OrderDetailLayout
+        header={<OrderDetailHeader orderNumber={order.orderNumber} />}
+        hero={<OrderStatusHero order={order} />}
+        timeline={<OrderProgressTimeline order={order} />}
+        items={<OrderItemsCard order={order} />}
+        events={<OrderEventsCard order={order} />}
+        sidebar={
+          <>
+            <OrderNextActionsCard order={order} />
+            <OrderPaymentCard order={order} />
+            <OrderShippingCard order={order} />
+            <OrderTotalsCard order={order} />
+            <OrderSupportCard orderNumber={order.orderNumber} />
+          </>
+        }
+      />
     </div>
   )
 }

@@ -1,21 +1,25 @@
 'use client'
 
-import {
-  Suspense,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
-import { CheckoutLayout } from '@/src/features/storefront/layout/checkout-layout'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { AlertCircle } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+  accountOrderDetail,
+  login,
+  purchaseCallbackByToken,
+  register,
+  routes,
+} from '@/src/config/routes'
+import { useSession } from '@/src/lib/auth/auth-client'
 import {
   useCheckoutResultByTokenQuery,
   useOrderByNumberQuery,
   type CheckoutResult,
-  type PublicOrder,
 } from '@/src/features/storefront/checkout'
 import {
   clearCheckoutConfirmation,
@@ -28,33 +32,16 @@ import {
   getPaymentConfirmationActions,
   getVerifyAgainResultMessage,
   resolvePaymentConfirmationUxState,
-  type PaymentConfirmationUxState,
 } from '@/src/features/storefront/checkout/lib/payment-confirmation-state'
 import { CHECKOUT_CONFIRMATION_VISUAL_MS } from '@/src/features/storefront/checkout/lib/checkout-polling.config'
 import { useCheckoutResultPolling } from '@/src/features/storefront/checkout/lib/use-checkout-result-polling'
 import { usePaymentConfirmationElapsed } from '@/src/features/storefront/checkout/lib/use-payment-confirmation-elapsed'
-import { resolvePaidOrderRedirectUrl } from '@/src/features/storefront/checkout/lib/resolve-paid-order-redirect'
-import { usePaidOrderRedirectCountdown } from '@/src/features/storefront/checkout/lib/use-paid-order-redirect-countdown'
-import { CheckoutPaymentStatusBanner } from '@/src/features/storefront/checkout/checkout-payment-status-banner'
-import { CheckoutSuccessActions } from '@/src/features/storefront/checkout/checkout-success-actions'
-import { resolvePaymentMethodLabel } from '@/src/config/payment-vars'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { CheckoutLayout } from '@/src/features/storefront/layout/checkout-layout'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { routes } from '@/src/config/routes'
-import { centsToPesos, formatCurrencyMXN } from '@/src/lib/formatters'
-import { useSession } from '@/src/lib/auth/auth-client'
-import { Package, CreditCard, AlertCircle } from 'lucide-react'
-
+  mapCheckoutResultToOrderDetailViewModel,
+  mapPublicOrderToOrderDetailViewModel,
+  PurchaseDetailPageContent,
+} from '@/src/features/storefront/orders'
 function parseConfirmationSession(raw: string | null): CheckoutConfirmationSession | null {
   if (!raw) return null
   try {
@@ -72,146 +59,9 @@ function parseConfirmationReturnToken(raw: string | null): string {
   return parseConfirmationSession(raw)?.returnToken?.trim() ?? ''
 }
 
-type OrderItem = PublicOrder['items'][number] | CheckoutResult['items'][number]
-
-function OrderItemsList({ items }: { items: OrderItem[] }) {
-  return (
-    <ul className="mt-4 space-y-3">
-      {items.map((item) => {
-        const linePesos = centsToPesos(item.totalPriceCents + item.customizationPriceCents)
-        const snapshot = item.productSnapshotJson as { name?: string; sizeName?: string } | null
-        const name = snapshot?.name ?? item.name ?? 'Producto'
-        const size = snapshot?.sizeName
-
-        return (
-          <li key={item.id} className="flex items-start justify-between gap-4 font-serif text-sm">
-            <div>
-              <p className="font-sans font-medium text-foreground">{name}</p>
-              {size && <p className="text-muted-foreground">Talla: {size}</p>}
-              <p className="text-muted-foreground">Cant: {item.quantity}</p>
-            </div>
-            <span className="font-sans font-medium text-foreground">
-              {formatCurrencyMXN(linePesos)}
-            </span>
-          </li>
-        )
-      })}
-    </ul>
-  )
-}
-
-type OrderConfirmationCardProps = {
-  orderNumber: string
-  confirmationState: PaymentConfirmationUxState
-  elapsedMs: number
-  totalPesos: number
-  paymentMethodLabel: string
-  customerEmail?: string
-  items?: OrderItem[]
-  paymentReturnHint?: string | null
-  isPolling?: boolean
-  paymentReference?: string | null
-  paymentExpiresAt?: string | null
-  cashPaymentLocations?: string[] | null
-}
-
-function OrderConfirmationCard({
-  orderNumber,
-  confirmationState,
-  elapsedMs,
-  totalPesos,
-  paymentMethodLabel,
-  customerEmail,
-  items,
-  paymentReturnHint,
-  isPolling,
-  paymentReference,
-  paymentExpiresAt,
-  cashPaymentLocations,
-}: OrderConfirmationCardProps) {
-  return (
-    <div className="rounded-lg border border-border bg-card p-6 md:p-8">
-      <p className="font-serif text-sm text-muted-foreground">
-        Número de pedido:{' '}
-        <span className="font-sans font-semibold text-foreground">{orderNumber}</span>
-      </p>
-
-      <CheckoutPaymentStatusBanner
-        confirmationState={confirmationState}
-        elapsedMs={elapsedMs}
-        isPolling={isPolling}
-        paymentReturnHint={paymentReturnHint}
-        className="mt-6"
-      />
-
-      <Separator className="my-6" />
-
-      <dl className="grid gap-3 font-serif text-sm sm:grid-cols-2">
-        <div>
-          <dt className="text-muted-foreground">Total</dt>
-          <dd className="font-sans text-lg font-bold text-foreground">
-            {formatCurrencyMXN(totalPesos)}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-muted-foreground">Método de pago</dt>
-          <dd className="flex items-center gap-2 font-sans font-medium text-foreground">
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-            {paymentMethodLabel}
-          </dd>
-        </div>
-        {customerEmail && (
-          <div className="sm:col-span-2">
-            <dt className="text-muted-foreground">Correo</dt>
-            <dd className="font-sans font-medium text-foreground">{customerEmail}</dd>
-          </div>
-        )}
-        {paymentReference && (
-          <div className="sm:col-span-2">
-            <dt className="text-muted-foreground">Referencia de pago</dt>
-            <dd className="font-sans font-medium text-foreground">{paymentReference}</dd>
-          </div>
-        )}
-        {paymentExpiresAt && (
-          <div className="sm:col-span-2">
-            <dt className="text-muted-foreground">Vence</dt>
-            <dd className="font-sans font-medium text-foreground">
-              {new Date(paymentExpiresAt).toLocaleString('es-MX')}
-            </dd>
-          </div>
-        )}
-      </dl>
-
-      {cashPaymentLocations && cashPaymentLocations.length > 0 && (
-        <>
-          <Separator className="my-6" />
-          <div>
-            <h3 className="font-sans text-sm font-semibold">Puntos de pago</h3>
-            <ul className="mt-2 list-inside list-disc font-serif text-sm text-muted-foreground">
-              {cashPaymentLocations.slice(0, 10).map((location) => (
-                <li key={location}>{location}</li>
-              ))}
-            </ul>
-          </div>
-        </>
-      )}
-
-      {items && items.length > 0 && (
-        <>
-          <Separator className="my-6" />
-          <div className="flex items-center gap-2">
-            <Package className="h-5 w-5 text-primary" />
-            <h2 className="font-sans text-lg font-semibold">Artículos</h2>
-          </div>
-          <OrderItemsList items={items} />
-        </>
-      )}
-
-    </div>
-  )
-}
-
-function shouldShowManualRetryPayment(state: PaymentConfirmationUxState): boolean {
+function shouldShowManualRetryPayment(
+  state: ReturnType<typeof resolvePaymentConfirmationUxState>,
+): boolean {
   return (
     state === 'failed' ||
     state === 'expired' ||
@@ -223,7 +73,10 @@ function shouldShowManualRetryPayment(state: PaymentConfirmationUxState): boolea
 function CheckoutSuccessLoading() {
   return (
     <CheckoutLayout>
-      <div className="mx-auto max-w-2xl space-y-4 py-8">
+      <div
+        data-testid="checkout-success-page"
+        className="mx-auto max-w-5xl space-y-4 py-8"
+      >
         <Skeleton className="h-10 w-64" />
         <Skeleton className="h-48 w-full" />
         <Skeleton className="h-32 w-full" />
@@ -241,6 +94,7 @@ export default function CheckoutSuccessPage() {
 }
 
 function CheckoutSuccessContent() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const returnTokenFromUrl = searchParams.get('token')?.trim() ?? ''
   const orderNumberLegacy = searchParams.get('orderNumber')?.trim() ?? ''
@@ -259,11 +113,13 @@ function CheckoutSuccessContent() {
   )
 
   const [email] = useState(() => parseConfirmationEmail(readCheckoutConfirmationRaw()))
-  const [storedReturnToken] = useState(() => parseConfirmationReturnToken(readCheckoutConfirmationRaw()))
-  const [guestDialogOpen, setGuestDialogOpen] = useState(false)
-  const [confirmingStartedAt] = useState(() => Date.now())
+  const [storedReturnToken] = useState(() =>
+    parseConfirmationReturnToken(readCheckoutConfirmationRaw()),
+  )
   const [isVerifying, setIsVerifying] = useState(false)
   const [verifyMessage, setVerifyMessage] = useState<string | null>(null)
+  const [confirmingStartedAt] = useState(() => Date.now())
+  const ownerRedirectDone = useRef(false)
 
   const effectiveToken = returnTokenFromUrl || storedReturnToken
 
@@ -294,9 +150,13 @@ function CheckoutSuccessContent() {
     }
   }, [paymentReturnHint, effectiveToken, orderNumberLegacy, email, tokenQuery, legacyQuery])
 
-  const activeStatus = checkoutResult?.status ?? legacyOrder?.status ?? storedSession?.status ?? 'PENDING_PAYMENT'
+  const activeStatus =
+    checkoutResult?.status ?? legacyOrder?.status ?? storedSession?.status ?? 'PENDING_PAYMENT'
   const activePaymentStatus =
-    checkoutResult?.paymentStatus ?? legacyOrder?.paymentStatus ?? storedSession?.paymentStatus ?? 'PENDING'
+    checkoutResult?.paymentStatus ??
+    legacyOrder?.paymentStatus ??
+    storedSession?.paymentStatus ??
+    'PENDING'
 
   const statusUi = useMemo(
     () =>
@@ -307,7 +167,7 @@ function CheckoutSuccessContent() {
     [activeStatus, activePaymentStatus],
   )
 
-  const hasOrderData = Boolean(checkoutResult || legacyOrder)
+  const hasOrderData = Boolean(checkoutResult || legacyOrder || storedSession)
   const isQueryLoading =
     (effectiveToken.length > 0 && tokenQuery.isLoading && !checkoutResult) ||
     (!effectiveToken && legacyQuery.isLoading && !legacyOrder && !storedSession)
@@ -369,7 +229,24 @@ function CheckoutSuccessContent() {
     resetKey: `legacy:${orderNumberLegacy}:${email}:${shouldPollCheckout}`,
   })
 
-  const showManualRetry = shouldShowManualRetryPayment(confirmationState)
+  useEffect(() => {
+    if (activePaymentStatus === 'PAID' || activeStatus === 'PAID') {
+      clearCheckoutConfirmation()
+    }
+  }, [activeStatus, activePaymentStatus])
+
+  const isAuthenticated = Boolean(authSession?.user)
+
+  useEffect(() => {
+    if (ownerRedirectDone.current) return
+    if (!checkoutResult?.canViewDetails || !checkoutResult.orderNumber) return
+    if (isQueryLoading) return
+
+    ownerRedirectDone.current = true
+    router.replace(
+      accountOrderDetail(checkoutResult.orderNumber, { from: 'checkout' }),
+    )
+  }, [checkoutResult?.canViewDetails, checkoutResult?.orderNumber, isQueryLoading, router])
 
   const handleVerifyAgain = async () => {
     setIsVerifying(true)
@@ -403,65 +280,31 @@ function CheckoutSuccessContent() {
     }
   }
 
-  useEffect(() => {
-    if (activePaymentStatus === 'PAID' || activeStatus === 'PAID') {
-      clearCheckoutConfirmation()
-    }
-  }, [activeStatus, activePaymentStatus])
-
-  const paymentMethodLabel = useMemo(() => {
-    if (checkoutResult?.paymentMethod) return resolvePaymentMethodLabel(checkoutResult.paymentMethod)
-    if (legacyOrder?.payments[0]?.method) {
-      return resolvePaymentMethodLabel(legacyOrder.payments[0].method)
-    }
-    return resolvePaymentMethodLabel(storedSession?.paymentMethod)
-  }, [checkoutResult, legacyOrder, storedSession])
-
-  const isAuthenticated = Boolean(authSession?.user)
-
-  const orderNumberForRedirect =
-    checkoutResult?.orderNumber ??
-    legacyOrder?.orderNumber ??
-    storedSession?.orderNumber ??
-    orderNumberLegacy
-
-  const paidRedirectUrl = useMemo(() => {
-    if (confirmationState !== 'paid' || !orderNumberForRedirect) {
-      return null
-    }
-    return resolvePaidOrderRedirectUrl({
-      orderNumber: orderNumberForRedirect,
-      isAuthenticated,
-      detailUrl: checkoutResult?.detailUrl,
-      accountOrderUrl:
-        checkoutResult?.accountOrderUrl ?? storedSession?.accountOrderUrl ?? null,
-      canViewDetails: checkoutResult?.canViewDetails,
-      claimUrl: checkoutResult?.claimUrl ?? storedSession?.claimUrl ?? null,
-    })
-  }, [
-    confirmationState,
-    orderNumberForRedirect,
-    isAuthenticated,
-    checkoutResult?.detailUrl,
-    checkoutResult?.accountOrderUrl,
-    checkoutResult?.canViewDetails,
-    checkoutResult?.claimUrl,
-    storedSession?.accountOrderUrl,
-    storedSession?.claimUrl,
-  ])
-
-  const { secondsLeft: paidRedirectSecondsLeft, cancelRedirect: cancelPaidRedirect } =
-    usePaidOrderRedirectCountdown(confirmationState === 'paid', paidRedirectUrl)
-
   const isPolling =
     shouldPollCheckout &&
     ((tokenQuery.isFetching && Boolean(effectiveToken)) ||
       (legacyQuery.isFetching && !effectiveToken))
 
+  const purchaseCallbackPath =
+    effectiveToken.length > 0
+      ? purchaseCallbackByToken(effectiveToken)
+      : checkoutResult?.orderNumber
+        ? accountOrderDetail(checkoutResult.orderNumber, { from: 'checkout' })
+        : undefined
+
+  const purchaseAuthUrls = {
+    loginUrl: purchaseCallbackPath
+      ? login({ callbackUrl: purchaseCallbackPath })
+      : routes.login,
+    registerUrl: purchaseCallbackPath
+      ? register({ callbackUrl: purchaseCallbackPath })
+      : routes.register,
+  }
+
   if (!effectiveToken && !orderNumberLegacy && !storedSession) {
     return (
       <CheckoutLayout>
-        <div className="mx-auto max-w-lg py-16 text-center">
+        <div data-testid="checkout-success-page" className="mx-auto max-w-lg py-16 text-center">
           <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground" />
           <h1 className="mt-4 font-sans text-xl font-bold">Pedido no encontrado</h1>
           <p className="mt-2 font-serif text-muted-foreground">
@@ -482,7 +325,7 @@ function CheckoutSuccessContent() {
   if (effectiveToken && tokenQuery.isError && !checkoutResult) {
     return (
       <CheckoutLayout>
-        <div className="mx-auto max-w-lg py-16 text-center">
+        <div data-testid="checkout-success-page" className="mx-auto max-w-lg py-16 text-center">
           <Alert variant="destructive" className="text-left">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="font-serif">
@@ -497,75 +340,40 @@ function CheckoutSuccessContent() {
     )
   }
 
+  if (checkoutResult?.canViewDetails) {
+    return <CheckoutSuccessLoading />
+  }
+
   if (checkoutResult) {
-    const totalPesos = centsToPesos(checkoutResult.totalCents)
+    const order = mapCheckoutResultToOrderDetailViewModel(checkoutResult)
     const claimUrl = storedSession?.claimUrl ?? checkoutResult.claimUrl
 
     return (
       <CheckoutLayout>
-        <div className="mx-auto max-w-2xl space-y-6">
-          <OrderConfirmationCard
-            orderNumber={checkoutResult.orderNumber}
+        <div data-testid="checkout-success-page" className="mx-auto max-w-5xl py-8">
+          <PurchaseDetailPageContent
+            order={order}
             confirmationState={confirmationState}
             elapsedMs={elapsedMs}
-            totalPesos={totalPesos}
-            paymentMethodLabel={paymentMethodLabel}
-            customerEmail={storedSession?.email}
-            items={checkoutResult.items}
-            paymentReturnHint={paymentReturnHint}
             isPolling={isPolling}
+            isAuthenticated={isAuthenticated}
+            canViewDetails={checkoutResult.canViewDetails}
+            viewerEmailMatchesOrder={checkoutResult.viewerEmailMatchesOrder}
+            loginUrl={checkoutResult.loginUrl ?? purchaseAuthUrls.loginUrl}
+            registerUrl={checkoutResult.registerUrl ?? purchaseAuthUrls.registerUrl}
+            claimUrl={claimUrl}
+            returnToken={effectiveToken}
+            legacyEmail={storedSession?.email ?? email}
+            tokenExpired={checkoutResult.tokenExpired}
+            onVerifyAgain={() => void handleVerifyAgain()}
+            isVerifying={isVerifying}
+            verifyMessage={verifyMessage}
+            showManualRetryPayment={shouldShowManualRetryPayment(confirmationState)}
             paymentReference={checkoutResult.paymentReference}
             paymentExpiresAt={checkoutResult.paymentExpiresAt}
             cashPaymentLocations={checkoutResult.cashPaymentLocations}
           />
-          <CheckoutSuccessActions
-            confirmationState={confirmationState}
-            isAuthenticated={isAuthenticated}
-            orderNumber={checkoutResult.orderNumber}
-            claimUrl={claimUrl}
-            accountOrderUrl={checkoutResult.accountOrderUrl ?? storedSession?.accountOrderUrl}
-            detailUrl={checkoutResult.detailUrl}
-            loginUrl={checkoutResult.loginUrl}
-            registerUrl={checkoutResult.registerUrl}
-            canViewDetails={checkoutResult.canViewDetails}
-            onGuestDetailsClick={() => setGuestDialogOpen(true)}
-            onVerifyAgain={() => void handleVerifyAgain()}
-            isVerifying={isVerifying}
-            verifyMessage={verifyMessage}
-            showWaitingNote={confirmationActions.showWaitingNote}
-            paidRedirectSecondsLeft={paidRedirectSecondsLeft}
-            paidRedirectUrl={paidRedirectUrl}
-            onCancelPaidRedirect={cancelPaidRedirect}
-            returnToken={effectiveToken}
-            legacyEmail={storedSession?.email ?? email}
-            showManualRetryPayment={showManualRetry}
-          />
         </div>
-
-        <Dialog open={guestDialogOpen} onOpenChange={setGuestDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="font-sans">Ver detalle del pedido</DialogTitle>
-              <DialogDescription className="font-serif">
-                Inicia sesión o crea una cuenta para ver el seguimiento completo. También puedes
-                usar el enlace del correo de confirmación si compraste como invitado.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="flex-col gap-2 sm:flex-row">
-              <Button asChild variant="outline" className="font-sans">
-                <Link href={checkoutResult.loginUrl}>Iniciar sesión</Link>
-              </Button>
-              <Button asChild className="font-sans">
-                <Link href={checkoutResult.registerUrl}>Crear cuenta</Link>
-              </Button>
-              {claimUrl && (
-                <Button asChild variant="secondary" className="font-sans">
-                  <Link href={claimUrl}>Reclamar pedido</Link>
-                </Button>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </CheckoutLayout>
     )
   }
@@ -573,7 +381,7 @@ function CheckoutSuccessContent() {
   if (!effectiveToken && !email && !storedSession) {
     return (
       <CheckoutLayout>
-        <div className="mx-auto max-w-lg py-16 text-center">
+        <div data-testid="checkout-success-page" className="mx-auto max-w-lg py-16 text-center">
           <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground" />
           <h1 className="mt-4 font-sans text-xl font-bold">Confirma tu pedido</h1>
           <p className="mt-2 font-serif text-muted-foreground">
@@ -597,56 +405,26 @@ function CheckoutSuccessContent() {
     return <CheckoutSuccessLoading />
   }
 
-  if (legacyQuery.isError && !legacyOrder && !storedSession) {
-    return (
-      <CheckoutLayout>
-        <div className="mx-auto max-w-lg py-16 text-center">
-          <Alert variant="destructive" className="text-left">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="font-serif">
-              No pudimos cargar tu pedido. Verifica tu conexión e intenta de nuevo.
-            </AlertDescription>
-          </Alert>
-          <Button className="mt-6 font-sans" onClick={() => void legacyQuery.refetch()}>
-            Reintentar
-          </Button>
-        </div>
-      </CheckoutLayout>
-    )
-  }
-
   if (legacyOrder) {
-    const totalPesos = centsToPesos(legacyOrder.totalCents)
+    const order = mapPublicOrderToOrderDetailViewModel(legacyOrder)
 
     return (
       <CheckoutLayout>
-        <div className="mx-auto max-w-2xl space-y-6">
-          <OrderConfirmationCard
-            orderNumber={legacyOrder.orderNumber}
+        <div data-testid="checkout-success-page" className="mx-auto max-w-5xl py-8">
+          <PurchaseDetailPageContent
+            order={order}
             confirmationState={confirmationState}
             elapsedMs={elapsedMs}
-            totalPesos={totalPesos}
-            paymentMethodLabel={paymentMethodLabel}
-            customerEmail={legacyOrder.customerEmail}
-            items={legacyOrder.items}
-            paymentReturnHint={paymentReturnHint}
             isPolling={isPolling}
-          />
-          <CheckoutSuccessActions
-            confirmationState={confirmationState}
             isAuthenticated={isAuthenticated}
-            orderNumber={legacyOrder.orderNumber}
+            loginUrl={purchaseAuthUrls.loginUrl}
+            registerUrl={purchaseAuthUrls.registerUrl}
             claimUrl={storedSession?.claimUrl}
-            accountOrderUrl={storedSession?.accountOrderUrl}
+            legacyEmail={legacyOrder.customerEmail}
             onVerifyAgain={() => void handleVerifyAgain()}
             isVerifying={isVerifying}
             verifyMessage={verifyMessage}
-            showWaitingNote={confirmationActions.showWaitingNote}
-            paidRedirectSecondsLeft={paidRedirectSecondsLeft}
-            paidRedirectUrl={paidRedirectUrl}
-            onCancelPaidRedirect={cancelPaidRedirect}
-            legacyEmail={legacyOrder.customerEmail}
-            showManualRetryPayment={showManualRetry}
+            showManualRetryPayment={shouldShowManualRetryPayment(confirmationState)}
           />
         </div>
       </CheckoutLayout>
@@ -654,21 +432,40 @@ function CheckoutSuccessContent() {
   }
 
   if (storedSession && storedSession.orderNumber === orderNumberLegacy) {
-    const totalPesos = centsToPesos(storedSession.totalCents)
+    const fallbackOrder = mapCheckoutResultToOrderDetailViewModel({
+      orderNumber: storedSession.orderNumber,
+      orderId: storedSession.orderId,
+      status: storedSession.status,
+      paymentStatus: storedSession.paymentStatus,
+      fulfillmentStatus: 'UNFULFILLED',
+      totalCents: storedSession.totalCents,
+      shippingCents: storedSession.shippingCents,
+      subtotalCents: storedSession.totalCents - storedSession.shippingCents,
+      currency: storedSession.currency,
+      paymentMethod: storedSession.paymentMethod,
+      createdAt: new Date().toISOString(),
+      maskedCustomerEmail: storedSession.email,
+      items: [],
+      payments: [],
+      shipments: [],
+      events: [],
+      paymentActions: {
+        canVerifyPayment: false,
+        canContinuePayment: false,
+        canRetryPayment: false,
+        paymentRedirectUrl: null,
+      },
+      canViewDetails: false,
+      viewerEmailMatchesOrder: false,
+      returnTokenValid: true,
+      tokenExpired: false,
+      loginUrl: purchaseAuthUrls.loginUrl,
+      registerUrl: purchaseAuthUrls.registerUrl,
+    } satisfies CheckoutResult)
+
     return (
       <CheckoutLayout>
-        <div className="mx-auto max-w-2xl space-y-6">
-          <OrderConfirmationCard
-            orderNumber={storedSession.orderNumber}
-            confirmationState={confirmationState}
-            elapsedMs={elapsedMs}
-            totalPesos={totalPesos}
-            paymentMethodLabel={resolvePaymentMethodLabel(storedSession.paymentMethod)}
-            customerEmail={storedSession.email}
-            paymentReturnHint={paymentReturnHint}
-            isPolling={isPolling}
-          />
-
+        <div data-testid="checkout-success-page" className="mx-auto max-w-5xl space-y-6 py-8">
           {legacyQuery.isError && (
             <Alert>
               <AlertDescription className="font-serif text-sm text-muted-foreground">
@@ -677,23 +474,21 @@ function CheckoutSuccessContent() {
               </AlertDescription>
             </Alert>
           )}
-
-          <CheckoutSuccessActions
+          <PurchaseDetailPageContent
+            order={fallbackOrder}
             confirmationState={confirmationState}
+            elapsedMs={elapsedMs}
+            isPolling={isPolling}
             isAuthenticated={isAuthenticated}
-            orderNumber={storedSession.orderNumber}
+            loginUrl={purchaseAuthUrls.loginUrl}
+            registerUrl={purchaseAuthUrls.registerUrl}
             claimUrl={storedSession.claimUrl}
-            accountOrderUrl={storedSession.accountOrderUrl}
+            returnToken={storedSession.returnToken}
+            legacyEmail={storedSession.email}
             onVerifyAgain={() => void handleVerifyAgain()}
             isVerifying={isVerifying}
             verifyMessage={verifyMessage}
-            showWaitingNote={confirmationActions.showWaitingNote}
-            paidRedirectSecondsLeft={paidRedirectSecondsLeft}
-            paidRedirectUrl={paidRedirectUrl}
-            onCancelPaidRedirect={cancelPaidRedirect}
-            returnToken={storedSession.returnToken}
-            legacyEmail={storedSession.email}
-            showManualRetryPayment={showManualRetry}
+            showManualRetryPayment={shouldShowManualRetryPayment(confirmationState)}
           />
         </div>
       </CheckoutLayout>
@@ -702,7 +497,7 @@ function CheckoutSuccessContent() {
 
   return (
     <CheckoutLayout>
-      <div className="mx-auto max-w-lg py-16 text-center">
+      <div data-testid="checkout-success-page" className="mx-auto max-w-lg py-16 text-center">
         <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground" />
         <h1 className="mt-4 font-sans text-xl font-bold">No pudimos mostrar tu pedido</h1>
         <p className="mt-2 font-serif text-muted-foreground">
