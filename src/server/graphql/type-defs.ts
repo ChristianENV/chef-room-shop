@@ -1012,6 +1012,24 @@ export const checkoutTypeDefs = /* GraphQL */ `
     maskedCustomerEmail: String!
   }
 
+  enum ClaimGuestOrderStatus {
+    CLAIMED
+    ALREADY_CLAIMED_BY_USER
+    EMAIL_VERIFICATION_REQUIRED
+    EMAIL_MISMATCH
+    TOKEN_INVALID
+    TOKEN_EXPIRED
+    ORDER_ALREADY_CLAIMED
+    UNAUTHENTICATED
+  }
+
+  type ClaimGuestOrderPayload {
+    success: Boolean!
+    status: ClaimGuestOrderStatus!
+    orderNumber: String
+    message: String
+  }
+
   type CheckoutResult {
     orderNumber: String!
     orderId: ID!
@@ -1406,6 +1424,7 @@ export const typeDefs = /* GraphQL */ `
     completeCheckout(input: CreateCheckoutOrderInput!): CompleteCheckoutPayload!
     retryCheckoutPayment(input: RetryCheckoutPaymentInput!): CompleteCheckoutPayload!
     verifyCheckoutPaymentByToken(orderNumber: String!, token: String!): AccountPaymentStatusPayload!
+    claimGuestOrderByCheckoutToken(orderNumber: String!, token: String!): ClaimGuestOrderPayload!
     createConektaCheckout(input: CreateConektaCheckoutInput!): ConektaCheckoutPayload!
     claimOrder(token: String!): OrderClaimPayload!
     updateAdminOrderStatus(input: UpdateAdminOrderStatusInput!): AdminOrder!

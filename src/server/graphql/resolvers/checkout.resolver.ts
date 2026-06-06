@@ -8,6 +8,7 @@ import {
   getOrderByCheckoutToken,
   verifyCheckoutPaymentByToken,
 } from '../modules/checkout/checkout-token-order.service'
+import { claimGuestOrderByCheckoutTokenForGraphQL } from '@/src/server/orders/claim-guest-order-by-checkout-token.service'
 import {
   createCheckoutOrder,
   getPublicOrderByNumber,
@@ -37,6 +38,11 @@ type OrderByCheckoutTokenArgs = {
 }
 
 type VerifyCheckoutPaymentByTokenArgs = {
+  orderNumber: string
+  token: string
+}
+
+type ClaimGuestOrderByCheckoutTokenArgs = {
   orderNumber: string
   token: string
 }
@@ -85,5 +91,16 @@ export const checkoutResolvers = {
       args: VerifyCheckoutPaymentByTokenArgs,
       context: GraphQLContext,
     ) => verifyCheckoutPaymentByToken(context, args.orderNumber, args.token),
+
+    claimGuestOrderByCheckoutToken: (
+      _parent: unknown,
+      args: ClaimGuestOrderByCheckoutTokenArgs,
+      context: GraphQLContext,
+    ) =>
+      claimGuestOrderByCheckoutTokenForGraphQL(
+        context,
+        args.orderNumber,
+        args.token,
+      ),
   },
 }

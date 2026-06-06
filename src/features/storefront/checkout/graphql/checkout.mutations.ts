@@ -75,3 +75,14 @@ export const VERIFY_CHECKOUT_PAYMENT_BY_TOKEN_MUTATION = /* GraphQL */ `
     }
   }
 `
+
+export const CLAIM_GUEST_ORDER_BY_CHECKOUT_TOKEN_MUTATION = /* GraphQL */ `
+  mutation ClaimGuestOrderByCheckoutToken($orderNumber: String!, $token: String!) {
+    claimGuestOrderByCheckoutToken(orderNumber: $orderNumber, token: $token) {
+      success
+      status
+      orderNumber
+      message
+    }
+  }
+`

@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useMemo, useState } from 'react'
+import { Suspense, useCallback, useMemo, useState } from 'react'
 import { useParams, usePathname, useSearchParams } from 'next/navigation'
 
 import { EmailVerificationBanner } from '@/src/features/storefront/account/components/email-verification-banner'
@@ -20,6 +20,7 @@ import type { AccountOrder } from '@/src/features/storefront/account/types'
 import { AccountLayout } from '@/src/features/storefront/layout/account-layout'
 import { useOrderByCheckoutTokenQuery } from '@/src/features/storefront/checkout'
 import { PostCheckoutOrderModal } from '@/src/features/storefront/orders/components/post-checkout-order-modal'
+import { usePostCheckoutGuestOrderClaim } from '@/src/features/storefront/orders/hooks/use-post-checkout-guest-order-claim'
 import { useSession } from '@/src/lib/auth/auth-client'
 import { routes } from '@/src/config/routes'
 
@@ -43,8 +44,9 @@ function AccountOrderDetailPageContent() {
   const { data: session } = useSession()
   const isAuthenticated = Boolean(session?.user)
   const isGuest = !isAuthenticated
+  const emailVerified = Boolean(session?.user?.emailVerified)
 
-  const profileQuery = useMeProfileQuery({ enabled: isAuthenticated && !hasCheckoutTokenAccess })
+  const profileQuery = useMeProfileQuery({ enabled: isAuthenticated })
   const tokenOrderQuery = useOrderByCheckoutTokenQuery({
     orderNumber,
     token: checkoutToken,
@@ -52,7 +54,7 @@ function AccountOrderDetailPageContent() {
   })
   const authOrderQuery = useMyOrderByNumberQuery({
     orderNumber,
-    enabled: !hasCheckoutTokenAccess,
+    enabled: !hasCheckoutTokenAccess && isAuthenticated,
   })
 
   const authError = profileQuery.error ?? authOrderQuery.error
@@ -63,6 +65,18 @@ function AccountOrderDetailPageContent() {
   })
 
   const [postCheckoutModalOpen, setPostCheckoutModalOpen] = useState(fromCheckout)
+
+  const refetchAfterClaim = useCallback(() => {
+    void tokenOrderQuery.refetch()
+  }, [tokenOrderQuery])
+
+  const postCheckoutClaim = usePostCheckoutGuestOrderClaim({
+    orderNumber,
+    checkoutToken,
+    enabled: isAuthenticated && hasCheckoutTokenAccess,
+    emailVerified,
+    onClaimSettled: refetchAfterClaim,
+  })
 
   const userName = useMemo(() => {
     if (profileQuery.data) {
@@ -94,7 +108,9 @@ function AccountOrderDetailPageContent() {
 
     const tokenAccess = tokenOrderQuery.data
     const order = normalizeOrder(tokenAccess.order)
-    const isAuthenticatedOwner = isAuthenticated && tokenAccess.viewerEmailMatchesOrder
+    const isAuthenticatedOwner =
+      postCheckoutClaim.orderLinkedToAccount ||
+      (isAuthenticated && tokenAccess.viewerEmailMatchesOrder)
 
     return (
       <AccountLayout
@@ -126,6 +142,10 @@ function AccountOrderDetailPageContent() {
             onOrderUpdated={() => {
               void tokenOrderQuery.refetch()
             }}
+            claimStatus={postCheckoutClaim.claimStatus}
+            isClaimingOrder={postCheckoutClaim.isClaimingOrder}
+            claimMessage={postCheckoutClaim.claimMessage}
+            orderLinkedToAccount={postCheckoutClaim.orderLinkedToAccount}
           />
         </div>
       </AccountLayout>
@@ -193,6 +213,7 @@ function AccountOrderDetailPageContent() {
             onOrderUpdated={() => {
               void authOrderQuery.refetch()
             }}
+            orderLinkedToAccount
           />
         )}
       </div>

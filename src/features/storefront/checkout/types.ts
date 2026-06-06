@@ -160,3 +160,20 @@ export type PublicOrder = {
   items: PublicOrderItem[]
   payments: PublicOrderPayment[]
 }
+
+export type ClaimGuestOrderStatus =
+  | 'CLAIMED'
+  | 'ALREADY_CLAIMED_BY_USER'
+  | 'EMAIL_VERIFICATION_REQUIRED'
+  | 'EMAIL_MISMATCH'
+  | 'TOKEN_INVALID'
+  | 'TOKEN_EXPIRED'
+  | 'ORDER_ALREADY_CLAIMED'
+  | 'UNAUTHENTICATED'
+
+export type ClaimGuestOrderPayload = {
+  success: boolean
+  status: ClaimGuestOrderStatus
+  orderNumber?: string | null
+  message?: string | null
+}

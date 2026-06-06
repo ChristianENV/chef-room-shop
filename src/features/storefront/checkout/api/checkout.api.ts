@@ -3,6 +3,7 @@ import { fetchGraphQL } from '@/src/lib/graphql/fetch-graphql'
 import {
   COMPLETE_CHECKOUT_MUTATION,
   CREATE_CHECKOUT_ORDER_MUTATION,
+  CLAIM_GUEST_ORDER_BY_CHECKOUT_TOKEN_MUTATION,
   RETRY_CHECKOUT_PAYMENT_MUTATION,
   VERIFY_CHECKOUT_PAYMENT_BY_TOKEN_MUTATION,
 } from '../graphql/checkout.mutations'
@@ -15,6 +16,7 @@ import {
 import type {
   CheckoutOrderPayload,
   CheckoutResult,
+  ClaimGuestOrderPayload,
   CompleteCheckoutPayload,
   ConektaCheckoutPayload,
   CreateCheckoutOrderInput,
@@ -40,6 +42,9 @@ type OrderByCheckoutTokenData = {
 }
 type VerifyCheckoutPaymentByTokenData = {
   verifyCheckoutPaymentByToken: AccountPaymentStatusPayload
+}
+type ClaimGuestOrderByCheckoutTokenData = {
+  claimGuestOrderByCheckoutToken: ClaimGuestOrderPayload
 }
 
 /**
@@ -139,6 +144,23 @@ export async function verifyCheckoutPaymentByToken(
     variables: { orderNumber, token },
   })
   return data.verifyCheckoutPaymentByToken
+}
+
+/**
+ * Links a guest checkout order to the authenticated user via checkout return token.
+ */
+export async function claimGuestOrderByCheckoutToken(
+  orderNumber: string,
+  token: string,
+): Promise<ClaimGuestOrderPayload> {
+  const data = await fetchGraphQL<
+    ClaimGuestOrderByCheckoutTokenData,
+    { orderNumber: string; token: string }
+  >({
+    query: CLAIM_GUEST_ORDER_BY_CHECKOUT_TOKEN_MUTATION,
+    variables: { orderNumber, token },
+  })
+  return data.claimGuestOrderByCheckoutToken
 }
 
 /**

@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
-import { login, postCheckoutOrderDetail, register } from '@/src/config/routes'
+import { login, postCheckoutOrderDetail, register, verifyEmail } from '@/src/config/routes'
 import { useVerifyMyOrderPaymentMutation } from '@/src/features/storefront/account/api/use-verify-my-order-payment-mutation'
 import type {
   AccountOrder,
@@ -39,6 +39,7 @@ import {
   type PaymentConfirmationUxState,
 } from '@/src/features/storefront/checkout/lib/payment-confirmation-state'
 import { usePaymentConfirmationElapsed } from '@/src/features/storefront/checkout/lib/use-payment-confirmation-elapsed'
+import type { ClaimGuestOrderStatus } from '@/src/features/storefront/checkout/types'
 
 const POLL_INTERVAL_MS = 4_000
 const POLL_MAX_ATTEMPTS = 8
@@ -55,6 +56,10 @@ type PostCheckoutOrderModalProps = {
   paymentActions: AccountOrderPaymentActions
   onOpenChange?: (open: boolean) => void
   onOrderUpdated?: (payload: AccountPaymentStatusPayload) => void
+  claimStatus?: ClaimGuestOrderStatus | null
+  isClaimingOrder?: boolean
+  claimMessage?: string | null
+  orderLinkedToAccount?: boolean
 }
 
 function isPaidStatus(orderStatus: string, paymentStatus: string): boolean {
@@ -134,6 +139,10 @@ export function PostCheckoutOrderModal({
   paymentActions,
   onOpenChange,
   onOrderUpdated,
+  claimStatus = null,
+  isClaimingOrder = false,
+  claimMessage = null,
+  orderLinkedToAccount = false,
 }: PostCheckoutOrderModalProps) {
   const [startedAt] = useState(() => Date.now())
   const pollAttemptsRef = useRef(0)
@@ -182,10 +191,14 @@ export function PostCheckoutOrderModal({
   const postCheckoutCallback = postCheckoutOrderDetail(orderNumber, checkoutToken)
   const loginUrl = login({ callbackUrl: postCheckoutCallback })
   const registerUrl = register({ callbackUrl: postCheckoutCallback })
+  const verifyEmailUrl = verifyEmail({ callbackUrl: postCheckoutCallback })
 
   const canDismiss =
     !isGuest &&
-    (isPaid || confirmationState === 'pendingAfterTimeout' || confirmationState === 'failed')
+    (orderLinkedToAccount ||
+      isPaid ||
+      confirmationState === 'pendingAfterTimeout' ||
+      confirmationState === 'failed')
 
   const applyVerifyResult = useCallback(
     (result: AccountPaymentStatusPayload) => {
@@ -296,12 +309,90 @@ export function PostCheckoutOrderModal({
   ) : null
 
   const emailMismatchBlock =
-    !isGuest && !isAuthenticatedOwner && !viewerEmailMatchesOrder ? (
+    !isGuest && claimStatus === 'EMAIL_MISMATCH' ? (
+      <div
+        data-testid="post-checkout-email-mismatch"
+        className="mt-4 rounded-lg border border-border bg-muted/40 p-4"
+      >
+        <p className="font-serif text-sm text-muted-foreground">
+          {claimMessage ??
+            'Esta compra fue realizada con otro correo. Podemos ayudarte a asociarla.'}
+        </p>
+      </div>
+    ) : !isGuest && !isAuthenticatedOwner && !viewerEmailMatchesOrder && !orderLinkedToAccount ? (
       <p className="mt-4 font-serif text-sm text-muted-foreground">
         Esta compra fue realizada con otro correo. Podemos ayudarte a asociarla desde soporte o
         reclamar el pedido con el correo correcto.
       </p>
     ) : null
+
+  const claimStatusBlock = (() => {
+    if (isClaimingOrder) {
+      return (
+        <div
+          data-testid="post-checkout-claiming-order"
+          className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-4"
+        >
+          <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden />
+          <p className="font-serif text-sm text-muted-foreground">
+            Estamos guardando este pedido en tu cuenta…
+          </p>
+        </div>
+      )
+    }
+
+    if (
+      orderLinkedToAccount &&
+      (claimStatus === 'CLAIMED' || claimStatus === 'ALREADY_CLAIMED_BY_USER')
+    ) {
+      return (
+        <div
+          data-testid="post-checkout-claim-success"
+          className="rounded-lg border border-success/30 bg-success/10 p-4"
+        >
+          <p className="font-serif text-sm text-success">
+            {claimMessage ?? 'Pedido guardado en tu cuenta. Ya puedes consultarlo en Mis pedidos.'}
+          </p>
+        </div>
+      )
+    }
+
+    if (claimStatus === 'EMAIL_VERIFICATION_REQUIRED') {
+      return (
+        <div
+          data-testid="post-checkout-email-verification-required"
+          className="mt-4 space-y-3 rounded-lg border border-primary/20 bg-primary/5 p-4"
+        >
+          <p className="font-serif text-sm text-muted-foreground">
+            {claimMessage ??
+              'Verifica tu correo para guardar este pedido en tu cuenta.'}
+          </p>
+          <Button asChild variant="secondary" className="font-sans">
+            <Link href={verifyEmailUrl}>Verificar correo</Link>
+          </Button>
+        </div>
+      )
+    }
+
+    if (
+      claimStatus === 'TOKEN_INVALID' ||
+      claimStatus === 'TOKEN_EXPIRED' ||
+      claimStatus === 'ORDER_ALREADY_CLAIMED'
+    ) {
+      return (
+        <div
+          data-testid="post-checkout-claim-error"
+          className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 p-4"
+        >
+          <p className="font-serif text-sm text-destructive">
+            {claimMessage ?? 'No pudimos guardar este pedido en tu cuenta.'}
+          </p>
+        </div>
+      )
+    }
+
+    return null
+  })()
 
   return (
     <Dialog open={open} onOpenChange={canDismiss ? onOpenChange : undefined}>
@@ -409,10 +500,11 @@ export function PostCheckoutOrderModal({
           )}
 
           {guestAccountBlock}
+          {claimStatusBlock}
           {emailMismatchBlock}
         </div>
 
-        {canDismiss && isPaid && (
+        {canDismiss && (isPaid || orderLinkedToAccount) && (
           <DialogFooter>
             <Button
               type="button"

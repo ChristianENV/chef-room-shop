@@ -7,6 +7,8 @@ export type MockCheckoutResultOptions = {
   status?: string
   paymentStatus?: string
   canViewDetails?: boolean
+  viewerEmailMatchesOrder?: boolean
+  claimStatus?: 'CLAIMED' | 'ALREADY_CLAIMED_BY_USER' | 'EMAIL_VERIFICATION_REQUIRED' | 'EMAIL_MISMATCH'
   pollSequence?: Array<{ status: string; paymentStatus: string }>
   verifySequence?: Array<{ status: string; paymentStatus: string }>
 }
@@ -192,7 +194,7 @@ export async function mockCheckoutPostOrderFlow(
             orderByCheckoutToken: {
               returnTokenValid: true,
               tokenExpired: false,
-              viewerEmailMatchesOrder: false,
+              viewerEmailMatchesOrder: options.viewerEmailMatchesOrder ?? false,
               maskedCustomerEmail: 'gu***@example.com',
               order,
             },
@@ -224,6 +226,35 @@ export async function mockCheckoutPostOrderFlow(
                 entry.paymentStatus === 'PAID'
                   ? 'Pago confirmado.'
                   : 'Conekta aún no confirma el pago.',
+            },
+          },
+        }),
+      })
+      return
+    }
+
+    if (query.includes('mutation ClaimGuestOrderByCheckoutToken')) {
+      const claimStatus = options.claimStatus ?? 'CLAIMED'
+      const claimSuccess =
+        claimStatus === 'CLAIMED' || claimStatus === 'ALREADY_CLAIMED_BY_USER'
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: {
+            claimGuestOrderByCheckoutToken: {
+              success: claimSuccess,
+              status: claimStatus,
+              orderNumber: MOCK_ORDER_NUMBER,
+              message:
+                claimStatus === 'CLAIMED'
+                  ? 'Pedido guardado en tu cuenta.'
+                  : claimStatus === 'EMAIL_MISMATCH'
+                    ? 'Esta compra fue realizada con otro correo. Podemos ayudarte a asociarla.'
+                    : claimStatus === 'EMAIL_VERIFICATION_REQUIRED'
+                      ? 'Verifica tu correo para guardar este pedido en tu cuenta.'
+                      : 'Este pedido ya está en tu cuenta.',
             },
           },
         }),
