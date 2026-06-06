@@ -1,7 +1,27 @@
 /** @type {import('next').NextConfig} */
+
+function getR2ImageRemotePatterns() {
+  const base = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL?.trim()
+  if (!base) return []
+
+  try {
+    const url = new URL(base)
+    return [
+      {
+        protocol: url.protocol.replace(':', ''),
+        hostname: url.hostname,
+        pathname: '/**',
+      },
+    ]
+  } catch {
+    return []
+  }
+}
+
 const nextConfig = {
   images: {
     unoptimized: true,
+    remotePatterns: getR2ImageRemotePatterns(),
   },
   async redirects() {
     return [

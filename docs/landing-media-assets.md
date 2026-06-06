@@ -26,7 +26,8 @@ Slots definidos en `src/features/storefront/landing/lib/landing-media.ts`.
 
 1. Exportar imágenes optimizadas a `public/images/landing/` (kebab-case, sin espacios).
 2. Actualizar `src` y `alt` en `LANDING_MEDIA` / `LANDING_CATEGORIES`.
-3. Ejecutar `pnpm exec next build` y revisar LCP en hero (`priority` solo en hero).
+3. Ejecutar `pnpm r2:public-images:upload` para publicar en R2 (opcional; local sigue como fallback).
+4. Ejecutar `pnpm exec next build` y revisar LCP en hero (`priority` solo en hero).
 
 ## Productos destacados
 

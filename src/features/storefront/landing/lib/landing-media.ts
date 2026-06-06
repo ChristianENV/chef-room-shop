@@ -1,7 +1,11 @@
 /**
  * Landing media slots — assets in `public/images/landing/`.
+ * Resolved via `getPublicImageUrl` (R2 manifest with local fallback).
  * @see docs/landing-media-assets.md
+ * @see docs/r2-public-assets.md
  */
+
+import { getPublicImageUrl } from '@/src/config/public-images'
 
 export type LandingMediaSlot =
   | 'hero'
@@ -30,12 +34,16 @@ export type LandingMediaAsset = {
 const LANDING_IMAGE_BASE = '/images/landing'
 const LANDING_AVATARS_BASE = `${LANDING_IMAGE_BASE}/avatars`
 
+function landingImage(localPath: string): string {
+  return getPublicImageUrl(localPath)
+}
+
 export const LANDING_CHEF_AVATARS = [
-  `${LANDING_AVATARS_BASE}/chef-avatar-01.png`,
-  `${LANDING_AVATARS_BASE}/chef-avatar-02.png`,
-  `${LANDING_AVATARS_BASE}/chef-avatar-03.png`,
-  `${LANDING_AVATARS_BASE}/chef-avatar-04.png`,
-  `${LANDING_AVATARS_BASE}/chef-avatar-05.png`,
+  landingImage(`${LANDING_AVATARS_BASE}/chef-avatar-01.png`),
+  landingImage(`${LANDING_AVATARS_BASE}/chef-avatar-02.png`),
+  landingImage(`${LANDING_AVATARS_BASE}/chef-avatar-03.png`),
+  landingImage(`${LANDING_AVATARS_BASE}/chef-avatar-04.png`),
+  landingImage(`${LANDING_AVATARS_BASE}/chef-avatar-05.png`),
 ] as const
 
 export const LANDING_CATEGORIES = [
@@ -43,21 +51,21 @@ export const LANDING_CATEGORIES = [
     id: 'filipinas',
     title: 'Filipinas',
     mediaKey: 'categoryFilipinas' as const,
-    image: `${LANDING_IMAGE_BASE}/landing-category-filipina.png`,
+    image: landingImage(`${LANDING_IMAGE_BASE}/landing-category-filipina.png`),
     alt: 'Filipina blanca premium Chef Room',
   },
   {
     id: 'mandiles',
     title: 'Mandiles',
     mediaKey: 'categoryMandiles' as const,
-    image: `${LANDING_IMAGE_BASE}/landing-category-mandil.png`,
+    image: landingImage(`${LANDING_IMAGE_BASE}/landing-category-mandil.png`),
     alt: 'Mandil azul premium Chef Room',
   },
   {
     id: 'pantalones',
     title: 'Pantalones',
     mediaKey: 'categoryPantalones' as const,
-    image: `${LANDING_IMAGE_BASE}/landing-category-pantalon.png`,
+    image: landingImage(`${LANDING_IMAGE_BASE}/landing-category-pantalon.png`),
     alt: 'Pantalón profesional para chef Chef Room',
   },
 ] as const
@@ -66,7 +74,7 @@ export const LANDING_MEDIA = {
   hero: {
     slot: 'hero',
     kind: 'image',
-    src: `${LANDING_IMAGE_BASE}/landing-hero-customizer.png`,
+    src: landingImage(`${LANDING_IMAGE_BASE}/landing-hero-customizer.png`),
     alt: 'Configurador premium de uniforme Chef Room',
     aspectClass: 'aspect-[4/5]',
     label: 'Personalizador',
@@ -106,7 +114,7 @@ export const LANDING_MEDIA = {
   categoryAccesorios: {
     slot: 'categoryAccesorios',
     kind: 'image',
-    src: '/images/landing/category-accesorios.svg',
+    src: landingImage('/images/landing/category-accesorios.svg'),
     alt: 'Accesorios para chef',
     aspectClass: 'aspect-[4/5]',
     label: 'Accesorios',
@@ -114,7 +122,7 @@ export const LANDING_MEDIA = {
   customizer: {
     slot: 'customizer',
     kind: 'image',
-    src: `${LANDING_IMAGE_BASE}/customizer-ss.png`,
+    src: landingImage(`${LANDING_IMAGE_BASE}/customizer-ss.png`),
     alt: 'Captura real del personalizador de uniformes Chef Room',
     aspectClass: 'aspect-[16/10]',
     label: 'Personalizador',
@@ -122,7 +130,7 @@ export const LANDING_MEDIA = {
   story: {
     slot: 'story',
     kind: 'image',
-    src: `${LANDING_IMAGE_BASE}/landing-brand-story-atelier.png`,
+    src: landingImage(`${LANDING_IMAGE_BASE}/landing-brand-story-atelier.png`),
     alt: 'Taller de diseño y confección Chef Room',
     aspectClass: 'aspect-[4/5]',
     label: 'Nuestra historia',
@@ -130,7 +138,7 @@ export const LANDING_MEDIA = {
   finalCta: {
     slot: 'finalCta',
     kind: 'image',
-    src: '/images/landing/cta-background.svg',
+    src: landingImage('/images/landing/cta-background.svg'),
     alt: '',
     aspectClass: 'aspect-[21/9]',
     label: 'CTA',
