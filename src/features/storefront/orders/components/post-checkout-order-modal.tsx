@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Loader2, RefreshCw, Sparkles, UserPlus } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -16,7 +17,9 @@ import {
 } from '@/components/ui/dialog'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
-import { login, postCheckoutOrderDetail, register, verifyEmail } from '@/src/config/routes'
+import { login, postCheckoutOrderDetail, register, routes, verifyEmail } from '@/src/config/routes'
+import { maskEmail } from '@/src/lib/email/mask-email'
+import { signOut } from '@/src/lib/auth/auth-client'
 import { useVerifyMyOrderPaymentMutation } from '@/src/features/storefront/account/api/use-verify-my-order-payment-mutation'
 import type {
   AccountOrder,
@@ -53,6 +56,7 @@ type PostCheckoutOrderModalProps = {
   isAuthenticatedOwner: boolean
   viewerEmailMatchesOrder: boolean
   maskedCustomerEmail?: string
+  maskedSessionEmail?: string
   paymentActions: AccountOrderPaymentActions
   onOpenChange?: (open: boolean) => void
   onOrderUpdated?: (payload: AccountPaymentStatusPayload) => void
@@ -136,6 +140,7 @@ export function PostCheckoutOrderModal({
   isAuthenticatedOwner,
   viewerEmailMatchesOrder,
   maskedCustomerEmail,
+  maskedSessionEmail,
   paymentActions,
   onOpenChange,
   onOrderUpdated,
@@ -144,6 +149,7 @@ export function PostCheckoutOrderModal({
   claimMessage = null,
   orderLinkedToAccount = false,
 }: PostCheckoutOrderModalProps) {
+  const router = useRouter()
   const [startedAt] = useState(() => Date.now())
   const pollAttemptsRef = useRef(0)
   const pollTimeoutRef = useRef<number | undefined>(undefined)
@@ -192,10 +198,22 @@ export function PostCheckoutOrderModal({
   const loginUrl = login({ callbackUrl: postCheckoutCallback })
   const registerUrl = register({ callbackUrl: postCheckoutCallback })
   const verifyEmailUrl = verifyEmail({ callbackUrl: postCheckoutCallback })
+  const contactSupportUrl = `${routes.contact}?order=${encodeURIComponent(orderNumber)}`
+  const displayOrderEmail =
+    maskedCustomerEmail ??
+    (order.customerEmail ? maskEmail(order.customerEmail) : undefined)
+
+  const handleLoginWithOrderEmail = useCallback(async () => {
+    await signOut()
+    router.push(login({ callbackUrl: postCheckoutCallback }))
+    router.refresh()
+  }, [postCheckoutCallback, router])
 
   const canDismiss =
     !isGuest &&
     (orderLinkedToAccount ||
+      claimStatus === 'EMAIL_MISMATCH' ||
+      claimStatus === 'EMAIL_VERIFICATION_REQUIRED' ||
       isPaid ||
       confirmationState === 'pendingAfterTimeout' ||
       confirmationState === 'failed')
@@ -308,24 +326,6 @@ export function PostCheckoutOrderModal({
     </div>
   ) : null
 
-  const emailMismatchBlock =
-    !isGuest && claimStatus === 'EMAIL_MISMATCH' ? (
-      <div
-        data-testid="post-checkout-email-mismatch"
-        className="mt-4 rounded-lg border border-border bg-muted/40 p-4"
-      >
-        <p className="font-serif text-sm text-muted-foreground">
-          {claimMessage ??
-            'Esta compra fue realizada con otro correo. Podemos ayudarte a asociarla.'}
-        </p>
-      </div>
-    ) : !isGuest && !isAuthenticatedOwner && !viewerEmailMatchesOrder && !orderLinkedToAccount ? (
-      <p className="mt-4 font-serif text-sm text-muted-foreground">
-        Esta compra fue realizada con otro correo. Podemos ayudarte a asociarla desde soporte o
-        reclamar el pedido con el correo correcto.
-      </p>
-    ) : null
-
   const claimStatusBlock = (() => {
     if (isClaimingOrder) {
       return (
@@ -353,6 +353,81 @@ export function PostCheckoutOrderModal({
           <p className="font-serif text-sm text-success">
             {claimMessage ?? 'Pedido guardado en tu cuenta. Ya puedes consultarlo en Mis pedidos.'}
           </p>
+        </div>
+      )
+    }
+
+    if (claimStatus === 'EMAIL_MISMATCH') {
+      return (
+        <div
+          data-testid="post-checkout-email-mismatch"
+          className="space-y-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4"
+        >
+          <div>
+            <p className="font-sans text-sm font-semibold text-foreground">
+              Esta compra fue realizada con otro correo.
+            </p>
+            <p className="mt-2 font-serif text-sm text-muted-foreground">
+              Por seguridad no podemos guardar este pedido automáticamente en esta cuenta.
+            </p>
+          </div>
+
+          <dl className="space-y-2 rounded-md border border-border/60 bg-background/60 p-3">
+            <div className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between">
+              <dt className="font-serif text-xs text-muted-foreground">Correo de la compra</dt>
+              <dd
+                data-testid="post-checkout-order-email"
+                className="font-sans text-sm font-medium text-foreground"
+              >
+                {displayOrderEmail ?? 'No disponible'}
+              </dd>
+            </div>
+            <div className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between">
+              <dt className="font-serif text-xs text-muted-foreground">Correo de tu sesión</dt>
+              <dd
+                data-testid="post-checkout-session-email"
+                className="font-sans text-sm font-medium text-foreground"
+              >
+                {maskedSessionEmail ?? 'No disponible'}
+              </dd>
+            </div>
+          </dl>
+
+          <p className="font-serif text-xs leading-relaxed text-muted-foreground">
+            Tu pedido sigue disponible en esta página mientras el enlace de compra sea válido.
+            No aparecerá en Mis pedidos con la cuenta actual.
+          </p>
+
+          <div className="flex flex-col gap-2 pt-1">
+            <Button
+              type="button"
+              className="font-sans"
+              data-testid="post-checkout-login-with-order-email-button"
+              onClick={() => {
+                void handleLoginWithOrderEmail()
+              }}
+            >
+              Iniciar sesión con el correo de la compra
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="font-sans"
+              data-testid="post-checkout-contact-support-button"
+            >
+              <Link href={contactSupportUrl}>Contactar soporte</Link>
+            </Button>
+            {!isGuest && (
+              <Button
+                type="button"
+                variant="ghost"
+                className="font-sans"
+                onClick={() => onOpenChange?.(false)}
+              >
+                Entendido
+              </Button>
+            )}
+          </div>
         </div>
       )
     }
@@ -501,7 +576,6 @@ export function PostCheckoutOrderModal({
 
           {guestAccountBlock}
           {claimStatusBlock}
-          {emailMismatchBlock}
         </div>
 
         {canDismiss && (isPaid || orderLinkedToAccount) && (

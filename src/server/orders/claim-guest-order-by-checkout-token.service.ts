@@ -118,27 +118,6 @@ export async function claimGuestOrderByCheckoutToken(input: {
     }
   }
 
-  const sessionEmail = normalizeEmail(input.userEmail)
-  const orderEmail = normalizeEmail(order.customerEmail)
-
-  if (sessionEmail !== orderEmail) {
-    return {
-      success: false,
-      status: 'EMAIL_MISMATCH',
-      orderNumber: order.orderNumber,
-      message: 'Esta compra fue realizada con otro correo. Podemos ayudarte a asociarla.',
-    }
-  }
-
-  if (requireVerifiedEmail && !input.emailVerified) {
-    return {
-      success: false,
-      status: 'EMAIL_VERIFICATION_REQUIRED',
-      orderNumber: order.orderNumber,
-      message: 'Verifica tu correo para guardar este pedido en tu cuenta.',
-    }
-  }
-
   if (order.userId) {
     if (order.userId === input.userId) {
       return {
@@ -154,6 +133,28 @@ export async function claimGuestOrderByCheckoutToken(input: {
       status: 'ORDER_ALREADY_CLAIMED',
       orderNumber: order.orderNumber,
       message: 'Este pedido ya está vinculado a otra cuenta.',
+    }
+  }
+
+  const sessionEmail = normalizeEmail(input.userEmail)
+  const orderEmail = normalizeEmail(order.customerEmail)
+
+  if (sessionEmail !== orderEmail) {
+    return {
+      success: false,
+      status: 'EMAIL_MISMATCH',
+      orderNumber: order.orderNumber,
+      message:
+        'Esta compra fue realizada con otro correo. El pedido seguirá como compra invitada y no aparecerá en Mis pedidos.',
+    }
+  }
+
+  if (requireVerifiedEmail && !input.emailVerified) {
+    return {
+      success: false,
+      status: 'EMAIL_VERIFICATION_REQUIRED',
+      orderNumber: order.orderNumber,
+      message: 'Verifica tu correo para guardar este pedido en tu cuenta.',
     }
   }
 

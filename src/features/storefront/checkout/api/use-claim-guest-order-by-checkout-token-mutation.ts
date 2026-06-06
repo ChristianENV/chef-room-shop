@@ -26,15 +26,17 @@ export function useClaimGuestOrderByCheckoutTokenMutation(
     mutationFn: () =>
       claimGuestOrderByCheckoutToken(normalizedOrderNumber, normalizedToken),
     onSuccess: (result) => {
-      if (!result.success) {
-        return
+      if (
+        result.success &&
+        (result.status === 'CLAIMED' || result.status === 'ALREADY_CLAIMED_BY_USER')
+      ) {
+        void queryClient.invalidateQueries({ queryKey: accountQueryKeys.ordersAll() })
+        void queryClient.invalidateQueries({
+          queryKey: accountQueryKeys.order(normalizedOrderNumber),
+        })
+        void queryClient.invalidateQueries({ queryKey: accountQueryKeys.summary() })
       }
 
-      void queryClient.invalidateQueries({ queryKey: accountQueryKeys.ordersAll() })
-      void queryClient.invalidateQueries({
-        queryKey: accountQueryKeys.order(normalizedOrderNumber),
-      })
-      void queryClient.invalidateQueries({ queryKey: accountQueryKeys.summary() })
       void queryClient.invalidateQueries({
         queryKey: checkoutQueryKeys.orderByCheckoutToken(
           normalizedOrderNumber,

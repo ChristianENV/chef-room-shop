@@ -22,6 +22,7 @@ import { useOrderByCheckoutTokenQuery } from '@/src/features/storefront/checkout
 import { PostCheckoutOrderModal } from '@/src/features/storefront/orders/components/post-checkout-order-modal'
 import { usePostCheckoutGuestOrderClaim } from '@/src/features/storefront/orders/hooks/use-post-checkout-guest-order-claim'
 import { useSession } from '@/src/lib/auth/auth-client'
+import { maskEmail } from '@/src/lib/email/mask-email'
 import { routes } from '@/src/config/routes'
 
 function AccountOrderDetailPageContent() {
@@ -45,6 +46,9 @@ function AccountOrderDetailPageContent() {
   const isAuthenticated = Boolean(session?.user)
   const isGuest = !isAuthenticated
   const emailVerified = Boolean(session?.user?.emailVerified)
+  const maskedSessionEmail = session?.user?.email
+    ? maskEmail(session.user.email)
+    : undefined
 
   const profileQuery = useMeProfileQuery({ enabled: isAuthenticated })
   const tokenOrderQuery = useOrderByCheckoutTokenQuery({
@@ -110,7 +114,9 @@ function AccountOrderDetailPageContent() {
     const order = normalizeOrder(tokenAccess.order)
     const isAuthenticatedOwner =
       postCheckoutClaim.orderLinkedToAccount ||
-      (isAuthenticated && tokenAccess.viewerEmailMatchesOrder)
+      (isAuthenticated &&
+        tokenAccess.viewerEmailMatchesOrder &&
+        postCheckoutClaim.claimStatus !== 'EMAIL_MISMATCH')
 
     return (
       <AccountLayout
@@ -130,6 +136,7 @@ function AccountOrderDetailPageContent() {
             isAuthenticatedOwner={Boolean(isAuthenticatedOwner)}
             viewerEmailMatchesOrder={tokenAccess.viewerEmailMatchesOrder}
             maskedCustomerEmail={tokenAccess.maskedCustomerEmail}
+            maskedSessionEmail={maskedSessionEmail}
             paymentActions={
               order.paymentActions ?? {
                 canVerifyPayment: true,
