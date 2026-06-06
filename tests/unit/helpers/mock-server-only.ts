@@ -7,6 +7,5 @@ Module.prototype.require = function (this: NodeModule, id: string) {
     return {}
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return originalLoad.apply(this, arguments as any)
+  return originalLoad.call(this, id)
 }

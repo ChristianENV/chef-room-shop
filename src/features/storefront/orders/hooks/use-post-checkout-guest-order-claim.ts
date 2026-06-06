@@ -29,7 +29,10 @@ export function usePostCheckoutGuestOrderClaim({
   const claimAttemptedRef = useRef(false)
   const claimMutation = useClaimGuestOrderByCheckoutTokenMutation(orderNumber, checkoutToken)
   const mutateClaimRef = useRef(claimMutation.mutate)
-  mutateClaimRef.current = claimMutation.mutate
+
+  useEffect(() => {
+    mutateClaimRef.current = claimMutation.mutate
+  }, [claimMutation.mutate])
 
   useEffect(() => {
     if (!enabled || claimAttemptedRef.current) {
