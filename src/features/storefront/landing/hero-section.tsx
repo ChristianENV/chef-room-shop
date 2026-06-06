@@ -56,7 +56,7 @@ export function HeroSection() {
 
             <p className="mt-8 max-w-lg font-serif text-lg leading-relaxed text-muted-foreground md:text-xl">
               Diseña uniformes profesionales con colores, bordados, logotipos y detalles
-              pensados para tu estilo de cocina. Producción a medida con acabados premium.
+              pensados para tu estilo de cocina. Producción con acabados premium.
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">

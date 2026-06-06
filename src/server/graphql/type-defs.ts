@@ -1004,6 +1004,14 @@ export const checkoutTypeDefs = /* GraphQL */ `
     returnToken: String!
   }
 
+  type CheckoutOrderDetailAccess {
+    order: AccountOrder!
+    returnTokenValid: Boolean!
+    tokenExpired: Boolean!
+    viewerEmailMatchesOrder: Boolean!
+    maskedCustomerEmail: String!
+  }
+
   type CheckoutResult {
     orderNumber: String!
     orderId: ID!
@@ -1374,6 +1382,7 @@ export const typeDefs = /* GraphQL */ `
     shippingQuoteById(id: ID!): ShippingQuote
     orderByNumber(orderNumber: String!, email: String!): PublicOrder
     checkoutResultByToken(token: String!): CheckoutResult
+    orderByCheckoutToken(orderNumber: String!, token: String!): CheckoutOrderDetailAccess
     orderClaimPreview(token: String!): OrderClaimPreview
     designById(designId: ID!): AccountDesign
   }
@@ -1396,6 +1405,7 @@ export const typeDefs = /* GraphQL */ `
     createCheckoutOrder(input: CreateCheckoutOrderInput!): CheckoutOrderPayload!
     completeCheckout(input: CreateCheckoutOrderInput!): CompleteCheckoutPayload!
     retryCheckoutPayment(input: RetryCheckoutPaymentInput!): CompleteCheckoutPayload!
+    verifyCheckoutPaymentByToken(orderNumber: String!, token: String!): AccountPaymentStatusPayload!
     createConektaCheckout(input: CreateConektaCheckoutInput!): ConektaCheckoutPayload!
     claimOrder(token: String!): OrderClaimPayload!
     updateAdminOrderStatus(input: UpdateAdminOrderStatusInput!): AdminOrder!

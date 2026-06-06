@@ -76,10 +76,6 @@ function isLinkActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
-function getProfileDestination(isAdmin: boolean) {
-  return isAdmin ? routes.adminDashboard : routes.account
-}
-
 function AccountMenu({
   isLoggedIn = false,
   isAdmin = false,
@@ -93,8 +89,6 @@ function AccountMenu({
   user?: UserDisplayInput | null
   triggerClassName?: string
 }) {
-  const profileHref = getProfileDestination(isAdmin)
-  const profileLabel = isAdmin ? 'Panel admin' : 'Mi perfil'
   const accountLabel =
     isLoggedIn && user ? getUserDisplayName(user) : 'Mi cuenta'
 
@@ -124,8 +118,13 @@ function AccountMenu({
         {isLoggedIn ? (
           <>
             <DropdownMenuItem asChild className="focus:bg-white/10 focus:text-white">
-              <Link href={profileHref}>{profileLabel}</Link>
+              <Link href={routes.account}>Mi perfil</Link>
             </DropdownMenuItem>
+            {isAdmin && (
+              <DropdownMenuItem asChild className="focus:bg-white/10 focus:text-white">
+                <Link href={routes.adminDashboard}>Panel admin</Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               className="text-red-300 focus:bg-red-500/15 focus:text-red-200"
               onClick={() => {
@@ -508,7 +507,7 @@ function PublicHeaderInner({
                       {isLoggedIn ? (
                         <>
                           <Link
-                            href={getProfileDestination(isAdmin)}
+                            href={routes.account}
                             onClick={closeMobileMenu}
                             className="flex items-center gap-3 rounded-xl px-4 py-3 transition-colors hover:bg-white/[0.06]"
                           >
@@ -517,6 +516,14 @@ function PublicHeaderInner({
                               {user ? getUserDisplayName(user) : 'Mi cuenta'}
                             </span>
                           </Link>
+                          {isAdmin && (
+                            <MobileNavLink
+                              link={{ label: 'Panel admin', href: routes.adminDashboard }}
+                              pathname={pathname}
+                              searchParams={searchParams}
+                              onNavigate={closeMobileMenu}
+                            />
+                          )}
                           <button
                             type="button"
                             onClick={() => {

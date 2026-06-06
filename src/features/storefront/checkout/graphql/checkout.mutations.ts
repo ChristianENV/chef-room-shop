@@ -59,3 +59,19 @@ export const RETRY_CHECKOUT_PAYMENT_MUTATION = /* GraphQL */ `
     }
   }
 `
+
+export const VERIFY_CHECKOUT_PAYMENT_BY_TOKEN_MUTATION = /* GraphQL */ `
+  mutation VerifyCheckoutPaymentByToken($orderNumber: String!, $token: String!) {
+    verifyCheckoutPaymentByToken(orderNumber: $orderNumber, token: $token) {
+      orderNumber
+      orderStatus
+      paymentStatus
+      paymentMethod
+      canRetryPayment
+      canContinuePayment
+      paymentRedirectUrl
+      checkedAt
+      message
+    }
+  }
+`

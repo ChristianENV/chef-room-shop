@@ -4,6 +4,8 @@ export const checkoutQueryKeys = {
     [...checkoutQueryKeys.all, 'orderByNumber', orderNumber, email] as const,
   checkoutResultByToken: (token: string) =>
     [...checkoutQueryKeys.all, 'checkoutResultByToken', token] as const,
+  orderByCheckoutToken: (orderNumber: string, token: string) =>
+    [...checkoutQueryKeys.all, 'orderByCheckoutToken', orderNumber, token] as const,
   conektaCheckout: (orderNumber: string) =>
     [...checkoutQueryKeys.all, 'conektaCheckout', orderNumber] as const,
 }

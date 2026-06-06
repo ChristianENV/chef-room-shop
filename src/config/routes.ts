@@ -51,27 +51,32 @@ export const routes = {
 } as const
 
 /** Conekta return URL with checkout token. */
-export function checkoutSuccess(params?: { token?: string; from?: string; payment?: string }) {
+export function checkoutSuccess(params?: { token?: string; payment?: string }) {
   return appendQuery(routes.checkoutSuccess, {
     token: params?.token,
-    from: params?.from,
     payment: params?.payment,
   })
 }
 
-/** Guest post-purchase callback preserved through login/register. */
-export function purchaseCallbackByToken(token: string) {
-  return checkoutSuccess({ token: token.trim(), from: 'purchase' })
-}
-
-/** Account order detail with optional checkout origin marker. */
+/** Post-checkout order detail with checkout context preserved in query params. */
 export function accountOrderDetail(
   orderNumber: string,
-  options?: { from?: 'checkout' },
+  options?: { from?: 'checkout'; token?: string },
 ) {
   return appendQuery(routes.accountOrderDetail(orderNumber), {
     from: options?.from,
+    token: options?.token,
   })
+}
+
+/** Guest/authenticated return target after checkout Conekta redirect. */
+export function postCheckoutOrderDetail(orderNumber: string, token: string) {
+  return accountOrderDetail(orderNumber, { from: 'checkout', token: token.trim() })
+}
+
+/** @deprecated Use postCheckoutOrderDetail for auth callbacks after purchase. */
+export function purchaseCallbackByToken(token: string) {
+  return checkoutSuccess({ token: token.trim() })
 }
 
 export function login(options?: { callbackUrl?: string }) {

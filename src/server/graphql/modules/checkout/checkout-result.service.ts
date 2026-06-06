@@ -5,7 +5,7 @@ import { CASH_PAYMENT_LOCATIONS } from '@/src/config/payment-vars'
 import {
   accountOrderDetail,
   login,
-  purchaseCallbackByToken,
+  postCheckoutOrderDetail,
   register,
 } from '@/src/config/routes'
 import { validateCheckoutReturnToken } from '@/src/server/checkout/checkout-return-token'
@@ -84,7 +84,7 @@ export async function getCheckoutResultByToken(
 
   const canViewDetails = isAuthenticatedOwner
   const emailMatches = viewerEmailMatchesOrder(context, order.customerEmail)
-  const purchaseCallback = purchaseCallbackByToken(trimmed)
+  const purchaseCallback = postCheckoutOrderDetail(order.orderNumber, trimmed)
 
   return {
     orderNumber: order.orderNumber,
@@ -133,9 +133,10 @@ export async function getCheckoutResultByToken(
     accountOrderUrl,
     canViewDetails,
     viewerEmailMatchesOrder: emailMatches,
-    detailUrl: canViewDetails
-      ? accountOrderDetail(order.orderNumber, { from: 'checkout' })
-      : null,
+    detailUrl: accountOrderDetail(order.orderNumber, {
+      from: 'checkout',
+      token: trimmed,
+    }),
     paymentReference: cashDetails?.reference ?? null,
     paymentExpiresAt: cashDetails?.expiresAt ?? null,
     cashPaymentLocations:

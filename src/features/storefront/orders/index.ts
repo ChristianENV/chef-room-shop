@@ -1,4 +1,5 @@
 export { PurchaseDetailPageContent } from './components/purchase-detail-page-content'
+export { PostCheckoutOrderModal } from './components/post-checkout-order-modal'
 export { OrderDetailLayout } from './components/order-detail-layout'
 export { mapCheckoutResultToOrderDetailViewModel } from './mappers/map-checkout-result-to-order-detail-view-model'
 export { mapPublicOrderToOrderDetailViewModel } from './mappers/map-checkout-result-to-order-detail-view-model'
