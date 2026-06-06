@@ -86,3 +86,13 @@ export const CLAIM_GUEST_ORDER_BY_CHECKOUT_TOKEN_MUTATION = /* GraphQL */ `
     }
   }
 `
+
+export const REQUEST_ORDER_CLAIM_TRANSFER_MUTATION = /* GraphQL */ `
+  mutation RequestOrderClaimTransfer($orderNumber: String!, $checkoutToken: String!) {
+    requestOrderClaimTransfer(orderNumber: $orderNumber, checkoutToken: $checkoutToken) {
+      success
+      status
+      message
+    }
+  }
+`

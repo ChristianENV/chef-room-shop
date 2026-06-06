@@ -6,6 +6,7 @@ export {
   getOrderByCheckoutToken,
   verifyCheckoutPaymentByToken,
   claimGuestOrderByCheckoutToken,
+  requestOrderClaimTransfer,
   createConektaCheckout,
   getOrderByNumber,
 } from './api/checkout.api'
@@ -17,6 +18,7 @@ export { useCheckoutResultByTokenQuery } from './api/use-checkout-result-by-toke
 export { useOrderByCheckoutTokenQuery } from './api/use-order-by-checkout-token-query'
 export { useVerifyCheckoutPaymentByTokenMutation } from './api/use-verify-checkout-payment-by-token-mutation'
 export { useClaimGuestOrderByCheckoutTokenMutation } from './api/use-claim-guest-order-by-checkout-token-mutation'
+export { useRequestOrderClaimTransferMutation } from './api/use-request-order-claim-transfer-mutation'
 export { useRetryCheckoutPaymentMutation } from './api/use-retry-checkout-payment-mutation'
 export { useCreateConektaCheckoutMutation } from './api/use-create-conekta-checkout-mutation'
 export { useOrderByNumberQuery } from './api/use-order-by-number-query'
@@ -31,6 +33,8 @@ export type {
   PublicOrder,
   ClaimGuestOrderPayload,
   ClaimGuestOrderStatus,
+  OrderClaimTransferPayload,
+  OrderClaimTransferStatus,
 } from './types'
 export { CheckoutSteps, type CheckoutStep } from './checkout-steps'
 export { ContactForm, type ContactFormData } from './contact-form'

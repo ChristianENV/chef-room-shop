@@ -7,6 +7,7 @@ export type TransactionalEmailTemplate =
   | 'payment_failed'
   | 'payment_expired'
   | 'email_verification'
+  | 'order_claim_transfer_authorization'
   | 'shipping_update'
   | 'delivered'
 
@@ -44,6 +45,7 @@ export type TransactionalEmailPayload = {
   claimUrl?: string
   accountOrderUrl?: string
   verificationUrl?: string
+  requestedByEmail?: string
   carrier?: string
   trackingNumber?: string
   shipmentStatus?: string

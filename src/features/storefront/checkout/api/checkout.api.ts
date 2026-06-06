@@ -4,6 +4,7 @@ import {
   COMPLETE_CHECKOUT_MUTATION,
   CREATE_CHECKOUT_ORDER_MUTATION,
   CLAIM_GUEST_ORDER_BY_CHECKOUT_TOKEN_MUTATION,
+  REQUEST_ORDER_CLAIM_TRANSFER_MUTATION,
   RETRY_CHECKOUT_PAYMENT_MUTATION,
   VERIFY_CHECKOUT_PAYMENT_BY_TOKEN_MUTATION,
 } from '../graphql/checkout.mutations'
@@ -21,6 +22,7 @@ import type {
   ConektaCheckoutPayload,
   CreateCheckoutOrderInput,
   CreateConektaCheckoutInput,
+  OrderClaimTransferPayload,
   PublicOrder,
 } from '../types'
 import type { AccountOrder, AccountPaymentStatusPayload } from '@/src/features/storefront/account/types'
@@ -45,6 +47,9 @@ type VerifyCheckoutPaymentByTokenData = {
 }
 type ClaimGuestOrderByCheckoutTokenData = {
   claimGuestOrderByCheckoutToken: ClaimGuestOrderPayload
+}
+type RequestOrderClaimTransferData = {
+  requestOrderClaimTransfer: OrderClaimTransferPayload
 }
 
 /**
@@ -161,6 +166,23 @@ export async function claimGuestOrderByCheckoutToken(
     variables: { orderNumber, token },
   })
   return data.claimGuestOrderByCheckoutToken
+}
+
+/**
+ * Sends an authorization email to the original order email for cross-account linking.
+ */
+export async function requestOrderClaimTransfer(
+  orderNumber: string,
+  checkoutToken: string,
+): Promise<OrderClaimTransferPayload> {
+  const data = await fetchGraphQL<
+    RequestOrderClaimTransferData,
+    { orderNumber: string; checkoutToken: string }
+  >({
+    query: REQUEST_ORDER_CLAIM_TRANSFER_MUTATION,
+    variables: { orderNumber, checkoutToken },
+  })
+  return data.requestOrderClaimTransfer
 }
 
 /**

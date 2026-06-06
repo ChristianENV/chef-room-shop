@@ -28,6 +28,7 @@ export const routes = {
   verifyEmail: '/verify-email',
   account: '/account',
   claimOrder: '/claim-order',
+  claimOrderAuthorize: '/claim-order/authorize',
   accountOrderDetail: (orderNumber: string) => `/account/orders/${orderNumber}`,
   restaurants: '/restaurants',
   sizeGuide: '/size-guide',

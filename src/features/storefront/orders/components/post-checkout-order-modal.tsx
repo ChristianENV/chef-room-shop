@@ -34,6 +34,7 @@ import {
   orderHasCustomization,
 } from '@/src/features/storefront/account/order-detail/order-detail.utils'
 import { CheckoutConektaPay } from '@/src/features/storefront/checkout/checkout-conekta-pay'
+import { useRequestOrderClaimTransferMutation } from '@/src/features/storefront/checkout/api/use-request-order-claim-transfer-mutation'
 import { useVerifyCheckoutPaymentByTokenMutation } from '@/src/features/storefront/checkout/api/use-verify-checkout-payment-by-token-mutation'
 import { CHECKOUT_CONFIRMATION_VISUAL_MS } from '@/src/features/storefront/checkout/lib/checkout-polling.config'
 import {
@@ -160,6 +161,10 @@ export function PostCheckoutOrderModal({
 
   const tokenVerifyMutation = useVerifyCheckoutPaymentByTokenMutation(orderNumber, checkoutToken)
   const authVerifyMutation = useVerifyMyOrderPaymentMutation(orderNumber)
+  const transferMutation = useRequestOrderClaimTransferMutation(orderNumber, checkoutToken)
+
+  const [transferSent, setTransferSent] = useState(false)
+  const [transferError, setTransferError] = useState<string | null>(null)
 
   const verifyMutation = checkoutToken ? tokenVerifyMutation : authVerifyMutation
   const isVerifying = verifyMutation.isPending
@@ -358,6 +363,28 @@ export function PostCheckoutOrderModal({
     }
 
     if (claimStatus === 'EMAIL_MISMATCH') {
+      const handleRequestTransfer = () => {
+        setTransferError(null)
+        transferMutation.mutate(undefined, {
+          onSuccess: (result) => {
+            if (
+              result.success &&
+              (result.status === 'SENT' || result.status === 'ALREADY_PENDING')
+            ) {
+              setTransferSent(true)
+              return
+            }
+
+            setTransferError(
+              result.message ?? 'No pudimos enviar la solicitud de autorización.',
+            )
+          },
+          onError: () => {
+            setTransferError('No pudimos enviar la solicitud de autorización. Intenta de nuevo.')
+          },
+        })
+      }
+
       return (
         <div
           data-testid="post-checkout-email-mismatch"
@@ -398,9 +425,48 @@ export function PostCheckoutOrderModal({
             No aparecerá en Mis pedidos con la cuenta actual.
           </p>
 
+          {transferSent ? (
+            <div
+              data-testid="post-checkout-transfer-request-sent"
+              className="rounded-md border border-success/30 bg-success/10 p-3"
+            >
+              <p className="font-serif text-sm text-success">
+                Enviamos un correo de autorización al correo usado en la compra.
+              </p>
+            </div>
+          ) : null}
+
+          {transferError ? (
+            <div
+              data-testid="post-checkout-transfer-request-error"
+              className="rounded-md border border-destructive/30 bg-destructive/10 p-3"
+            >
+              <p className="font-serif text-sm text-destructive">{transferError}</p>
+            </div>
+          ) : null}
+
           <div className="flex flex-col gap-2 pt-1">
+            {!transferSent && (
+              <Button
+                type="button"
+                className="font-sans"
+                data-testid="post-checkout-request-transfer-button"
+                disabled={transferMutation.isPending}
+                onClick={handleRequestTransfer}
+              >
+                {transferMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+                    Enviando…
+                  </>
+                ) : (
+                  'Enviar autorización al correo de la compra'
+                )}
+              </Button>
+            )}
             <Button
               type="button"
+              variant={transferSent ? 'default' : 'outline'}
               className="font-sans"
               data-testid="post-checkout-login-with-order-email-button"
               onClick={() => {

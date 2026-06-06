@@ -177,3 +177,19 @@ export type ClaimGuestOrderPayload = {
   orderNumber?: string | null
   message?: string | null
 }
+
+export type OrderClaimTransferStatus =
+  | 'SENT'
+  | 'ALREADY_PENDING'
+  | 'ALREADY_CLAIMED_BY_USER'
+  | 'ORDER_ALREADY_CLAIMED'
+  | 'TOKEN_INVALID'
+  | 'TOKEN_EXPIRED'
+  | 'EMAIL_MATCHES_USE_DIRECT_CLAIM'
+  | 'ERROR'
+
+export type OrderClaimTransferPayload = {
+  success: boolean
+  status: OrderClaimTransferStatus
+  message?: string | null
+}

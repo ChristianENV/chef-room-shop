@@ -10,6 +10,10 @@ import {
 } from '../modules/checkout/checkout-token-order.service'
 import { claimGuestOrderByCheckoutTokenForGraphQL } from '@/src/server/orders/claim-guest-order-by-checkout-token.service'
 import {
+  approveOrderClaimTransfer,
+  requestOrderClaimTransferForGraphQL,
+} from '@/src/server/orders/order-claim-transfer.service'
+import {
   createCheckoutOrder,
   getPublicOrderByNumber,
 } from '../modules/checkout/checkout.service'
@@ -44,6 +48,15 @@ type VerifyCheckoutPaymentByTokenArgs = {
 
 type ClaimGuestOrderByCheckoutTokenArgs = {
   orderNumber: string
+  token: string
+}
+
+type RequestOrderClaimTransferArgs = {
+  orderNumber: string
+  checkoutToken: string
+}
+
+type ApproveOrderClaimTransferArgs = {
   token: string
 }
 
@@ -102,5 +115,21 @@ export const checkoutResolvers = {
         args.orderNumber,
         args.token,
       ),
+
+    requestOrderClaimTransfer: (
+      _parent: unknown,
+      args: RequestOrderClaimTransferArgs,
+      context: GraphQLContext,
+    ) =>
+      requestOrderClaimTransferForGraphQL(
+        context,
+        args.orderNumber,
+        args.checkoutToken,
+      ),
+
+    approveOrderClaimTransfer: (
+      _parent: unknown,
+      args: ApproveOrderClaimTransferArgs,
+    ) => approveOrderClaimTransfer(args.token),
   },
 }

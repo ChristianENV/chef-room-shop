@@ -34,6 +34,14 @@ export function buildOrderClaimUrl(token: string): string {
 }
 
 /**
+ * Absolute URL to approve guest order transfer authorization.
+ */
+export function buildOrderClaimTransferAuthorizeUrl(token: string): string {
+  const params = new URLSearchParams({ token })
+  return `${getAppBaseUrl()}${routes.claimOrderAuthorize}?${params.toString()}`
+}
+
+/**
  * Absolute URL to authenticated order detail.
  */
 export function buildAccountOrderUrl(orderNumber: string): string {

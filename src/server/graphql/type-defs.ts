@@ -1030,6 +1030,40 @@ export const checkoutTypeDefs = /* GraphQL */ `
     message: String
   }
 
+  enum OrderClaimTransferRequestStatusPayload {
+    SENT
+    ALREADY_PENDING
+    ALREADY_CLAIMED_BY_USER
+    ORDER_ALREADY_CLAIMED
+    TOKEN_INVALID
+    TOKEN_EXPIRED
+    EMAIL_MATCHES_USE_DIRECT_CLAIM
+    ERROR
+  }
+
+  type OrderClaimTransferPayload {
+    success: Boolean!
+    status: OrderClaimTransferRequestStatusPayload!
+    message: String
+  }
+
+  enum ApproveOrderClaimTransferStatusPayload {
+    APPROVED
+    TOKEN_INVALID
+    TOKEN_EXPIRED
+    ALREADY_USED
+    ORDER_ALREADY_CLAIMED
+    CANCELLED
+    ERROR
+  }
+
+  type ApproveOrderClaimTransferPayload {
+    success: Boolean!
+    status: ApproveOrderClaimTransferStatusPayload!
+    orderNumber: String
+    message: String
+  }
+
   type CheckoutResult {
     orderNumber: String!
     orderId: ID!
@@ -1425,6 +1459,8 @@ export const typeDefs = /* GraphQL */ `
     retryCheckoutPayment(input: RetryCheckoutPaymentInput!): CompleteCheckoutPayload!
     verifyCheckoutPaymentByToken(orderNumber: String!, token: String!): AccountPaymentStatusPayload!
     claimGuestOrderByCheckoutToken(orderNumber: String!, token: String!): ClaimGuestOrderPayload!
+    requestOrderClaimTransfer(orderNumber: String!, checkoutToken: String!): OrderClaimTransferPayload!
+    approveOrderClaimTransfer(token: String!): ApproveOrderClaimTransferPayload!
     createConektaCheckout(input: CreateConektaCheckoutInput!): ConektaCheckoutPayload!
     claimOrder(token: String!): OrderClaimPayload!
     updateAdminOrderStatus(input: UpdateAdminOrderStatusInput!): AdminOrder!
