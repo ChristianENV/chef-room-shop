@@ -8,6 +8,8 @@ import {
 } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 
+import { resolveCustomizationPriceFromConfig } from '@/src/server/customizer-pricing/apply-server-pricing'
+
 import type { GraphQLContext } from '../../context'
 import { resolveCartOwner } from './cart.auth'
 import {
@@ -206,46 +208,10 @@ function resolveUnitPriceCents(
 
 function resolveCustomizationPriceCents(
   design: { configJson: unknown } | null,
-  basePriceCents: number,
-  rules: Array<{
-    isEnabled: boolean
-    option: { slug: string; priceCents: number }
-  }>,
+  unitPriceCents: number,
 ): number {
   if (!design) return 0
-
-  const config = design.configJson as DesignConfigJson
-  const elements = Array.isArray(config.elements) ? config.elements : []
-  if (elements.length > 0) {
-    let computed = 0
-    for (const element of elements) {
-      if (!element || typeof element !== 'object') continue
-      const type = element.type
-      const name = typeof element.name === 'string' ? element.name.toLowerCase() : ''
-      const text = typeof element.text === 'string' ? element.text.toLowerCase() : ''
-      const optionSlug =
-        type === 'logo'
-          ? 'logo'
-          : type === 'patch'
-            ? 'bordado'
-            : name.includes('nombre') || text.includes('nombre')
-              ? 'nombre'
-              : 'texto'
-
-      const rule = rules.find((entry) => entry.isEnabled && entry.option.slug === optionSlug)
-      if (rule) {
-        computed += Math.max(0, rule.option.priceCents)
-      }
-    }
-    if (computed > 0) return computed
-  }
-
-  const finalPrice = config.finalPriceCents
-  if (typeof finalPrice !== 'number' || Number.isNaN(finalPrice)) {
-    return 0
-  }
-
-  return Math.max(0, finalPrice - basePriceCents)
+  return resolveCustomizationPriceFromConfig(design.configJson, unitPriceCents)
 }
 
 async function validateDesignForCart(
@@ -351,11 +317,7 @@ export async function addCartItem(
     ? await validateDesignForCart(context, owner, designId, product.id)
     : null
   const unitPriceCents = resolveUnitPriceCents(product, variant)
-  const customizationPriceCents = resolveCustomizationPriceCents(
-    designRow,
-    unitPriceCents,
-    product.customizationRules,
-  )
+  const customizationPriceCents = resolveCustomizationPriceCents(designRow, unitPriceCents)
 
   let cart = await findActiveCart(context, owner)
   if (!cart) {

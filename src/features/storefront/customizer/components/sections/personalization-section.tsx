@@ -3,11 +3,13 @@
 import { Plus, Tag, Type as TypeIcon, Sticker, Sparkles } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useCustomizerStore } from '../../store/customizer.store'
+import type { Layer } from '../../types/customizer.types'
 import {
   FALLBACK_PERSONALIZATION_ZONES,
   type PersonalizationOptionKind,
 } from '../../lib/customizer-defaults'
-import { formatPriceMxn, zoneFromAreaSlug } from '../../lib/customizer-utils'
+import { zoneFromAreaSlug } from '../../lib/customizer-utils'
+import { getEstimatedElementPrice } from '../../pricing/get-estimated-element-price'
 
 type ZoneOption = {
   key: string
@@ -42,8 +44,22 @@ function inferKind(text: string): PersonalizationOptionKind {
   return 'logo'
 }
 
+function resolveOptionPriceLabel(
+  kind: PersonalizationOptionKind,
+  zoneSlug: string,
+  layers: Layer[],
+  fallback: string,
+): string {
+  if (kind === 'logo' || kind === 'texto' || kind === 'nombre' || kind === 'bordado') {
+    const zone = zoneFromAreaSlug(zoneSlug)
+    const type = kind === 'logo' ? 'logo' : 'text'
+    return getEstimatedElementPrice({ type, zone, layers }).formatted
+  }
+  return fallback
+}
+
 export function PersonalizationSection() {
-  const { product, customizationRuleAvailability, addElement, addTextElement, addNameElement } =
+  const { product, layers, customizationRuleAvailability, addElement, addTextElement, addNameElement } =
     useCustomizerStore()
 
   const bffZones: Zone[] = (product?.customizationAreas ?? []).map((area) => {
@@ -57,8 +73,12 @@ export function PersonalizationSection() {
           name: rule.option.name,
           kind: inferKind(`${rule.option.slug} ${rule.option.name}`),
           description: rule.validationMessage ?? area.name,
-          priceLabel:
-            rule.basePriceCents > 0 ? `+ ${formatPriceMxn(rule.basePriceCents)}` : 'Incluido',
+          priceLabel: resolveOptionPriceLabel(
+            inferKind(`${rule.option.slug} ${rule.option.name}`),
+            rule.area.slug,
+            layers,
+            rule.basePriceCents > 0 ? `+${rule.basePriceCents / 100}` : 'Incluido',
+          ),
           available: enabled,
         }
       })
@@ -76,7 +96,7 @@ export function PersonalizationSection() {
           name: option.name,
           kind: option.kind,
           description: option.description,
-          priceLabel: 'Cotizar',
+          priceLabel: resolveOptionPriceLabel(option.kind, zone.slug, layers, 'Cotizar'),
           available: true,
         })),
       }))
@@ -101,7 +121,8 @@ export function PersonalizationSection() {
       <div>
         <h3 className="text-sm font-semibold text-foreground">Personalización</h3>
         <p className="text-xs text-muted-foreground">
-          Agrega logos, textos y bordados por zona de la prenda.
+          Solo bordado. Agrega logos, textos y nombres por zona. El logo en espalda tiene precio
+          especial si usas el mismo logo del pecho.
         </p>
       </div>
 

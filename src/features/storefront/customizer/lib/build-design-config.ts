@@ -8,6 +8,10 @@ import type {
   ViewAngle,
   ViewMode,
 } from '../types/customizer.types'
+import {
+  buildPricingSnapshot,
+  calculateCustomizerPrice,
+} from '../pricing/calculate-customizer-price'
 import { isEditableElement } from './customizer-utils'
 
 export type DesignConfigInput = {
@@ -50,6 +54,13 @@ function serializeElement(layer: Layer) {
 
 export function buildDesignConfigJson(input: DesignConfigInput): Record<string, unknown> {
   const editableElements = input.layers.filter((layer) => isEditableElement(layer.type))
+  const basePriceCents = input.product?.basePriceCents ?? 0
+  const pricing = buildPricingSnapshot(
+    calculateCustomizerPrice({
+      basePriceCents,
+      layers: input.layers,
+    }),
+  )
 
   return {
     productId: input.product?.id ?? null,
@@ -76,6 +87,7 @@ export function buildDesignConfigJson(input: DesignConfigInput): Record<string, 
     view: { mode: input.viewMode, angle: input.viewAngle },
     elements: editableElements.map(serializeElement),
     layers: input.layers,
+    pricing,
     ...(input.previews ? { previews: input.previews } : {}),
   }
 }

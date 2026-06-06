@@ -5,6 +5,7 @@ import { ImagePlus, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useCustomizerStore } from '../../store/customizer.store'
+import { getEstimatedElementPrice } from '../../pricing/get-estimated-element-price'
 import { validateLogoFile } from '@/src/features/uploads/lib/logo-image-processing'
 
 type UploadState = 'idle' | 'optimizing' | 'uploading' | 'ready' | 'error'
@@ -32,6 +33,8 @@ function stateLabel(state: UploadState): string {
 export function LogoUploadSection({ onUploadLogo }: LogoUploadSectionProps) {
   const { layers, selectedLayerId, selectLayer } = useCustomizerStore()
   const logos = layers.filter((layer) => layer.type === 'logo')
+  const chestPrice = getEstimatedElementPrice({ type: 'logo', zone: 'pecho', layers })
+  const backPrice = getEstimatedElementPrice({ type: 'logo', zone: 'espalda', layers })
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploadState, setUploadState] = useState<UploadState>('idle')
   const [error, setError] = useState<string | null>(null)
@@ -67,7 +70,9 @@ export function LogoUploadSection({ onUploadLogo }: LogoUploadSectionProps) {
       <div>
         <h3 className="text-sm font-semibold text-foreground">Logotipos</h3>
         <p className="text-xs text-muted-foreground">
-          Sube un logo en PNG, JPG o WebP para colocarlo sobre tu prenda.
+          Solo bordado. Sube un logo en PNG, JPG o WebP. Pecho {chestPrice.formatted} · Espalda{' '}
+          {backPrice.formatted}
+          {backPrice.hint ? ` (${backPrice.hint.toLowerCase()})` : ''}.
         </p>
       </div>
 
