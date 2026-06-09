@@ -1,20 +1,10 @@
 import * as THREE from 'three'
-
-/** PBR map slots that must survive a material clone/tint. */
-const PRESERVED_MAP_KEYS = [
-  'map',
-  'normalMap',
-  'roughnessMap',
-  'metalnessMap',
-  'aoMap',
-] as const
-type PreservedMapKey = (typeof PRESERVED_MAP_KEYS)[number]
+import { materialNameMatchesHints } from './material-resolver-hints'
 
 export type TintHints = {
   body: string[]
   detail?: string[]
   buttons?: string[]
-  /** Mesh-name hints used as a fallback for body classification. */
   bodyMesh?: string[]
 }
 
@@ -24,128 +14,134 @@ export type TintableMaterialGroups = {
   buttons: THREE.MeshStandardMaterial[]
 }
 
-/**
- * Chef-jacket local glTF (see model-registry): body = `FABRIC 1_2333`,
- * buttons = `Default Button_2335`; no separate trim material in v1 export.
- */
-/** Case-insensitive substring match against a list of hints. */
-export function materialNameMatchesHints(name: string, hints: string[]): boolean {
-  if (!name || hints.length === 0) return false
-  const lower = name.toLowerCase()
-  return hints.some((hint) => lower.includes(hint.toLowerCase()))
-}
+export { materialNameMatchesHints, findMaterialsByHints } from './material-resolver-hints'
 
-/**
- * Finds standard materials whose material or owning-mesh name matches any hint.
- * Returns shared references (does not clone).
- */
-export function findMaterialsByHints(
-  root: THREE.Object3D,
-  hints: string[],
-): THREE.MeshStandardMaterial[] {
-  const found: THREE.MeshStandardMaterial[] = []
-  const seen = new Set<string>()
+const DEFAULT_FABRIC_COLOR = '#f4f1ea'
+const DEFAULT_BUTTON_COLOR = '#1f2937'
+const DEBUG_MATERIAL_COLOR = '#d7263d'
 
-  root.traverse((object) => {
-    if (!(object instanceof THREE.Mesh)) return
-    const meshName = object.name
-    const materials = Array.isArray(object.material) ? object.material : [object.material]
-    materials.forEach((material) => {
-      if (!(material instanceof THREE.MeshStandardMaterial)) return
-      if (seen.has(material.uuid)) return
-      if (
-        materialNameMatchesHints(material.name ?? '', hints) ||
-        materialNameMatchesHints(meshName, hints)
-      ) {
-        seen.add(material.uuid)
-        found.push(material)
-      }
-    })
+export function createFabricMaterial(color: string = DEFAULT_FABRIC_COLOR): THREE.MeshStandardMaterial {
+  return new THREE.MeshStandardMaterial({
+    color,
+    roughness: 0.82,
+    metalness: 0,
+    side: THREE.DoubleSide,
+    transparent: false,
+    opacity: 1,
+    depthWrite: true,
+    depthTest: true,
   })
-
-  return found
 }
 
-/**
- * Clones a standard material while explicitly preserving PBR texture maps.
- * `THREE.Material.clone()` copies texture references already; we reassign the
- * known map slots defensively so tinting never drops textures.
- */
-export function cloneMaterialSafely(
-  material: THREE.MeshStandardMaterial,
-): THREE.MeshStandardMaterial {
-  const cloned = material.clone()
-  for (const key of PRESERVED_MAP_KEYS) {
-    const source = material[key as PreservedMapKey]
-    cloned[key as PreservedMapKey] = source
-  }
-  return cloned
+export function createButtonMaterial(color: string = DEFAULT_BUTTON_COLOR): THREE.MeshStandardMaterial {
+  return new THREE.MeshStandardMaterial({
+    color,
+    roughness: 0.55,
+    metalness: 0.05,
+    side: THREE.DoubleSide,
+    transparent: false,
+    opacity: 1,
+    depthWrite: true,
+    depthTest: true,
+  })
 }
 
-/** Applies a hex/css color to a material's base color, keeping maps intact. */
-export function applyColorToMaterial(
-  material: THREE.MeshStandardMaterial,
-  color: string,
-): void {
-  material.color.set(color)
-  material.needsUpdate = true
-}
-
-/**
- * Clones matched materials ONCE (preserving maps), replaces them on their
- * meshes so the cached GLTF materials are never mutated, and classifies them
- * into body/detail/buttons with precedence buttons > detail > body.
- *
- * Call this once per loaded scene (e.g. in a memo), then mutate the returned
- * materials' colors on swatch changes — never re-clone per render.
- */
-export function resolveTintableMaterialGroups(
-  root: THREE.Object3D,
+function classifyMeshRole(
+  meshName: string,
+  materialName: string,
   hints: TintHints,
-): TintableMaterialGroups {
-  const groups: TintableMaterialGroups = { body: [], detail: [], buttons: [] }
-  const cloneByUuid = new Map<string, THREE.MeshStandardMaterial>()
+): 'body' | 'detail' | 'buttons' {
   const detailHints = hints.detail ?? []
   const buttonHints = hints.buttons ?? []
   const bodyMeshHints = hints.bodyMesh ?? []
 
+  if (
+    materialNameMatchesHints(materialName, buttonHints) ||
+    materialNameMatchesHints(meshName, buttonHints)
+  ) {
+    return 'buttons'
+  }
+
+  if (
+    materialNameMatchesHints(materialName, detailHints) ||
+    materialNameMatchesHints(meshName, detailHints)
+  ) {
+    return 'detail'
+  }
+
+  if (
+    materialNameMatchesHints(materialName, hints.body) ||
+    materialNameMatchesHints(meshName, bodyMeshHints)
+  ) {
+    return 'body'
+  }
+
+  return 'body'
+}
+
+/**
+ * Replaces every mesh material with fresh MeshStandardMaterial instances.
+ * Does not mutate cached GLTF materials (works on a cloned scene).
+ */
+export function assignVisibleGarmentMaterials(
+  root: THREE.Object3D,
+  hints: TintHints,
+  colors: { baseColor: string; detailColor: string },
+): TintableMaterialGroups {
+  const groups: TintableMaterialGroups = { body: [], detail: [], buttons: [] }
+
   root.traverse((object) => {
     if (!(object instanceof THREE.Mesh)) return
+
+    object.visible = true
+    object.frustumCulled = true
+
     const meshName = object.name
-    const list = Array.isArray(object.material) ? object.material : [object.material]
+    const sourceMaterial = Array.isArray(object.material) ? object.material[0] : object.material
+    const materialName = sourceMaterial?.name ?? ''
+    const role = classifyMeshRole(meshName, materialName, hints)
 
-    const replaced = list.map((material) => {
-      if (!(material instanceof THREE.MeshStandardMaterial)) return material
+    const material =
+      role === 'buttons'
+        ? createButtonMaterial(colors.detailColor)
+        : role === 'detail'
+          ? createFabricMaterial(colors.detailColor)
+          : createFabricMaterial(colors.baseColor)
 
-      const existing = cloneByUuid.get(material.uuid)
-      if (existing) return existing
-
-      const clone = cloneMaterialSafely(material)
-      cloneByUuid.set(material.uuid, clone)
-
-      const matName = material.name ?? ''
-      if (
-        materialNameMatchesHints(matName, buttonHints) ||
-        materialNameMatchesHints(meshName, buttonHints)
-      ) {
-        groups.buttons.push(clone)
-      } else if (
-        materialNameMatchesHints(matName, detailHints) ||
-        materialNameMatchesHints(meshName, detailHints)
-      ) {
-        groups.detail.push(clone)
-      } else if (
-        materialNameMatchesHints(matName, hints.body) ||
-        materialNameMatchesHints(meshName, bodyMeshHints)
-      ) {
-        groups.body.push(clone)
-      }
-
-      return clone
-    })
-
-    object.material = Array.isArray(object.material) ? replaced : replaced[0]!
+    object.material = material
+    groups[role].push(material)
   })
 
   return groups
+}
+
+/** Debug-only: solid red materials on every mesh. */
+export function applyForceDebugMaterials(root: THREE.Object3D): number {
+  let count = 0
+
+  root.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) return
+    object.visible = true
+    object.frustumCulled = false
+    object.material = new THREE.MeshStandardMaterial({
+      color: DEBUG_MATERIAL_COLOR,
+      roughness: 0.75,
+      metalness: 0,
+      side: THREE.DoubleSide,
+      transparent: false,
+      opacity: 1,
+      depthWrite: true,
+      depthTest: true,
+    })
+    count += 1
+  })
+
+  return count
+}
+
+export function applyColorToMaterial(material: THREE.MeshStandardMaterial, color: string): void {
+  material.color.set(color)
+  material.transparent = false
+  material.opacity = 1
+  material.needsUpdate = true
 }

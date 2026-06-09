@@ -14,8 +14,7 @@ const TEXTURE_SLOTS = [
 const inspected = new Set<string>()
 
 function shouldDebug(): boolean {
-  if (process.env.NEXT_PUBLIC_CUSTOMIZER_DEBUG_3D === 'true') return true
-  return process.env.NODE_ENV === 'development'
+  return process.env.NEXT_PUBLIC_CUSTOMIZER_DEBUG_3D === 'true'
 }
 
 function listTextureMaps(material: THREE.Material): string[] {
@@ -29,8 +28,7 @@ function listTextureMaps(material: THREE.Material): string[] {
 
 /**
  * Logs scene nodes, mesh names, material names and present texture maps.
- * Runs at most once per `id` and only when debugging is enabled
- * (`NEXT_PUBLIC_CUSTOMIZER_DEBUG_3D=true` or development).
+ * Runs at most once per `id` and only when `NEXT_PUBLIC_CUSTOMIZER_DEBUG_3D=true`.
  */
 export function inspectGltf(id: string, root: THREE.Object3D): void {
   if (!shouldDebug()) return

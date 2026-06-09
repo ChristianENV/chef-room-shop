@@ -5,8 +5,12 @@ import { PanelLeftClose } from 'lucide-react'
 import type { CatalogProduct } from '@/src/features/storefront/catalog/types'
 import { cn } from '@/lib/utils'
 import { useCustomizerStore } from '../store/customizer.store'
-import { CUSTOMIZER_CATEGORIES } from '../lib/customizer-categories'
-import type { CustomizerCategory } from '../lib/customizer-categories'
+import {
+  CUSTOMIZER_ADMIN_CATEGORY,
+  CUSTOMIZER_CATEGORIES,
+} from '../lib/customizer-categories'
+import type { CustomizerCategory, CustomizerCategoryItem } from '../lib/customizer-categories'
+import { useIsAdminUser } from '@/src/features/storefront/hooks/use-is-admin-user'
 import { CustomizerLeftRail } from './customizer-left-rail'
 import { CustomizerProductSelector } from './customizer-product-selector'
 import { ColorSection } from './sections/color-section'
@@ -16,6 +20,7 @@ import { PersonalizationSection } from './sections/personalization-section'
 import { SavedDesignsSection } from './sections/saved-designs-section'
 import { ElementAddSection } from './sections/element-add-section'
 import { LogoUploadSection } from './sections/logo-upload-section'
+import { Debug3dSection } from './sections/debug-3d-section'
 
 interface LeftSidebarProps {
   productOptions?: CatalogProduct[]
@@ -100,6 +105,8 @@ function CategoryContent({
       )
     case 'disenos':
       return <SavedDesignsSection />
+    case 'debug3d':
+      return <Debug3dSection />
     default:
       return null
   }
@@ -111,14 +118,20 @@ export function LeftSidebar({
   onSelectProduct,
   onUploadLogo,
 }: LeftSidebarProps) {
+  const isAdmin = useIsAdminUser()
   const [active, setActive] = useState<CustomizerCategory>('producto')
   const [collapsed, setCollapsed] = useState(false)
 
-  const activeLabel = CUSTOMIZER_CATEGORIES.find((item) => item.id === active)?.label ?? ''
+  const railCategories: CustomizerCategoryItem[] = isAdmin
+    ? [...CUSTOMIZER_CATEGORIES, CUSTOMIZER_ADMIN_CATEGORY]
+    : CUSTOMIZER_CATEGORIES
+
+  const activeLabel = railCategories.find((item) => item.id === active)?.label ?? ''
 
   return (
     <div className="flex h-full">
       <CustomizerLeftRail
+        categories={railCategories}
         active={active}
         onChange={(category) => {
           setActive(category)

@@ -1,22 +1,22 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { CUSTOMIZER_CATEGORIES } from '../lib/customizer-categories'
-import type { CustomizerCategory } from '../lib/customizer-categories'
+import type { CustomizerCategory, CustomizerCategoryItem } from '../lib/customizer-categories'
 
 interface CustomizerLeftRailProps {
+  categories: CustomizerCategoryItem[]
   active: CustomizerCategory
   onChange: (category: CustomizerCategory) => void
 }
 
-export function CustomizerLeftRail({ active, onChange }: CustomizerLeftRailProps) {
+export function CustomizerLeftRail({ categories, active, onChange }: CustomizerLeftRailProps) {
   return (
     <nav
       data-testid="customizer-left-rail"
       aria-label="Categorías de personalización"
       className="flex h-full w-[68px] shrink-0 flex-col items-center gap-1 border-r border-border/40 bg-card/60 py-3"
     >
-      {CUSTOMIZER_CATEGORIES.map((category) => {
+      {categories.map((category) => {
         const Icon = category.icon
         const isActive = active === category.id
         return (

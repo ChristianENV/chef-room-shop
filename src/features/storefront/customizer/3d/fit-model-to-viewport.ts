@@ -6,6 +6,12 @@ const MIN_SCALE = 0.001
 const MAX_SCALE = 10
 const DEFAULT_TARGET_HEIGHT = 1.5
 
+/** Skip camera fit when the canvas/container is smaller than this. */
+export const MIN_FIT_CONTAINER_PX = 20
+
+/** World-space max dimension above which we assume transform was not applied. */
+export const MAX_FIT_MODEL_DIMENSION = 50
+
 export type ModelBounds = {
   valid: boolean
   size: THREE.Vector3
@@ -32,6 +38,21 @@ export function getFitAppliedCount(): number {
   return fitAppliedCount
 }
 
+export function buildModelFitKey(params: {
+  registryKey: string
+  modelUrl: string
+  transformVersion: string
+  productSlug?: string | null
+}): string {
+  const slug = params.productSlug?.trim() || 'unknown'
+  return `${slug}|${params.registryKey}|${params.modelUrl}|${params.transformVersion}`
+}
+
+export function getBoundsRadius(bounds: ModelBounds): number {
+  if (!bounds.valid) return 0
+  return Math.max(bounds.size.x, bounds.size.y, bounds.size.z) * 0.5
+}
+
 export function getSafeModelBounds(object: THREE.Object3D): ModelBounds {
   object.updateWorldMatrix(true, true)
   const box = new THREE.Box3().setFromObject(object)
@@ -45,11 +66,40 @@ export function getSafeModelBounds(object: THREE.Object3D): ModelBounds {
     Number.isFinite(size.x) &&
     Number.isFinite(size.y) &&
     Number.isFinite(size.z) &&
+    Number.isFinite(center.x) &&
+    Number.isFinite(center.y) &&
+    Number.isFinite(center.z) &&
     size.x > 0 &&
     size.y > 0 &&
     size.z > 0
 
   return { valid, size, center, box }
+}
+
+export function isBoundsReadyForFit(
+  bounds: ModelBounds,
+  containerSize?: { width: number; height: number },
+): boolean {
+  if (!bounds.valid || bounds.box.isEmpty()) return false
+
+  const maxDim = Math.max(bounds.size.x, bounds.size.y, bounds.size.z)
+  if (!Number.isFinite(maxDim) || maxDim <= 0 || maxDim > MAX_FIT_MODEL_DIMENSION) {
+    return false
+  }
+
+  const radius = getBoundsRadius(bounds)
+  if (!Number.isFinite(radius) || radius <= 0) return false
+
+  if (containerSize) {
+    if (
+      containerSize.width <= MIN_FIT_CONTAINER_PX ||
+      containerSize.height <= MIN_FIT_CONTAINER_PX
+    ) {
+      return false
+    }
+  }
+
+  return true
 }
 
 export function calculateModelFitTransform(
@@ -107,11 +157,22 @@ export function resetCameraToModel(
   camera: THREE.PerspectiveCamera,
   controls: OrbitControlsLike,
   bounds: ModelBounds,
-): void {
-  if (!bounds.valid) return
+  containerSize?: { width: number; height: number },
+): boolean {
+  if (!isBoundsReadyForFit(bounds, containerSize)) {
+    logCustomizer3d('camera-reset-skipped', {
+      reason: 'invalid-bounds-or-container',
+      boundsSize: bounds.size.toArray(),
+      boundsCenter: bounds.center.toArray(),
+      radius: getBoundsRadius(bounds),
+      containerSize: containerSize ?? null,
+    })
+    return false
+  }
 
   const target = bounds.center.clone()
   const maxDim = Math.max(bounds.size.x, bounds.size.y, bounds.size.z)
+  const radius = getBoundsRadius(bounds)
   const distance = THREE.MathUtils.clamp(maxDim * 2.4, 2.4, 6.5)
 
   controls.target.copy(target)
@@ -131,25 +192,43 @@ export function resetCameraToModel(
     cameraPosition: camera.position.toArray(),
     controlsTarget: controls.target.toArray(),
     boundsSize: bounds.size.toArray(),
+    center: bounds.center.toArray(),
+    radius,
     distance,
     minDistance: controls.minDistance,
     maxDistance: controls.maxDistance,
+    containerSize: containerSize ?? null,
+    fitCount: getFitAppliedCount(),
   })
+
+  return true
 }
 
 export function logModelFit(
   modelUrl: string,
   bounds: ModelBounds,
-  transform: ModelFitTransform,
+  transform: Pick<ModelFitTransform, 'scale' | 'position' | 'rotation'>,
   source: 'registry' | 'computed',
+  meta?: {
+    registryKey?: string
+    productSlug?: string | null
+    fitKey?: string
+  },
 ): void {
   logCustomizer3d('model-fit', {
     modelUrl,
+    registryKey: meta?.registryKey,
+    productSlug: meta?.productSlug,
+    fitKey: meta?.fitKey,
     source,
-    boundingBoxSize: bounds.size.toArray(),
-    computedScale: transform.scale,
-    finalScale: transform.scale,
-    position: transform.position.toArray(),
-    fitAppliedCount: getFitAppliedCount(),
+    appliedTransform: {
+      scale: transform.scale,
+      position: transform.position.toArray(),
+      rotation: [transform.rotation.x, transform.rotation.y, transform.rotation.z],
+    },
+    bounds: bounds.size.toArray(),
+    center: bounds.center.toArray(),
+    radius: getBoundsRadius(bounds),
+    fitCount: getFitAppliedCount(),
   })
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { toSameOriginR2Url } from '@/src/lib/assets/same-origin-r2-url'
 import { useCustomizerStore } from '../store/customizer.store'
 import { isEditableElement } from '../lib/customizer-utils'
 import type { Layer } from '../types/customizer.types'
@@ -61,7 +62,7 @@ function DesignElementChip({
       {layer.type === 'logo' && layer.assetUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={layer.assetUrl}
+          src={toSameOriginR2Url(layer.assetUrl) ?? layer.assetUrl}
           alt={layer.name}
           crossOrigin="anonymous"
           className="max-h-24 w-full object-contain"

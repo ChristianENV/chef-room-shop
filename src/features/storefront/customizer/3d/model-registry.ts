@@ -1,4 +1,5 @@
 import {
+  CHEF_JACKET_GLTF_LOCAL,
   getCustomizerChefJacketGltfUrl,
   resolveCustomizerModelUrl,
 } from '@/src/config/public-models'
@@ -20,8 +21,15 @@ export type ModelNameHints = {
   buttons?: string[]
 }
 
+/** Bump when registry scale/position/rotation change (invalidates camera fit keys). */
+export const CUSTOMIZER_TRANSFORM_VERSION = '1'
+
+export const CHEF_JACKET_REGISTRY_KEY = 'chef-jacket'
+
 export type CustomizerModelDefinition = {
   id: string
+  /** Stable key for transform + fit — independent of R2/local URL. */
+  registryKey: string
   label: string
   modelUrl: string
   /** Product type slugs this model can stand in for. */
@@ -39,7 +47,9 @@ export type CustomizerModelDefinition = {
   }
 }
 
-const CHEF_JACKET_LOCAL_PATH = '/models/customizer/chef-jacket/chef-jacket.gltf'
+const CHEF_JACKET_LOCAL_PATH = CHEF_JACKET_GLTF_LOCAL
+
+const LOCAL_CHEF_JACKET_PRODUCT_TYPES = new Set(['chef-jacket', 'filipina'])
 
 /**
  * CLO export uses ~cm coordinates (Y ≈ 91–167). Scale/position center the jacket
@@ -67,6 +77,11 @@ const CHEF_JACKET_MESH_HINTS: ModelNameHints = {
   body: ['cloth', 'fabric', 'jacket', 'chef'],
 }
 
+/** Filipina / chef-jacket use the local glTF bundle (gltf + bin + textures same origin). */
+export function prefersLocalChefJacketModel(productTypeSlug: string): boolean {
+  return LOCAL_CHEF_JACKET_PRODUCT_TYPES.has(productTypeSlug)
+}
+
 /**
  * Resolves the URL for the chef-jacket glTF mock, in priority order:
  *
@@ -76,11 +91,10 @@ const CHEF_JACKET_MESH_HINTS: ModelNameHints = {
  * 4. Default local `/public/` path.
  */
 function resolveChefJacketMockUrl(): string {
-  const exact = process.env.NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL
-  if (exact) return exact
-
-  const base = process.env.NEXT_PUBLIC_CUSTOMIZER_MODEL_BASE_URL
-  if (base) return `${base.replace(/\/$/, '')}/chef-jacket/chef-jacket.gltf`
+  const exact = process.env.NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL?.trim()
+  if (exact && (exact.startsWith('/') || exact.startsWith('./'))) {
+    return resolveCustomizerModelUrl(exact)
+  }
 
   const r2OrLocal = getCustomizerChefJacketGltfUrl()
   if (r2OrLocal.startsWith('https://')) return r2OrLocal
@@ -92,7 +106,8 @@ function resolveChefJacketMockUrl(): string {
 function buildChefJacketRegistryEntry(): CustomizerModelDefinition {
   return {
     id: 'chef-jacket-local',
-    label: 'Filipina 3D (R2)',
+    registryKey: CHEF_JACKET_REGISTRY_KEY,
+    label: 'Filipina 3D (local)',
     modelUrl: resolveChefJacketMockUrl(),
     productTypes: ['chef-jacket', 'filipina'],
     isMock: true,
@@ -118,6 +133,35 @@ export const CUSTOMIZER_MODEL_REGISTRY: Record<string, CustomizerModelDefinition
  * - `NEXT_PUBLIC_CUSTOMIZER_USE_MOCK_GLB=false` -> always off.
  * - unset -> on only in development.
  */
+/** Product-type → transform map (stable; independent of model URL). */
+const PRODUCT_TYPE_TRANSFORMS: Record<
+  string,
+  Pick<CustomizerModelDefinition, 'scale' | 'position' | 'rotation' | 'registryKey'>
+> = {
+  'chef-jacket': { ...CHEF_JACKET_TRANSFORM, registryKey: CHEF_JACKET_REGISTRY_KEY },
+  filipina: { ...CHEF_JACKET_TRANSFORM, registryKey: CHEF_JACKET_REGISTRY_KEY },
+}
+
+/** Registry transform by product type slug — not by model URL. */
+export function getRegistryTransformForProductType(productTypeSlug: string): Pick<
+  CustomizerModelDefinition,
+  'scale' | 'position' | 'rotation'
+> {
+  const match = PRODUCT_TYPE_TRANSFORMS[productTypeSlug]
+  if (match) {
+    return {
+      scale: match.scale,
+      position: match.position,
+      rotation: match.rotation,
+    }
+  }
+  return CHEF_JACKET_TRANSFORM
+}
+
+export function getRegistryKeyForProductType(productTypeSlug: string): string {
+  return PRODUCT_TYPE_TRANSFORMS[productTypeSlug]?.registryKey ?? CHEF_JACKET_REGISTRY_KEY
+}
+
 export function isCustomizerMockGlbEnabled(): boolean {
   const flag = process.env.NEXT_PUBLIC_CUSTOMIZER_USE_MOCK_GLB
   if (flag === 'true') return true
@@ -145,7 +189,17 @@ export function getCustomizerModelForProduct(
 ): CustomizerModelDefinition | null {
   if (!product) return null
 
-  // 1. Real product model from DB.
+  const productType = product.productTypeSlug
+
+  // Filipina / chef-jacket: always use local known-good bundle while 3D is stabilized.
+  if (prefersLocalChefJacketModel(productType)) {
+    return {
+      ...buildChefJacketRegistryEntry(),
+      modelUrl: CHEF_JACKET_LOCAL_PATH,
+    }
+  }
+
+  // 1. Real product model from DB (non-filipina garments).
   if (product.model3d?.url) {
     const m3d = product.model3d
     const productType = product.productTypeSlug
@@ -155,16 +209,12 @@ export function getCustomizerModelForProduct(
     )
     const baseMaterialHints = registryMatch?.materialHints ?? CHEF_JACKET_MATERIAL_HINTS
     const baseMeshHints = registryMatch?.meshHints ?? CHEF_JACKET_MESH_HINTS
-    const baseTransform = registryMatch
-      ? {
-          scale: registryMatch.scale,
-          position: registryMatch.position,
-          rotation: registryMatch.rotation,
-        }
-      : CHEF_JACKET_TRANSFORM
+    const baseTransform = getRegistryTransformForProductType(productType)
+    const registryKey = getRegistryKeyForProductType(productType)
 
     return {
       id: m3d.id,
+      registryKey,
       label: `Modelo 3D: ${m3d.fileName}`,
       modelUrl: resolveCustomizerModelUrl(m3d.url),
       productTypes: [productType],
@@ -188,10 +238,9 @@ export function getCustomizerModelForProduct(
     }
   }
 
-  // 2–3. Mock pipeline.
+  // 2–3. Mock pipeline for other garment types.
   if (!isCustomizerMockGlbEnabled()) return null
 
-  const productType = product.productTypeSlug
   const match = Object.values(CUSTOMIZER_MODEL_REGISTRY).find((model) =>
     model.productTypes.includes(productType),
   )

@@ -1,43 +1,85 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { logCustomizer3d } from './customizer-3d-debug'
-import { resetCameraToModel, type ModelBounds, type OrbitControlsLike } from './fit-model-to-viewport'
+import {
+  isBoundsReadyForFit,
+  resetCameraToModel,
+  type ModelBounds,
+  type OrbitControlsLike,
+} from './fit-model-to-viewport'
 
 export type ModelReadyPayload = {
   modelUrl: string
   bounds: ModelBounds
+  fitKey: string
+  registryKey: string
 }
 
 type ModelCameraRigProps = {
   modelReady: ModelReadyPayload | null
+  onCameraFit?: (payload: {
+    cameraPosition: [number, number, number]
+    controlsTarget: [number, number, number]
+    canvasSize: { width: number; height: number }
+  }) => void
 }
 
 /**
- * Resets camera + OrbitControls once per modelUrl after the garment reports
- * valid bounds. Avoids relying on 2D/3D remount to fix camera state.
+ * Resets camera + OrbitControls once per `fitKey` after the garment reports
+ * valid bounds. Camera fit never modifies model scale.
  */
-export function ModelCameraRig({ modelReady }: ModelCameraRigProps) {
-  const { camera, controls, invalidate } = useThree()
-  const appliedForModelRef = useRef<string | null>(null)
+export function ModelCameraRig({ modelReady, onCameraFit }: ModelCameraRigProps) {
+  const { camera, controls, invalidate, size } = useThree()
+  const appliedFitKeyRef = useRef<string | null>(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!modelReady?.bounds.valid) return
-    if (appliedForModelRef.current === modelReady.modelUrl) return
+    if (appliedFitKeyRef.current === modelReady.fitKey) return
     if (!controls || !(camera instanceof THREE.PerspectiveCamera)) {
       logCustomizer3d('camera-reset-skipped', {
+        fitKey: modelReady.fitKey,
         modelUrl: modelReady.modelUrl,
         reason: 'controls-or-camera-unavailable',
       })
       return
     }
 
-    resetCameraToModel(camera, controls as unknown as OrbitControlsLike, modelReady.bounds)
-    appliedForModelRef.current = modelReady.modelUrl
-    invalidate()
-  }, [camera, controls, invalidate, modelReady])
+    const containerSize = { width: size.width, height: size.height }
+    if (!isBoundsReadyForFit(modelReady.bounds, containerSize)) {
+      logCustomizer3d('camera-reset-skipped', {
+        fitKey: modelReady.fitKey,
+        modelUrl: modelReady.modelUrl,
+        reason: 'waiting-for-valid-bounds-or-container',
+        containerSize,
+        boundsSize: modelReady.bounds.size.toArray(),
+      })
+      return
+    }
+
+    const applied = resetCameraToModel(
+      camera,
+      controls as unknown as OrbitControlsLike,
+      modelReady.bounds,
+      containerSize,
+    )
+
+    if (applied) {
+      appliedFitKeyRef.current = modelReady.fitKey
+      onCameraFit?.({
+        cameraPosition: camera.position.toArray() as [number, number, number],
+        controlsTarget: (controls as unknown as OrbitControlsLike).target.toArray() as [
+          number,
+          number,
+          number,
+        ],
+        canvasSize: containerSize,
+      })
+      invalidate()
+    }
+  }, [camera, controls, invalidate, modelReady, onCameraFit, size.height, size.width])
 
   return null
 }

@@ -17,6 +17,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { PasswordStrength } from './password-strength'
 import { cn } from '@/lib/utils'
 import { authClient, signUp } from '@/src/lib/auth/auth-client'
+import { buildSocialOAuthCallbackURL } from '@/src/lib/auth/oauth-callback-url'
 import { getAuthErrorMessage } from '@/src/lib/auth/auth-errors'
 import { registerSchema } from '@/src/lib/auth/auth-schemas'
 import {
@@ -72,6 +73,10 @@ export function RegisterForm({
       ? callbackFromQuery
       : null
   const oauthCallbackURL = safeCallbackUrl ?? routes.home
+  const googleOAuthCallbackURL = buildSocialOAuthCallbackURL({
+    callbackUrl: safeCallbackUrl,
+    source: 'storefront-register',
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -165,7 +170,7 @@ export function RegisterForm({
     try {
       await authClient.signIn.social({
         provider: 'google',
-        callbackURL: oauthCallbackURL,
+        callbackURL: googleOAuthCallbackURL,
       })
     } catch (err) {
       setError(
