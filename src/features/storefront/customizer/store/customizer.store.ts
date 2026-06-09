@@ -48,6 +48,8 @@ type CustomizerState = DesignSnapshot & {
   viewMode: ViewMode
   viewAngle: ViewAngle
   captureInstant: boolean
+  /** Admin-only: overlay debug HUD on the 3D viewport (default off). */
+  show3dDebugHud: boolean
   customizationRuleAvailability: Record<string, boolean>
   designId: string | null
   isDirty: boolean
@@ -77,6 +79,8 @@ type CustomizerState = DesignSnapshot & {
   setViewMode: (mode: ViewMode) => void
   setViewAngle: (angle: ViewAngle) => void
   setCaptureInstant: (value: boolean) => void
+  setShow3dDebugHud: (show: boolean) => void
+  toggle3dDebugHud: () => void
   selectLayer: (id: string | null) => void
   setActiveTool: (tool: DesignTool) => void
   toggleLayerVisibility: (id: string) => void
@@ -118,6 +122,7 @@ const INITIAL_STATE = {
   viewMode: '3D' as ViewMode,
   viewAngle: 'front' as ViewAngle,
   captureInstant: false,
+  show3dDebugHud: false,
   layers: STRUCTURAL_LAYERS,
   selectedLayerId: null as string | null,
   activeTool: 'select' as DesignTool,
@@ -343,6 +348,8 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
     setViewMode: (mode) => set({ viewMode: mode }),
     setViewAngle: (angle) => set({ viewAngle: angle }),
     setCaptureInstant: (value) => set({ captureInstant: value }),
+    setShow3dDebugHud: (show) => set({ show3dDebugHud: show }),
+    toggle3dDebugHud: () => set((state) => ({ show3dDebugHud: !state.show3dDebugHud })),
     selectLayer: (id) => set({ selectedLayerId: id }),
     setActiveTool: (tool) => set({ activeTool: tool }),
 

@@ -19,9 +19,7 @@ export function isCustomizer3dSafeModeEnabled(): boolean {
   return process.env.NEXT_PUBLIC_CUSTOMIZER_3D_SAFE_MODE === 'true'
 }
 
-export function isCustomizer3dDebugHudEnabled(): boolean {
-  return (
-    process.env.NODE_ENV === 'development' ||
-    process.env.NEXT_PUBLIC_CUSTOMIZER_DEBUG_3D === 'true'
-  )
+/** Extra console logs when `NEXT_PUBLIC_CUSTOMIZER_DEBUG_3D=true` (HUD is admin-only). */
+export function isCustomizer3dDebugLoggingEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_CUSTOMIZER_DEBUG_3D === 'true'
 }

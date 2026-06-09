@@ -1,4 +1,13 @@
-import { Bookmark, Palette, Shirt, SlidersHorizontal, Sticker, Tag, Type } from 'lucide-react'
+import {
+  Bookmark,
+  Box,
+  Palette,
+  Shirt,
+  SlidersHorizontal,
+  Sticker,
+  Tag,
+  Type,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export type CustomizerCategory =
@@ -9,6 +18,7 @@ export type CustomizerCategory =
   | 'nombres'
   | 'extras'
   | 'disenos'
+  | 'debug3d'
 
 export type CustomizerCategoryItem = {
   id: CustomizerCategory
@@ -25,3 +35,10 @@ export const CUSTOMIZER_CATEGORIES: CustomizerCategoryItem[] = [
   { id: 'extras', label: 'Extras', icon: SlidersHorizontal },
   { id: 'disenos', label: 'Mis diseños', icon: Bookmark },
 ]
+
+/** Shown in the left rail only for admin users. */
+export const CUSTOMIZER_ADMIN_CATEGORY: CustomizerCategoryItem = {
+  id: 'debug3d',
+  label: '3D debug',
+  icon: Box,
+}

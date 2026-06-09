@@ -23,12 +23,12 @@ import {
 } from '../3d/customizer-3d-debug-hud'
 import { ChefJacketSmokeViewport } from '../3d/chef-jacket-smoke-scene'
 import {
-  isCustomizer3dDebugHudEnabled,
   isCustomizer3dSafeModeEnabled,
   isCustomizerContactShadowsDisabled,
   isCustomizerEnvironmentDisabled,
   isCustomizerForceDebugMaterialEnabled,
 } from '../3d/customizer-3d-flags'
+import { useIsAdminUser } from '@/src/features/storefront/hooks/use-is-admin-user'
 import { resolveModelSourceInfo } from '../3d/model-source'
 import {
   CUSTOMIZER_3D_SCENE_BACKGROUND,
@@ -237,7 +237,8 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
   { captureRef: externalCaptureRef },
   ref,
 ) {
-  const { viewMode, product } = useCustomizerStore()
+  const { viewMode, product, show3dDebugHud, setShow3dDebugHud } = useCustomizerStore()
+  const isAdmin = useIsAdminUser()
   const internalCaptureRef = useRef<ViewportCaptureHandle>(null)
   const viewportRootRef = useRef<HTMLDivElement>(null)
   const [glbActive, setGlbActive] = useState(false)
@@ -366,28 +367,20 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
       className="relative h-full w-full"
       style={{ background: CUSTOMIZER_3D_VIEWPORT_WRAPPER_BACKGROUND }}
     >
-      <Customizer3dDebugHud
-        snapshot={debugSnapshot}
-        onToggleDebugMaterial={
-          isCustomizer3dDebugHudEnabled()
-            ? () => setForceDebugMaterial((value) => !value)
-            : undefined
-        }
-        onToggleSafeRender={
-          isCustomizer3dDebugHudEnabled()
-            ? () => setSafeRender((value) => !value)
-            : undefined
-        }
-        onResetCamera={
-          isCustomizer3dDebugHudEnabled()
-            ? () => {
-                setModelReady(null)
-                setCameraResetToken((value) => value + 1)
-              }
-            : undefined
-        }
-        safeRenderActive={safeRender}
-      />
+      {isAdmin && show3dDebugHud ? (
+        <Customizer3dDebugHud
+          visible
+          snapshot={debugSnapshot}
+          onHide={() => setShow3dDebugHud(false)}
+          onToggleDebugMaterial={() => setForceDebugMaterial((value) => !value)}
+          onToggleSafeRender={() => setSafeRender((value) => !value)}
+          onResetCamera={() => {
+            setModelReady(null)
+            setCameraResetToken((value) => value + 1)
+          }}
+          safeRenderActive={safeRender}
+        />
+      ) : null}
       {!glbActive ? (
         <div className="pointer-events-none absolute inset-0 z-[15] flex items-end justify-center pb-6">
           <div className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-xs text-white/70 backdrop-blur-sm">

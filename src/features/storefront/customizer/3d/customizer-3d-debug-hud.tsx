@@ -1,6 +1,6 @@
 'use client'
 
-import { isCustomizer3dDebugHudEnabled } from './customizer-3d-flags'
+import { X } from 'lucide-react'
 
 export type Customizer3dDebugSnapshot = {
   phase: 'idle' | 'loading' | 'loaded' | 'bounds-ready' | 'camera-fit' | 'error' | 'procedural'
@@ -38,13 +38,14 @@ export type Customizer3dDebugSnapshot = {
   fitAttempts: number
 }
 
-export { isCustomizer3dDebugHudEnabled }
-
 type Customizer3dDebugHudProps = {
   snapshot: Customizer3dDebugSnapshot
+  /** When false, the HUD is not rendered (e.g. non-admin storefront users). */
+  visible?: boolean
   onToggleDebugMaterial?: () => void
   onToggleSafeRender?: () => void
   onResetCamera?: () => void
+  onHide?: () => void
   safeRenderActive?: boolean
 }
 
@@ -55,12 +56,14 @@ function formatVec3(values: [number, number, number] | null): string {
 
 export function Customizer3dDebugHud({
   snapshot,
+  visible = false,
   onToggleDebugMaterial,
   onToggleSafeRender,
   onResetCamera,
+  onHide,
   safeRenderActive = false,
 }: Customizer3dDebugHudProps) {
-  if (!isCustomizer3dDebugHudEnabled()) return null
+  if (!visible) return null
 
   const phaseColor =
     snapshot.phase === 'error'
@@ -78,7 +81,20 @@ export function Customizer3dDebugHud({
       data-testid="customizer-3d-debug-hud"
       className="pointer-events-none absolute left-2 top-2 z-40 max-w-[min(100%,24rem)] rounded-lg border border-black/10 bg-black/80 px-3 py-2 font-mono text-[10px] leading-relaxed text-white/85 shadow-lg backdrop-blur-sm"
     >
-      <p className="mb-1 text-[11px] font-semibold text-white">3D debug</p>
+      <div className="pointer-events-auto mb-1 flex items-center justify-between gap-2">
+        <p className="text-[11px] font-semibold text-white">3D debug</p>
+        {onHide ? (
+          <button
+            type="button"
+            data-testid="customizer-3d-debug-hud-hide"
+            onClick={onHide}
+            title="Ocultar panel"
+            className="rounded p-0.5 text-white/60 hover:bg-white/10 hover:text-white"
+          >
+            <X className="size-3.5" />
+          </button>
+        ) : null}
+      </div>
       <p>
         <span className="text-white/50">phase</span>{' '}
         <span className={phaseColor}>{snapshot.phase}</span>
