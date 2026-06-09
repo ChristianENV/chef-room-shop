@@ -30,6 +30,18 @@ const BUNDLE_FILES = [
 loadEnv({ path: path.join(REPO_ROOT, '.env.local') })
 loadEnv({ path: path.join(REPO_ROOT, '.env') })
 
+/** glTF must be UTF-8 JSON; Windows editors sometimes save UTF-16 with BOM. */
+function normalizeGltfToUtf8(raw: Buffer): Buffer {
+  if (raw.length >= 2 && raw[0] === 0xff && raw[1] === 0xfe) {
+    const text = raw.toString('utf16le').replace(/^\uFEFF/, '')
+    return Buffer.from(text, 'utf8')
+  }
+  if (raw.length >= 3 && raw[0] === 0xef && raw[1] === 0xbb && raw[2] === 0xbf) {
+    return Buffer.from(raw.toString('utf8').replace(/^\uFEFF/, ''), 'utf8')
+  }
+  return raw
+}
+
 function readR2Env() {
   const read = (name: string) => process.env[name]?.trim() ?? ''
   const accountId = read('R2_ACCOUNT_ID')
@@ -72,13 +84,18 @@ async function main() {
 
   for (const file of BUNDLE_FILES) {
     const localPath = path.join(MODEL_DIR, file.fileName)
-    const body = await fs.readFile(localPath)
+    const raw = await fs.readFile(localPath)
+    const body =
+      file.fileName.endsWith('.gltf') ? normalizeGltfToUtf8(raw) : raw
     await client.send(
       new PutObjectCommand({
         Bucket: env.bucketName,
         Key: file.r2Key,
         Body: body,
-        ContentType: file.contentType,
+        ContentType:
+          file.fileName.endsWith('.gltf')
+            ? 'model/gltf+json; charset=utf-8'
+            : file.contentType,
         CacheControl: STATIC_CACHE_CONTROL,
       }),
     )

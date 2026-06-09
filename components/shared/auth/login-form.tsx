@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
 import { register as registerRoute, routes } from '@/src/config/routes'
 import { authClient, signIn, signOut } from '@/src/lib/auth/auth-client'
+import { buildSocialOAuthCallbackURL } from '@/src/lib/auth/oauth-callback-url'
 import { getAuthErrorMessage } from '@/src/lib/auth/auth-errors'
 import { loginSchema } from '@/src/lib/auth/auth-schemas'
 import { runPostAuthGuestMerge } from '@/src/lib/auth/post-auth-guest-merge'
@@ -61,6 +62,10 @@ export function LoginForm({
   const oauthCallbackURL = isAdminVariant
     ? routes.adminDashboard
     : safeCallbackUrl ?? routes.home
+  const googleOAuthCallbackURL = buildSocialOAuthCallbackURL({
+    callbackUrl: isAdminVariant ? routes.adminDashboard : safeCallbackUrl,
+    source: isAdminVariant ? 'admin-login' : 'storefront-login',
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -131,7 +136,7 @@ export function LoginForm({
     try {
       await authClient.signIn.social({
         provider: 'google',
-        callbackURL: oauthCallbackURL,
+        callbackURL: googleOAuthCallbackURL,
       })
     } catch (err) {
       setError(

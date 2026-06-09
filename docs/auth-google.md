@@ -1,6 +1,6 @@
 # Google login (Better Auth)
 
-Google sign-in is configured through **Better Auth** (`socialProviders.google` in `src/server/auth/build-auth.ts`), not the legacy custom `OAuthAccount` / `OAuthState` tables.
+Google sign-in is configured through **Better Auth** (`socialProviders.google` in `src/server/auth/build-auth.ts`).
 
 > **Deprecated:** `OAuthAccount`, `OAuthState`, `PasswordResetToken`, and `EmailVerificationToken` were removed in favor of Better Auth `Account` and `Verification`.
 
@@ -10,6 +10,7 @@ Google sign-in is configured through **Better Auth** (`socialProviders.google` i
 GOOGLE_CLIENT_ID="..."
 GOOGLE_CLIENT_SECRET="..."
 BETTER_AUTH_URL="http://localhost:3000"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
 Redirect URI in Google Cloud Console:
@@ -20,25 +21,26 @@ http://localhost:3000/api/auth/callback/google
 
 (Use your production `BETTER_AUTH_URL` in production.)
 
-## Expected flow (when UI is wired)
+## Flow
 
-1. User clicks “Continuar con Google” → `authClient.signIn.social({ provider: 'google' })`.
-2. Better Auth creates/updates `Account` with `providerId: google`.
-3. Session cookie set; `User.image` / `firstName` / `lastName` mapped via `mapProfileToUser`.
-4. Assign **CUSTOMER** role in Prisma (hook / post-sign-up job — pending).
-5. **Guest merge** (pending): merge `GuestSession` carts/designs after login.
+1. User clicks **Iniciar sesión con Google** on `/login` or `/register` (shown when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set).
+2. `authClient.signIn.social({ provider: 'google', callbackURL })` → Better Auth OAuth state stores the callback.
+3. Google redirects to `/api/auth/callback/google`; Better Auth creates/updates `Account` with `providerId: google` and sets the session cookie.
+4. Better Auth redirects to `/auth/social-complete?source=…&callbackUrl=…` (see `buildSocialOAuthCallbackURL`).
+5. The server page (`completeSocialAuthAndRedirect`) reads the session cookie, assigns CUSTOMER role, merges guest session, then `redirect()`s to `callbackUrl` from post-checkout (e.g. `/account/orders/ORD-…?from=checkout&token=…`) instead of the landing page.
+
+### Post-checkout
+
+`post-checkout-order-modal` links to `login({ callbackUrl: postCheckoutOrderDetail(...) })`. That `callbackUrl` is preserved through Google OAuth and the social-complete step.
 
 ## Security notes
 
-- Better Auth may persist OAuth tokens on `Account`; MVP uses default scopes only.
+- Better Auth validates `callbackURL` against `trustedOrigins` (`BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL`).
+- OAuth tokens may persist on `Account`; MVP uses default scopes only.
 - Do not store card data in auth tables.
-- For production, review token storage and enable encryption hooks if needed.
 
 ## Pending
 
-- [ ] Google button in storefront / admin login
 - [ ] Account linking UI
-- [ ] Guest merge after OAuth
-- [ ] CUSTOMER role assignment hook
 
 See [auth.md](./auth.md) for full auth architecture.

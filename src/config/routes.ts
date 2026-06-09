@@ -26,6 +26,7 @@ export const routes = {
   login: '/login',
   register: '/register',
   verifyEmail: '/verify-email',
+  authSocialComplete: '/auth/social-complete',
   account: '/account',
   claimOrder: '/claim-order',
   claimOrderAuthorize: '/claim-order/authorize',
