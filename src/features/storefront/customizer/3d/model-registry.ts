@@ -106,7 +106,8 @@ function resolveChefJacketMockUrl(): string {
 function buildChefJacketRegistryEntry(): CustomizerModelDefinition {
   return {
     id: 'chef-jacket-local',
-    label: 'Filipina 3D (R2)',
+    registryKey: CHEF_JACKET_REGISTRY_KEY,
+    label: 'Filipina 3D (local)',
     modelUrl: resolveChefJacketMockUrl(),
     productTypes: ['chef-jacket', 'filipina'],
     isMock: true,

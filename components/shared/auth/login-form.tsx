@@ -62,6 +62,10 @@ export function LoginForm({
   const oauthCallbackURL = isAdminVariant
     ? routes.adminDashboard
     : safeCallbackUrl ?? routes.home
+  const googleOAuthCallbackURL = buildSocialOAuthCallbackURL({
+    callbackUrl: isAdminVariant ? routes.adminDashboard : safeCallbackUrl,
+    source: isAdminVariant ? 'admin-login' : 'storefront-login',
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
