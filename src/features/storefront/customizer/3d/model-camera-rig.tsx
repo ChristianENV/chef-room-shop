@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { logCustomizer3d } from './customizer-3d-debug'
@@ -23,7 +23,7 @@ export function ModelCameraRig({ modelReady }: ModelCameraRigProps) {
   const { camera, controls, invalidate } = useThree()
   const appliedForModelRef = useRef<string | null>(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!modelReady?.bounds.valid) return
     if (appliedForModelRef.current === modelReady.modelUrl) return
     if (!controls || !(camera instanceof THREE.PerspectiveCamera)) {

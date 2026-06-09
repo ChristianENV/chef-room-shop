@@ -53,7 +53,6 @@ function GarmentModelInner({
 }: GarmentModelProps) {
   const rotationRef = useRef<THREE.Group>(null)
   const modelRootRef = useRef<THREE.Group>(null)
-  const fitAppliedForModelRef = useRef<string | null>(null)
   const onModelReadyRef = useRef(onModelReady)
 
   useEffect(() => {
@@ -92,7 +91,6 @@ function GarmentModelInner({
   useLayoutEffect(() => {
     const root = modelRootRef.current
     if (!root) return
-    if (fitAppliedForModelRef.current === modelConfig.modelUrl) return
 
     const preBounds = getSafeModelBounds(clonedScene)
     const registryTransform = {
@@ -114,13 +112,9 @@ function GarmentModelInner({
       return
     }
 
-    root.position.set(0, 0, 0)
-    root.rotation.set(0, 0, 0)
-    root.scale.setScalar(1)
     applyModelFitTransform(root, transform)
 
     const worldBounds = getSafeModelBounds(root)
-    fitAppliedForModelRef.current = modelConfig.modelUrl
 
     logModelFit(modelConfig.modelUrl, worldBounds, transform, fitSource)
     inspectGltf(modelConfig.id, clonedScene)
@@ -129,12 +123,6 @@ function GarmentModelInner({
       bounds: worldBounds,
     })
   }, [clonedScene, modelConfig])
-
-  useEffect(() => {
-    if (fitAppliedForModelRef.current !== modelConfig.modelUrl) {
-      fitAppliedForModelRef.current = null
-    }
-  }, [modelConfig.modelUrl])
 
   useEffect(() => {
     tintGroups.body.forEach((material) => applyColorToMaterial(material, baseColor))
@@ -166,7 +154,12 @@ function GarmentModelInner({
 
   return (
     <group ref={rotationRef}>
-      <group ref={modelRootRef}>
+      <group
+        ref={modelRootRef}
+        scale={modelConfig.scale}
+        position={modelConfig.position}
+        rotation={modelConfig.rotation}
+      >
         <primitive object={clonedScene} />
 
         {visibleDecalLayers.map((layer: Layer) => {

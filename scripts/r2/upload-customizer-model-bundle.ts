@@ -8,7 +8,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import { buildPublicR2ObjectUrl, STATIC_CACHE_CONTROL } from './public-images.shared'
+import { buildPublicR2ObjectUrl, MODEL_GLTF_CACHE_CONTROL, STATIC_CACHE_CONTROL } from './public-images.shared'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.resolve(__dirname, '../..')
@@ -96,7 +96,9 @@ async function main() {
           file.fileName.endsWith('.gltf')
             ? 'model/gltf+json; charset=utf-8'
             : file.contentType,
-        CacheControl: STATIC_CACHE_CONTROL,
+        CacheControl: file.fileName.endsWith('.gltf')
+          ? MODEL_GLTF_CACHE_CONTROL
+          : STATIC_CACHE_CONTROL,
       }),
     )
     const url = buildPublicR2ObjectUrl(env.publicBaseUrl, file.r2Key)

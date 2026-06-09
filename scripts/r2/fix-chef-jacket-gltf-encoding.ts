@@ -7,7 +7,7 @@ import { config as loadEnv } from 'dotenv'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import { buildPublicR2ObjectUrl, STATIC_CACHE_CONTROL } from './public-images.shared'
+import { buildPublicR2ObjectUrl, MODEL_GLTF_CACHE_CONTROL } from './public-images.shared'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.resolve(__dirname, '../..')
@@ -63,6 +63,7 @@ function toUtf8GltfBuffer(raw: Buffer): { body: Buffer; converted: boolean; enco
 }
 
 async function main() {
+  const force = process.argv.includes('--force')
   const env = readR2Env()
   const client = new S3Client({
     region: 'auto',
@@ -87,8 +88,8 @@ async function main() {
   console.log(`Size before: ${raw.length} bytes`)
   console.log(`Size after:  ${body.length} bytes`)
 
-  if (!converted && encoding === 'utf-8') {
-    console.log('Already UTF-8 JSON. No upload needed.')
+  if (!converted && encoding === 'utf-8' && !force) {
+    console.log('Already UTF-8 JSON. No upload needed. Pass --force to refresh cache headers.')
     return
   }
 
@@ -98,7 +99,7 @@ async function main() {
       Key: R2_KEY,
       Body: body,
       ContentType: 'model/gltf+json; charset=utf-8',
-      CacheControl: STATIC_CACHE_CONTROL,
+      CacheControl: MODEL_GLTF_CACHE_CONTROL,
     }),
   )
 

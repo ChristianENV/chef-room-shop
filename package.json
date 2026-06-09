@@ -22,7 +22,8 @@
     "glb:optimize": "tsx scripts/optimize-glb.ts",
     "r2:public-images:dry-run": "tsx scripts/r2/upload-public-images.ts --dry-run",
     "r2:public-images:upload": "tsx scripts/r2/upload-public-images.ts --upload --force",
-    "r2:customizer-model:upload": "tsx scripts/r2/upload-customizer-model-bundle.ts"
+    "r2:customizer-model:upload": "tsx scripts/r2/upload-customizer-model-bundle.ts",
+    "r2:customizer-model:fix-encoding": "tsx scripts/r2/fix-chef-jacket-gltf-encoding.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

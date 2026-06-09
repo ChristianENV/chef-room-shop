@@ -93,6 +93,9 @@ export function contentTypeForExtension(ext: string): string {
 
 export const STATIC_CACHE_CONTROL = 'public, max-age=31536000, immutable'
 
+/** glTF/GLB JSON — avoid `immutable` so encoding fixes can propagate. */
+export const MODEL_GLTF_CACHE_CONTROL = 'public, max-age=86400'
+
 /** Builds an absolute HTTPS public URL for an R2 object key. */
 export function buildPublicR2ObjectUrl(publicBaseUrl: string, r2Key: string): string {
   const base = publicBaseUrl.replace(/\/+$/, '')

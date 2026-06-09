@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { Decal, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
+import { toSameOriginR2Url } from '@/src/lib/assets/same-origin-r2-url'
 import type { ZoneDefinition } from './customizer-zones'
 
 export type LogoDecalProps = {
@@ -16,7 +17,8 @@ export type LogoDecalProps = {
 }
 
 function LogoDecalInner({ assetUrl, opacity, rotation, zone, mesh }: LogoDecalProps) {
-  const texture = useTexture(assetUrl)
+  const textureUrl = toSameOriginR2Url(assetUrl) ?? assetUrl
+  const texture = useTexture(textureUrl)
 
   const euler = useMemo(
     () =>

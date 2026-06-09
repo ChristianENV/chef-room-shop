@@ -77,10 +77,14 @@ const CHEF_JACKET_MESH_HINTS: ModelNameHints = {
  */
 function resolveChefJacketMockUrl(): string {
   const exact = process.env.NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL
-  if (exact) return exact
+  if (exact) return resolveCustomizerModelUrl(exact)
 
   const base = process.env.NEXT_PUBLIC_CUSTOMIZER_MODEL_BASE_URL
-  if (base) return `${base.replace(/\/$/, '')}/chef-jacket/chef-jacket.gltf`
+  if (base) {
+    return resolveCustomizerModelUrl(
+      `${base.replace(/\/$/, '')}/chef-jacket/chef-jacket.gltf`,
+    )
+  }
 
   const r2OrLocal = getCustomizerChefJacketGltfUrl()
   if (r2OrLocal.startsWith('https://')) return r2OrLocal

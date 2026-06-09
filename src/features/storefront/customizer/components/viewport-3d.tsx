@@ -17,6 +17,7 @@ import { useCustomizerStore } from '../store/customizer.store'
 import { getCustomizerModelForProduct } from '../3d/model-registry'
 import { GarmentModelLoader } from '../3d/garment-model'
 import { ModelCameraRig, type ModelReadyPayload } from '../3d/model-camera-rig'
+import { toSameOriginR2Url } from '@/src/lib/assets/same-origin-r2-url'
 import {
   ViewportCaptureBridge,
   type ViewportCaptureHandle,
@@ -154,8 +155,31 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
   const [modelReady, setModelReady] = useState<ModelReadyPayload | null>(null)
   const prevViewModeRef = useRef(viewMode)
   const prevProductIdRef = useRef(product?.id)
-  const heroImage =
+  const heroImageRaw =
     product?.images.find((image) => image.isPrimary)?.url ?? product?.images[0]?.url ?? null
+  const heroImage = heroImageRaw ? toSameOriginR2Url(heroImageRaw) ?? heroImageRaw : null
+
+  const orbitLimits = useMemo(() => {
+    if (!modelReady?.bounds.valid) {
+      return {
+        minDistance: 2.2,
+        maxDistance: 5,
+        target: [0, 0.1, 0] as [number, number, number],
+      }
+    }
+
+    const { center, size } = modelReady.bounds
+    const maxDim = Math.max(size.x, size.y, size.z)
+    const distance = THREE.MathUtils.clamp(maxDim * 2.4, 2.4, 6.5)
+    const minDistance = Math.max(0.8, distance * 0.35)
+    const maxDistance = Math.max(minDistance + 0.5, distance * 2.8)
+
+    return {
+      minDistance,
+      maxDistance,
+      target: [center.x, center.y, center.z] as [number, number, number],
+    }
+  }, [modelReady])
 
   useEffect(() => {
     const entering3D = prevViewModeRef.current !== '3D' && viewMode === '3D'
@@ -231,8 +255,9 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
         <OrbitControls
           makeDefault
           enablePan={false}
-          minDistance={2.2}
-          maxDistance={5}
+          minDistance={orbitLimits.minDistance}
+          maxDistance={orbitLimits.maxDistance}
+          target={orbitLimits.target}
           enableDamping
           dampingFactor={0.05}
         />

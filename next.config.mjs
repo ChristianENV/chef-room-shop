@@ -18,10 +18,25 @@ function getR2ImageRemotePatterns() {
   }
 }
 
+function getR2PublicBaseUrl() {
+  return process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL?.trim().replace(/\/+$/, '') ?? ''
+}
+
 const nextConfig = {
   images: {
     unoptimized: true,
     remotePatterns: getR2ImageRemotePatterns(),
+  },
+  async rewrites() {
+    const r2Base = getR2PublicBaseUrl()
+    if (!r2Base) return []
+
+    return [
+      {
+        source: '/r2/:path*',
+        destination: `${r2Base}/:path*`,
+      },
+    ]
   },
   async redirects() {
     return [
