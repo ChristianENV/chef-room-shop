@@ -27,7 +27,7 @@ http://localhost:3000/api/auth/callback/google
 2. `authClient.signIn.social({ provider: 'google', callbackURL })` → Better Auth OAuth state stores the callback.
 3. Google redirects to `/api/auth/callback/google`; Better Auth creates/updates `Account` with `providerId: google` and sets the session cookie.
 4. Better Auth redirects to `/auth/social-complete?source=…&callbackUrl=…` (see `buildSocialOAuthCallbackURL`).
-5. The server page (`completeSocialAuthAndRedirect`) reads the session cookie, assigns CUSTOMER role, merges guest session, then `redirect()`s to `callbackUrl` from post-checkout (e.g. `/account/orders/ORD-…?from=checkout&token=…`) instead of the landing page.
+5. The route handler `GET /auth/social-complete` (`resolveSocialAuthCompletion`) reads the session cookie, assigns CUSTOMER role, merges guest session, clears the guest cookie, then responds with a 302 to `callbackUrl` from post-checkout (e.g. `/account/orders/ORD-…?from=checkout&token=…`) instead of the landing page.
 
 ### Post-checkout
 
