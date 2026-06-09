@@ -17,6 +17,19 @@ import { useCustomizerStore } from '../store/customizer.store'
 import { getCustomizerModelForProduct } from '../3d/model-registry'
 import { GarmentModelLoader } from '../3d/garment-model'
 import { ModelCameraRig, type ModelReadyPayload } from '../3d/model-camera-rig'
+import {
+  Customizer3dDebugHud,
+  type Customizer3dDebugSnapshot,
+} from '../3d/customizer-3d-debug-hud'
+import { ChefJacketSmokeViewport } from '../3d/chef-jacket-smoke-scene'
+import {
+  isCustomizer3dDebugHudEnabled,
+  isCustomizer3dSafeModeEnabled,
+  isCustomizerContactShadowsDisabled,
+  isCustomizerEnvironmentDisabled,
+  isCustomizerForceDebugMaterialEnabled,
+} from '../3d/customizer-3d-flags'
+import { resolveModelSourceInfo } from '../3d/model-source'
 import { toSameOriginR2Url } from '@/src/lib/assets/same-origin-r2-url'
 import {
   ViewportCaptureBridge,
@@ -100,15 +113,79 @@ function JacketModel() {
   )
 }
 
+const INITIAL_DEBUG_SNAPSHOT: Customizer3dDebugSnapshot = {
+  phase: 'idle',
+  modelUrl: null,
+  modelSource: null,
+  productSlug: null,
+  registryKey: null,
+  usingLocalFallback: null,
+  meshCount: null,
+  visibleMeshCount: null,
+  materialNames: null,
+  materialTypes: null,
+  firstMeshVisible: null,
+  firstMeshMaterial: null,
+  firstMeshWorldPosition: null,
+  firstMeshWorldScale: null,
+  forceDebugMaterial: false,
+  debugMaterialAppliedMeshCount: null,
+  appliedTransform: null,
+  bounds: null,
+  fitKey: null,
+  canvasSize: null,
+  cameraPosition: null,
+  controlsTarget: null,
+  lastError: null,
+  fitAttempts: 0,
+}
+
+const VIEWPORT_3D_BACKGROUND = '#f3f1ec'
+
 type GarmentSceneProps = {
   onGlbActive: (active: boolean) => void
   onModelReady: (payload: ModelReadyPayload) => void
   onModelError: (error: Error) => void
+  onDebugUpdate: (patch: Partial<Customizer3dDebugSnapshot>) => void
+  forceDebugMaterial: boolean
 }
 
-function GarmentScene({ onGlbActive, onModelReady, onModelError }: GarmentSceneProps) {
+function GarmentScene({
+  onGlbActive,
+  onModelReady,
+  onModelError,
+  onDebugUpdate,
+  forceDebugMaterial,
+}: GarmentSceneProps) {
   const { product, baseColor, detailColor, sleeveStyle, layers } = useCustomizerStore()
   const modelConfig = useMemo(() => getCustomizerModelForProduct(product), [product])
+
+  useEffect(() => {
+    if (!modelConfig) {
+      onDebugUpdate({ phase: 'procedural', modelUrl: null })
+      return
+    }
+    const source = resolveModelSourceInfo(modelConfig.modelUrl)
+    onDebugUpdate({
+      phase: 'loading',
+      modelUrl: source.modelUrl,
+      modelSource: source.modelSource,
+      usingLocalFallback: source.usingLocalFallback,
+      productSlug: product?.slug ?? product?.productTypeSlug ?? null,
+      registryKey: modelConfig.registryKey,
+      forceDebugMaterial,
+      appliedTransform: {
+        scale: modelConfig.scale,
+        position: modelConfig.position,
+        rotation: modelConfig.rotation,
+      },
+      lastError: null,
+    })
+  }, [forceDebugMaterial, modelConfig, onDebugUpdate, product?.productTypeSlug, product?.slug])
+
+  const handleModelLoaded = useCallback(() => {
+    onGlbActive(true)
+  }, [onGlbActive])
 
   const handleModelReady = useCallback(
     (payload: ModelReadyPayload) => {
@@ -122,8 +199,9 @@ function GarmentScene({ onGlbActive, onModelReady, onModelError }: GarmentSceneP
     (error: Error) => {
       onGlbActive(false)
       onModelError(error)
+      onDebugUpdate({ phase: 'error', lastError: error.message })
     },
-    [onGlbActive, onModelError],
+    [onDebugUpdate, onGlbActive, onModelError],
   )
 
   if (!modelConfig) {
@@ -140,8 +218,11 @@ function GarmentScene({ onGlbActive, onModelReady, onModelError }: GarmentSceneP
       layers={layers}
       suspenseFallback={<GlbLoadingFallback />}
       errorFallback={<JacketModel />}
+      onModelLoaded={handleModelLoaded}
       onModelReady={handleModelReady}
       onModelError={handleModelError}
+      onDebugUpdate={onDebugUpdate}
+      forceDebugMaterial={forceDebugMaterial}
     />
   )
 }
@@ -160,6 +241,13 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
   const [glbActive, setGlbActive] = useState(false)
   const [modelReady, setModelReady] = useState<ModelReadyPayload | null>(null)
   const [remoteModelFailed, setRemoteModelFailed] = useState(false)
+  const [debugSnapshot, setDebugSnapshot] =
+    useState<Customizer3dDebugSnapshot>(INITIAL_DEBUG_SNAPSHOT)
+  const [forceDebugMaterial, setForceDebugMaterial] = useState(
+    () => isCustomizerForceDebugMaterialEnabled(),
+  )
+  const [safeRender, setSafeRender] = useState(() => isCustomizer3dSafeModeEnabled())
+  const [cameraResetToken, setCameraResetToken] = useState(0)
   const prevViewModeRef = useRef(viewMode)
   const prevProductIdRef = useRef(product?.id)
   const heroImageRaw =
@@ -176,17 +264,44 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
       setGlbActive(false)
       setModelReady(null)
       setRemoteModelFailed(false)
+      setDebugSnapshot(INITIAL_DEBUG_SNAPSHOT)
     }
   }, [viewMode, product?.id])
+
+  const handleDebugUpdate = useCallback((patch: Partial<Customizer3dDebugSnapshot>) => {
+    setDebugSnapshot((prev) => ({ ...prev, ...patch }))
+  }, [])
 
   const handleModelError = useCallback((error: Error) => {
     setGlbActive(false)
     setModelReady(null)
     setRemoteModelFailed(true)
+    setDebugSnapshot((prev) => ({
+      ...prev,
+      phase: 'error',
+      lastError: error.message,
+    }))
     if (process.env.NEXT_PUBLIC_CUSTOMIZER_DEBUG_3D === 'true') {
-      console.info('[customizer-3d] remote-model-failed', { message: error.message })
+      console.info('[customizer-3d] model-load-failed', { message: error.message })
     }
   }, [])
+
+  const handleCameraFit = useCallback(
+    (payload: {
+      cameraPosition: [number, number, number]
+      controlsTarget: [number, number, number]
+      canvasSize: { width: number; height: number }
+    }) => {
+      setDebugSnapshot((prev) => ({
+        ...prev,
+        phase: 'camera-fit',
+        cameraPosition: payload.cameraPosition,
+        controlsTarget: payload.controlsTarget,
+        canvasSize: payload.canvasSize,
+      }))
+    },
+    [],
+  )
 
   useImperativeHandle(ref, () => ({
     captureDesignPreviews: async () => {
@@ -195,6 +310,25 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
       return bridge.captureDesignPreviews()
     },
   }))
+
+  if (viewMode === '3D' && safeRender) {
+    return (
+      <div
+        ref={viewportRootRef}
+        data-testid="customizer-3d-viewport"
+        data-safe-mode="true"
+        className="relative h-full w-full bg-gradient-to-br from-[#080810] via-[#0c0c18] to-[#080810] p-2"
+      >
+        <div className="pointer-events-none absolute left-3 top-3 z-30 rounded bg-amber-500/20 px-2 py-1 text-xs text-amber-100">
+          3D safe mode — escena mínima sin overlays/fit/decals
+        </div>
+        <ChefJacketSmokeViewport
+          className="h-full w-full"
+          canvasTestId="customizer-3d-safe-canvas"
+        />
+      </div>
+    )
+  }
 
   if (viewMode !== '3D') {
     return (
@@ -220,13 +354,45 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
     )
   }
 
+  const disableEnvironment = isCustomizerEnvironmentDisabled()
+  const disableContactShadows = isCustomizerContactShadowsDisabled()
+
   return (
     <div
       ref={viewportRootRef}
       data-testid="customizer-3d-viewport"
-      className="relative h-full w-full bg-gradient-to-br from-[#080810] via-[#0c0c18] to-[#080810]"
+      className="relative h-full w-full"
+      style={{ backgroundColor: VIEWPORT_3D_BACKGROUND }}
     >
-      <div className="customizer-noise absolute inset-0" />
+      <Customizer3dDebugHud
+        snapshot={debugSnapshot}
+        onToggleDebugMaterial={
+          isCustomizer3dDebugHudEnabled()
+            ? () => setForceDebugMaterial((value) => !value)
+            : undefined
+        }
+        onToggleSafeRender={
+          isCustomizer3dDebugHudEnabled()
+            ? () => setSafeRender((value) => !value)
+            : undefined
+        }
+        onResetCamera={
+          isCustomizer3dDebugHudEnabled()
+            ? () => {
+                setModelReady(null)
+                setCameraResetToken((value) => value + 1)
+              }
+            : undefined
+        }
+        safeRenderActive={safeRender}
+      />
+      {!glbActive ? (
+        <div className="pointer-events-none absolute inset-0 z-[15] flex items-end justify-center pb-6">
+          <div className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-xs text-white/70 backdrop-blur-sm">
+            Cargando modelo 3D…
+          </div>
+        </div>
+      ) : null}
       {!glbActive && <ViewportElementOverlay />}
       {remoteModelFailed ? (
         <div
@@ -238,24 +404,31 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
         </div>
       ) : null}
       <Canvas
+        key={cameraResetToken}
         camera={{ position: [0, 0.3, 3.2], fov: 32, near: 0.01, far: 100 }}
         className="relative z-10"
         gl={{ preserveDrawingBuffer: true, antialias: true }}
         resize={{ debounce: 0, scroll: false }}
       >
+        <color attach="background" args={[VIEWPORT_3D_BACKGROUND]} />
         <ViewportCaptureBridge ref={internalCaptureRef} viewportRootRef={viewportRootRef} />
-        <ambientLight intensity={0.35} />
-        <directionalLight position={[4, 6, 4]} intensity={0.9} />
-        <directionalLight position={[-4, 3, -3]} intensity={0.25} />
+        <ambientLight intensity={1.0} />
+        <hemisphereLight intensity={0.55} color="#ffffff" groundColor="#d4cfc4" />
+        <directionalLight position={[5, 8, 5]} intensity={1.1} />
+        <directionalLight position={[-3, 4, -2]} intensity={0.35} />
         <GarmentScene
           onGlbActive={setGlbActive}
           onModelReady={setModelReady}
           onModelError={handleModelError}
+          onDebugUpdate={handleDebugUpdate}
+          forceDebugMaterial={forceDebugMaterial}
         />
-        <ModelCameraRig modelReady={modelReady} />
-        <ContactShadows position={[0, -0.85, 0]} opacity={0.35} scale={4} blur={2} far={3} />
-        {modelReady?.bounds.valid ? (
-          <Environment preset="studio" environmentIntensity={0.4} />
+        <ModelCameraRig modelReady={modelReady} onCameraFit={handleCameraFit} />
+        {!disableContactShadows ? (
+          <ContactShadows position={[0, -0.85, 0]} opacity={0.25} scale={4} blur={2} far={3} />
+        ) : null}
+        {!disableEnvironment && modelReady?.bounds.valid ? (
+          <Environment preset="studio" environmentIntensity={0.25} />
         ) : null}
         <OrbitControls
           makeDefault

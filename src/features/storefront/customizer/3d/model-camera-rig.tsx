@@ -20,13 +20,18 @@ export type ModelReadyPayload = {
 
 type ModelCameraRigProps = {
   modelReady: ModelReadyPayload | null
+  onCameraFit?: (payload: {
+    cameraPosition: [number, number, number]
+    controlsTarget: [number, number, number]
+    canvasSize: { width: number; height: number }
+  }) => void
 }
 
 /**
  * Resets camera + OrbitControls once per `fitKey` after the garment reports
  * valid bounds. Camera fit never modifies model scale.
  */
-export function ModelCameraRig({ modelReady }: ModelCameraRigProps) {
+export function ModelCameraRig({ modelReady, onCameraFit }: ModelCameraRigProps) {
   const { camera, controls, invalidate, size } = useThree()
   const appliedFitKeyRef = useRef<string | null>(null)
 
@@ -63,9 +68,18 @@ export function ModelCameraRig({ modelReady }: ModelCameraRigProps) {
 
     if (applied) {
       appliedFitKeyRef.current = modelReady.fitKey
+      onCameraFit?.({
+        cameraPosition: camera.position.toArray() as [number, number, number],
+        controlsTarget: (controls as unknown as OrbitControlsLike).target.toArray() as [
+          number,
+          number,
+          number,
+        ],
+        canvasSize: containerSize,
+      })
       invalidate()
     }
-  }, [camera, controls, invalidate, modelReady, size.height, size.width])
+  }, [camera, controls, invalidate, modelReady, onCameraFit, size.height, size.width])
 
   return null
 }

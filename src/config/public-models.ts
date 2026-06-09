@@ -37,17 +37,20 @@ function resolveRemoteCustomizerModelUrl(url: string): string {
 }
 
 /**
- * Public URL for the chef-jacket glTF on Cloudflare R2.
- * Resolved at call time so `NEXT_PUBLIC_*` env is always read fresh.
+ * Stable local chef-jacket glTF (served from `/public/models/...`).
+ * Remote R2 is opt-in via `NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL` only.
  */
 export function getCustomizerChefJacketGltfUrl(): string {
-  const base = getPublicR2BaseUrl()
-  if (base) {
-    return resolveRemoteCustomizerModelUrl(
-      buildPublicR2ObjectUrl(base, CHEF_JACKET_R2_KEY),
-    )
-  }
   return CHEF_JACKET_GLTF_LOCAL
+}
+
+/** Remote R2 chef-jacket URL when explicitly needed (upload scripts, diagnostics). */
+export function getCustomizerChefJacketGltfRemoteUrl(): string {
+  const base = getPublicR2BaseUrl()
+  if (!base) return CHEF_JACKET_GLTF_LOCAL
+  return resolveRemoteCustomizerModelUrl(
+    buildPublicR2ObjectUrl(base, CHEF_JACKET_R2_KEY),
+  )
 }
 
 /** True when the URL points at the local chef-jacket glTF path. */
@@ -60,15 +63,12 @@ export function isLocalChefJacketGltfUrl(url: string): boolean {
 }
 
 /**
- * Rewrites known local chef-jacket paths to the Cloudflare R2 public URL.
+ * Resolves customizer model URLs.
+ * Local chef-jacket paths stay same-origin (gltf + bin + textures must not mix hosts).
  */
 export function resolveCustomizerModelUrl(url: string): string {
   const trimmed = url.trim()
-  if (!trimmed) return getCustomizerChefJacketGltfUrl()
-  if (isLocalChefJacketGltfUrl(trimmed)) {
-    const remote = getCustomizerChefJacketGltfUrl()
-    if (remote.startsWith('https://') || remote.startsWith('/r2/')) return remote
-    return trimmed
-  }
+  if (!trimmed) return CHEF_JACKET_GLTF_LOCAL
+  if (isLocalChefJacketGltfUrl(trimmed)) return trimmed
   return resolveRemoteCustomizerModelUrl(trimmed)
 }

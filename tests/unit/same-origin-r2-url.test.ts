@@ -30,12 +30,11 @@ describe('appendCustomizerModelCacheBust', () => {
 })
 
 describe('getCustomizerChefJacketGltfUrl', () => {
-  it('returns same-origin proxied model URL when R2 base is configured', () => {
+  it('returns the local chef-jacket glTF path', () => {
     process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL =
       'https://pub-4aca0106e69a495ba9342302f65b5413.r2.dev'
 
     const url = getCustomizerChefJacketGltfUrl()
-    assert.ok(url.startsWith('/r2/public/images/models/customizer/chef-jacket/chef-jacket.gltf'))
-    assert.match(url, /[?&]v=2/)
+    assert.equal(url, '/models/customizer/chef-jacket/chef-jacket.gltf')
   })
 })

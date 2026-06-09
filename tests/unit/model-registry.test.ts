@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
+import { CHEF_JACKET_GLTF_LOCAL } from '@/src/config/public-models'
 import {
   CHEF_JACKET_REGISTRY_KEY,
   getCustomizerModelForProduct,
@@ -21,7 +22,7 @@ describe('getRegistryTransformForProductType', () => {
 })
 
 describe('getCustomizerModelForProduct', () => {
-  it('applies registry transform for DB model URLs regardless of host', () => {
+  it('always uses local chef-jacket bundle for filipina regardless of DB remote URL', () => {
     const model = getCustomizerModelForProduct({
       productTypeSlug: 'filipina',
       model3d: {
@@ -40,8 +41,6 @@ describe('getCustomizerModelForProduct', () => {
     assert.ok(model)
     assert.equal(model!.registryKey, CHEF_JACKET_REGISTRY_KEY)
     assert.equal(model!.scale, 0.02)
-    assert.ok(
-      model!.modelUrl.startsWith('/r2/') || model!.modelUrl.startsWith('https://'),
-    )
+    assert.equal(model!.modelUrl, CHEF_JACKET_GLTF_LOCAL)
   })
 })

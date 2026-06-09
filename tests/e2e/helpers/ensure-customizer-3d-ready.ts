@@ -4,9 +4,14 @@ import { expect, type Page } from '@playwright/test'
 export async function ensureCustomizer3DReady(page: Page): Promise<void> {
   const mode3d = page.getByTestId('customizer-render-mode-3d')
   if (await mode3d.isVisible()) {
-    await mode3d.click()
+    const isActive = await mode3d.evaluate((element) =>
+      element.classList.contains('bg-primary'),
+    )
+    if (!isActive) {
+      await mode3d.click({ force: true })
+    }
   } else {
-    await page.getByRole('button', { name: '3D', exact: true }).click()
+    await page.getByRole('button', { name: '3D', exact: true }).click({ force: true })
   }
 
   const viewport = page.getByTestId('customizer-3d-viewport')

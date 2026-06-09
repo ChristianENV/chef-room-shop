@@ -19,7 +19,9 @@ import { CUSTOMIZER_TRANSFORM_VERSION } from './model-registry'
 import { inspectGltf } from './inspect-gltf'
 import {
   applyColorToMaterial,
-  resolveTintableMaterialGroups,
+  applyForceDebugMaterials,
+  assignVisibleGarmentMaterials,
+  type TintableMaterialGroups,
 } from './material-resolver'
 import { CUSTOMIZER_ZONES, findZoneMesh, resolveZoneId } from './customizer-zones'
 import { TextDecal } from './text-decal'
@@ -33,6 +35,10 @@ import {
   logModelFit,
 } from './fit-model-to-viewport'
 import type { ModelReadyPayload } from './model-camera-rig'
+import type { Customizer3dDebugSnapshot } from './customizer-3d-debug-hud'
+import { inspectModelMeshes } from './inspect-model-meshes'
+import { resolveModelSourceInfo } from './model-source'
+import { isCustomizerForceDebugMaterialEnabled } from './customizer-3d-flags'
 
 export type { ModelBounds } from './fit-model-to-viewport'
 
@@ -43,9 +49,15 @@ export type GarmentModelProps = {
   sleeveStyle: SleeveStyle
   layers: Layer[]
   productSlug?: string | null
+  forceDebugMaterial?: boolean
+  onModelLoaded?: () => void
   onModelReady?: (payload: ModelReadyPayload) => void
   onModelError?: (error: Error) => void
+  onDebugUpdate?: (patch: Partial<Customizer3dDebugSnapshot>) => void
 }
+
+const MAX_BOUNDS_FIT_ATTEMPTS = 12
+const EMPTY_GROUPS: TintableMaterialGroups = { body: [], detail: [], buttons: [] }
 
 function GarmentModelInner({
   modelConfig,
@@ -53,16 +65,26 @@ function GarmentModelInner({
   detailColor,
   layers,
   productSlug,
+  forceDebugMaterial = false,
+  onModelLoaded,
   onModelReady,
+  onDebugUpdate,
 }: GarmentModelProps) {
   const rotationRef = useRef<THREE.Group>(null)
   const modelRootRef = useRef<THREE.Group>(null)
   const onModelReadyRef = useRef(onModelReady)
+  const onModelLoadedRef = useRef(onModelLoaded)
+  const onDebugUpdateRef = useRef(onDebugUpdate)
   const notifiedFitKeyRef = useRef<string | null>(null)
+  const fitAttemptsRef = useRef(0)
+
+  const useDebugMaterial = forceDebugMaterial || isCustomizerForceDebugMaterialEnabled()
 
   useEffect(() => {
     onModelReadyRef.current = onModelReady
-  }, [onModelReady])
+    onModelLoadedRef.current = onModelLoaded
+    onDebugUpdateRef.current = onDebugUpdate
+  }, [onModelLoaded, onModelReady, onDebugUpdate])
 
   const fitKey = useMemo(
     () =>
@@ -86,80 +108,160 @@ function GarmentModelInner({
 
   const { scene } = useGLTF(modelConfig.modelUrl)
 
-  const clonedScene = useMemo(() => {
-    const clone = scene.clone(true)
-    clone.traverse((object) => {
-      if (object instanceof THREE.Mesh && object.material) {
-        const materials = Array.isArray(object.material) ? object.material : [object.material]
-        object.material = materials.map((material) => material.clone())
-      }
-    })
-    return clone
-  }, [scene])
+  const clonedScene = useMemo(() => scene.clone(true), [scene])
 
-  const tintGroups = useMemo(() => {
-    const groups = resolveTintableMaterialGroups(clonedScene, {
-      body: modelConfig.materialHints.body,
-      detail: modelConfig.materialHints.detail,
-      buttons: modelConfig.materialHints.buttons,
-      bodyMesh: modelConfig.meshHints.body,
-    })
+  const { tintGroups, debugMaterialAppliedMeshCount } = useMemo(() => {
+    if (useDebugMaterial) {
+      const count = applyForceDebugMaterials(clonedScene)
+      return { tintGroups: EMPTY_GROUPS, debugMaterialAppliedMeshCount: count }
+    }
+
+    const groups = assignVisibleGarmentMaterials(
+      clonedScene,
+      {
+        body: modelConfig.materialHints.body,
+        detail: modelConfig.materialHints.detail,
+        buttons: modelConfig.materialHints.buttons,
+        bodyMesh: modelConfig.meshHints.body,
+      },
+      { baseColor, detailColor },
+    )
+
     if (groups.body.length === 0 && process.env.NODE_ENV !== 'production') {
       console.warn(
-        `[customizer-3d] No body materials matched for "${modelConfig.id}". ` +
-          'Adjust materialHints/meshHints in model-registry.ts (enable NEXT_PUBLIC_CUSTOMIZER_DEBUG_3D=true to inspect).',
+        `[customizer-3d] No body materials assigned for "${modelConfig.id}".`,
       )
     }
-    return groups
-  }, [clonedScene, modelConfig])
+
+    return { tintGroups: groups, debugMaterialAppliedMeshCount: null }
+  }, [baseColor, clonedScene, detailColor, modelConfig, useDebugMaterial])
+
+  const modelSourceInfo = useMemo(
+    () => resolveModelSourceInfo(modelConfig.modelUrl),
+    [modelConfig.modelUrl],
+  )
+
+  useEffect(() => {
+    const meshInfo = inspectModelMeshes(clonedScene)
+    onModelLoadedRef.current?.()
+    onDebugUpdateRef.current?.({
+      phase: 'loaded',
+      modelUrl: modelSourceInfo.modelUrl,
+      modelSource: modelSourceInfo.modelSource,
+      usingLocalFallback: modelSourceInfo.usingLocalFallback,
+      productSlug: productSlug ?? null,
+      registryKey: modelConfig.registryKey,
+      forceDebugMaterial: useDebugMaterial,
+      debugMaterialAppliedMeshCount,
+      ...meshInfo,
+      appliedTransform: {
+        scale: appliedTransform.scale,
+        position: appliedTransform.position,
+        rotation: appliedTransform.rotation,
+      },
+    })
+  }, [
+    appliedTransform,
+    clonedScene,
+    debugMaterialAppliedMeshCount,
+    modelConfig.registryKey,
+    modelSourceInfo,
+    productSlug,
+    scene,
+    useDebugMaterial,
+  ])
 
   useLayoutEffect(() => {
-    const root = modelRootRef.current
-    if (!root) return
     if (notifiedFitKeyRef.current === fitKey) return
 
-    root.updateWorldMatrix(true, true)
-    const worldBounds = getSafeModelBounds(root)
+    let cancelled = false
+    fitAttemptsRef.current = 0
 
-    if (!isBoundsReadyForFit(worldBounds)) {
-      logCustomizer3d('model-fit-skipped', {
-        modelUrl: modelConfig.modelUrl,
-        productSlug,
-        registryKey: modelConfig.registryKey,
+    const publishBoundsDebug = (worldBounds: ReturnType<typeof getSafeModelBounds>) => {
+      const meshInfo = inspectModelMeshes(clonedScene)
+      onDebugUpdateRef.current?.({
+        phase: isBoundsReadyForFit(worldBounds) ? 'bounds-ready' : 'loaded',
         fitKey,
-        reason: 'invalid-bounds',
-        bounds: worldBounds.size.toArray(),
-        center: worldBounds.center.toArray(),
-        radius: getBoundsRadius(worldBounds),
-        appliedTransform,
+        fitAttempts: fitAttemptsRef.current,
+        bounds: {
+          valid: worldBounds.valid,
+          size: worldBounds.size.toArray() as [number, number, number],
+          center: worldBounds.center.toArray() as [number, number, number],
+          radius: getBoundsRadius(worldBounds),
+        },
+        ...meshInfo,
       })
-      return
     }
 
-    notifiedFitKeyRef.current = fitKey
+    const tryFit = () => {
+      if (cancelled || notifiedFitKeyRef.current === fitKey) return
 
-    logModelFit(
-      modelConfig.modelUrl,
-      worldBounds,
-      {
-        scale: appliedTransform.scale,
-        position: new THREE.Vector3(...appliedTransform.position),
-        rotation: new THREE.Euler(...appliedTransform.rotation),
-      },
-      'registry',
-      {
-        registryKey: modelConfig.registryKey,
-        productSlug,
+      const root = modelRootRef.current
+      if (!root) {
+        fitAttemptsRef.current += 1
+        if (fitAttemptsRef.current < MAX_BOUNDS_FIT_ATTEMPTS) {
+          requestAnimationFrame(tryFit)
+        }
+        return
+      }
+
+      root.updateWorldMatrix(true, true)
+      const worldBounds = getSafeModelBounds(root)
+      fitAttemptsRef.current += 1
+      publishBoundsDebug(worldBounds)
+
+      if (!isBoundsReadyForFit(worldBounds)) {
+        if (fitAttemptsRef.current < MAX_BOUNDS_FIT_ATTEMPTS) {
+          requestAnimationFrame(tryFit)
+          return
+        }
+
+        logCustomizer3d('model-fit-skipped', {
+          modelUrl: modelConfig.modelUrl,
+          productSlug,
+          registryKey: modelConfig.registryKey,
+          fitKey,
+          reason: 'invalid-bounds',
+          bounds: worldBounds.size.toArray(),
+          center: worldBounds.center.toArray(),
+          radius: getBoundsRadius(worldBounds),
+          appliedTransform,
+          fitAttempts: fitAttemptsRef.current,
+        })
+        return
+      }
+
+      notifiedFitKeyRef.current = fitKey
+
+      logModelFit(
+        modelConfig.modelUrl,
+        worldBounds,
+        {
+          scale: appliedTransform.scale,
+          position: new THREE.Vector3(...appliedTransform.position),
+          rotation: new THREE.Euler(...appliedTransform.rotation),
+        },
+        'registry',
+        {
+          registryKey: modelConfig.registryKey,
+          productSlug,
+          fitKey,
+        },
+      )
+      inspectGltf(modelConfig.id, clonedScene)
+      onModelReadyRef.current?.({
+        modelUrl: modelConfig.modelUrl,
+        bounds: worldBounds,
         fitKey,
-      },
-    )
-    inspectGltf(modelConfig.id, clonedScene)
-    onModelReadyRef.current?.({
-      modelUrl: modelConfig.modelUrl,
-      bounds: worldBounds,
-      fitKey,
-      registryKey: modelConfig.registryKey,
-    })
+        registryKey: modelConfig.registryKey,
+      })
+    }
+
+    tryFit()
+
+    return () => {
+      cancelled = true
+    }
   }, [
     appliedTransform,
     clonedScene,
@@ -171,13 +273,15 @@ function GarmentModelInner({
   ])
 
   useEffect(() => {
+    if (useDebugMaterial) return
     tintGroups.body.forEach((material) => applyColorToMaterial(material, baseColor))
-  }, [tintGroups, baseColor])
+  }, [tintGroups, baseColor, useDebugMaterial])
 
   useEffect(() => {
+    if (useDebugMaterial) return
     tintGroups.detail.forEach((material) => applyColorToMaterial(material, detailColor))
     tintGroups.buttons.forEach((material) => applyColorToMaterial(material, detailColor))
-  }, [tintGroups, detailColor])
+  }, [tintGroups, detailColor, useDebugMaterial])
 
   useFrame(() => {
     const group = rotationRef.current
@@ -208,44 +312,46 @@ function GarmentModelInner({
       >
         <primitive object={clonedScene} />
 
-        {visibleDecalLayers.map((layer: Layer) => {
-          const zoneId = resolveZoneId(layer.zone)
-          const zone = CUSTOMIZER_ZONES[zoneId]
-          const mesh = findZoneMesh(clonedScene, zone.targetMeshHints)
+        {!useDebugMaterial
+          ? visibleDecalLayers.map((layer: Layer) => {
+              const zoneId = resolveZoneId(layer.zone)
+              const zone = CUSTOMIZER_ZONES[zoneId]
+              const mesh = findZoneMesh(clonedScene, zone.targetMeshHints)
 
-          if (!mesh) return null
+              if (!mesh) return null
 
-          if (layer.type === 'text') {
-            return (
-              <TextDecal
-                key={layer.id}
-                text={layer.text ?? ''}
-                fontSize={layer.fontSize ?? 18}
-                textColor={layer.textColor ?? '#ffffff'}
-                fontFamily={layer.fontFamily ?? 'sans-serif'}
-                opacity={layer.opacity}
-                zone={zone}
-                mesh={mesh}
-              />
-            )
-          }
+              if (layer.type === 'text') {
+                return (
+                  <TextDecal
+                    key={layer.id}
+                    text={layer.text ?? ''}
+                    fontSize={layer.fontSize ?? 18}
+                    textColor={layer.textColor ?? '#ffffff'}
+                    fontFamily={layer.fontFamily ?? 'sans-serif'}
+                    opacity={layer.opacity}
+                    zone={zone}
+                    mesh={mesh}
+                  />
+                )
+              }
 
-          if (layer.type === 'logo' && layer.assetUrl) {
-            return (
-              <Suspense key={layer.id} fallback={null}>
-                <LogoDecal
-                  assetUrl={layer.assetUrl}
-                  opacity={layer.opacity}
-                  rotation={layer.rotation}
-                  zone={zone}
-                  mesh={mesh}
-                />
-              </Suspense>
-            )
-          }
+              if (layer.type === 'logo' && layer.assetUrl) {
+                return (
+                  <Suspense key={layer.id} fallback={null}>
+                    <LogoDecal
+                      assetUrl={layer.assetUrl}
+                      opacity={layer.opacity}
+                      rotation={layer.rotation}
+                      zone={zone}
+                      mesh={mesh}
+                    />
+                  </Suspense>
+                )
+              }
 
-          return null
-        })}
+              return null
+            })
+          : null}
       </group>
     </group>
   )
@@ -259,7 +365,6 @@ type GarmentModelErrorBoundaryProps = {
 
 type GarmentModelErrorBoundaryState = { hasError: boolean }
 
-/** Catches GLB load/parse errors and renders the procedural fallback instead. */
 class GarmentModelErrorBoundary extends Component<
   GarmentModelErrorBoundaryProps,
   GarmentModelErrorBoundaryState
