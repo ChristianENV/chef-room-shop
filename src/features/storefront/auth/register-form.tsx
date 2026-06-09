@@ -73,10 +73,6 @@ export function RegisterForm({
       ? callbackFromQuery
       : null
   const oauthCallbackURL = safeCallbackUrl ?? routes.home
-  const googleOAuthCallbackURL = buildSocialOAuthCallbackURL({
-    callbackUrl: safeCallbackUrl,
-    source: 'storefront-register',
-  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

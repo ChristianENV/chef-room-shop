@@ -8,7 +8,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import { buildPublicR2ObjectUrl, MODEL_GLTF_CACHE_CONTROL, STATIC_CACHE_CONTROL } from './public-images.shared'
+import { buildPublicR2ObjectUrl, STATIC_CACHE_CONTROL } from './public-images.shared'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.resolve(__dirname, '../..')
@@ -29,18 +29,6 @@ const BUNDLE_FILES = [
 
 loadEnv({ path: path.join(REPO_ROOT, '.env.local') })
 loadEnv({ path: path.join(REPO_ROOT, '.env') })
-
-/** glTF must be UTF-8 JSON; Windows editors sometimes save UTF-16 with BOM. */
-function normalizeGltfToUtf8(raw: Buffer): Buffer {
-  if (raw.length >= 2 && raw[0] === 0xff && raw[1] === 0xfe) {
-    const text = raw.toString('utf16le').replace(/^\uFEFF/, '')
-    return Buffer.from(text, 'utf8')
-  }
-  if (raw.length >= 3 && raw[0] === 0xef && raw[1] === 0xbb && raw[2] === 0xbf) {
-    return Buffer.from(raw.toString('utf8').replace(/^\uFEFF/, ''), 'utf8')
-  }
-  return raw
-}
 
 function readR2Env() {
   const read = (name: string) => process.env[name]?.trim() ?? ''
@@ -84,21 +72,14 @@ async function main() {
 
   for (const file of BUNDLE_FILES) {
     const localPath = path.join(MODEL_DIR, file.fileName)
-    const raw = await fs.readFile(localPath)
-    const body =
-      file.fileName.endsWith('.gltf') ? normalizeGltfToUtf8(raw) : raw
+    const body = await fs.readFile(localPath)
     await client.send(
       new PutObjectCommand({
         Bucket: env.bucketName,
         Key: file.r2Key,
         Body: body,
-        ContentType:
-          file.fileName.endsWith('.gltf')
-            ? 'model/gltf+json; charset=utf-8'
-            : file.contentType,
-        CacheControl: file.fileName.endsWith('.gltf')
-          ? MODEL_GLTF_CACHE_CONTROL
-          : STATIC_CACHE_CONTROL,
+        ContentType: file.contentType,
+        CacheControl: STATIC_CACHE_CONTROL,
       }),
     )
     const url = buildPublicR2ObjectUrl(env.publicBaseUrl, file.r2Key)

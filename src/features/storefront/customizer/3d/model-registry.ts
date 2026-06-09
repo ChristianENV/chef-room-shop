@@ -1,5 +1,6 @@
 import {
   CHEF_JACKET_GLTF_LOCAL,
+  getCustomizerChefJacketGltfUrl,
   resolveCustomizerModelUrl,
 } from '@/src/config/public-models'
 import type { CustomizerProductData, CustomizerProductModel3d } from '../types/customizer-product.types'
@@ -82,14 +83,21 @@ export function prefersLocalChefJacketModel(productTypeSlug: string): boolean {
 }
 
 /**
- * Stable local chef-jacket URL. Remote overrides are opt-in only when the env
- * value is itself a local path (never mix local glTF with remote bin/textures).
+ * Resolves the URL for the chef-jacket glTF mock, in priority order:
+ *
+ * 1. `NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL` — exact URL (R2/CDN/local override).
+ * 2. `NEXT_PUBLIC_CUSTOMIZER_MODEL_BASE_URL` — base URL; appends chef-jacket path.
+ * 3. R2 public URL (`public/images/models/customizer/chef-jacket/chef-jacket.gltf`).
+ * 4. Default local `/public/` path.
  */
 function resolveChefJacketMockUrl(): string {
   const exact = process.env.NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL?.trim()
   if (exact && (exact.startsWith('/') || exact.startsWith('./'))) {
     return resolveCustomizerModelUrl(exact)
   }
+
+  const r2OrLocal = getCustomizerChefJacketGltfUrl()
+  if (r2OrLocal.startsWith('https://')) return r2OrLocal
 
   return CHEF_JACKET_LOCAL_PATH
 }
@@ -98,8 +106,7 @@ function resolveChefJacketMockUrl(): string {
 function buildChefJacketRegistryEntry(): CustomizerModelDefinition {
   return {
     id: 'chef-jacket-local',
-    registryKey: CHEF_JACKET_REGISTRY_KEY,
-    label: 'Filipina 3D (local)',
+    label: 'Filipina 3D (R2)',
     modelUrl: resolveChefJacketMockUrl(),
     productTypes: ['chef-jacket', 'filipina'],
     isMock: true,
