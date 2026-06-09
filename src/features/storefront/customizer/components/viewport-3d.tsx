@@ -30,6 +30,10 @@ import {
   isCustomizerForceDebugMaterialEnabled,
 } from '../3d/customizer-3d-flags'
 import { resolveModelSourceInfo } from '../3d/model-source'
+import {
+  CUSTOMIZER_3D_SCENE_BACKGROUND,
+  CUSTOMIZER_3D_VIEWPORT_WRAPPER_BACKGROUND,
+} from '../customizer-viewport-theme'
 import { toSameOriginR2Url } from '@/src/lib/assets/same-origin-r2-url'
 import {
   ViewportCaptureBridge,
@@ -139,8 +143,6 @@ const INITIAL_DEBUG_SNAPSHOT: Customizer3dDebugSnapshot = {
   lastError: null,
   fitAttempts: 0,
 }
-
-const VIEWPORT_3D_BACKGROUND = '#f3f1ec'
 
 type GarmentSceneProps = {
   onGlbActive: (active: boolean) => void
@@ -362,7 +364,7 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
       ref={viewportRootRef}
       data-testid="customizer-3d-viewport"
       className="relative h-full w-full"
-      style={{ backgroundColor: VIEWPORT_3D_BACKGROUND }}
+      style={{ background: CUSTOMIZER_3D_VIEWPORT_WRAPPER_BACKGROUND }}
     >
       <Customizer3dDebugHud
         snapshot={debugSnapshot}
@@ -410,7 +412,7 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
         gl={{ preserveDrawingBuffer: true, antialias: true }}
         resize={{ debounce: 0, scroll: false }}
       >
-        <color attach="background" args={[VIEWPORT_3D_BACKGROUND]} />
+        <color attach="background" args={[CUSTOMIZER_3D_SCENE_BACKGROUND]} />
         <ViewportCaptureBridge ref={internalCaptureRef} viewportRootRef={viewportRootRef} />
         <ambientLight intensity={1.0} />
         <hemisphereLight intensity={0.55} color="#ffffff" groundColor="#d4cfc4" />
