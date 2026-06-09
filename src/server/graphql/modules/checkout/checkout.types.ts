@@ -63,14 +63,41 @@ export type CheckoutResultGql = {
   fulfillmentStatus: string
   totalCents: number
   shippingCents: number
+  subtotalCents: number
+  customizationTotalCents: number
+  discountTotalCents: number
+  taxTotalCents: number
   currency: string
   paymentMethod: string
   createdAt: string
+  placedAt: string | null
+  maskedCustomerEmail: string
   items: CheckoutResultItemGql[]
   payments: PublicOrderPaymentGql[]
+  shipments: Array<{
+    id: string
+    carrier: string | null
+    trackingNumber: string | null
+    status: string
+    shippedAt: string | null
+    deliveredAt: string | null
+  }>
+  events: Array<{
+    id: string
+    type: string
+    message: string
+    createdAt: string
+  }>
+  paymentActions: {
+    canVerifyPayment: boolean
+    canContinuePayment: boolean
+    canRetryPayment: boolean
+    paymentRedirectUrl: string | null
+  }
   claimUrl: string | null
   accountOrderUrl: string | null
   canViewDetails: boolean
+  viewerEmailMatchesOrder: boolean
   detailUrl: string | null
   paymentReference: string | null
   paymentExpiresAt: string | null
@@ -98,6 +125,8 @@ export type PublicOrderPaymentGql = {
   status: string
   amountCents: number
   currency: string
+  paidAt: string | null
+  expiresAt: string | null
 }
 
 export type PublicOrderGql = {

@@ -17,7 +17,6 @@ export function PublicNavbarSession() {
 
   const user = session?.user
   const isLoggedIn = Boolean(user)
-  const showAdminMenu = isLoggedIn && isAdmin
 
   useEffect(() => {
     if (!session?.user?.id) return
@@ -51,7 +50,7 @@ export function PublicNavbarSession() {
     <PublicHeader
       isLoggedIn={isLoggedIn && !isPending}
       user={user}
-      isAdmin={showAdminMenu}
+      isAdmin={isAdmin}
       onSignOut={handleSignOut}
     />
   )

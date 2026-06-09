@@ -46,7 +46,7 @@ export function getPostAuthRedirectPath(input: {
   }
 
   if (source === 'storefront-register' || source === 'storefront-login') {
-    return routes.home
+    return safeFallback ?? routes.home
   }
 
   if (source === 'admin-login') {

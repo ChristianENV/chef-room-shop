@@ -2,11 +2,18 @@ import { PaymentMethod } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 
 import { CASH_PAYMENT_LOCATIONS } from '@/src/config/payment-vars'
-import { routes } from '@/src/config/routes'
+import {
+  accountOrderDetail,
+  login,
+  postCheckoutOrderDetail,
+  register,
+} from '@/src/config/routes'
 import { validateCheckoutReturnToken } from '@/src/server/checkout/checkout-return-token'
 import { buildAccountOrderUrl } from '@/src/server/email/email.links'
+import { maskCustomerEmail } from '@/src/server/orders/order-claim-token'
 
 import type { GraphQLContext } from '../../context'
+import { resolveAccountPaymentActions } from '../account/account-payment-actions'
 import {
   mapOrderItemToPublicGql,
   mapPaymentToPublicGql,
@@ -22,6 +29,8 @@ const orderInclude = {
       attempts: { orderBy: { createdAt: 'desc' as const }, take: 5 },
     },
   },
+  shipments: { orderBy: { createdAt: 'asc' as const } },
+  events: { orderBy: { createdAt: 'asc' as const } },
   checkoutReturnToken: true,
 } as const
 
@@ -29,6 +38,15 @@ function derivePaymentStatus(
   payments: Array<{ status: string }>,
 ): string {
   return payments[0]?.status ?? 'PENDING'
+}
+
+function viewerEmailMatchesOrder(
+  context: GraphQLContext,
+  orderEmail: string,
+): boolean {
+  const viewerEmail = context.currentUser?.email?.trim().toLowerCase()
+  if (!viewerEmail) return false
+  return viewerEmail === orderEmail.trim().toLowerCase()
 }
 
 /**
@@ -65,6 +83,8 @@ export async function getCheckoutResultByToken(
     Boolean(context.currentUser) && context.currentUser?.id === order.userId
 
   const canViewDetails = isAuthenticatedOwner
+  const emailMatches = viewerEmailMatchesOrder(context, order.customerEmail)
+  const purchaseCallback = postCheckoutOrderDetail(order.orderNumber, trimmed)
 
   return {
     orderNumber: order.orderNumber,
@@ -74,15 +94,49 @@ export async function getCheckoutResultByToken(
     fulfillmentStatus: order.fulfillmentStatus,
     totalCents: order.totalCents,
     shippingCents: order.shippingCents,
+    subtotalCents: order.subtotalCents,
+    customizationTotalCents: order.customizationTotalCents,
+    discountTotalCents: order.discountCents,
+    taxTotalCents: order.taxCents,
     currency: order.currency,
     paymentMethod: primaryPayment?.method ?? 'CARD',
     createdAt: order.createdAt.toISOString(),
+    placedAt: order.placedAt?.toISOString() ?? null,
+    maskedCustomerEmail: maskCustomerEmail(order.customerEmail),
     items: order.items.map(mapOrderItemToPublicGql),
-    payments: order.payments.map(mapPaymentToPublicGql),
+    payments: order.payments.map((payment) => {
+      const cashDetails = getCashPaymentDetailsFromAttempts(payment.attempts)
+      const mapped = mapPaymentToPublicGql(payment)
+      return {
+        ...mapped,
+        expiresAt: cashDetails?.expiresAt ?? mapped.expiresAt,
+      }
+    }),
+    shipments: order.shipments.map((shipment) => ({
+      id: shipment.id,
+      carrier: shipment.carrier,
+      trackingNumber: shipment.trackingNumber,
+      status: shipment.status,
+      shippedAt: shipment.shippedAt?.toISOString() ?? null,
+      deliveredAt: shipment.deliveredAt?.toISOString() ?? null,
+    })),
+    events: order.events.map((event) => ({
+      id: event.id,
+      type: event.type,
+      message: event.message ?? event.type,
+      createdAt: event.createdAt.toISOString(),
+    })),
+    paymentActions: resolveAccountPaymentActions(
+      order as Parameters<typeof resolveAccountPaymentActions>[0],
+    ),
     claimUrl: null,
     accountOrderUrl,
     canViewDetails,
-    detailUrl: canViewDetails ? accountOrderUrl : null,
+    viewerEmailMatchesOrder: emailMatches,
+    detailUrl: accountOrderDetail(order.orderNumber, {
+      from: 'checkout',
+      token: trimmed,
+    }),
     paymentReference: cashDetails?.reference ?? null,
     paymentExpiresAt: cashDetails?.expiresAt ?? null,
     cashPaymentLocations:
@@ -91,8 +145,8 @@ export async function getCheckoutResultByToken(
         : null,
     returnTokenValid: validation.valid,
     tokenExpired: validation.reason === 'EXPIRED',
-    loginUrl: routes.login,
-    registerUrl: routes.register,
+    loginUrl: login({ callbackUrl: purchaseCallback }),
+    registerUrl: register({ callbackUrl: purchaseCallback }),
   }
 }
 

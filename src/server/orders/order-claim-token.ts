@@ -5,6 +5,7 @@ import { createHash, randomBytes } from 'crypto'
 import type { Order } from '@prisma/client'
 
 import { prisma } from '@/src/server/db/prisma'
+import { maskEmail } from '@/src/lib/email/mask-email'
 
 const DEFAULT_EXPIRES_IN_DAYS = 14
 
@@ -91,11 +92,5 @@ export async function validateOrderClaimToken(token: string): Promise<{
  * Masks an email for safe display on the claim preview screen.
  */
 export function maskCustomerEmail(email: string): string {
-  const normalized = email.trim().toLowerCase()
-  const at = normalized.indexOf('@')
-  if (at <= 0) return '***'
-  const local = normalized.slice(0, at)
-  const domain = normalized.slice(at + 1)
-  const visible = local.slice(0, Math.min(2, local.length))
-  return `${visible}***@${domain}`
+  return maskEmail(email)
 }

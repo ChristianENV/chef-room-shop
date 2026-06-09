@@ -74,4 +74,4 @@ Do not auto-assign `Order.userId` in V1.
 - Merge hook after OAuth callback (account page or Better Auth hook)
 - E2E tests for merge and conflict paths
 
-See also: [auth.md](./auth.md).
+See also: [auth.md](./auth.md), [order-claim-transfer.md](./order-claim-transfer.md).

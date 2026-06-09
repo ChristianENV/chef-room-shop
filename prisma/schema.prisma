@@ -146,6 +146,13 @@ enum EmailProvider {
   OTHER
 }
 
+enum OrderClaimTransferRequestStatus {
+  PENDING
+  APPROVED
+  EXPIRED
+  CANCELLED
+}
+
 enum AuditAction {
   CREATE
   UPDATE
@@ -204,6 +211,7 @@ model User {
   auditLogs           AuditLog[]
   mergedGuestSessions GuestSession[] @relation("GuestSessionMergedToUser")
   shippingQuotes      ShippingQuote[]
+  orderClaimTransferRequests OrderClaimTransferRequest[]
 
   @@index([status])
   @@index([deletedAt])
@@ -739,6 +747,7 @@ model Order {
   claimTokens      OrderClaimToken[]
   checkoutReturnToken CheckoutReturnToken?
   shippingQuotes   ShippingQuote[]
+  claimTransferRequests OrderClaimTransferRequest[]
 
   @@index([userId])
   @@index([guestSessionId])
@@ -780,6 +789,29 @@ model CheckoutReturnToken {
 
   @@index([expiresAt])
   @@map("checkout_return_tokens")
+}
+
+model OrderClaimTransferRequest {
+  id                String                          @id @default(uuid()) @db.Uuid
+  orderId           String                          @db.Uuid
+  requestedByUserId String                          @db.Uuid
+  requestedByEmail  String
+  orderEmail        String
+  tokenHash         String                          @unique
+  expiresAt         DateTime
+  consumedAt        DateTime?
+  status            OrderClaimTransferRequestStatus @default(PENDING)
+  createdAt         DateTime                        @default(now())
+  updatedAt         DateTime                        @updatedAt
+
+  order           Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  requestedByUser User  @relation(fields: [requestedByUserId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([requestedByUserId])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("order_claim_transfer_requests")
 }
 
 model OrderItem {

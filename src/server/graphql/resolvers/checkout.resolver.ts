@@ -5,6 +5,15 @@ import {
 } from '../modules/checkout/complete-checkout.service'
 import { getCheckoutResultByToken } from '../modules/checkout/checkout-result.service'
 import {
+  getOrderByCheckoutToken,
+  verifyCheckoutPaymentByToken,
+} from '../modules/checkout/checkout-token-order.service'
+import { claimGuestOrderByCheckoutTokenForGraphQL } from '@/src/server/orders/claim-guest-order-by-checkout-token.service'
+import {
+  approveOrderClaimTransfer,
+  requestOrderClaimTransferForGraphQL,
+} from '@/src/server/orders/order-claim-transfer.service'
+import {
   createCheckoutOrder,
   getPublicOrderByNumber,
 } from '../modules/checkout/checkout.service'
@@ -27,6 +36,30 @@ type RetryCheckoutPaymentArgs = {
   input: { token: string }
 }
 
+type OrderByCheckoutTokenArgs = {
+  orderNumber: string
+  token: string
+}
+
+type VerifyCheckoutPaymentByTokenArgs = {
+  orderNumber: string
+  token: string
+}
+
+type ClaimGuestOrderByCheckoutTokenArgs = {
+  orderNumber: string
+  token: string
+}
+
+type RequestOrderClaimTransferArgs = {
+  orderNumber: string
+  checkoutToken: string
+}
+
+type ApproveOrderClaimTransferArgs = {
+  token: string
+}
+
 export const checkoutResolvers = {
   Query: {
     orderByNumber: (
@@ -40,6 +73,12 @@ export const checkoutResolvers = {
       args: CheckoutResultByTokenArgs,
       context: GraphQLContext,
     ) => getCheckoutResultByToken(context, args.token),
+
+    orderByCheckoutToken: (
+      _parent: unknown,
+      args: OrderByCheckoutTokenArgs,
+      context: GraphQLContext,
+    ) => getOrderByCheckoutToken(context, args.orderNumber, args.token),
   },
   Mutation: {
     createCheckoutOrder: (
@@ -59,5 +98,38 @@ export const checkoutResolvers = {
       args: RetryCheckoutPaymentArgs,
       context: GraphQLContext,
     ) => retryCheckoutPayment(context, args.input.token),
+
+    verifyCheckoutPaymentByToken: (
+      _parent: unknown,
+      args: VerifyCheckoutPaymentByTokenArgs,
+      context: GraphQLContext,
+    ) => verifyCheckoutPaymentByToken(context, args.orderNumber, args.token),
+
+    claimGuestOrderByCheckoutToken: (
+      _parent: unknown,
+      args: ClaimGuestOrderByCheckoutTokenArgs,
+      context: GraphQLContext,
+    ) =>
+      claimGuestOrderByCheckoutTokenForGraphQL(
+        context,
+        args.orderNumber,
+        args.token,
+      ),
+
+    requestOrderClaimTransfer: (
+      _parent: unknown,
+      args: RequestOrderClaimTransferArgs,
+      context: GraphQLContext,
+    ) =>
+      requestOrderClaimTransferForGraphQL(
+        context,
+        args.orderNumber,
+        args.checkoutToken,
+      ),
+
+    approveOrderClaimTransfer: (
+      _parent: unknown,
+      args: ApproveOrderClaimTransferArgs,
+    ) => approveOrderClaimTransfer(args.token),
   },
 }

@@ -59,6 +59,8 @@ export function mapPaymentToPublicGql(payment: Payment): PublicOrderPaymentGql {
     status: payment.status,
     amountCents: payment.amountCents,
     currency: payment.currency,
+    paidAt: payment.paidAt?.toISOString() ?? null,
+    expiresAt: null,
   }
 }
 

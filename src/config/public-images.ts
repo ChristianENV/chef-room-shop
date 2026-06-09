@@ -43,3 +43,14 @@ export function isPublicImageOnR2(localPath: string): boolean {
   const key = normalizePublicAssetPath(localPath)
   return Boolean(manifestMap[key])
 }
+
+/** Builds an absolute HTTPS public URL for an R2 object key. */
+export function buildPublicR2ObjectUrl(publicBaseUrl: string, r2Key: string): string {
+  const base = publicBaseUrl.replace(/\/+$/, '')
+  const key = r2Key.replace(/^\/+/, '')
+  const url = new URL(key, `${base}/`)
+  if (url.protocol !== 'https:') {
+    throw new Error(`Public URL must use https: ${url.toString()}`)
+  }
+  return url.toString()
+}

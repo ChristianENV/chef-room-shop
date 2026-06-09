@@ -10,8 +10,13 @@ export const metadata: Metadata = {
     'Crea tu cuenta en Chef Room para diseñar uniformes de chef personalizados y acceder a ofertas exclusivas.',
 }
 
-export default async function RegisterPage() {
-  await redirectIfAuthenticated('storefront-register')
+type RegisterPageProps = {
+  searchParams: Promise<{ callbackUrl?: string }>
+}
+
+export default async function RegisterPage({ searchParams }: RegisterPageProps) {
+  const params = await searchParams
+  await redirectIfAuthenticated('storefront-register', params.callbackUrl)
 
   const googleEnabled = isGoogleAuthConfigured()
 

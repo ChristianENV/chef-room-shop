@@ -59,3 +59,40 @@ export const RETRY_CHECKOUT_PAYMENT_MUTATION = /* GraphQL */ `
     }
   }
 `
+
+export const VERIFY_CHECKOUT_PAYMENT_BY_TOKEN_MUTATION = /* GraphQL */ `
+  mutation VerifyCheckoutPaymentByToken($orderNumber: String!, $token: String!) {
+    verifyCheckoutPaymentByToken(orderNumber: $orderNumber, token: $token) {
+      orderNumber
+      orderStatus
+      paymentStatus
+      paymentMethod
+      canRetryPayment
+      canContinuePayment
+      paymentRedirectUrl
+      checkedAt
+      message
+    }
+  }
+`
+
+export const CLAIM_GUEST_ORDER_BY_CHECKOUT_TOKEN_MUTATION = /* GraphQL */ `
+  mutation ClaimGuestOrderByCheckoutToken($orderNumber: String!, $token: String!) {
+    claimGuestOrderByCheckoutToken(orderNumber: $orderNumber, token: $token) {
+      success
+      status
+      orderNumber
+      message
+    }
+  }
+`
+
+export const REQUEST_ORDER_CLAIM_TRANSFER_MUTATION = /* GraphQL */ `
+  mutation RequestOrderClaimTransfer($orderNumber: String!, $checkoutToken: String!) {
+    requestOrderClaimTransfer(orderNumber: $orderNumber, checkoutToken: $checkoutToken) {
+      success
+      status
+      message
+    }
+  }
+`

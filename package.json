@@ -10,15 +10,19 @@
     "lint": "node scripts/run-eslint.mjs",
     "typecheck": "tsc --noEmit",
     "audit:copy": "tsx scripts/audit-spanish-copy.ts",
-    "db:validate": "prisma validate",
-    "db:generate": "prisma generate",
+    "db:validate": "node scripts/run-prisma.mjs validate",
+    "db:generate": "node scripts/run-prisma.mjs generate",
+    "db:migrate": "node scripts/run-prisma.mjs migrate deploy",
+    "db:migrate:dev": "node scripts/run-prisma.mjs migrate dev",
     "db:seed": "prisma db seed",
     "db:seed:demo": "tsx prisma/seed-demo.ts",
     "db:seed:all": "tsx prisma/seed.ts && tsx prisma/seed-demo.ts",
     "test:e2e:smoke": "playwright test",
+    "test:unit": "tsx --test tests/unit/**/*.test.ts",
     "glb:optimize": "tsx scripts/optimize-glb.ts",
     "r2:public-images:dry-run": "tsx scripts/r2/upload-public-images.ts --dry-run",
-    "r2:public-images:upload": "tsx scripts/r2/upload-public-images.ts --upload --force"
+    "r2:public-images:upload": "tsx scripts/r2/upload-public-images.ts --upload --force",
+    "r2:customizer-model:upload": "tsx scripts/r2/upload-customizer-model-bundle.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
-import { routes } from '@/src/config/routes'
+import { register as registerRoute, routes } from '@/src/config/routes'
 import { authClient, signIn, signOut } from '@/src/lib/auth/auth-client'
 import { getAuthErrorMessage } from '@/src/lib/auth/auth-errors'
 import { loginSchema } from '@/src/lib/auth/auth-schemas'
@@ -54,9 +54,13 @@ export function LoginForm({
   const [forgotMessage, setForgotMessage] = useState<string | null>(null)
 
   const isAdminVariant = variant === 'admin'
+  const safeCallbackUrl =
+    callbackFromQuery?.startsWith('/') && !callbackFromQuery.startsWith('//')
+      ? callbackFromQuery
+      : null
   const oauthCallbackURL = isAdminVariant
     ? routes.adminDashboard
-    : routes.home
+    : safeCallbackUrl ?? routes.home
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -108,7 +112,7 @@ export function LoginForm({
     })
 
     setIsLoading(false)
-    router.push(redirectTo)
+    router.replace(redirectTo)
     router.refresh()
   }
 
@@ -323,7 +327,11 @@ export function LoginForm({
         <p className="text-center font-serif text-sm text-muted-foreground">
           ¿No tienes cuenta?{' '}
           <Link
-            href={routes.register}
+            href={
+              safeCallbackUrl
+                ? registerRoute({ callbackUrl: safeCallbackUrl })
+                : routes.register
+            }
             className="font-sans font-medium text-accent hover:underline"
           >
             Crear cuenta

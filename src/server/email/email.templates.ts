@@ -189,6 +189,21 @@ export function renderTransactionalTemplate(
       `)
       return { subject, html, text }
     }
+
+    case 'order_claim_transfer_authorization': {
+      const authorizeUrl = payload.claimUrl ?? payload.links?.claimUrl ?? '#'
+      const requestedByEmail = payload.requestedByEmail ?? 'otra cuenta'
+      const subject = `Autorización para vincular el pedido ${orderNumber}`
+      const text = `Hola,\n\nRecibimos una solicitud para guardar el pedido ${orderNumber} en la cuenta ${requestedByEmail}.\n\nSi reconoces esta solicitud, autoriza la vinculación del pedido aquí: ${authorizeUrl}\n\nSi no la reconoces, puedes ignorar este correo.\n\nChef Room`
+      const html = layoutHtml(`
+        <p>Hola,</p>
+        <p>Recibimos una solicitud para guardar el pedido <strong>${orderNumber}</strong> en la cuenta <strong>${requestedByEmail}</strong>.</p>
+        <p>Si reconoces esta solicitud, autoriza la vinculación del pedido. Si no la reconoces, puedes ignorar este correo.</p>
+        ${cta(authorizeUrl, 'Autorizar vinculación del pedido')}
+        <p style="font-size:14px;color:#6b7280;">Este enlace expira en 48 horas por seguridad.</p>
+      `)
+      return { subject, html, text }
+    }
   }
 }
 

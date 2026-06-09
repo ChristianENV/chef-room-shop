@@ -1004,6 +1004,66 @@ export const checkoutTypeDefs = /* GraphQL */ `
     returnToken: String!
   }
 
+  type CheckoutOrderDetailAccess {
+    order: AccountOrder!
+    returnTokenValid: Boolean!
+    tokenExpired: Boolean!
+    viewerEmailMatchesOrder: Boolean!
+    maskedCustomerEmail: String!
+  }
+
+  enum ClaimGuestOrderStatus {
+    CLAIMED
+    ALREADY_CLAIMED_BY_USER
+    EMAIL_VERIFICATION_REQUIRED
+    EMAIL_MISMATCH
+    TOKEN_INVALID
+    TOKEN_EXPIRED
+    ORDER_ALREADY_CLAIMED
+    UNAUTHENTICATED
+  }
+
+  type ClaimGuestOrderPayload {
+    success: Boolean!
+    status: ClaimGuestOrderStatus!
+    orderNumber: String
+    message: String
+  }
+
+  enum OrderClaimTransferRequestStatusPayload {
+    SENT
+    ALREADY_PENDING
+    ALREADY_CLAIMED_BY_USER
+    ORDER_ALREADY_CLAIMED
+    TOKEN_INVALID
+    TOKEN_EXPIRED
+    EMAIL_MATCHES_USE_DIRECT_CLAIM
+    ERROR
+  }
+
+  type OrderClaimTransferPayload {
+    success: Boolean!
+    status: OrderClaimTransferRequestStatusPayload!
+    message: String
+  }
+
+  enum ApproveOrderClaimTransferStatusPayload {
+    APPROVED
+    TOKEN_INVALID
+    TOKEN_EXPIRED
+    ALREADY_USED
+    ORDER_ALREADY_CLAIMED
+    CANCELLED
+    ERROR
+  }
+
+  type ApproveOrderClaimTransferPayload {
+    success: Boolean!
+    status: ApproveOrderClaimTransferStatusPayload!
+    orderNumber: String
+    message: String
+  }
+
   type CheckoutResult {
     orderNumber: String!
     orderId: ID!
@@ -1012,14 +1072,24 @@ export const checkoutTypeDefs = /* GraphQL */ `
     fulfillmentStatus: String!
     totalCents: Int!
     shippingCents: Int!
+    subtotalCents: Int!
+    customizationTotalCents: Int
+    discountTotalCents: Int
+    taxTotalCents: Int
     currency: String!
     paymentMethod: String!
     createdAt: String!
+    placedAt: String
+    maskedCustomerEmail: String!
     items: [PublicOrderItem!]!
     payments: [PublicOrderPayment!]!
+    shipments: [AccountShipment!]!
+    events: [AccountOrderEvent!]!
+    paymentActions: AccountOrderPaymentActions!
     claimUrl: String
     accountOrderUrl: String
     canViewDetails: Boolean!
+    viewerEmailMatchesOrder: Boolean!
     detailUrl: String
     paymentReference: String
     paymentExpiresAt: String
@@ -1051,6 +1121,8 @@ export const checkoutTypeDefs = /* GraphQL */ `
     status: String!
     amountCents: Int!
     currency: String!
+    paidAt: String
+    expiresAt: String
   }
 
   type PublicOrder {
@@ -1362,6 +1434,7 @@ export const typeDefs = /* GraphQL */ `
     shippingQuoteById(id: ID!): ShippingQuote
     orderByNumber(orderNumber: String!, email: String!): PublicOrder
     checkoutResultByToken(token: String!): CheckoutResult
+    orderByCheckoutToken(orderNumber: String!, token: String!): CheckoutOrderDetailAccess
     orderClaimPreview(token: String!): OrderClaimPreview
     designById(designId: ID!): AccountDesign
   }
@@ -1384,6 +1457,10 @@ export const typeDefs = /* GraphQL */ `
     createCheckoutOrder(input: CreateCheckoutOrderInput!): CheckoutOrderPayload!
     completeCheckout(input: CreateCheckoutOrderInput!): CompleteCheckoutPayload!
     retryCheckoutPayment(input: RetryCheckoutPaymentInput!): CompleteCheckoutPayload!
+    verifyCheckoutPaymentByToken(orderNumber: String!, token: String!): AccountPaymentStatusPayload!
+    claimGuestOrderByCheckoutToken(orderNumber: String!, token: String!): ClaimGuestOrderPayload!
+    requestOrderClaimTransfer(orderNumber: String!, checkoutToken: String!): OrderClaimTransferPayload!
+    approveOrderClaimTransfer(token: String!): ApproveOrderClaimTransferPayload!
     createConektaCheckout(input: CreateConektaCheckoutInput!): ConektaCheckoutPayload!
     claimOrder(token: String!): OrderClaimPayload!
     updateAdminOrderStatus(input: UpdateAdminOrderStatusInput!): AdminOrder!

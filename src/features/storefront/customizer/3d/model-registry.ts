@@ -1,3 +1,7 @@
+import {
+  getCustomizerChefJacketGltfUrl,
+  resolveCustomizerModelUrl,
+} from '@/src/config/public-models'
 import type { CustomizerProductData, CustomizerProductModel3d } from '../types/customizer-product.types'
 
 /**
@@ -64,11 +68,12 @@ const CHEF_JACKET_MESH_HINTS: ModelNameHints = {
 }
 
 /**
- * Resolves the URL for the local chef-jacket glTF mock, in priority order:
+ * Resolves the URL for the chef-jacket glTF mock, in priority order:
  *
  * 1. `NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL` — exact URL (R2/CDN/local override).
  * 2. `NEXT_PUBLIC_CUSTOMIZER_MODEL_BASE_URL` — base URL; appends chef-jacket path.
- * 3. Default local `/public/` path.
+ * 3. R2 public URL (`public/images/models/customizer/chef-jacket/chef-jacket.gltf`).
+ * 4. Default local `/public/` path.
  */
 function resolveChefJacketMockUrl(): string {
   const exact = process.env.NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL
@@ -77,13 +82,17 @@ function resolveChefJacketMockUrl(): string {
   const base = process.env.NEXT_PUBLIC_CUSTOMIZER_MODEL_BASE_URL
   if (base) return `${base.replace(/\/$/, '')}/chef-jacket/chef-jacket.gltf`
 
+  const r2OrLocal = getCustomizerChefJacketGltfUrl()
+  if (r2OrLocal.startsWith('https://')) return r2OrLocal
+
   return CHEF_JACKET_LOCAL_PATH
 }
 
-export const CUSTOMIZER_MODEL_REGISTRY: Record<string, CustomizerModelDefinition> = {
-  chefJacketLocal: {
+/** Chef-jacket mock entry — `modelUrl` resolved lazily (not at module init). */
+function buildChefJacketRegistryEntry(): CustomizerModelDefinition {
+  return {
     id: 'chef-jacket-local',
-    label: 'Filipina 3D (local)',
+    label: 'Filipina 3D (R2)',
     modelUrl: resolveChefJacketMockUrl(),
     productTypes: ['chef-jacket', 'filipina'],
     isMock: true,
@@ -94,6 +103,12 @@ export const CUSTOMIZER_MODEL_REGISTRY: Record<string, CustomizerModelDefinition
       frontLeftChest: null,
       backCenter: null,
     },
+  }
+}
+
+export const CUSTOMIZER_MODEL_REGISTRY: Record<string, CustomizerModelDefinition> = {
+  get chefJacketLocal() {
+    return buildChefJacketRegistryEntry()
   },
 }
 
@@ -151,7 +166,7 @@ export function getCustomizerModelForProduct(
     return {
       id: m3d.id,
       label: `Modelo 3D: ${m3d.fileName}`,
-      modelUrl: m3d.url,
+      modelUrl: resolveCustomizerModelUrl(m3d.url),
       productTypes: [productType],
       isMock: false,
       ...baseTransform,
@@ -180,5 +195,10 @@ export function getCustomizerModelForProduct(
   const match = Object.values(CUSTOMIZER_MODEL_REGISTRY).find((model) =>
     model.productTypes.includes(productType),
   )
-  return match ?? null
+  if (!match) return null
+
+  return {
+    ...match,
+    modelUrl: resolveCustomizerModelUrl(match.modelUrl),
+  }
 }

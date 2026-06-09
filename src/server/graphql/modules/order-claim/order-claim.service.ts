@@ -1,4 +1,3 @@
-import { OrderEventType } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 
 import { routes } from '@/src/config/routes'
@@ -6,6 +5,7 @@ import type { GraphQLContext } from '../../context'
 import {
   validateOrderClaimToken,
 } from '@/src/server/orders/order-claim-token'
+import { linkGuestOrderToUser } from '@/src/server/orders/link-guest-order-to-user'
 
 import { mapOrderClaimPreview } from './order-claim.mappers'
 import type { OrderClaimPayloadGql, OrderClaimPreviewGql } from './order-claim.types'
@@ -135,46 +135,15 @@ export async function claimOrder(
   const redirectTo = routes.accountOrderDetail(order.orderNumber)
 
   await context.prisma.$transaction(async (tx) => {
-    await tx.order.update({
-      where: { id: order.id },
-      data: { userId },
+    await linkGuestOrderToUser(tx, {
+      order,
+      userId,
+      eventMessage: 'Orden vinculada a cuenta de cliente.',
     })
-
-    const addressIds = [order.shippingAddressId, order.billingAddressId].filter(
-      (id): id is string => Boolean(id),
-    )
-
-    if (addressIds.length > 0) {
-      await tx.address.updateMany({
-        where: {
-          id: { in: addressIds },
-          userId: null,
-        },
-        data: { userId },
-      })
-    }
-
-    if (order.guestSessionId) {
-      await tx.guestSession.updateMany({
-        where: {
-          id: order.guestSessionId,
-          mergedToUserId: null,
-        },
-        data: { mergedToUserId: userId },
-      })
-    }
 
     await tx.orderClaimToken.update({
       where: { id: validation.claimTokenId },
       data: { usedAt: new Date() },
-    })
-
-    await tx.orderEvent.create({
-      data: {
-        orderId: order.id,
-        type: OrderEventType.STATUS_CHANGED,
-        message: 'Orden vinculada a cuenta de cliente.',
-      },
     })
   })
 

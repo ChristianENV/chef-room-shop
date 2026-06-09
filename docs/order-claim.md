@@ -1,5 +1,7 @@
 # Order Claim + Auth Tracking (v1)
 
+> **Transferencia por mismatch de correos (post-checkout):** ver [`order-claim-transfer.md`](./order-claim-transfer.md).
+
 ## Por qué forzamos cuenta para tracking
 
 - El checkout invitado sigue sin fricción (sin registro obligatorio).
