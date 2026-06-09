@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
-import {
-  appendCustomizerModelCacheBust,
-  getCustomizerChefJacketGltfUrl,
-} from '@/src/config/public-models'
+import { appendCustomizerModelCacheBust } from '@/src/config/public-models'
 import { toSameOriginR2Url } from '@/src/lib/assets/same-origin-r2-url'
 
 describe('toSameOriginR2Url', () => {
@@ -29,12 +26,3 @@ describe('appendCustomizerModelCacheBust', () => {
   })
 })
 
-describe('getCustomizerChefJacketGltfUrl', () => {
-  it('returns the local chef-jacket glTF path', () => {
-    process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL =
-      'https://pub-4aca0106e69a495ba9342302f65b5413.r2.dev'
-
-    const url = getCustomizerChefJacketGltfUrl()
-    assert.equal(url, '/models/customizer/chef-jacket/chef-jacket.gltf')
-  })
-})

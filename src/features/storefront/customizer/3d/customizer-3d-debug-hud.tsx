@@ -5,9 +5,10 @@ import { X } from 'lucide-react'
 export type Customizer3dDebugSnapshot = {
   phase: 'idle' | 'loading' | 'loaded' | 'bounds-ready' | 'camera-fit' | 'error' | 'procedural'
   modelUrl: string | null
-  modelSource: 'local' | 'remote' | null
+  modelSource: 'r2' | 'local-fallback' | 'env-fallback' | 'missing' | null
   productSlug: string | null
   registryKey: string | null
+  hasProductModel3d: boolean | null
   usingLocalFallback: boolean | null
   meshCount: number | null
   visibleMeshCount: number | null
@@ -104,12 +105,14 @@ export function Customizer3dDebugHud({
       </p>
       <p>
         <span className="text-white/50">modelSource</span> {snapshot.modelSource ?? '—'}{' '}
-        <span className="text-white/50">localFallback</span>{' '}
-        {snapshot.usingLocalFallback === null ? '—' : String(snapshot.usingLocalFallback)}
+        <span className="text-white/50">hasProductModel3d</span>{' '}
+        {snapshot.hasProductModel3d === null ? '—' : String(snapshot.hasProductModel3d)}
       </p>
       <p>
         <span className="text-white/50">product</span> {snapshot.productSlug ?? '—'}{' '}
-        <span className="text-white/50">registry</span> {snapshot.registryKey ?? '—'}
+        <span className="text-white/50">registry</span> {snapshot.registryKey ?? '—'}{' '}
+        <span className="text-white/50">localFallback</span>{' '}
+        {snapshot.usingLocalFallback === null ? '—' : String(snapshot.usingLocalFallback)}
       </p>
       <p>
         <span className="text-white/50">meshes</span> {snapshot.meshCount ?? '—'} / visible{' '}

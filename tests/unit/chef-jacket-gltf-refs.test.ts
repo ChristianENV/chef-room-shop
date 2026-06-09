@@ -3,38 +3,30 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { describe, it } from 'node:test'
 
-const MODEL_DIR = path.join(
+const LOCAL_GLTF = path.join(
   process.cwd(),
-  'public/models/customizer/chef-jacket',
+  'public/models/customizer/chef-jacket/chef-jacket.gltf',
 )
 
 describe('chef-jacket glTF bundle references', () => {
-  it('references exist on disk with exact filenames', () => {
-    const gltfPath = path.join(MODEL_DIR, 'chef-jacket.gltf')
-    const raw = fs.readFileSync(gltfPath, 'utf8')
-    const gltf = JSON.parse(raw) as {
+  it('references exist on disk when local dev bundle is present', () => {
+    if (!fs.existsSync(LOCAL_GLTF)) {
+      return
+    }
+
+    const gltf = JSON.parse(fs.readFileSync(LOCAL_GLTF, 'utf8')) as {
       buffers?: Array<{ uri?: string }>
       images?: Array<{ uri?: string }>
     }
 
     const uris = [
-      ...(gltf.buffers ?? []).map((buffer) => buffer.uri).filter(Boolean),
-      ...(gltf.images ?? []).map((image) => image.uri).filter(Boolean),
-    ] as string[]
-
-    assert.deepEqual(
-      uris.sort(),
-      [
-        'chef-jacket-diffuse.png',
-        'chef-jacket-metallicroughness.png',
-        'chef-jacket-normal.png',
-        'chef-jacket.bin',
-      ].sort(),
-    )
+      ...(gltf.buffers ?? []).map((b) => b.uri),
+      ...(gltf.images ?? []).map((i) => i.uri),
+    ].filter((uri): uri is string => Boolean(uri))
 
     for (const uri of uris) {
-      const filePath = path.join(MODEL_DIR, uri)
-      assert.ok(fs.existsSync(filePath), `missing referenced file: ${uri}`)
+      const resolved = path.join(path.dirname(LOCAL_GLTF), uri)
+      assert.ok(fs.existsSync(resolved), `missing referenced file: ${uri}`)
     }
   })
 })

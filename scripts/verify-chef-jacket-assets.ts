@@ -15,8 +15,13 @@ function parseBaseUrl(argv: string[]): string {
   return DEFAULT_BASE.replace(/\/$/, '')
 }
 
+function resolveAssetUrl(baseUrl: string, path: string): string {
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  return `${baseUrl}${path}`
+}
+
 async function checkAsset(baseUrl: string, path: string) {
-  const url = `${baseUrl}${path}`
+  const url = resolveAssetUrl(baseUrl, path)
   const response = await fetch(url, { method: 'GET' })
   const contentType = response.headers.get('content-type') ?? '(missing)'
   return {

@@ -9,13 +9,22 @@ import {
 
 const USE_PREVIEW_MOCK = shouldMockCustomizerPreviews()
 const RESULTS_DIR = path.join(process.cwd(), 'test-results')
+const LOCAL_GLTF = path.join(
+  process.cwd(),
+  'public/models/customizer/chef-jacket/chef-jacket.gltf',
+)
+const SMOKE_MODEL_CONFIGURED =
+  Boolean(process.env.NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL?.trim()) ||
+  Boolean(process.env.NEXT_PUBLIC_CUSTOMIZER_SMOKE_MODEL_URL?.trim()) ||
+  fs.existsSync(LOCAL_GLTF)
 
 test.describe('chef-jacket 3D diagnostics', () => {
   test.beforeAll(() => {
     fs.mkdirSync(RESULTS_DIR, { recursive: true })
   })
 
-  test('smoke page loads local chef-jacket model', async ({ page }) => {
+  test('smoke page loads chef-jacket model', async ({ page }) => {
+    test.skip(!SMOKE_MODEL_CONFIGURED, 'Configure NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL or local glTF')
     const consoleErrors: string[] = []
     const failedRequests: string[] = []
 
@@ -24,7 +33,7 @@ test.describe('chef-jacket 3D diagnostics', () => {
     })
     page.on('requestfailed', (request) => {
       const url = request.url()
-      if (/\.(gltf|bin|png|webp|jpg)(\?|$)/i.test(url)) {
+      if (/\.(glb|gltf|bin|png|webp|jpg)(\?|$)/i.test(url)) {
         failedRequests.push(url)
       }
     })
@@ -65,6 +74,8 @@ test.describe('chef-jacket 3D diagnostics', () => {
   })
 
   test('smoke page shows meshes with material debug enabled', async ({ page }) => {
+    test.skip(!SMOKE_MODEL_CONFIGURED, 'Configure NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL or local glTF')
+
     await page.goto('/dev/chef-jacket-3d-smoke')
     await expect(page.getByTestId('chef-jacket-smoke-loaded')).toBeVisible({
       timeout: 30_000,
@@ -84,7 +95,7 @@ test.describe('chef-jacket 3D diagnostics', () => {
     expect(debug.debugMaterial).toBe(true)
   })
 
-  test('customize 3D viewport screenshots and local model HUD', async ({ page }) => {
+  test('customize 3D viewport screenshots and model HUD', async ({ page }) => {
     if (USE_PREVIEW_MOCK) {
       await mockCustomizerPreviewFlow(page)
     }
@@ -92,7 +103,7 @@ test.describe('chef-jacket 3D diagnostics', () => {
     const failedRequests: string[] = []
     page.on('requestfailed', (request) => {
       const url = request.url()
-      if (/\.(gltf|bin|png|webp|jpg)(\?|$)/i.test(url)) {
+      if (/\.(glb|gltf|bin|png|webp|jpg)(\?|$)/i.test(url)) {
         failedRequests.push(url)
       }
     })
@@ -103,8 +114,8 @@ test.describe('chef-jacket 3D diagnostics', () => {
 
     const hud = page.getByTestId('customizer-3d-debug-hud')
     if (await hud.isVisible()) {
-      await expect(hud).toContainText('/models/customizer/chef-jacket/chef-jacket.gltf')
-      await expect(hud).toContainText('local')
+      await expect(hud).toContainText(/r2|local-fallback|env-fallback/)
+      await expect(hud).toContainText(/modelUrl/)
     }
 
     await page.waitForTimeout(2_000)

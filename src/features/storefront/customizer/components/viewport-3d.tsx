@@ -123,6 +123,7 @@ const INITIAL_DEBUG_SNAPSHOT: Customizer3dDebugSnapshot = {
   modelSource: null,
   productSlug: null,
   registryKey: null,
+  hasProductModel3d: null,
   usingLocalFallback: null,
   meshCount: null,
   visibleMeshCount: null,
@@ -167,12 +168,17 @@ function GarmentScene({
       onDebugUpdate({ phase: 'procedural', modelUrl: null })
       return
     }
-    const source = resolveModelSourceInfo(modelConfig.modelUrl)
+    const source = resolveModelSourceInfo({
+      modelUrl: modelConfig.modelUrl,
+      resolutionKind: modelConfig.resolutionKind,
+      hasProductModel3d: Boolean(product?.model3d?.url?.trim()),
+    })
     onDebugUpdate({
       phase: 'loading',
       modelUrl: source.modelUrl,
       modelSource: source.modelSource,
       usingLocalFallback: source.usingLocalFallback,
+      hasProductModel3d: source.hasProductModel3d,
       productSlug: product?.slug ?? product?.productTypeSlug ?? null,
       registryKey: modelConfig.registryKey,
       forceDebugMaterial,
@@ -183,7 +189,14 @@ function GarmentScene({
       },
       lastError: null,
     })
-  }, [forceDebugMaterial, modelConfig, onDebugUpdate, product?.productTypeSlug, product?.slug])
+  }, [
+    forceDebugMaterial,
+    modelConfig,
+    onDebugUpdate,
+    product?.model3d?.url,
+    product?.productTypeSlug,
+    product?.slug,
+  ])
 
   const handleModelLoaded = useCallback(() => {
     onGlbActive(true)

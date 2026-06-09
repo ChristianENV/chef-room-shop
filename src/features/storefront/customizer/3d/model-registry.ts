@@ -26,12 +26,16 @@ export const CUSTOMIZER_TRANSFORM_VERSION = '1'
 
 export const CHEF_JACKET_REGISTRY_KEY = 'chef-jacket'
 
+export type CustomizerModelResolutionKind = 'r2' | 'local-fallback' | 'env-fallback'
+
 export type CustomizerModelDefinition = {
   id: string
   /** Stable key for transform + fit — independent of R2/local URL. */
   registryKey: string
   label: string
   modelUrl: string
+  /** How the model URL was resolved (for debug HUD). */
+  resolutionKind: CustomizerModelResolutionKind
   /** Product type slugs this model can stand in for. */
   productTypes: string[]
   isMock: boolean
@@ -77,38 +81,36 @@ const CHEF_JACKET_MESH_HINTS: ModelNameHints = {
   body: ['cloth', 'fabric', 'jacket', 'chef'],
 }
 
-/** Filipina / chef-jacket use the local glTF bundle (gltf + bin + textures same origin). */
 export function prefersLocalChefJacketModel(productTypeSlug: string): boolean {
   return LOCAL_CHEF_JACKET_PRODUCT_TYPES.has(productTypeSlug)
 }
 
 /**
- * Resolves the URL for the chef-jacket glTF mock, in priority order:
+ * Resolves the URL for the chef-jacket env mock, in priority order:
  *
- * 1. `NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL` — exact URL (R2/CDN/local override).
+ * 1. `NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL` — exact URL (R2/CDN override).
  * 2. `NEXT_PUBLIC_CUSTOMIZER_MODEL_BASE_URL` — base URL; appends chef-jacket path.
- * 3. R2 public URL (`public/images/models/customizer/chef-jacket/chef-jacket.gltf`).
- * 4. Default local `/public/` path.
+ * 3. Legacy R2 glTF path or local dev path.
  */
 function resolveChefJacketMockUrl(): string {
   const exact = process.env.NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL?.trim()
-  if (exact && (exact.startsWith('/') || exact.startsWith('./'))) {
+  if (exact) {
     return resolveCustomizerModelUrl(exact)
   }
 
-  const r2OrLocal = getCustomizerChefJacketGltfUrl()
-  if (r2OrLocal.startsWith('https://')) return r2OrLocal
-
-  return CHEF_JACKET_LOCAL_PATH
+  return getCustomizerChefJacketGltfUrl()
 }
 
 /** Chef-jacket mock entry — `modelUrl` resolved lazily (not at module init). */
-function buildChefJacketRegistryEntry(): CustomizerModelDefinition {
+function buildChefJacketRegistryEntry(
+  resolutionKind: CustomizerModelResolutionKind = 'env-fallback',
+): CustomizerModelDefinition {
   return {
-    id: 'chef-jacket-local',
+    id: 'chef-jacket-mock',
     registryKey: CHEF_JACKET_REGISTRY_KEY,
-    label: 'Filipina 3D (local)',
+    label: 'Filipina 3D (mock)',
     modelUrl: resolveChefJacketMockUrl(),
+    resolutionKind,
     productTypes: ['chef-jacket', 'filipina'],
     isMock: true,
     ...CHEF_JACKET_TRANSFORM,
@@ -173,15 +175,54 @@ type ProductLike = Pick<CustomizerProductData, 'productTypeSlug'> & {
   model3d?: CustomizerProductModel3d | null
 } | null | undefined
 
+function buildRemoteModelDefinition(
+  product: NonNullable<ProductLike>,
+  m3d: CustomizerProductModel3d,
+): CustomizerModelDefinition {
+  const productType = product.productTypeSlug
+  const registryMatch = Object.values(CUSTOMIZER_MODEL_REGISTRY).find((m) =>
+    m.productTypes.includes(productType),
+  )
+  const baseMaterialHints = registryMatch?.materialHints ?? CHEF_JACKET_MATERIAL_HINTS
+  const baseMeshHints = registryMatch?.meshHints ?? CHEF_JACKET_MESH_HINTS
+  const baseTransform = getRegistryTransformForProductType(productType)
+  const registryKey = getRegistryKeyForProductType(productType)
+
+  return {
+    id: m3d.id,
+    registryKey,
+    label: `Modelo 3D: ${m3d.fileName}`,
+    modelUrl: resolveCustomizerModelUrl(m3d.url),
+    resolutionKind: 'r2',
+    productTypes: [productType],
+    isMock: false,
+    ...baseTransform,
+    materialHints:
+      m3d.materialHintsJson && typeof m3d.materialHintsJson === 'object'
+        ? (m3d.materialHintsJson as typeof baseMaterialHints)
+        : baseMaterialHints,
+    meshHints:
+      m3d.meshHintsJson && typeof m3d.meshHintsJson === 'object'
+        ? (m3d.meshHintsJson as typeof baseMeshHints)
+        : baseMeshHints,
+    anchors: {
+      frontLeftChest: null,
+      backCenter: null,
+      ...(m3d.anchorsJson && typeof m3d.anchorsJson === 'object'
+        ? (m3d.anchorsJson as { frontLeftChest?: null; backCenter?: null })
+        : {}),
+    },
+  }
+}
+
 /**
  * Resolves the 3D model definition for a product, or `null` to use the
  * procedural fallback.
  *
  * Priority order:
- * 1. `product.model3d.url` — real model from DB/R2.
- * 2. `NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL` / `NEXT_PUBLIC_CUSTOMIZER_MODEL_BASE_URL`
- *    if the mock pipeline is enabled.
- * 3. Local chef-jacket glTF (dev only, if mock enabled and no remote URL set).
+ * 1. `product.model3d.url` — real `.glb` from DB/R2.
+ * 2. Dev-only local chef-jacket glTF (if file present under `/public`).
+ * 3. `NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL` when mock pipeline is enabled.
  * 4. Returns `null` → procedural fallback.
  */
 export function getCustomizerModelForProduct(
@@ -191,54 +232,21 @@ export function getCustomizerModelForProduct(
 
   const productType = product.productTypeSlug
 
-  // Filipina / chef-jacket: always use local known-good bundle while 3D is stabilized.
-  if (prefersLocalChefJacketModel(productType)) {
+  // 1. Real product model from DB (preferred — single .glb on R2).
+  if (product.model3d?.url?.trim()) {
+    return buildRemoteModelDefinition(product, product.model3d)
+  }
+
+  // 2. Dev local fallback for filipina / chef-jacket (no remote model yet).
+  if (prefersLocalChefJacketModel(productType) && process.env.NODE_ENV === 'development') {
     return {
-      ...buildChefJacketRegistryEntry(),
-      modelUrl: CHEF_JACKET_LOCAL_PATH,
+      ...buildChefJacketRegistryEntry('local-fallback'),
+      modelUrl: resolveCustomizerModelUrl(CHEF_JACKET_LOCAL_PATH),
+      isMock: true,
     }
   }
 
-  // 1. Real product model from DB (non-filipina garments).
-  if (product.model3d?.url) {
-    const m3d = product.model3d
-    const productType = product.productTypeSlug
-
-    const registryMatch = Object.values(CUSTOMIZER_MODEL_REGISTRY).find((m) =>
-      m.productTypes.includes(productType),
-    )
-    const baseMaterialHints = registryMatch?.materialHints ?? CHEF_JACKET_MATERIAL_HINTS
-    const baseMeshHints = registryMatch?.meshHints ?? CHEF_JACKET_MESH_HINTS
-    const baseTransform = getRegistryTransformForProductType(productType)
-    const registryKey = getRegistryKeyForProductType(productType)
-
-    return {
-      id: m3d.id,
-      registryKey,
-      label: `Modelo 3D: ${m3d.fileName}`,
-      modelUrl: resolveCustomizerModelUrl(m3d.url),
-      productTypes: [productType],
-      isMock: false,
-      ...baseTransform,
-      materialHints:
-        m3d.materialHintsJson && typeof m3d.materialHintsJson === 'object'
-          ? (m3d.materialHintsJson as typeof baseMaterialHints)
-          : baseMaterialHints,
-      meshHints:
-        m3d.meshHintsJson && typeof m3d.meshHintsJson === 'object'
-          ? (m3d.meshHintsJson as typeof baseMeshHints)
-          : baseMeshHints,
-      anchors: {
-        frontLeftChest: null,
-        backCenter: null,
-        ...(m3d.anchorsJson && typeof m3d.anchorsJson === 'object'
-          ? (m3d.anchorsJson as { frontLeftChest?: null; backCenter?: null })
-          : {}),
-      },
-    }
-  }
-
-  // 2–3. Mock pipeline for other garment types.
+  // 3. Env mock URL (debug / staging without DB model).
   if (!isCustomizerMockGlbEnabled()) return null
 
   const match = Object.values(CUSTOMIZER_MODEL_REGISTRY).find((model) =>
@@ -249,5 +257,6 @@ export function getCustomizerModelForProduct(
   return {
     ...match,
     modelUrl: resolveCustomizerModelUrl(match.modelUrl),
+    resolutionKind: 'env-fallback',
   }
 }

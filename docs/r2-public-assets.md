@@ -88,23 +88,18 @@ getPublicImageUrl('/images/landing/landing-hero-customizer.png')
 
 Landing references are wired through `src/features/storefront/landing/lib/landing-media.ts`.
 
-## Customizer 3D model bundle
+## Customizer 3D models
 
-The local chef jacket GLTF references textures by relative filename:
+Product garment models are **single `.glb` files** per product on R2 (`products/{productId}/models/{modelAssetId}/model.glb`). See [product-3d-models.md](./product-3d-models.md).
 
-```txt
-chef-jacket-diffuse.png
-chef-jacket-normal.png
-chef-jacket-metallicroughness.png
-```
-
-**Do not** point the live GLTF loader at R2-only textures until the full model bundle strategy is migrated. Textures are uploaded to R2 as future-ready assets; the local `.gltf` + `.bin` + PNGs remain the runtime source of truth.
+Do not commit `.glb` / `.gltf` / textures under `public/models/customizer/`.
 
 ## CORS (R2 public bucket)
 
-Public assets may need CORS for:
+Public assets need CORS for:
 
 - Landing images loaded from R2 in the browser
+- **WebGL / GLTFLoader** for customizer `.glb` models
 - Canvas / html-to-image captures in the customizer
 - Design preview compositing when remote assets are involved
 
@@ -113,6 +108,10 @@ Recommended allowed origins:
 - `http://localhost:3000`
 - `https://*.vercel.app` (preview deployments)
 - `https://chefroom.mx` (production)
+
+**Allowed methods:** `GET`, `HEAD`, `OPTIONS`
+
+**Expose headers:** `ETag`, `Content-Length`, `Content-Type`
 
 Example CORS rule (Cloudflare dashboard → R2 bucket → Settings → CORS):
 
@@ -124,8 +123,9 @@ Example CORS rule (Cloudflare dashboard → R2 bucket → Settings → CORS):
       "https://chefroom.mx",
       "https://*.vercel.app"
     ],
-    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedMethods": ["GET", "HEAD", "OPTIONS"],
     "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag", "Content-Length", "Content-Type"],
     "MaxAgeSeconds": 86400
   }
 ]

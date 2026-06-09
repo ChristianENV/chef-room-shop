@@ -22,16 +22,22 @@ describe('getRegistryTransformForProductType', () => {
 })
 
 describe('getCustomizerModelForProduct', () => {
-  it('always uses local chef-jacket bundle for filipina regardless of DB remote URL', () => {
+  it('prefers product.model3d.url for filipina over local fallback', () => {
+    const previousBase = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL
+    process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL = 'https://pub-example.r2.dev'
+
+    const remoteUrl =
+      'https://pub-example.r2.dev/products/foo/models/bar/model.glb'
+
     const model = getCustomizerModelForProduct({
       productTypeSlug: 'filipina',
       model3d: {
         id: 'model-1',
-        url: 'https://pub-example.r2.dev/products/foo/chef-jacket.gltf',
-        publicId: 'products/foo/chef-jacket.gltf',
-        fileName: 'chef-jacket.gltf',
+        url: remoteUrl,
+        publicId: 'products/foo/models/bar/model.glb',
+        fileName: 'model.glb',
         sizeBytes: 1024,
-        format: 'gltf',
+        format: 'glb',
         materialHintsJson: null,
         meshHintsJson: null,
         anchorsJson: null,
@@ -41,6 +47,29 @@ describe('getCustomizerModelForProduct', () => {
     assert.ok(model)
     assert.equal(model!.registryKey, CHEF_JACKET_REGISTRY_KEY)
     assert.equal(model!.scale, 0.02)
-    assert.equal(model!.modelUrl, CHEF_JACKET_GLTF_LOCAL)
+    assert.equal(model!.resolutionKind, 'r2')
+    assert.match(model!.modelUrl, /^\/r2\/products\/foo\/models\/bar\/model\.glb/)
+
+    if (previousBase === undefined) {
+      delete process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL
+    } else {
+      process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL = previousBase
+    }
+  })
+
+  it('uses dev local fallback for filipina when no remote model in development', () => {
+    const model = getCustomizerModelForProduct({
+      productTypeSlug: 'filipina',
+      model3d: null,
+    })
+
+    if (process.env.NODE_ENV === 'development') {
+      assert.ok(model)
+      assert.equal(model!.resolutionKind, 'local-fallback')
+      assert.equal(model!.modelUrl, CHEF_JACKET_GLTF_LOCAL)
+      return
+    }
+
+    assert.ok(model === null || model.resolutionKind === 'env-fallback')
   })
 })

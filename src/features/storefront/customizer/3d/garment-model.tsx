@@ -137,8 +137,12 @@ function GarmentModelInner({
   }, [baseColor, clonedScene, detailColor, modelConfig, useDebugMaterial])
 
   const modelSourceInfo = useMemo(
-    () => resolveModelSourceInfo(modelConfig.modelUrl),
-    [modelConfig.modelUrl],
+    () =>
+      resolveModelSourceInfo({
+        modelUrl: modelConfig.modelUrl,
+        resolutionKind: modelConfig.resolutionKind,
+      }),
+    [modelConfig.modelUrl, modelConfig.resolutionKind],
   )
 
   useEffect(() => {
@@ -148,6 +152,7 @@ function GarmentModelInner({
       phase: 'loaded',
       modelUrl: modelSourceInfo.modelUrl,
       modelSource: modelSourceInfo.modelSource,
+      hasProductModel3d: modelSourceInfo.hasProductModel3d,
       usingLocalFallback: modelSourceInfo.usingLocalFallback,
       productSlug: productSlug ?? null,
       registryKey: modelConfig.registryKey,
