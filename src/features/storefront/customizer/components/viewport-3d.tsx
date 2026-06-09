@@ -103,9 +103,10 @@ function JacketModel() {
 type GarmentSceneProps = {
   onGlbActive: (active: boolean) => void
   onModelReady: (payload: ModelReadyPayload) => void
+  onModelError: (error: Error) => void
 }
 
-function GarmentScene({ onGlbActive, onModelReady }: GarmentSceneProps) {
+function GarmentScene({ onGlbActive, onModelReady, onModelError }: GarmentSceneProps) {
   const { product, baseColor, detailColor, sleeveStyle, layers } = useCustomizerStore()
   const modelConfig = useMemo(() => getCustomizerModelForProduct(product), [product])
 
@@ -117,9 +118,13 @@ function GarmentScene({ onGlbActive, onModelReady }: GarmentSceneProps) {
     [onGlbActive, onModelReady],
   )
 
-  const handleModelError = useCallback(() => {
-    onGlbActive(false)
-  }, [onGlbActive])
+  const handleModelError = useCallback(
+    (error: Error) => {
+      onGlbActive(false)
+      onModelError(error)
+    },
+    [onGlbActive, onModelError],
+  )
 
   if (!modelConfig) {
     return <JacketModel />
@@ -128,6 +133,7 @@ function GarmentScene({ onGlbActive, onModelReady }: GarmentSceneProps) {
   return (
     <GarmentModelLoader
       modelConfig={modelConfig}
+      productSlug={product?.slug ?? product?.productTypeSlug ?? null}
       baseColor={baseColor}
       detailColor={detailColor}
       sleeveStyle={sleeveStyle}
@@ -153,33 +159,12 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
   const viewportRootRef = useRef<HTMLDivElement>(null)
   const [glbActive, setGlbActive] = useState(false)
   const [modelReady, setModelReady] = useState<ModelReadyPayload | null>(null)
+  const [remoteModelFailed, setRemoteModelFailed] = useState(false)
   const prevViewModeRef = useRef(viewMode)
   const prevProductIdRef = useRef(product?.id)
   const heroImageRaw =
     product?.images.find((image) => image.isPrimary)?.url ?? product?.images[0]?.url ?? null
   const heroImage = heroImageRaw ? toSameOriginR2Url(heroImageRaw) ?? heroImageRaw : null
-
-  const orbitLimits = useMemo(() => {
-    if (!modelReady?.bounds.valid) {
-      return {
-        minDistance: 2.2,
-        maxDistance: 5,
-        target: [0, 0.1, 0] as [number, number, number],
-      }
-    }
-
-    const { center, size } = modelReady.bounds
-    const maxDim = Math.max(size.x, size.y, size.z)
-    const distance = THREE.MathUtils.clamp(maxDim * 2.4, 2.4, 6.5)
-    const minDistance = Math.max(0.8, distance * 0.35)
-    const maxDistance = Math.max(minDistance + 0.5, distance * 2.8)
-
-    return {
-      minDistance,
-      maxDistance,
-      target: [center.x, center.y, center.z] as [number, number, number],
-    }
-  }, [modelReady])
 
   useEffect(() => {
     const entering3D = prevViewModeRef.current !== '3D' && viewMode === '3D'
@@ -190,8 +175,18 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
     if (viewMode === '3D' && (entering3D || productChanged)) {
       setGlbActive(false)
       setModelReady(null)
+      setRemoteModelFailed(false)
     }
   }, [viewMode, product?.id])
+
+  const handleModelError = useCallback((error: Error) => {
+    setGlbActive(false)
+    setModelReady(null)
+    setRemoteModelFailed(true)
+    if (process.env.NEXT_PUBLIC_CUSTOMIZER_DEBUG_3D === 'true') {
+      console.info('[customizer-3d] remote-model-failed', { message: error.message })
+    }
+  }, [])
 
   useImperativeHandle(ref, () => ({
     captureDesignPreviews: async () => {
@@ -233,6 +228,15 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
     >
       <div className="customizer-noise absolute inset-0" />
       {!glbActive && <ViewportElementOverlay />}
+      {remoteModelFailed ? (
+        <div
+          data-testid="customizer-3d-load-error"
+          className="pointer-events-none absolute bottom-4 left-1/2 z-30 max-w-md -translate-x-1/2 rounded-xl border border-amber-500/30 bg-amber-950/80 px-4 py-3 text-center text-sm text-amber-100 shadow-lg backdrop-blur-sm"
+        >
+          Hubo un problema cargando el modelo 3D. Puedes seguir diseñando en 2D mientras lo
+          revisamos.
+        </div>
+      ) : null}
       <Canvas
         camera={{ position: [0, 0.3, 3.2], fov: 32, near: 0.01, far: 100 }}
         className="relative z-10"
@@ -246,6 +250,7 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
         <GarmentScene
           onGlbActive={setGlbActive}
           onModelReady={setModelReady}
+          onModelError={handleModelError}
         />
         <ModelCameraRig modelReady={modelReady} />
         <ContactShadows position={[0, -0.85, 0]} opacity={0.35} scale={4} blur={2} far={3} />
@@ -255,9 +260,6 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
         <OrbitControls
           makeDefault
           enablePan={false}
-          minDistance={orbitLimits.minDistance}
-          maxDistance={orbitLimits.maxDistance}
-          target={orbitLimits.target}
           enableDamping
           dampingFactor={0.05}
         />

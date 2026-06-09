@@ -15,6 +15,7 @@ import * as THREE from 'three'
 import { useCustomizerStore } from '../store/customizer.store'
 import type { Layer, SleeveStyle } from '../types/customizer.types'
 import type { CustomizerModelDefinition } from './model-registry'
+import { CUSTOMIZER_TRANSFORM_VERSION } from './model-registry'
 import { inspectGltf } from './inspect-gltf'
 import {
   applyColorToMaterial,
@@ -25,9 +26,10 @@ import { TextDecal } from './text-decal'
 import { LogoDecal } from './logo-decal'
 import { logCustomizer3d } from './customizer-3d-debug'
 import {
-  applyModelFitTransform,
-  calculateModelFitTransform,
+  buildModelFitKey,
+  getBoundsRadius,
   getSafeModelBounds,
+  isBoundsReadyForFit,
   logModelFit,
 } from './fit-model-to-viewport'
 import type { ModelReadyPayload } from './model-camera-rig'
@@ -40,6 +42,7 @@ export type GarmentModelProps = {
   detailColor: string
   sleeveStyle: SleeveStyle
   layers: Layer[]
+  productSlug?: string | null
   onModelReady?: (payload: ModelReadyPayload) => void
   onModelError?: (error: Error) => void
 }
@@ -49,15 +52,37 @@ function GarmentModelInner({
   baseColor,
   detailColor,
   layers,
+  productSlug,
   onModelReady,
 }: GarmentModelProps) {
   const rotationRef = useRef<THREE.Group>(null)
   const modelRootRef = useRef<THREE.Group>(null)
   const onModelReadyRef = useRef(onModelReady)
+  const notifiedFitKeyRef = useRef<string | null>(null)
 
   useEffect(() => {
     onModelReadyRef.current = onModelReady
   }, [onModelReady])
+
+  const fitKey = useMemo(
+    () =>
+      buildModelFitKey({
+        registryKey: modelConfig.registryKey,
+        modelUrl: modelConfig.modelUrl,
+        transformVersion: CUSTOMIZER_TRANSFORM_VERSION,
+        productSlug,
+      }),
+    [modelConfig.registryKey, modelConfig.modelUrl, productSlug],
+  )
+
+  const appliedTransform = useMemo(
+    () => ({
+      scale: modelConfig.scale,
+      position: modelConfig.position,
+      rotation: modelConfig.rotation,
+    }),
+    [modelConfig.position, modelConfig.rotation, modelConfig.scale],
+  )
 
   const { scene } = useGLTF(modelConfig.modelUrl)
 
@@ -70,7 +95,7 @@ function GarmentModelInner({
       }
     })
     return clone
-  }, [scene, modelConfig.modelUrl])
+  }, [scene])
 
   const tintGroups = useMemo(() => {
     const groups = resolveTintableMaterialGroups(clonedScene, {
@@ -91,38 +116,59 @@ function GarmentModelInner({
   useLayoutEffect(() => {
     const root = modelRootRef.current
     if (!root) return
+    if (notifiedFitKeyRef.current === fitKey) return
 
-    const preBounds = getSafeModelBounds(clonedScene)
-    const registryTransform = {
-      scale: modelConfig.scale,
-      position: modelConfig.position,
-      rotation: modelConfig.rotation,
-    }
+    root.updateWorldMatrix(true, true)
+    const worldBounds = getSafeModelBounds(root)
 
-    const registryFit = calculateModelFitTransform(preBounds, { registryTransform })
-    const transform = registryFit ?? calculateModelFitTransform(preBounds, { targetHeight: 1.5 })
-    const fitSource = registryFit ? 'registry' : 'computed'
-
-    if (!transform) {
+    if (!isBoundsReadyForFit(worldBounds)) {
       logCustomizer3d('model-fit-skipped', {
         modelUrl: modelConfig.modelUrl,
+        productSlug,
+        registryKey: modelConfig.registryKey,
+        fitKey,
         reason: 'invalid-bounds',
-        boundingBoxSize: preBounds.size.toArray(),
+        bounds: worldBounds.size.toArray(),
+        center: worldBounds.center.toArray(),
+        radius: getBoundsRadius(worldBounds),
+        appliedTransform,
       })
       return
     }
 
-    applyModelFitTransform(root, transform)
+    notifiedFitKeyRef.current = fitKey
 
-    const worldBounds = getSafeModelBounds(root)
-
-    logModelFit(modelConfig.modelUrl, worldBounds, transform, fitSource)
+    logModelFit(
+      modelConfig.modelUrl,
+      worldBounds,
+      {
+        scale: appliedTransform.scale,
+        position: new THREE.Vector3(...appliedTransform.position),
+        rotation: new THREE.Euler(...appliedTransform.rotation),
+      },
+      'registry',
+      {
+        registryKey: modelConfig.registryKey,
+        productSlug,
+        fitKey,
+      },
+    )
     inspectGltf(modelConfig.id, clonedScene)
     onModelReadyRef.current?.({
       modelUrl: modelConfig.modelUrl,
       bounds: worldBounds,
+      fitKey,
+      registryKey: modelConfig.registryKey,
     })
-  }, [clonedScene, modelConfig])
+  }, [
+    appliedTransform,
+    clonedScene,
+    fitKey,
+    modelConfig.id,
+    modelConfig.modelUrl,
+    modelConfig.registryKey,
+    productSlug,
+  ])
 
   useEffect(() => {
     tintGroups.body.forEach((material) => applyColorToMaterial(material, baseColor))
@@ -156,9 +202,9 @@ function GarmentModelInner({
     <group ref={rotationRef}>
       <group
         ref={modelRootRef}
-        scale={modelConfig.scale}
-        position={modelConfig.position}
-        rotation={modelConfig.rotation}
+        scale={appliedTransform.scale}
+        position={appliedTransform.position}
+        rotation={appliedTransform.rotation}
       >
         <primitive object={clonedScene} />
 
@@ -225,6 +271,10 @@ class GarmentModelErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error) {
+    logCustomizer3d('model-load-error', {
+      message: error.message,
+      name: error.name,
+    })
     this.props.onError?.(error)
   }
 
@@ -242,12 +292,17 @@ export type GarmentModelLoaderProps = GarmentModelProps & {
 export function GarmentModelLoader({
   suspenseFallback,
   errorFallback,
+  modelConfig,
   ...props
 }: GarmentModelLoaderProps) {
+  useEffect(() => {
+    useGLTF.preload(modelConfig.modelUrl)
+  }, [modelConfig.modelUrl])
+
   return (
     <GarmentModelErrorBoundary fallback={errorFallback} onError={props.onModelError}>
       <Suspense fallback={suspenseFallback ?? errorFallback}>
-        <GarmentModelInner {...props} />
+        <GarmentModelInner modelConfig={modelConfig} {...props} />
       </Suspense>
     </GarmentModelErrorBoundary>
   )

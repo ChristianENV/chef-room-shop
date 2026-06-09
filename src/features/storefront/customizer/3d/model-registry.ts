@@ -20,8 +20,15 @@ export type ModelNameHints = {
   buttons?: string[]
 }
 
+/** Bump when registry scale/position/rotation change (invalidates camera fit keys). */
+export const CUSTOMIZER_TRANSFORM_VERSION = '1'
+
+export const CHEF_JACKET_REGISTRY_KEY = 'chef-jacket'
+
 export type CustomizerModelDefinition = {
   id: string
+  /** Stable key for transform + fit — independent of R2/local URL. */
+  registryKey: string
   label: string
   modelUrl: string
   /** Product type slugs this model can stand in for. */
@@ -96,6 +103,7 @@ function resolveChefJacketMockUrl(): string {
 function buildChefJacketRegistryEntry(): CustomizerModelDefinition {
   return {
     id: 'chef-jacket-local',
+    registryKey: CHEF_JACKET_REGISTRY_KEY,
     label: 'Filipina 3D (R2)',
     modelUrl: resolveChefJacketMockUrl(),
     productTypes: ['chef-jacket', 'filipina'],
@@ -122,6 +130,35 @@ export const CUSTOMIZER_MODEL_REGISTRY: Record<string, CustomizerModelDefinition
  * - `NEXT_PUBLIC_CUSTOMIZER_USE_MOCK_GLB=false` -> always off.
  * - unset -> on only in development.
  */
+/** Product-type → transform map (stable; independent of model URL). */
+const PRODUCT_TYPE_TRANSFORMS: Record<
+  string,
+  Pick<CustomizerModelDefinition, 'scale' | 'position' | 'rotation' | 'registryKey'>
+> = {
+  'chef-jacket': { ...CHEF_JACKET_TRANSFORM, registryKey: CHEF_JACKET_REGISTRY_KEY },
+  filipina: { ...CHEF_JACKET_TRANSFORM, registryKey: CHEF_JACKET_REGISTRY_KEY },
+}
+
+/** Registry transform by product type slug — not by model URL. */
+export function getRegistryTransformForProductType(productTypeSlug: string): Pick<
+  CustomizerModelDefinition,
+  'scale' | 'position' | 'rotation'
+> {
+  const match = PRODUCT_TYPE_TRANSFORMS[productTypeSlug]
+  if (match) {
+    return {
+      scale: match.scale,
+      position: match.position,
+      rotation: match.rotation,
+    }
+  }
+  return CHEF_JACKET_TRANSFORM
+}
+
+export function getRegistryKeyForProductType(productTypeSlug: string): string {
+  return PRODUCT_TYPE_TRANSFORMS[productTypeSlug]?.registryKey ?? CHEF_JACKET_REGISTRY_KEY
+}
+
 export function isCustomizerMockGlbEnabled(): boolean {
   const flag = process.env.NEXT_PUBLIC_CUSTOMIZER_USE_MOCK_GLB
   if (flag === 'true') return true
@@ -159,16 +196,12 @@ export function getCustomizerModelForProduct(
     )
     const baseMaterialHints = registryMatch?.materialHints ?? CHEF_JACKET_MATERIAL_HINTS
     const baseMeshHints = registryMatch?.meshHints ?? CHEF_JACKET_MESH_HINTS
-    const baseTransform = registryMatch
-      ? {
-          scale: registryMatch.scale,
-          position: registryMatch.position,
-          rotation: registryMatch.rotation,
-        }
-      : CHEF_JACKET_TRANSFORM
+    const baseTransform = getRegistryTransformForProductType(productType)
+    const registryKey = getRegistryKeyForProductType(productType)
 
     return {
       id: m3d.id,
+      registryKey,
       label: `Modelo 3D: ${m3d.fileName}`,
       modelUrl: resolveCustomizerModelUrl(m3d.url),
       productTypes: [productType],
