@@ -8,6 +8,7 @@ import {
   Lock,
   Move,
   MousePointer2,
+  Palette,
   RotateCw,
   Scaling,
   Shirt,
@@ -30,6 +31,7 @@ import { useCustomizerStore } from '../store/customizer.store'
 import { getLayerDescription, isEditableElement } from '../lib/customizer-utils'
 import type { DesignTool, Layer, LayerType } from '../types/customizer.types'
 import { TextPropertiesPanel } from './text-properties-panel'
+import { FabricColorsSection } from './fabric-colors-section'
 
 const ELEMENT_ICON: Record<LayerType, LucideIcon> = {
   logo: Sticker,
@@ -38,6 +40,21 @@ const ELEMENT_ICON: Record<LayerType, LucideIcon> = {
   vivos: Sparkles,
   buttons: CircleDot,
   base: Shirt,
+}
+
+function SectionHeading({
+  title,
+  subtitle,
+}: {
+  title: string
+  subtitle?: string
+}) {
+  return (
+    <div className="space-y-0.5">
+      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      {subtitle ? <p className="text-xs text-muted-foreground">{subtitle}</p> : null}
+    </div>
+  )
 }
 
 function ElementRow({ layer }: { layer: Layer }) {
@@ -50,10 +67,10 @@ function ElementRow({ layer }: { layer: Layer }) {
     layer.type === 'logo' && layer.assetUrl
       ? 'Logotipo cargado'
       : editable && layer.text?.trim()
-      ? layer.text
-      : editable
-      ? 'Sin contenido'
-      : getLayerDescription(layer.type)
+        ? layer.text
+        : editable
+          ? 'Sin contenido'
+          : getLayerDescription(layer.type)
 
   return (
     <div
@@ -71,14 +88,20 @@ function ElementRow({ layer }: { layer: Layer }) {
         }
       }}
       className={cn(
-        'flex items-center gap-2 rounded-lg border p-2 text-left transition',
+        'flex items-center gap-2.5 rounded-xl border p-2.5 text-left transition',
         isSelected
-          ? 'border-primary bg-primary/10'
-          : 'border-border/50 bg-card hover:border-primary/30',
+          ? 'border-primary bg-primary/10 shadow-sm shadow-primary/5'
+          : 'border-border/50 bg-card/80 hover:border-primary/30 hover:bg-card',
         !layer.visible && 'opacity-50',
+        layer.locked && !editable && 'border-dashed',
       )}
     >
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-secondary text-foreground">
+      <span
+        className={cn(
+          'flex size-9 shrink-0 items-center justify-center rounded-lg',
+          isSelected ? 'bg-primary/15 text-primary' : 'bg-secondary text-foreground',
+        )}
+      >
         <Icon className="size-4" />
       </span>
       <div className="min-w-0 flex-1">
@@ -95,7 +118,7 @@ function ElementRow({ layer }: { layer: Layer }) {
               event.stopPropagation()
               toggleLayerVisibility(layer.id)
             }}
-            className="rounded p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+            className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
             {layer.visible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
           </button>
@@ -103,12 +126,12 @@ function ElementRow({ layer }: { layer: Layer }) {
             type="button"
             title="Duplicar"
             aria-label="Duplicar elemento"
-            data-testid="customizer-duplicate-element"
+            data-testid="customizer-duplicate-element-row"
             onClick={(event) => {
               event.stopPropagation()
               duplicateLayer(layer.id)
             }}
-            className="rounded p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+            className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
             <Copy className="size-4" />
           </button>
@@ -116,18 +139,21 @@ function ElementRow({ layer }: { layer: Layer }) {
             type="button"
             title="Eliminar"
             aria-label="Eliminar elemento"
-            data-testid="customizer-delete-element"
+            data-testid="customizer-delete-element-row"
             onClick={(event) => {
               event.stopPropagation()
               deleteLayer(layer.id)
             }}
-            className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            className="rounded-md p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
           >
             <Trash2 className="size-4" />
           </button>
         </div>
       ) : (
-        <Lock className="size-3.5 text-muted-foreground/60" aria-hidden />
+        <span className="flex items-center gap-1 rounded-md bg-muted/50 px-1.5 py-0.5 text-[10px] text-muted-foreground">
+          <Lock className="size-3" aria-hidden />
+          Fijo
+        </span>
       )}
     </div>
   )
@@ -141,7 +167,7 @@ const TOOLS: { id: DesignTool; label: string; icon: LucideIcon; testId: string }
 ]
 
 function PropertyBlock({ children }: { children: React.ReactNode }) {
-  return <div className="space-y-2">{children}</div>
+  return <div className="space-y-2.5 rounded-xl border border-border/40 bg-card/40 p-3">{children}</div>
 }
 
 function ElementProperties({ layer, tool }: { layer: Layer; tool: DesignTool }) {
@@ -157,10 +183,20 @@ function ElementProperties({ layer, tool }: { layer: Layer; tool: DesignTool }) 
 
   const showAll = tool === 'select'
   const isTextLike = layer.type === 'text' || layer.type === 'patch'
+  const isLogo = layer.type === 'logo'
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {isTextLike ? <TextPropertiesPanel layer={layer} /> : null}
+
+      {isLogo ? (
+        <PropertyBlock>
+          <p className="text-xs text-muted-foreground">
+            Logotipo cargado. Ajusta tamaño, posición y rotación abajo. Para reemplazarlo, usa el
+            panel izquierdo de logotipos.
+          </p>
+        </PropertyBlock>
+      ) : null}
 
       {(showAll || tool === 'move') && (
         <PropertyBlock>
@@ -264,12 +300,12 @@ function ElementProperties({ layer, tool }: { layer: Layer; tool: DesignTool }) 
         </Select>
       </PropertyBlock>
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 pt-1">
         <button
           type="button"
           data-testid="customizer-duplicate-element"
           onClick={() => duplicateLayer(layer.id)}
-          className="flex flex-1 items-center justify-center gap-1 rounded-md border border-border py-2 text-xs font-medium hover:border-primary/40"
+          className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-border py-2.5 text-xs font-medium hover:border-primary/40 hover:bg-card"
         >
           <Copy className="size-3.5" />
           Duplicar
@@ -278,7 +314,7 @@ function ElementProperties({ layer, tool }: { layer: Layer; tool: DesignTool }) 
           type="button"
           data-testid="customizer-delete-element"
           onClick={() => deleteLayer(layer.id)}
-          className="flex flex-1 items-center justify-center gap-1 rounded-md border border-destructive/40 py-2 text-xs font-medium text-destructive hover:bg-destructive/10"
+          className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-destructive/40 py-2.5 text-xs font-medium text-destructive hover:bg-destructive/10"
         >
           <Trash2 className="size-3.5" />
           Eliminar
@@ -291,8 +327,13 @@ function ElementProperties({ layer, tool }: { layer: Layer; tool: DesignTool }) 
 export function RightSidebar() {
   const {
     layers,
+    product,
     selectedLayerId,
     activeTool,
+    baseColor,
+    detailColor,
+    setBaseColor,
+    setDetailColor,
     setActiveTool,
     duplicateLayer,
     deleteLayer,
@@ -301,6 +342,10 @@ export function RightSidebar() {
   const selectedLayer = layers.find((item) => item.id === selectedLayerId) ?? null
   const selectedEditable = selectedLayer && isEditableElement(selectedLayer.type)
   const editableCount = layers.filter((layer) => isEditableElement(layer.type)).length
+  const catalogColors =
+    product && product.colors.length > 0
+      ? product.colors.map((color) => ({ id: color.id, name: color.name, hex: color.hex }))
+      : undefined
 
   const handleDuplicateTool = () => {
     if (selectedLayerId && selectedEditable) duplicateLayer(selectedLayerId)
@@ -311,112 +356,165 @@ export function RightSidebar() {
   }
 
   return (
-    <aside className="flex h-full w-80 flex-col border-l border-border/40 bg-card/30">
-      <div className="border-b border-border/40 p-4" data-testid="customizer-design-elements">
-        <h2 className="text-sm font-semibold text-foreground">Elementos del diseño</h2>
+    <aside
+      data-testid="customizer-right-panel"
+      className="flex h-full min-h-0 w-full flex-col border-l border-border/40 bg-card/40 xl:w-[380px] xl:max-w-[420px] xl:shrink-0"
+    >
+      <div className="shrink-0 border-b border-border/40 px-5 py-4">
+        <h2 className="text-sm font-semibold text-foreground">Inspector del diseño</h2>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Organiza logos, nombres y detalles de tu prenda.
+          Capas, herramientas y propiedades de tu prenda.
         </p>
-        {editableCount === 0 ? (
-          <p className="mt-3 rounded-lg border border-dashed border-border/60 bg-card/40 p-3 text-center text-xs text-muted-foreground">
-            Agrega un texto o logotipo para editarlo aquí.
-          </p>
-        ) : (
-          <div className="mt-3 space-y-2">
-            {layers.map((layer) => (
-              <ElementRow key={layer.id} layer={layer} />
-            ))}
-          </div>
-        )}
       </div>
 
-      <div className="border-b border-border/40 p-4">
-        <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Herramientas
-        </div>
-        <div className="grid grid-cols-4 gap-1.5">
-          {TOOLS.map((item) => {
-            const Icon = item.icon
-            return (
+      <div
+        data-testid="customizer-right-panel-scroll"
+        className="customizer-panel-scroll min-h-0 flex-1 overflow-y-auto"
+      >
+        <div className="space-y-6 px-5 py-4 pb-28">
+          <section
+            data-testid="customizer-design-elements-section"
+            className="space-y-3"
+          >
+            <SectionHeading
+              title="Elementos del diseño"
+              subtitle="Organiza logos, nombres y detalles de tu prenda."
+            />
+            {editableCount === 0 ? (
+              <p className="rounded-xl border border-dashed border-border/60 bg-card/50 p-4 text-center text-xs text-muted-foreground">
+                Agrega un texto o logotipo desde el panel izquierdo para editarlo aquí.
+              </p>
+            ) : (
+              <div className="space-y-2" data-testid="customizer-design-elements">
+                {layers.map((layer) => (
+                  <ElementRow key={layer.id} layer={layer} />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section
+            data-testid="customizer-tools-section"
+            className="space-y-3 border-t border-border/30 pt-5"
+          >
+            <SectionHeading title="Herramientas" subtitle="Selecciona cómo quieres transformar el elemento." />
+            <div className="grid grid-cols-4 gap-2">
+              {TOOLS.map((item) => {
+                const Icon = item.icon
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    title={item.label}
+                    aria-label={item.label}
+                    data-testid={item.testId}
+                    onClick={() => setActiveTool(item.id)}
+                    className={cn(
+                      'flex flex-col items-center gap-1 rounded-lg border py-2.5 text-[10px] font-medium transition',
+                      activeTool === item.id
+                        ? 'border-primary bg-primary/10 text-primary shadow-sm shadow-primary/5'
+                        : 'border-border/60 bg-card/60 text-muted-foreground hover:border-primary/30 hover:text-foreground',
+                    )}
+                  >
+                    <Icon className="size-4" />
+                    {item.label}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
               <button
-                key={item.id}
                 type="button"
-                title={item.label}
-                aria-label={item.label}
-                data-testid={item.testId}
-                onClick={() => setActiveTool(item.id)}
+                title={
+                  selectedEditable
+                    ? 'Duplicar elemento seleccionado'
+                    : 'Selecciona un elemento editable para duplicar'
+                }
+                disabled={!selectedEditable}
+                onClick={handleDuplicateTool}
+                data-testid="customizer-duplicate-element-tool"
                 className={cn(
-                  'flex flex-col items-center gap-1 rounded-md border py-2 text-[10px] transition',
-                  activeTool === item.id
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border text-muted-foreground hover:text-foreground',
+                  'flex items-center justify-center gap-1 rounded-lg border py-2.5 text-[10px] font-medium transition',
+                  selectedEditable
+                    ? 'border-border/60 bg-card/60 hover:border-primary/40'
+                    : 'cursor-not-allowed border-border/40 opacity-40',
                 )}
               >
-                <Icon className="size-4" />
-                {item.label}
+                <Copy className="size-3.5" />
+                Duplicar
               </button>
-            )
-          })}
-        </div>
-        <div className="mt-2 grid grid-cols-2 gap-1.5">
-          <button
-            type="button"
-            title={
-              selectedEditable
-                ? 'Duplicar elemento seleccionado'
-                : 'Selecciona un elemento editable para duplicar'
-            }
-            disabled={!selectedEditable}
-            onClick={handleDuplicateTool}
-            data-testid="customizer-duplicate-element"
-            className={cn(
-              'flex items-center justify-center gap-1 rounded-md border py-2 text-[10px] font-medium transition',
-              selectedEditable
-                ? 'border-border hover:border-primary/40'
-                : 'cursor-not-allowed border-border/40 opacity-40',
-            )}
-          >
-            <Copy className="size-3.5" />
-            Duplicar
-          </button>
-          <button
-            type="button"
-            title={
-              selectedEditable
-                ? 'Eliminar elemento seleccionado'
-                : 'Selecciona un elemento editable para eliminar'
-            }
-            disabled={!selectedEditable}
-            onClick={handleDeleteTool}
-            data-testid="customizer-delete-element"
-            className={cn(
-              'flex items-center justify-center gap-1 rounded-md border py-2 text-[10px] font-medium transition',
-              selectedEditable
-                ? 'border-destructive/40 text-destructive hover:bg-destructive/10'
-                : 'cursor-not-allowed border-border/40 opacity-40',
-            )}
-          >
-            <Trash2 className="size-3.5" />
-            Eliminar
-          </button>
-        </div>
-      </div>
+              <button
+                type="button"
+                title={
+                  selectedEditable
+                    ? 'Eliminar elemento seleccionado'
+                    : 'Selecciona un elemento editable para eliminar'
+                }
+                disabled={!selectedEditable}
+                onClick={handleDeleteTool}
+                data-testid="customizer-delete-element-tool"
+                className={cn(
+                  'flex items-center justify-center gap-1 rounded-lg border py-2.5 text-[10px] font-medium transition',
+                  selectedEditable
+                    ? 'border-destructive/40 text-destructive hover:bg-destructive/10'
+                    : 'cursor-not-allowed border-border/40 opacity-40',
+                )}
+              >
+                <Trash2 className="size-3.5" />
+                Eliminar
+              </button>
+            </div>
+          </section>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-4" data-testid="customizer-properties-panel">
-        <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Propiedades
+          <section
+            data-testid="customizer-properties-section"
+            className="space-y-3 border-t border-border/30 pt-5"
+          >
+            <SectionHeading
+              title="Propiedades"
+              subtitle={
+                selectedLayer
+                  ? `Editando: ${selectedLayer.name}`
+                  : 'Selecciona un elemento para ajustar sus valores.'
+              }
+            />
+            <div data-testid="customizer-properties-panel">
+              {!selectedLayer ? (
+                <div className="rounded-xl border border-dashed border-border/60 bg-card/50 p-5 text-center">
+                  <MousePointer2 className="mx-auto mb-2 size-5 text-muted-foreground/70" />
+                  <p className="text-xs text-muted-foreground">
+                    Selecciona un elemento para ajustar posición, tamaño y rotación.
+                  </p>
+                </div>
+              ) : !selectedEditable ? (
+                <div className="rounded-xl border border-dashed border-border/60 bg-card/50 p-5 text-center">
+                  <Lock className="mx-auto mb-2 size-5 text-muted-foreground/70" />
+                  <p className="text-xs text-muted-foreground">
+                    Este elemento es parte de la prenda y no se puede mover ni eliminar.
+                  </p>
+                </div>
+              ) : (
+                <ElementProperties layer={selectedLayer} tool={activeTool} />
+              )}
+            </div>
+          </section>
+
+          <section className="space-y-3 border-t border-border/30 pt-5">
+            <div className="flex items-center gap-2">
+              <Palette className="size-4 text-primary" />
+              <SectionHeading title="Colores / tela" subtitle="Tonos de la prenda principal." />
+            </div>
+            <FabricColorsSection
+              catalogColors={catalogColors}
+              baseColor={baseColor}
+              detailColor={detailColor}
+              onSelectBase={setBaseColor}
+              onSelectDetail={setDetailColor}
+              showDetail
+              compact
+            />
+          </section>
         </div>
-        {!selectedLayer ? (
-          <p className="rounded-lg border border-dashed border-border/60 bg-card/40 p-4 text-center text-xs text-muted-foreground">
-            Selecciona un elemento para ajustar posición, tamaño y rotación.
-          </p>
-        ) : !selectedEditable ? (
-          <p className="rounded-lg border border-dashed border-border/60 bg-card/40 p-4 text-center text-xs text-muted-foreground">
-            Este elemento es parte de la prenda y no se puede mover ni eliminar.
-          </p>
-        ) : (
-          <ElementProperties layer={selectedLayer} tool={activeTool} />
-        )}
       </div>
     </aside>
   )

@@ -25,7 +25,7 @@ export async function selectCustomizerColorAndSize(page: Page): Promise<void> {
   await page.getByRole('button', { name: /colores/i }).first().click()
   await expect(page.getByTestId('customizer-base-colors')).toBeVisible()
 
-  const colorOptions = page.getByTestId('customizer-color-option')
+  const colorOptions = page.getByTestId(/^customizer-fabric-color-swatch-/)
   const colorCount = await colorOptions.count()
   if (colorCount > 1) {
     await colorOptions.nth(1).click()

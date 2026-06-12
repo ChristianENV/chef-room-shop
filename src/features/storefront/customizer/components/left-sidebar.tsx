@@ -155,7 +155,7 @@ export function LeftSidebar({
             <PanelLeftClose className="size-4" />
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto customizer-panel-scroll">
           <CategoryContent
             category={active}
             productOptions={productOptions}
