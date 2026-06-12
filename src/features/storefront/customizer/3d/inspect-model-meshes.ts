@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { isThreeMesh } from './three-mesh-utils'
 
 export type ModelMeshInspection = {
   meshCount: number
@@ -9,6 +10,7 @@ export type ModelMeshInspection = {
   firstMeshMaterial: string | null
   firstMeshWorldPosition: [number, number, number] | null
   firstMeshWorldScale: [number, number, number] | null
+  firstMaterialHex: string | null
 }
 
 function materialLabel(material: THREE.Material): string {
@@ -23,13 +25,14 @@ export function inspectModelMeshes(root: THREE.Object3D): ModelMeshInspection {
   const meshes: THREE.Mesh[] = []
 
   root.traverse((object) => {
-    if (!(object instanceof THREE.Mesh)) return
+    if (!isThreeMesh(object)) return
     meshCount += 1
     if (object.visible) visibleMeshCount += 1
     meshes.push(object)
 
     const materials = Array.isArray(object.material) ? object.material : [object.material]
     materials.forEach((material) => {
+      if (!material) return
       materialNames.add(material.name || 'unnamed')
       materialTypes.add(material.type)
     })
@@ -39,6 +42,7 @@ export function inspectModelMeshes(root: THREE.Object3D): ModelMeshInspection {
   let firstMeshWorldScale: [number, number, number] | null = null
   let firstMeshMaterial: string | null = null
   let firstMeshVisible: boolean | null = null
+  let firstMaterialHex: string | null = null
 
   const firstMesh = meshes[0]
   if (firstMesh) {
@@ -52,6 +56,9 @@ export function inspectModelMeshes(root: THREE.Object3D): ModelMeshInspection {
     firstMeshVisible = firstMesh.visible
     const mat = Array.isArray(firstMesh.material) ? firstMesh.material[0] : firstMesh.material
     firstMeshMaterial = mat ? materialLabel(mat) : null
+    if (mat && 'color' in mat && mat.color instanceof THREE.Color) {
+      firstMaterialHex = `#${mat.color.getHexString()}`
+    }
   }
 
   return {
@@ -63,5 +70,6 @@ export function inspectModelMeshes(root: THREE.Object3D): ModelMeshInspection {
     firstMeshMaterial,
     firstMeshWorldPosition,
     firstMeshWorldScale,
+    firstMaterialHex,
   }
 }

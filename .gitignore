@@ -17,9 +17,9 @@ node_modules
 playwright-report/
 test-results/
 
-# Heavy 3D customizer assets — real models live on R2 (see public/models/customizer/README.md).
-/public/models/customizer/**
-!/public/models/customizer/README.md
+# Heavy 3D customizer assets — real models live on R2 (see public/images/models/customizer/README.md).
+/public/images/models/customizer/**
+!/public/images/models/customizer/README.md
 
 # Temporary model conversion output (gltf → glb)
 .tmp/

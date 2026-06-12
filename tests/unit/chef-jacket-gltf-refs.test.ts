@@ -5,7 +5,7 @@ import { describe, it } from 'node:test'
 
 const LOCAL_GLTF = path.join(
   process.cwd(),
-  'public/models/customizer/chef-jacket/chef-jacket.gltf',
+  'public/images/models/customizer/chef-jacket/chef-jacket.gltf',
 )
 
 describe('chef-jacket glTF bundle references', () => {

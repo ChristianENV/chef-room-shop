@@ -133,6 +133,9 @@ const INITIAL_DEBUG_SNAPSHOT: Customizer3dDebugSnapshot = {
   firstMeshMaterial: null,
   firstMeshWorldPosition: null,
   firstMeshWorldScale: null,
+  firstMaterialHex: null,
+  baseColor: null,
+  detailColor: null,
   forceDebugMaterial: false,
   debugMaterialAppliedMeshCount: null,
   appliedTransform: null,
@@ -151,6 +154,7 @@ type GarmentSceneProps = {
   onModelError: (error: Error) => void
   onDebugUpdate: (patch: Partial<Customizer3dDebugSnapshot>) => void
   forceDebugMaterial: boolean
+  showBoundsHelper: boolean
 }
 
 function GarmentScene({
@@ -159,6 +163,7 @@ function GarmentScene({
   onModelError,
   onDebugUpdate,
   forceDebugMaterial,
+  showBoundsHelper,
 }: GarmentSceneProps) {
   const { product, baseColor, detailColor, sleeveStyle, layers } = useCustomizerStore()
   const modelConfig = useMemo(() => getCustomizerModelForProduct(product), [product])
@@ -181,6 +186,8 @@ function GarmentScene({
       hasProductModel3d: source.hasProductModel3d,
       productSlug: product?.slug ?? product?.productTypeSlug ?? null,
       registryKey: modelConfig.registryKey,
+      baseColor,
+      detailColor,
       forceDebugMaterial,
       appliedTransform: {
         scale: modelConfig.scale,
@@ -190,6 +197,8 @@ function GarmentScene({
       lastError: null,
     })
   }, [
+    baseColor,
+    detailColor,
     forceDebugMaterial,
     modelConfig,
     onDebugUpdate,
@@ -238,6 +247,7 @@ function GarmentScene({
       onModelError={handleModelError}
       onDebugUpdate={onDebugUpdate}
       forceDebugMaterial={forceDebugMaterial}
+      showBoundsHelper={showBoundsHelper}
     />
   )
 }
@@ -377,7 +387,7 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
     <div
       ref={viewportRootRef}
       data-testid="customizer-3d-viewport"
-      className="relative h-full w-full"
+      className="absolute inset-0 min-h-0"
       style={{ background: CUSTOMIZER_3D_VIEWPORT_WRAPPER_BACKGROUND }}
     >
       {isAdmin && show3dDebugHud ? (
@@ -414,8 +424,9 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
       <Canvas
         key={cameraResetToken}
         camera={{ position: [0, 0.3, 3.2], fov: 32, near: 0.01, far: 100 }}
-        className="relative z-10"
-        gl={{ preserveDrawingBuffer: true, antialias: true }}
+        className="relative z-10 block h-full w-full"
+        style={{ width: '100%', height: '100%' }}
+        gl={{ preserveDrawingBuffer: true, antialias: true, alpha: false }}
         resize={{ debounce: 0, scroll: false }}
       >
         <color attach="background" args={[CUSTOMIZER_3D_SCENE_BACKGROUND]} />
@@ -430,13 +441,14 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
           onModelError={handleModelError}
           onDebugUpdate={handleDebugUpdate}
           forceDebugMaterial={forceDebugMaterial}
+          showBoundsHelper={Boolean(isAdmin && show3dDebugHud)}
         />
         <ModelCameraRig modelReady={modelReady} onCameraFit={handleCameraFit} />
         {!disableContactShadows ? (
           <ContactShadows position={[0, -0.85, 0]} opacity={0.25} scale={4} blur={2} far={3} />
         ) : null}
-        {!disableEnvironment && modelReady?.bounds.valid ? (
-          <Environment preset="studio" environmentIntensity={0.25} />
+        {modelReady?.bounds.valid && !disableEnvironment ? (
+          <Environment preset="studio" environmentIntensity={0.45} />
         ) : null}
         <OrbitControls
           makeDefault

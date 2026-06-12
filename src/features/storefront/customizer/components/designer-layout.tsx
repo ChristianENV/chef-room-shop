@@ -71,8 +71,8 @@ export function DesignerLayout({
         />
       </motion.div>
 
-      {/* Main viewport area */}
-      <div className="relative flex-1">
+      {/* Main viewport area — absolute fill so WebGL canvas gets real pixel dimensions */}
+      <div className="relative min-h-0 flex-1">
         <TopToolbar
           onSaveDesign={onSaveDesign}
           onAddToCart={onAddToCart}
@@ -82,7 +82,7 @@ export function DesignerLayout({
           saveStatusLabel={saveStatusLabel}
         />
 
-        <div className="h-full w-full">
+        <div className="absolute inset-0 min-h-0">
           <Viewport3D ref={viewportCaptureRef} />
         </div>
 

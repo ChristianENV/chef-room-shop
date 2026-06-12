@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
-import { CHEF_JACKET_GLTF_LOCAL } from '@/src/config/public-models'
 import {
   CHEF_JACKET_REGISTRY_KEY,
   getCustomizerModelForProduct,
@@ -22,7 +21,7 @@ describe('getRegistryTransformForProductType', () => {
 })
 
 describe('getCustomizerModelForProduct', () => {
-  it('prefers product.model3d.url for filipina over local fallback', () => {
+  it('prefers product.model3d.url for filipina over R2 fallback', () => {
     const previousBase = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL
     process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL = 'https://pub-example.r2.dev'
 
@@ -57,19 +56,40 @@ describe('getCustomizerModelForProduct', () => {
     }
   })
 
-  it('uses dev local fallback for filipina when no remote model in development', () => {
+  it('uses R2 proxy URL for filipina when no product model3d and R2 is configured', () => {
+    const previousBase = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL
+    const previousMock = process.env.NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL
+    const previousUseMock = process.env.NEXT_PUBLIC_CUSTOMIZER_USE_MOCK_GLB
+    process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL = 'https://pub-example.r2.dev'
+    process.env.NEXT_PUBLIC_CUSTOMIZER_USE_MOCK_GLB = 'true'
+    delete process.env.NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL
+
     const model = getCustomizerModelForProduct({
       productTypeSlug: 'filipina',
       model3d: null,
     })
 
-    if (process.env.NODE_ENV === 'development') {
-      assert.ok(model)
-      assert.equal(model!.resolutionKind, 'local-fallback')
-      assert.equal(model!.modelUrl, CHEF_JACKET_GLTF_LOCAL)
-      return
-    }
+    assert.ok(model)
+    assert.match(
+      model!.modelUrl,
+      /^\/r2\/public\/images\/models\/customizer\/chef-jacket\/chef-jacket\.gltf/,
+    )
+    assert.equal(model!.resolutionKind, 'r2')
 
-    assert.ok(model === null || model.resolutionKind === 'env-fallback')
+    if (previousBase === undefined) {
+      delete process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL
+    } else {
+      process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL = previousBase
+    }
+    if (previousMock === undefined) {
+      delete process.env.NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL
+    } else {
+      process.env.NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL = previousMock
+    }
+    if (previousUseMock === undefined) {
+      delete process.env.NEXT_PUBLIC_CUSTOMIZER_USE_MOCK_GLB
+    } else {
+      process.env.NEXT_PUBLIC_CUSTOMIZER_USE_MOCK_GLB = previousUseMock
+    }
   })
 })

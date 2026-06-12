@@ -1,7 +1,12 @@
 import { buildPublicR2ObjectUrl, getPublicR2BaseUrl } from '@/src/config/public-images'
 import { toSameOriginR2Url } from '@/src/lib/assets/same-origin-r2-url'
 
-export const CHEF_JACKET_GLTF_LOCAL = '/models/customizer/chef-jacket/chef-jacket.gltf'
+/** App URL prefix for customizer garment models under `public/images/models/customizer/`. */
+export const CUSTOMIZER_MODELS_PUBLIC_PREFIX = '/images/models/customizer'
+
+export const CHEF_JACKET_MODEL_PUBLIC_DIR = `${CUSTOMIZER_MODELS_PUBLIC_PREFIX}/chef-jacket`
+
+export const CHEF_JACKET_GLTF_LOCAL = `${CHEF_JACKET_MODEL_PUBLIC_DIR}/chef-jacket.gltf`
 
 /** Bump when remote customizer model assets change (cache bust query param). */
 export const CUSTOMIZER_MODEL_CACHE_VERSION = '2'
@@ -29,15 +34,15 @@ export function isLocalChefJacketGltfUrl(url: string): boolean {
   )
 }
 
-/** True when the URL is a same-origin `/public` model path (dev local fallback). */
+/** True when the URL is a same-origin local model path under `public/images/models/customizer/`. */
 export function isLocalCustomizerModelPath(url: string): boolean {
   const trimmed = url.trim()
-  return trimmed.startsWith('/models/customizer/')
+  return trimmed.startsWith(`${CUSTOMIZER_MODELS_PUBLIC_PREFIX}/`)
 }
 
 /**
  * Appends `?v=` cache bust to remote/proxied model URLs.
- * Local `/models/customizer/...` paths are left unchanged.
+ * Local `/images/models/customizer/...` paths are left unchanged.
  */
 export function appendCustomizerModelCacheBust(url: string): string {
   const trimmed = url.trim()
@@ -51,13 +56,22 @@ export function appendCustomizerModelCacheBust(url: string): string {
 /**
  * Resolves a catalog/customizer model URL for WebGL loading:
  * - Rewrites public R2 HTTPS URLs to same-origin `/r2/...` (avoids CORS).
- * - Leaves local `/models/...` paths unchanged (dev fallback).
+ * - Leaves local `/images/models/customizer/...` paths unchanged (dev fallback).
  * - Appends cache-bust query on remote/proxied URLs.
  */
 export function resolveCustomizerModelUrl(url: string): string {
   const trimmed = url.trim()
   if (!trimmed) return trimmed
 
-  const proxied = toSameOriginR2Url(trimmed) ?? trimmed
+  // Local chef-jacket path → R2 when bucket public URL is configured (no file on disk).
+  let resolved = trimmed
+  if (isLocalChefJacketGltfUrl(trimmed)) {
+    const remote = getCustomizerChefJacketGltfUrl()
+    if (remote.startsWith('https://')) {
+      resolved = remote
+    }
+  }
+
+  const proxied = toSameOriginR2Url(resolved) ?? resolved
   return appendCustomizerModelCacheBust(proxied)
 }

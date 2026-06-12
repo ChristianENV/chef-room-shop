@@ -53,6 +53,14 @@ export function getBoundsRadius(bounds: ModelBounds): number {
   return Math.max(bounds.size.x, bounds.size.y, bounds.size.z) * 0.5
 }
 
+/** Stable fallback when world bounds are not ready (camera fit only — not applied to model). */
+export function createChefJacketFallbackBounds(): ModelBounds {
+  const size = new THREE.Vector3(0.35, 1.45, 0.28)
+  const center = new THREE.Vector3(0, -0.05, 0)
+  const box = new THREE.Box3().setFromCenterAndSize(center, size)
+  return { valid: true, size, center, box }
+}
+
 export function getSafeModelBounds(object: THREE.Object3D): ModelBounds {
   object.updateWorldMatrix(true, true)
   const box = new THREE.Box3().setFromObject(object)

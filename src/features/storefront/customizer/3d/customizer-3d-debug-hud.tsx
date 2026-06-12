@@ -18,6 +18,9 @@ export type Customizer3dDebugSnapshot = {
   firstMeshMaterial: string | null
   firstMeshWorldPosition: [number, number, number] | null
   firstMeshWorldScale: [number, number, number] | null
+  firstMaterialHex: string | null
+  baseColor: string | null
+  detailColor: string | null
   forceDebugMaterial: boolean
   debugMaterialAppliedMeshCount: number | null
   appliedTransform: {
@@ -135,6 +138,16 @@ export function Customizer3dDebugHud({
         <span className="text-white/50">firstPos</span>{' '}
         {formatVec3(snapshot.firstMeshWorldPosition)} scale=
         {formatVec3(snapshot.firstMeshWorldScale)}
+      </p>
+      <p>
+        <span className="text-white/50">tint</span> base={snapshot.baseColor ?? '—'} detail=
+        {snapshot.detailColor ?? '—'} matHex={snapshot.firstMaterialHex ?? '—'}
+      </p>
+      <p>
+        <span className="text-white/50">canvas</span>{' '}
+        {snapshot.canvasSize
+          ? `${Math.round(snapshot.canvasSize.width)}×${Math.round(snapshot.canvasSize.height)}`
+          : '—'}
       </p>
       <p>
         <span className="text-white/50">forceDebug</span>{' '}

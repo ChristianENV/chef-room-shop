@@ -46,13 +46,13 @@ pnpm r2:public-images:upload -- --force
 |------------|---------------|
 | `public/images/landing/landing-hero-customizer.png` | `public/images/landing/landing-hero-customizer.png` |
 | `public/images/chefroom-logo-assets/chefroom-logo-horizontal-blue.png` | `public/images/chefroom-logo-assets/chefroom-logo-horizontal-blue.png` |
-| `public/models/customizer/chef-jacket/chef-jacket-diffuse.png` | `public/images/models/customizer/chef-jacket/chef-jacket-diffuse.png` |
+| `public/images/models/customizer/chef-jacket/chef-jacket-diffuse.png` | `public/images/models/customizer/chef-jacket/chef-jacket-diffuse.png` |
 
 ### Included (current audit)
 
 - Landing hero, categories, avatars, brand story, customizer screenshot, optional SVG slots
 - Chef Room logo assets (horizontal/symbol) **except** favicon-named files
-- Customizer model **texture** PNGs under `public/models/customizer/**`
+- Customizer model **texture** PNGs under `public/images/models/customizer/**`
 
 ### Excluded (stay local)
 
@@ -92,7 +92,7 @@ Landing references are wired through `src/features/storefront/landing/lib/landin
 
 Product garment models are **single `.glb` files** per product on R2 (`products/{productId}/models/{modelAssetId}/model.glb`). See [product-3d-models.md](./product-3d-models.md).
 
-Do not commit `.glb` / `.gltf` / textures under `public/models/customizer/`.
+Do not commit `.glb` / `.gltf` / textures under `public/images/models/customizer/`.
 
 ## CORS (R2 public bucket)
 

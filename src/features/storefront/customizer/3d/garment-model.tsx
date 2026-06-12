@@ -29,11 +29,14 @@ import { LogoDecal } from './logo-decal'
 import { logCustomizer3d } from './customizer-3d-debug'
 import {
   buildModelFitKey,
+  createChefJacketFallbackBounds,
   getBoundsRadius,
   getSafeModelBounds,
   isBoundsReadyForFit,
   logModelFit,
 } from './fit-model-to-viewport'
+import { GarmentBoundsHelper } from './garment-bounds-helper'
+import { prepareGarmentSceneForRender } from './three-mesh-utils'
 import type { ModelReadyPayload } from './model-camera-rig'
 import type { Customizer3dDebugSnapshot } from './customizer-3d-debug-hud'
 import { inspectModelMeshes } from './inspect-model-meshes'
@@ -50,6 +53,7 @@ export type GarmentModelProps = {
   layers: Layer[]
   productSlug?: string | null
   forceDebugMaterial?: boolean
+  showBoundsHelper?: boolean
   onModelLoaded?: () => void
   onModelReady?: (payload: ModelReadyPayload) => void
   onModelError?: (error: Error) => void
@@ -66,6 +70,7 @@ function GarmentModelInner({
   layers,
   productSlug,
   forceDebugMaterial = false,
+  showBoundsHelper = false,
   onModelLoaded,
   onModelReady,
   onDebugUpdate,
@@ -108,7 +113,11 @@ function GarmentModelInner({
 
   const { scene } = useGLTF(modelConfig.modelUrl)
 
-  const clonedScene = useMemo(() => scene.clone(true), [scene])
+  const clonedScene = useMemo(() => {
+    const clone = scene.clone(true)
+    prepareGarmentSceneForRender(clone)
+    return clone
+  }, [scene])
 
   const { tintGroups, debugMaterialAppliedMeshCount } = useMemo(() => {
     if (useDebugMaterial) {
@@ -146,7 +155,15 @@ function GarmentModelInner({
   )
 
   useEffect(() => {
-    const meshInfo = inspectModelMeshes(clonedScene)
+    let meshInfo: ReturnType<typeof inspectModelMeshes> | null = null
+    try {
+      meshInfo = inspectModelMeshes(clonedScene)
+    } catch (error) {
+      onDebugUpdateRef.current?.({
+        phase: 'error',
+        lastError: error instanceof Error ? error.message : 'inspectModelMeshes failed',
+      })
+    }
     onModelLoadedRef.current?.()
     onDebugUpdateRef.current?.({
       phase: 'loaded',
@@ -156,9 +173,11 @@ function GarmentModelInner({
       usingLocalFallback: modelSourceInfo.usingLocalFallback,
       productSlug: productSlug ?? null,
       registryKey: modelConfig.registryKey,
+      baseColor,
+      detailColor,
       forceDebugMaterial: useDebugMaterial,
       debugMaterialAppliedMeshCount,
-      ...meshInfo,
+      ...(meshInfo ?? {}),
       appliedTransform: {
         scale: appliedTransform.scale,
         position: appliedTransform.position,
@@ -167,8 +186,10 @@ function GarmentModelInner({
     })
   }, [
     appliedTransform,
+    baseColor,
     clonedScene,
     debugMaterialAppliedMeshCount,
+    detailColor,
     modelConfig.registryKey,
     modelSourceInfo,
     productSlug,
@@ -226,12 +247,21 @@ function GarmentModelInner({
           productSlug,
           registryKey: modelConfig.registryKey,
           fitKey,
-          reason: 'invalid-bounds',
+          reason: 'invalid-bounds-fallback',
           bounds: worldBounds.size.toArray(),
           center: worldBounds.center.toArray(),
           radius: getBoundsRadius(worldBounds),
           appliedTransform,
           fitAttempts: fitAttemptsRef.current,
+        })
+
+        const fallbackBounds = createChefJacketFallbackBounds()
+        notifiedFitKeyRef.current = fitKey
+        onModelReadyRef.current?.({
+          modelUrl: modelConfig.modelUrl,
+          bounds: fallbackBounds,
+          fitKey,
+          registryKey: modelConfig.registryKey,
         })
         return
       }
@@ -311,11 +341,17 @@ function GarmentModelInner({
     <group ref={rotationRef}>
       <group
         ref={modelRootRef}
-        scale={appliedTransform.scale}
+        scale={[
+          appliedTransform.scale,
+          appliedTransform.scale,
+          appliedTransform.scale,
+        ]}
         position={appliedTransform.position}
         rotation={appliedTransform.rotation}
       >
-        <primitive object={clonedScene} />
+        <primitive object={clonedScene} dispose={null} />
+
+        {showBoundsHelper ? <GarmentBoundsHelper rootRef={modelRootRef} /> : null}
 
         {!useDebugMaterial
           ? visibleDecalLayers.map((layer: Layer) => {

@@ -2,12 +2,12 @@
 
 The storefront customizer loads **one `.glb` per product** from Cloudflare R2 via `product.model3d.url` (active `ProductModelAsset` in the database).
 
-Do **not** commit real garment models under `public/models/customizer/`. Use the admin UI or the upload script below.
+Do **not** commit real garment models under `public/images/models/customizer/`. Use the admin UI or the upload script below.
 
 ## Resolution order (customizer)
 
 1. **`product.model3d.url`** — active `.glb` on R2 (production path).
-2. **Dev local fallback** — `/models/customizer/...` only when `NODE_ENV=development` and no DB model exists.
+2. **Dev local fallback** — `/images/models/customizer/...` only when `NODE_ENV=development` and no DB model exists.
 3. **`NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL`** — debug/staging override when mock pipeline is enabled.
 4. **Procedural fallback** — simple placeholder mesh when no model is available.
 

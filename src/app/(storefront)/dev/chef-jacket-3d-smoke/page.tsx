@@ -15,7 +15,7 @@ export default function ChefJacket3dSmokePage() {
       <h1 className="mb-2 text-2xl font-semibold">Chef Jacket 3D — smoke test</h1>
       <p className="mb-6 text-sm text-white/60">
         Escena mínima aislada. Sin store, decals, overlays ni fit del customizador. Modelo:{' '}
-        <code className="text-white/80">/models/customizer/chef-jacket/chef-jacket.gltf</code>
+        <code className="text-white/80">/images/models/customizer/chef-jacket/chef-jacket.gltf</code>
       </p>
       <ChefJacketSmokeViewport />
     </main>

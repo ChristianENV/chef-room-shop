@@ -26,6 +26,7 @@
     "r2:product-model:upload": "tsx scripts/r2/upload-product-model-glb.ts",
     "gltf:to-glb": "tsx scripts/gltf-to-glb.ts",
     "customizer:verify-model-url": "tsx scripts/customizer/verify-model-url.ts",
+    "customizer:verify-gltf-bundle": "tsx scripts/customizer/verify-gltf-bundle.ts",
     "customizer:verify-assets": "tsx scripts/verify-chef-jacket-assets.ts"
   },
   "prisma": {

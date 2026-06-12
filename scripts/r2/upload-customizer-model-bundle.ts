@@ -12,7 +12,7 @@ import { buildPublicR2ObjectUrl, STATIC_CACHE_CONTROL } from './public-images.sh
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.resolve(__dirname, '../..')
-const MODEL_DIR = path.join(REPO_ROOT, 'public/models/customizer/chef-jacket')
+const MODEL_DIR = path.join(REPO_ROOT, 'public/images/models/customizer/chef-jacket')
 
 const BUNDLE_FILES = [
   {

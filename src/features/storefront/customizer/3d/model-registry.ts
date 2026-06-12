@@ -1,5 +1,4 @@
 import {
-  CHEF_JACKET_GLTF_LOCAL,
   getCustomizerChefJacketGltfUrl,
   resolveCustomizerModelUrl,
 } from '@/src/config/public-models'
@@ -51,8 +50,6 @@ export type CustomizerModelDefinition = {
   }
 }
 
-const CHEF_JACKET_LOCAL_PATH = CHEF_JACKET_GLTF_LOCAL
-
 const LOCAL_CHEF_JACKET_PRODUCT_TYPES = new Set(['chef-jacket', 'filipina'])
 
 /**
@@ -94,11 +91,18 @@ export function prefersLocalChefJacketModel(productTypeSlug: string): boolean {
  */
 function resolveChefJacketMockUrl(): string {
   const exact = process.env.NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL?.trim()
-  if (exact) {
-    return resolveCustomizerModelUrl(exact)
-  }
+  const raw = exact || getCustomizerChefJacketGltfUrl()
+  return resolveCustomizerModelUrl(raw)
+}
 
-  return getCustomizerChefJacketGltfUrl()
+function resolveChefJacketFallbackKind(resolvedUrl: string): CustomizerModelResolutionKind {
+  if (process.env.NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL?.trim()) {
+    return 'env-fallback'
+  }
+  if (resolvedUrl.startsWith('/r2/') || resolvedUrl.startsWith('https://')) {
+    return 'r2'
+  }
+  return 'local-fallback'
 }
 
 /** Chef-jacket mock entry — `modelUrl` resolved lazily (not at module init). */
@@ -221,8 +225,8 @@ function buildRemoteModelDefinition(
  *
  * Priority order:
  * 1. `product.model3d.url` — real `.glb` from DB/R2.
- * 2. Dev-only local chef-jacket glTF (if file present under `/public`).
- * 3. `NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL` when mock pipeline is enabled.
+ * 2. R2 chef-jacket glTF (`NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL` or R2 public URL).
+ * 3. Local glTF only when R2 is not configured and mock pipeline is enabled.
  * 4. Returns `null` → procedural fallback.
  */
 export function getCustomizerModelForProduct(
@@ -237,16 +241,21 @@ export function getCustomizerModelForProduct(
     return buildRemoteModelDefinition(product, product.model3d)
   }
 
-  // 2. Dev local fallback for filipina / chef-jacket (no remote model yet).
-  if (prefersLocalChefJacketModel(productType) && process.env.NODE_ENV === 'development') {
+  // 2. Chef-jacket / filipina → R2 glTF (never force local path when R2 is configured).
+  if (prefersLocalChefJacketModel(productType)) {
+    if (!isCustomizerMockGlbEnabled()) return null
+
+    const mockUrl = resolveChefJacketMockUrl()
+    const resolutionKind = resolveChefJacketFallbackKind(mockUrl)
+
     return {
-      ...buildChefJacketRegistryEntry('local-fallback'),
-      modelUrl: resolveCustomizerModelUrl(CHEF_JACKET_LOCAL_PATH),
-      isMock: true,
+      ...buildChefJacketRegistryEntry(resolutionKind),
+      modelUrl: mockUrl,
+      resolutionKind,
     }
   }
 
-  // 3. Env mock URL (debug / staging without DB model).
+  // 3. Other garment mocks.
   if (!isCustomizerMockGlbEnabled()) return null
 
   const match = Object.values(CUSTOMIZER_MODEL_REGISTRY).find((model) =>

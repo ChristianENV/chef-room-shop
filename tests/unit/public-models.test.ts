@@ -23,8 +23,8 @@ describe('appendCustomizerModelCacheBust', () => {
 
   it('leaves local paths unchanged', () => {
     assert.equal(
-      appendCustomizerModelCacheBust('/models/customizer/chef-jacket/chef-jacket.gltf'),
-      '/models/customizer/chef-jacket/chef-jacket.gltf',
+      appendCustomizerModelCacheBust('/images/models/customizer/chef-jacket/chef-jacket.gltf'),
+      '/images/models/customizer/chef-jacket/chef-jacket.gltf',
     )
   })
 })
@@ -39,5 +39,19 @@ describe('resolveCustomizerModelUrl', () => {
     )
 
     assert.match(url, /^\/r2\/products\/foo\/model\.glb\?v=2$/)
+  })
+
+  it('rewrites local chef-jacket path to R2 proxy when public base URL is set', () => {
+    process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL =
+      'https://pub-example.r2.dev'
+
+    const url = resolveCustomizerModelUrl(
+      '/images/models/customizer/chef-jacket/chef-jacket.gltf',
+    )
+
+    assert.match(
+      url,
+      /^\/r2\/public\/images\/models\/customizer\/chef-jacket\/chef-jacket\.gltf\?v=2$/,
+    )
   })
 })

@@ -6,7 +6,7 @@
  *   pnpm gltf:to-glb <input.gltf> <output.glb>
  *
  * Example (do not commit output):
- *   pnpm gltf:to-glb public/models/customizer/chef-jacket/chef-jacket.gltf .tmp/models/chef-jacket.glb
+ *   pnpm gltf:to-glb public/images/models/customizer/chef-jacket/chef-jacket.gltf .tmp/models/chef-jacket.glb
  */
 import fs from 'node:fs/promises'
 import path from 'node:path'

@@ -11,7 +11,7 @@ const USE_PREVIEW_MOCK = shouldMockCustomizerPreviews()
 const RESULTS_DIR = path.join(process.cwd(), 'test-results')
 const LOCAL_GLTF = path.join(
   process.cwd(),
-  'public/models/customizer/chef-jacket/chef-jacket.gltf',
+  'public/images/models/customizer/chef-jacket/chef-jacket.gltf',
 )
 const SMOKE_MODEL_CONFIGURED =
   Boolean(process.env.NEXT_PUBLIC_CUSTOMIZER_MOCK_GLB_URL?.trim()) ||
