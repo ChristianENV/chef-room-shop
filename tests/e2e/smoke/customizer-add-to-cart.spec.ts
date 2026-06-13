@@ -31,6 +31,10 @@ test('customize -> add to cart smoke', async ({ page }) => {
   await expect(textInput).toHaveValue('Chef Carlos')
   await expect(page.getByText('Chef Carlos').first()).toBeVisible()
 
+  // Close the text editor modal before continuing with the design flow.
+  await page.getByTestId('customizer-text-done-button').click()
+  await expect(page.getByTestId('customizer-text-editor-dialog')).toHaveCount(0)
+
   await ensureCustomizer3DReady(page)
 
   await page.getByTestId('customizer-add-to-cart-button').click()

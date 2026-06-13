@@ -30,10 +30,6 @@ import {
 } from '../3d/customizer-3d-flags'
 import { useIsAdminUser } from '@/src/features/storefront/hooks/use-is-admin-user'
 import { resolveModelSourceInfo } from '../3d/model-source'
-import {
-  CUSTOMIZER_3D_SCENE_BACKGROUND,
-  CUSTOMIZER_3D_VIEWPORT_WRAPPER_BACKGROUND,
-} from '../customizer-viewport-theme'
 import { toSameOriginR2Url } from '@/src/lib/assets/same-origin-r2-url'
 import {
   ViewportCaptureBridge,
@@ -364,8 +360,7 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
     <div
       ref={viewportRootRef}
       data-testid="customizer-3d-viewport"
-      className="relative h-full w-full"
-      style={{ background: CUSTOMIZER_3D_VIEWPORT_WRAPPER_BACKGROUND }}
+      className="customizer-viewport-bg relative h-full w-full"
     >
       {isAdmin && show3dDebugHud ? (
         <Customizer3dDebugHud
@@ -402,10 +397,9 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
         key={cameraResetToken}
         camera={{ position: [0, 0.3, 3.2], fov: 32, near: 0.01, far: 100 }}
         className="relative z-10"
-        gl={{ preserveDrawingBuffer: true, antialias: true }}
+        gl={{ preserveDrawingBuffer: true, antialias: true, alpha: true }}
         resize={{ debounce: 0, scroll: false }}
       >
-        <color attach="background" args={[CUSTOMIZER_3D_SCENE_BACKGROUND]} />
         <ViewportCaptureBridge ref={internalCaptureRef} viewportRootRef={viewportRootRef} />
         <ambientLight intensity={1.0} />
         <hemisphereLight intensity={0.55} color="#ffffff" groundColor="#d4cfc4" />

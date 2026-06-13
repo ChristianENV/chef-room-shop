@@ -8,7 +8,6 @@ import {
   Lock,
   Move,
   MousePointer2,
-  Palette,
   RotateCw,
   Scaling,
   Shirt,
@@ -31,7 +30,6 @@ import { useCustomizerStore } from '../store/customizer.store'
 import { getLayerDescription, isEditableElement } from '../lib/customizer-utils'
 import type { DesignTool, Layer, LayerType } from '../types/customizer.types'
 import { TextPropertiesPanel } from './text-properties-panel'
-import { FabricColorsSection } from './fabric-colors-section'
 
 const ELEMENT_ICON: Record<LayerType, LucideIcon> = {
   logo: Sticker,
@@ -187,7 +185,13 @@ function ElementProperties({ layer, tool }: { layer: Layer; tool: DesignTool }) 
 
   return (
     <div className="space-y-4">
-      {isTextLike ? <TextPropertiesPanel layer={layer} /> : null}
+      {isTextLike ? (
+        <TextPropertiesPanel
+          layer={layer}
+          inputId="customizer-text-input-inline"
+          inputTestId="customizer-text-input-inline"
+        />
+      ) : null}
 
       {isLogo ? (
         <PropertyBlock>
@@ -327,13 +331,8 @@ function ElementProperties({ layer, tool }: { layer: Layer; tool: DesignTool }) 
 export function RightSidebar() {
   const {
     layers,
-    product,
     selectedLayerId,
     activeTool,
-    baseColor,
-    detailColor,
-    setBaseColor,
-    setDetailColor,
     setActiveTool,
     duplicateLayer,
     deleteLayer,
@@ -342,10 +341,6 @@ export function RightSidebar() {
   const selectedLayer = layers.find((item) => item.id === selectedLayerId) ?? null
   const selectedEditable = selectedLayer && isEditableElement(selectedLayer.type)
   const editableCount = layers.filter((layer) => isEditableElement(layer.type)).length
-  const catalogColors =
-    product && product.colors.length > 0
-      ? product.colors.map((color) => ({ id: color.id, name: color.name, hex: color.hex }))
-      : undefined
 
   const handleDuplicateTool = () => {
     if (selectedLayerId && selectedEditable) duplicateLayer(selectedLayerId)
@@ -497,22 +492,6 @@ export function RightSidebar() {
                 <ElementProperties layer={selectedLayer} tool={activeTool} />
               )}
             </div>
-          </section>
-
-          <section className="space-y-3 border-t border-border/30 pt-5">
-            <div className="flex items-center gap-2">
-              <Palette className="size-4 text-primary" />
-              <SectionHeading title="Colores / tela" subtitle="Tonos de la prenda principal." />
-            </div>
-            <FabricColorsSection
-              catalogColors={catalogColors}
-              baseColor={baseColor}
-              detailColor={detailColor}
-              onSelectBase={setBaseColor}
-              onSelectDetail={setDetailColor}
-              showDetail
-              compact
-            />
           </section>
         </div>
       </div>

@@ -18,7 +18,7 @@ import { SizeSection } from './sections/size-section'
 import { GarmentStyleSection } from './sections/garment-style-section'
 import { PersonalizationSection } from './sections/personalization-section'
 import { SavedDesignsSection } from './sections/saved-designs-section'
-import { ElementAddSection } from './sections/element-add-section'
+import { TextNamesSection } from './sections/text-names-section'
 import { LogoUploadSection } from './sections/logo-upload-section'
 import { Debug3dSection } from './sections/debug-3d-section'
 
@@ -68,31 +68,9 @@ function CategoryContent({
     case 'colores':
       return <ColorSection />
     case 'texto':
-      return (
-        <ElementAddSection
-          title="Texto"
-          description="Agrega una frase o palabra a tu prenda."
-          ctaLabel="Agregar texto"
-          elementType="text"
-          elementName="Texto"
-          matchTypes={['text']}
-          variant="text"
-        />
-      )
+      return <TextNamesSection />
     case 'logotipos':
       return onUploadLogo ? <LogoUploadSection onUploadLogo={onUploadLogo} /> : null
-    case 'nombres':
-      return (
-        <ElementAddSection
-          title="Nombres"
-          description="Agrega el nombre del chef o del equipo."
-          ctaLabel="Agregar nombre"
-          elementType="text"
-          elementName="Nombre"
-          matchTypes={['text']}
-          variant="name"
-        />
-      )
     case 'extras':
       return (
         <>

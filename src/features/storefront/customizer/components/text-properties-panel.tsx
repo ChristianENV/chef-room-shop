@@ -10,11 +10,21 @@ import type { Layer, TextAlign } from '../types/customizer.types'
 
 interface TextPropertiesPanelProps {
   layer: Layer
+  autoFocus?: boolean
+  /** Override input ids/test ids to avoid duplicates when rendered alongside the modal. */
+  inputId?: string
+  inputTestId?: string
 }
 
-export function TextPropertiesPanel({ layer }: TextPropertiesPanelProps) {
+export function TextPropertiesPanel({
+  layer,
+  autoFocus = false,
+  inputId = 'customizer-text-input',
+  inputTestId = 'customizer-text-input',
+}: TextPropertiesPanelProps) {
   const { updateTextElement } = useCustomizerStore()
   const textValue = layer.text ?? ''
+  const colorId = `${inputId}-color`
 
   const setAlign = (textAlign: TextAlign) => {
     updateTextElement(layer.id, { textAlign })
@@ -23,12 +33,13 @@ export function TextPropertiesPanel({ layer }: TextPropertiesPanelProps) {
   return (
     <div className="space-y-4 border-b border-border/40 pb-4">
       <div className="space-y-1.5">
-        <Label htmlFor="customizer-text-input" className="text-xs text-muted-foreground">
+        <Label htmlFor={inputId} className="text-xs text-muted-foreground">
           Contenido
         </Label>
         <Input
-          id="customizer-text-input"
-          data-testid="customizer-text-input"
+          id={inputId}
+          data-testid={inputTestId}
+          autoFocus={autoFocus}
           value={textValue}
           placeholder="Escribe el texto aquí"
           onChange={(event) => updateTextElement(layer.id, { text: event.target.value })}
@@ -50,12 +61,12 @@ export function TextPropertiesPanel({ layer }: TextPropertiesPanelProps) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="customizer-text-color" className="text-xs text-muted-foreground">
+        <Label htmlFor={colorId} className="text-xs text-muted-foreground">
           Color
         </Label>
         <div className="flex items-center gap-2">
           <input
-            id="customizer-text-color"
+            id={colorId}
             type="color"
             value={layer.textColor ?? '#FFFFFF'}
             onChange={(event) => updateTextElement(layer.id, { textColor: event.target.value })}

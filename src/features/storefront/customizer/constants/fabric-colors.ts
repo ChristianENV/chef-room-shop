@@ -28,6 +28,14 @@ export const DEFAULT_FABRIC_COLORS = [
 
 export const FABRIC_COLOR_GROUPS: FabricColorGroup[] = ['Esenciales', 'Neutros', 'Contemporáneos']
 
+/** Restricted palette for detail/trim accents (vivos, cuello y puños). */
+export const DETAIL_FABRIC_COLORS: NamedColor[] = [
+  { id: 'detail-white', name: 'Blanco', hex: '#F7F5EF' },
+  { id: 'detail-black', name: 'Negro', hex: '#171717' },
+  { id: 'detail-gray', name: 'Gris', hex: '#9CA3AF' },
+  { id: 'detail-orange', name: 'Naranja', hex: '#EA580C' },
+]
+
 /** Flat list for legacy `FALLBACK_COLORS` consumers. */
 export function fabricColorsAsNamedColors(): NamedColor[] {
   return DEFAULT_FABRIC_COLORS.map(({ id, name, hex }) => ({ id, name, hex }))

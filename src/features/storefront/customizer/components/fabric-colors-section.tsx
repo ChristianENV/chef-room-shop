@@ -73,6 +73,7 @@ function FabricColorSwatch({
 type FabricColorsSectionProps = {
   colors?: readonly FabricColor[]
   catalogColors?: NamedColor[]
+  detailColors?: NamedColor[]
   baseColor: string
   detailColor?: string
   onSelectBase: (hex: string) => void
@@ -85,6 +86,7 @@ type FabricColorsSectionProps = {
 export function FabricColorsSection({
   colors = DEFAULT_FABRIC_COLORS,
   catalogColors,
+  detailColors,
   baseColor,
   detailColor,
   onSelectBase,
@@ -141,16 +143,14 @@ export function FabricColorsSection({
         ),
       )}
 
-      {showDetail && onSelectDetail && detailColor !== undefined ? (
+      {showDetail && onSelectDetail && detailColor !== undefined && detailColors ? (
         <section className="space-y-3 border-t border-border/40 pt-4">
           <div>
             <h4 className="text-sm font-semibold text-foreground">Color de detalle</h4>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              Vivos y acentos (futuro — solo tono visual por ahora).
-            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">Vivos, cuello y puños.</p>
           </div>
           <div className={cn('flex flex-wrap gap-3', compact && 'gap-2.5')}>
-            {palette.slice(0, compact ? 8 : palette.length).map((color) => (
+            {detailColors.map((color) => (
               <FabricColorSwatch
                 key={`detail-${color.id}`}
                 color={color}

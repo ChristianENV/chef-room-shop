@@ -2,6 +2,7 @@
 
 import { useCustomizerStore } from '../../store/customizer.store'
 import { FabricColorsSection } from '../fabric-colors-section'
+import { DETAIL_FABRIC_COLORS } from '../../constants/fabric-colors'
 
 export function ColorSection() {
   const { product, baseColor, detailColor, setBaseColor, setDetailColor } = useCustomizerStore()
@@ -27,6 +28,7 @@ export function ColorSection() {
       <section data-testid="customizer-base-colors">
         <FabricColorsSection
           catalogColors={fromBff.length > 0 ? fromBff : undefined}
+          detailColors={DETAIL_FABRIC_COLORS}
           baseColor={baseColor}
           detailColor={detailColor}
           onSelectBase={setBaseColor}

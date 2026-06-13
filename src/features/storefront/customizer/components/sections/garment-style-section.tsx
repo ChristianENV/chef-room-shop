@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { CircleDot, EyeOff, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCustomizerStore } from '../../store/customizer.store'
-import type { ButtonStyle, CollarStyle, SleeveStyle } from '../../types/customizer.types'
+import type { ButtonStyle, SleeveStyle } from '../../types/customizer.types'
 
 function OptionCard({
   label,
@@ -52,31 +52,10 @@ function SleeveGlyph({ length }: { length: 'corta' | '3/4' | 'larga' }) {
   )
 }
 
-function CollarGlyph({ style }: { style: CollarStyle }) {
-  if (style === 'mao') {
-    return <span className="h-4 w-7 rounded-t-md border-2 border-current/60" />
-  }
-  if (style === 'granjero') {
-    return <span className="h-4 w-7 rotate-45 rounded-sm border-2 border-current/60" />
-  }
-  return (
-    <span className="relative h-4 w-7">
-      <span className="absolute left-0 top-0 h-4 w-3 -skew-x-12 border-l-2 border-t-2 border-current/60" />
-      <span className="absolute right-0 top-0 h-4 w-3 skew-x-12 border-r-2 border-t-2 border-current/60" />
-    </span>
-  )
-}
-
 const SLEEVES: { value: SleeveStyle; label: string }[] = [
   { value: 'corta', label: 'Corta' },
   { value: '3/4', label: '3/4' },
   { value: 'larga', label: 'Larga' },
-]
-
-const COLLARS: { value: CollarStyle; label: string }[] = [
-  { value: 'mao', label: 'Mao' },
-  { value: 'granjero', label: 'Granjero' },
-  { value: 'clasico', label: 'Clásico' },
 ]
 
 const BUTTONS: { value: ButtonStyle; label: string; icon: ReactNode }[] = [
@@ -86,14 +65,7 @@ const BUTTONS: { value: ButtonStyle; label: string; icon: ReactNode }[] = [
 ]
 
 export function GarmentStyleSection() {
-  const {
-    sleeveStyle,
-    collarStyle,
-    buttonStyle,
-    setSleeveStyle,
-    setCollarStyle,
-    setButtonStyle,
-  } = useCustomizerStore()
+  const { sleeveStyle, buttonStyle, setSleeveStyle, setButtonStyle } = useCustomizerStore()
 
   return (
     <div className="space-y-6 p-4">
@@ -107,21 +79,6 @@ export function GarmentStyleSection() {
               selected={sleeveStyle === item.value}
               onSelect={() => setSleeveStyle(item.value)}
               indicator={<SleeveGlyph length={item.value} />}
-            />
-          ))}
-        </div>
-      </section>
-
-      <section className="space-y-2">
-        <h3 className="text-sm font-semibold text-foreground">Cuello</h3>
-        <div className="grid grid-cols-3 gap-2">
-          {COLLARS.map((item) => (
-            <OptionCard
-              key={item.value}
-              label={item.label}
-              selected={collarStyle === item.value}
-              onSelect={() => setCollarStyle(item.value)}
-              indicator={<CollarGlyph style={item.value} />}
             />
           ))}
         </div>

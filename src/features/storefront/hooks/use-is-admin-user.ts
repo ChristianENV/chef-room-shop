@@ -7,11 +7,13 @@ import { getCurrentUserRedirectAction } from '@/src/server/auth/actions'
 /** True when the signed-in user has admin panel access (ADMIN / SUPERADMIN). */
 export function useIsAdminUser(): boolean {
   const { data: session } = useSession()
+  const userId = session?.user?.id ?? null
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    if (!session?.user?.id) {
-      setIsAdmin(false)
+    if (!userId) {
+      // Reset asynchronously to avoid triggering cascading renders.
+      Promise.resolve().then(() => setIsAdmin(false))
       return
     }
 
@@ -28,7 +30,7 @@ export function useIsAdminUser(): boolean {
     return () => {
       cancelled = true
     }
-  }, [session?.user?.id])
+  }, [userId])
 
   return isAdmin
 }

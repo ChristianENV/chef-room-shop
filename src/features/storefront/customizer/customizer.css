@@ -40,3 +40,16 @@
     scrollbar-color: color-mix(in oklab, var(--muted-foreground) 40%, transparent) transparent;
   }
 }
+
+/* Dynamic 3D viewport backdrop — radial depth, theme-aware. */
+.customizer-viewport-bg {
+  background:
+    radial-gradient(125% 125% at 50% 12%, #eef0fb 0%, #dde0f0 42%, #c5c9df 100%),
+    #d6d9e8;
+}
+
+.dark .customizer-viewport-bg {
+  background:
+    radial-gradient(120% 120% at 50% 14%, #232a55 0%, #141833 46%, #090b1c 100%),
+    #090b1c;
+}
