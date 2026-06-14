@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { STRUCTURAL_LAYERS } from '../lib/customizer-defaults'
 import { isEditableElement } from '../lib/customizer-utils'
+import { parseDesignConfigForHydration } from '../lib/parse-design-config'
 import {
   computeDefaultCustomizerVariant,
   findColorByHex,
@@ -58,6 +59,14 @@ type CustomizerState = DesignSnapshot & {
   past: DesignSnapshot[]
   future: DesignSnapshot[]
   initFromProduct: (product: CustomizerProductData) => void
+  hydrateFromDesign: (
+    product: CustomizerProductData,
+    input: {
+      designId: string
+      configJson: unknown
+      updatedAt?: string | null
+    },
+  ) => void
   syncProductCatalog: (product: CustomizerProductData) => void
   setSelectedProduct: (product: CustomizerProductData) => void
   resetDesignForProduct: (product: CustomizerProductData) => void
@@ -244,6 +253,39 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
     ...INITIAL_STATE,
 
     initFromProduct: (product) => set(() => buildProductState(product)),
+    hydrateFromDesign: (product, input) =>
+      set(() => {
+        const base = buildProductState(product)
+        const parsed = parseDesignConfigForHydration(input.configJson, product)
+        const resolved = resolveCustomizerVariant(product, {
+          baseColor: parsed.baseColor,
+          size: parsed.size,
+        })
+
+        return {
+          ...base,
+          selectedVariantId: parsed.selectedVariantId ?? resolved?.id ?? base.selectedVariantId,
+          baseColor: parsed.baseColor,
+          detailColor: parsed.detailColor,
+          collarStyle: parsed.collarStyle,
+          sleeveStyle: parsed.sleeveStyle,
+          sleeveOption: parsed.sleeveOption,
+          buttonStyle: parsed.buttonStyle,
+          size: parsed.size,
+          quantity: parsed.quantity,
+          viewMode: parsed.viewMode,
+          viewAngle: parsed.viewAngle,
+          layers: parsed.layers,
+          selectedLayerId: parsed.selectedLayerId,
+          activeTool: parsed.activeTool,
+          designId: input.designId,
+          isDirty: false,
+          lastSavedAt: input.updatedAt ?? null,
+          saveStatus: 'saved',
+          past: [],
+          future: [],
+        }
+      }),
     syncProductCatalog: (product) =>
       set((state) => {
         if (state.product?.id !== product.id) {

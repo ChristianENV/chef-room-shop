@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { routes } from '@/src/config/routes'
+import type { AccountDesign } from '@/src/features/storefront/account/types'
 import type { CatalogProduct } from '@/src/features/storefront/catalog/types'
 import { useAddCartItemMutation } from '@/src/features/storefront/cart/api/use-add-cart-item-mutation'
 import type { CustomizerProductData } from '../types/customizer-product.types'
@@ -16,6 +17,7 @@ import { ensureDesignPreviews } from '../lib/ensure-design-previews'
 import { readPreviewsFromConfig } from '../lib/design-preview-config'
 import { uploadDesignPreviewBlobs } from '../lib/upload-design-previews'
 import { buildDesignConfigJson } from '../lib/build-design-config'
+import { cacheGuestDesign } from '../lib/guest-design-cache'
 import {
   CUSTOMIZER_CART_VARIANT_MESSAGES,
   validateCustomizerCartVariant,
@@ -31,6 +33,7 @@ interface CustomizerShellProps {
   productOptions?: CatalogProduct[]
   selectedProductSlug?: string | null
   onSelectProduct?: (slug: string) => void
+  loadedDesign?: AccountDesign | null
 }
 
 function savePhaseLabel(phase: SavePhase, isDirty: boolean, saveStatus: string): string {
@@ -64,9 +67,11 @@ export function CustomizerShell({
   productOptions = [],
   selectedProductSlug,
   onSelectProduct,
+  loadedDesign = null,
 }: CustomizerShellProps) {
   const {
     initFromProduct,
+    hydrateFromDesign,
     syncProductCatalog,
     setDesignId,
     setSaveStatus,
@@ -105,6 +110,7 @@ export function CustomizerShell({
   const viewportCaptureRef = useRef<ViewportCaptureHandle>(null)
   const previewUrlRef = useRef<string | null>(null)
   const configJsonRef = useRef<unknown>(null)
+  const hydratedDesignIdRef = useRef<string | null>(null)
 
   const [cartActionError, setCartActionError] = useState<string | null>(null)
   const [addToCartSuccessOpen, setAddToCartSuccessOpen] = useState(false)
@@ -122,12 +128,28 @@ export function CustomizerShell({
   )
 
   const canAddToCart = cartVariantValidation.status === 'ok'
+  const isEditingSavedDesign = Boolean(loadedDesign?.id)
 
-  // Initialize store before paint so color/size panels never use fallback on first frame.
+  // Initialize or hydrate store before paint so panels never use fallback on first frame.
   useLayoutEffect(() => {
+    if (loadedDesign && hydratedDesignIdRef.current !== loadedDesign.id) {
+      hydrateFromDesign(product, {
+        designId: loadedDesign.id,
+        configJson: loadedDesign.configJson,
+        updatedAt: loadedDesign.updatedAt,
+      })
+      previewUrlRef.current = loadedDesign.previewUrl
+      configJsonRef.current = loadedDesign.configJson
+      hydratedDesignIdRef.current = loadedDesign.id
+      return
+    }
+
+    if (loadedDesign) return
+
     initFromProduct(product)
+    hydratedDesignIdRef.current = null
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reset only when switching products
-  }, [product.id, product.slug, initFromProduct])
+  }, [product.id, product.slug, loadedDesign, hydrateFromDesign, initFromProduct])
 
   // Keep catalog variants/colors/sizes in sync when BFF data refreshes (rules, stock).
   useEffect(() => {
@@ -199,6 +221,7 @@ export function CustomizerShell({
         setDesignId(created.id)
         previewUrlRef.current = created.previewUrl
         configJsonRef.current = created.configJson
+        cacheGuestDesign(created)
         return created.id
       }
 
@@ -208,6 +231,7 @@ export function CustomizerShell({
       })
       previewUrlRef.current = updated.previewUrl
       configJsonRef.current = updated.configJson
+      cacheGuestDesign(updated)
       return designId
     },
     [
@@ -493,6 +517,14 @@ export function CustomizerShell({
         </Button>
         <p className="text-xs text-muted-foreground">Diseña tu uniforme</p>
       </header>
+      {isEditingSavedDesign ? (
+        <div
+          className="border-b border-primary/20 bg-primary/5 px-4 py-2 text-sm text-foreground"
+          data-testid="customizer-editing-saved-design-banner"
+        >
+          Editando diseño guardado
+        </div>
+      ) : null}
       {previewWarning ? (
         <div className="border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm text-amber-800 dark:text-amber-200">
           {previewWarning}
