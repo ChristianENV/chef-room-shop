@@ -115,7 +115,7 @@ export function SizeSection() {
               type="button"
               disabled={disabled}
               onClick={() => setSize(item.name)}
-              data-testid="customizer-size-option"
+              data-testid={`customizer-size-option-${item.name.toLowerCase()}`}
               className={cn(
                 'flex h-11 items-center justify-center rounded-lg border text-sm font-medium transition',
                 selected

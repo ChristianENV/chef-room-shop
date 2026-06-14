@@ -42,6 +42,28 @@ export const MY_CART_QUERY = /* GraphQL */ `
         customizationSnapshot {
           designId
           previewUrl
+          previewBackUrl
+          selectedVariantId
+          selectedSize {
+            id
+            name
+            label
+          }
+          selectedColor {
+            id
+            name
+            hex
+            label
+          }
+          fabricColor {
+            name
+            hex
+          }
+          detailColor {
+            name
+            hex
+          }
+          selectedOptions
           summary
           areas
           hasLogo

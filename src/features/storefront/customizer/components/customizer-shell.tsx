@@ -168,41 +168,68 @@ export function CustomizerShell({
     ],
   )
 
-  const persistConfig = useCallback(async (): Promise<string | null> => {
-    if (!product) return null
-    const existingPreviews = readPreviewsFromConfig(configJsonRef.current)
-    const payload = existingPreviews
-      ? { ...configJson, previews: existingPreviews }
-      : configJson
+  const persistConfig = useCallback(
+    async (overrides?: { productVariantId?: string | null }): Promise<string | null> => {
+      if (!product) return null
+      const existingPreviews = readPreviewsFromConfig(configJsonRef.current)
+      const variantId = overrides?.productVariantId ?? selectedVariantId
+      const payloadBase = buildDesignConfigJson({
+        product,
+        productVariantId: variantId,
+        baseColor,
+        detailColor,
+        collarStyle,
+        sleeveStyle,
+        sleeveOption,
+        buttonStyle,
+        size,
+        quantity,
+        viewMode,
+        viewAngle,
+        layers,
+      })
+      const payload = existingPreviews ? { ...payloadBase, previews: existingPreviews } : payloadBase
 
-    if (!designId) {
-      const created = await createDraft.mutateAsync({
-        productId: product.id,
-        productVariantId: selectedVariantId,
+      if (!designId) {
+        const created = await createDraft.mutateAsync({
+          productId: product.id,
+          productVariantId: variantId,
+          configJson: payload,
+        })
+        setDesignId(created.id)
+        previewUrlRef.current = created.previewUrl
+        configJsonRef.current = created.configJson
+        return created.id
+      }
+
+      const updated = await updateDesign.mutateAsync({
+        designId,
         configJson: payload,
       })
-      setDesignId(created.id)
-      previewUrlRef.current = created.previewUrl
-      configJsonRef.current = created.configJson
-      return created.id
-    }
-
-    const updated = await updateDesign.mutateAsync({
+      previewUrlRef.current = updated.previewUrl
+      configJsonRef.current = updated.configJson
+      return designId
+    },
+    [
+      product,
       designId,
-      configJson: payload,
-    })
-    previewUrlRef.current = updated.previewUrl
-    configJsonRef.current = updated.configJson
-    return designId
-  }, [
-    product,
-    configJson,
-    designId,
-    createDraft,
-    selectedVariantId,
-    setDesignId,
-    updateDesign,
-  ])
+      createDraft,
+      selectedVariantId,
+      baseColor,
+      detailColor,
+      collarStyle,
+      sleeveStyle,
+      sleeveOption,
+      buttonStyle,
+      size,
+      quantity,
+      viewMode,
+      viewAngle,
+      layers,
+      setDesignId,
+      updateDesign,
+    ],
+  )
 
   const captureAndUploadPreviews = useCallback(
     async (targetDesignId: string): Promise<boolean> => {
@@ -324,14 +351,15 @@ export function CustomizerShell({
     }
 
     const resolvedVariant = validation.variant
+    const resolvedVariantId = resolvedVariant?.id ?? null
 
-    if (resolvedVariant && resolvedVariant.id !== selectedVariantId) {
-      setSelectedVariant(resolvedVariant.id)
+    if (resolvedVariantId && resolvedVariantId !== selectedVariantId) {
+      setSelectedVariant(resolvedVariantId)
     }
 
     let ensuredDesignId = designId
     if (!ensuredDesignId || isDirty) {
-      ensuredDesignId = await runSaveConfig()
+      ensuredDesignId = await persistConfig({ productVariantId: resolvedVariantId })
     }
 
     if (!ensuredDesignId) {
@@ -364,7 +392,7 @@ export function CustomizerShell({
     try {
       await addToCart.mutateAsync({
         productId: product.id,
-        productVariantId: resolvedVariant?.id ?? null,
+        productVariantId: resolvedVariantId,
         designId: ensuredDesignId,
         quantity,
       })

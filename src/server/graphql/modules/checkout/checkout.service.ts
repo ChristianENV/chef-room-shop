@@ -19,6 +19,7 @@ import {
 import type { CartConfigSnapshotJson, CartItemWithRelations } from '../cart/cart.types'
 import type { GraphQLContext } from '../../context'
 import { getActiveCartForCheckout, resolveCheckoutOwner } from './checkout.auth'
+import { enrichProductSnapshotWithConfig } from '@/src/lib/customization/build-customization-snapshot'
 import { resolveCheckoutShippingRate } from './checkout-shipping'
 import {
   mapOrderToCheckoutPayload,
@@ -98,11 +99,15 @@ export function computeCheckoutTotalsFromCartItems(
 function buildOrderProductSnapshot(
   item: CartItemWithRelations,
 ): Prisma.InputJsonValue {
-  const fromConfig = parseConfigSnapshot(item.configSnapshotJson).productSnapshot
+  const parsed = parseConfigSnapshot(item.configSnapshotJson)
+  const fromConfig = parsed.productSnapshot
   if (fromConfig) {
-    return fromConfig as Prisma.InputJsonValue
+    return enrichProductSnapshotWithConfig(
+      fromConfig,
+      item.design?.configJson ?? parsed.designSnapshot?.configJson,
+    ) as Prisma.InputJsonValue
   }
-  return buildProductSnapshot(item) as Prisma.InputJsonValue
+  return buildProductSnapshot(item, item.design?.configJson) as Prisma.InputJsonValue
 }
 
 function buildOrderDesignSnapshot(
@@ -113,10 +118,10 @@ function buildOrderDesignSnapshot(
     return fromConfig as Prisma.InputJsonValue
   }
   if (!item.design) return undefined
-  return buildCustomizationSnapshot(
-    item.design,
-    item.design.configJson,
-  ) as Prisma.InputJsonValue
+  return buildCustomizationSnapshot(item.design, item.design.configJson, {
+    variant: item.productVariant,
+    customizationPriceCents: item.customizationPriceCents,
+  }) as Prisma.InputJsonValue
 }
 
 export type CreateCheckoutOrderCoreResult = {

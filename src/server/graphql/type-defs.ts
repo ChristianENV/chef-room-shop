@@ -309,9 +309,35 @@ export const cartTypeDefs = /* GraphQL */ `
     sizeName: String
   }
 
+  type CartSnapshotColor {
+    id: ID
+    name: String
+    hex: String
+    label: String
+  }
+
+  type CartSnapshotSize {
+    id: ID
+    name: String
+    label: String
+  }
+
+  type CartSnapshotFabricColor {
+    name: String
+    hex: String
+  }
+
   type CartCustomizationSnapshot {
     designId: ID
     previewUrl: String
+    previewBackUrl: String
+    selectedVariantId: ID
+    selectedSize: CartSnapshotSize
+    selectedColor: CartSnapshotColor
+    fabricColor: CartSnapshotFabricColor
+    detailColor: CartSnapshotFabricColor
+    selectedOptions: JSON
+    customizationPriceCents: Int
     summary: [String!]!
     areas: [String!]!
     hasLogo: Boolean!

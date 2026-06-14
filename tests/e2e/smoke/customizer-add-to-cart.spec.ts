@@ -18,7 +18,10 @@ test('customize -> add to cart smoke', async ({ page }) => {
   await page.goto(`/customize/${CUSTOMIZER_SLUG}`)
   await expect(page.getByTestId('customizer-root')).toBeVisible()
 
-  await selectCustomizerColorAndSize(page)
+  await selectCustomizerColorAndSize(page, {
+    colorId: 'chef-room-blue',
+    sizeLabel: 'L',
+  })
 
   await page.getByRole('button', { name: /texto/i }).first().click()
   const addTextButton = page.getByTestId('customizer-add-text-button').first()
@@ -48,6 +51,10 @@ test('customize -> add to cart smoke', async ({ page }) => {
   const cartItems = page.getByTestId('cart-item-card')
   await expect(cartItems.first()).toBeVisible()
   await expect(page.getByTestId('cart-custom-design-badge').first()).toBeVisible()
+  await expect(page.getByTestId('cart-item-selected-size').first()).toContainText('L')
+  await expect(page.getByTestId('cart-item-selected-fabric-color').first()).toContainText(
+    /Azul Chef Room/i,
+  )
   await expect(page.getByTestId('cart-customization-summary').first()).toContainText('Chef Carlos')
 
   if (!USE_PREVIEW_MOCK) {

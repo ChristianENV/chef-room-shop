@@ -5,6 +5,7 @@ import type {
   CartPreviewCustomizationSummary,
   CartPreviewItem,
 } from '@/src/types/cart'
+import { buildCustomizationSummaryLine } from '@/src/lib/customization/build-customization-snapshot'
 import { centsToPesos } from '@/src/lib/formatters'
 import {
   FREE_SHIPPING_THRESHOLD_MXN,
@@ -74,11 +75,67 @@ export function getCartItemCustomizationSummary(
  */
 export function mapBffCartItemToUiItem(item: CartItem): CartPreviewItem {
   const snapshot = item.productSnapshot
+  const customization = item.customizationSnapshot
   const slug = snapshot?.slug ?? item.product?.slug ?? ''
+
+  const sizeLabel =
+    snapshot?.sizeName ??
+    customization?.selectedSize?.label ??
+    customization?.selectedSize?.name ??
+    customization?.selectedOptions?.sizeLabel ??
+    customization?.selectedOptions?.size ??
+    '—'
+
+  const fabricColorName =
+    customization?.fabricColor?.name ??
+    snapshot?.colorName ??
+    customization?.selectedColor?.name ??
+    '—'
+
+  const fabricColorHex =
+    customization?.fabricColor?.hex ??
+    snapshot?.colorHex ??
+    customization?.selectedColor?.hex ??
+    DEFAULT_COLOR_HEX
+
+  const detailColorName = customization?.detailColor?.name ?? null
+  const detailColorHex = customization?.detailColor?.hex ?? null
+
+  const summaryLine = customization
+    ? buildCustomizationSummaryLine({
+        designId: customization.designId,
+        previewUrl: customization.previewUrl,
+        previewBackUrl: customization.previewBackUrl ?? null,
+        selectedVariantId: customization.selectedVariantId ?? null,
+        selectedSize: customization.selectedSize ?? { id: null, name: null, label: null },
+        selectedColor: customization.selectedColor ?? {
+          id: null,
+          name: null,
+          hex: null,
+          label: null,
+        },
+        fabricColor: customization.fabricColor ?? { name: null, hex: null },
+        detailColor: customization.detailColor ?? { name: null, hex: null },
+        elements: customization.elements ?? [],
+        selectedOptions: customization.selectedOptions ?? {},
+        customizationPriceCents: customization.customizationPriceCents ?? null,
+        summary: customization.summary,
+        areas: customization.areas,
+        hasLogo: customization.hasLogo,
+        hasEmbroidery: customization.hasEmbroidery,
+        embroideredName: customization.embroideredName,
+      })
+    : null
+
   const isCustomized =
     Boolean(item.designId) ||
     item.customizationPriceCents > 0 ||
-    Boolean(item.customizationSnapshot?.designId)
+    Boolean(customization?.designId)
+
+  const customizationSummary = getCartItemCustomizationSummary(item)
+  if (summaryLine && customizationSummary) {
+    customizationSummary.personalizationLine = summaryLine
+  }
 
   return {
     id: item.id,
@@ -87,9 +144,11 @@ export function mapBffCartItemToUiItem(item: CartItem): CartPreviewItem {
     productName: snapshot?.name ?? item.product?.name ?? 'Producto',
     category: inferCartCategory(slug, snapshot?.productType ?? null),
     imageUrl: getCartItemDisplayImage(item),
-    size: snapshot?.sizeName ?? '—',
-    colorName: snapshot?.colorName ?? '—',
-    colorHex: snapshot?.colorHex ?? DEFAULT_COLOR_HEX,
+    size: typeof sizeLabel === 'string' ? sizeLabel : String(sizeLabel ?? '—'),
+    colorName: fabricColorName,
+    colorHex: fabricColorHex,
+    detailColorName,
+    detailColorHex,
     quantity: item.quantity,
     unitPrice: centsToPesos(item.unitPriceCents),
     customizationPrice:
@@ -97,9 +156,9 @@ export function mapBffCartItemToUiItem(item: CartItem): CartPreviewItem {
         ? centsToPesos(item.customizationPriceCents)
         : undefined,
     isCustomized,
-    designId: item.designId ?? item.customizationSnapshot?.designId ?? undefined,
-    designPreviewUrl: item.customizationSnapshot?.previewUrl ?? undefined,
-    customizationSummary: getCartItemCustomizationSummary(item),
+    designId: item.designId ?? customization?.designId ?? undefined,
+    designPreviewUrl: customization?.previewUrl ?? undefined,
+    customizationSummary,
   }
 }
 

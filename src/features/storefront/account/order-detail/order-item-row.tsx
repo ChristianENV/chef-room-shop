@@ -23,6 +23,16 @@ export function OrderItemRow({ item }: OrderItemRowProps) {
   const unitPesos = centsToPesos(item.unitPriceCents)
   const linePesos = centsToPesos(item.totalPriceCents)
 
+  const sizeLabel =
+    product.sizeName ?? design?.selectedSize?.label ?? design?.selectedSize?.name ?? null
+  const fabricColorName =
+    product.fabricColorName ??
+    product.colorName ??
+    design?.fabricColor?.name ??
+    design?.selectedColor?.name ??
+    null
+  const detailColorName = design?.detailColor?.name ?? product.detailColorName ?? null
+
   return (
     <li className="flex gap-4 border-b border-border py-5 last:border-0 last:pb-0">
       <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-border bg-secondary/50">
@@ -48,8 +58,19 @@ export function OrderItemRow({ item }: OrderItemRowProps) {
             <p className="mt-1 font-serif text-sm text-muted-foreground">
               Cantidad: {item.quantity}
               {item.sku || product.sku ? ` · SKU ${item.sku ?? product.sku}` : ''}
-              {product.sizeName ? ` · Talla ${product.sizeName}` : ''}
-              {product.colorName ? ` · ${product.colorName}` : ''}
+              {sizeLabel ? (
+                <>
+                  {' · '}
+                  <span data-testid="order-item-selected-size">Talla {sizeLabel}</span>
+                </>
+              ) : null}
+              {fabricColorName ? (
+                <>
+                  {' · '}
+                  <span data-testid="order-item-selected-fabric-color">Tela {fabricColorName}</span>
+                </>
+              ) : null}
+              {detailColorName ? ` · Detalle ${detailColorName}` : null}
             </p>
             <p className="font-serif text-xs text-muted-foreground">
               {formatCurrencyMXN(unitPesos)} c/u
