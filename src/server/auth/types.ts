@@ -1,4 +1,4 @@
-import type { RoleSlug } from '@prisma/client'
+import type { RoleSlug, CustomerTier } from '@prisma/client'
 
 /** Authenticated user with Chef Room RBAC (from Better Auth session + Prisma). */
 export type CurrentUser = {
@@ -10,6 +10,7 @@ export type CurrentUser = {
   lastName: string | null
   phone: string | null
   image: string | null
+  customerTier: CustomerTier
   roles: RoleSlug[]
   permissions: string[]
 }

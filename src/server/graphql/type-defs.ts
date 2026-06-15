@@ -139,6 +139,7 @@ export const accountTypeDefs = /* GraphQL */ `
     phone: String
     image: String
     marketingOptIn: Boolean!
+    customerTier: String!
     roles: [String!]!
     createdAt: String!
   }

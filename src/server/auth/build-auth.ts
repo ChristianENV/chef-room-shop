@@ -107,6 +107,12 @@ export function buildAuth(database: PrismaClient) {
           defaultValue: false,
           input: true,
         },
+        customerTier: {
+          type: 'string',
+          required: false,
+          defaultValue: 'REGULAR',
+          input: false,
+        },
         deletedAt: {
           type: 'date',
           required: false,

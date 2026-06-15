@@ -47,6 +47,7 @@ import {
   type NavLink,
 } from '@/src/config/navigation.storefront'
 import { getUserDisplayName, type UserDisplayInput } from '@/src/lib/user/user-display'
+import { CustomerTierBadge } from '@/src/features/storefront/account/components/customer-tier-badge'
 
 const NAVBAR_SURFACE =
   'border-b border-white/[0.08] bg-[#121421]/95 text-white shadow-[0_8px_32px_rgba(0,0,0,0.12)] backdrop-blur-xl'
@@ -81,12 +82,14 @@ function AccountMenu({
   isAdmin = false,
   onSignOut,
   user,
+  customerTier,
   triggerClassName,
 }: {
   isLoggedIn?: boolean
   isAdmin?: boolean
   onSignOut?: () => void | Promise<void>
   user?: UserDisplayInput | null
+  customerTier?: string | null
   triggerClassName?: string
 }) {
   const accountLabel =
@@ -117,6 +120,12 @@ function AccountMenu({
       <DropdownMenuContent align="end" className={cn('w-52', DROPDOWN_PANEL)}>
         {isLoggedIn ? (
           <>
+            <div className="border-b border-white/10 px-2 py-2">
+              <p className="truncate text-sm font-medium text-white">
+                {user ? getUserDisplayName(user) : 'Mi cuenta'}
+              </p>
+              <CustomerTierBadge customerTier={customerTier} className="mt-1" />
+            </div>
             <DropdownMenuItem asChild className="focus:bg-white/10 focus:text-white">
               <Link href={routes.account}>Mi perfil</Link>
             </DropdownMenuItem>
@@ -228,6 +237,7 @@ export interface PublicHeaderProps {
   isLoggedIn?: boolean
   user?: UserDisplayInput | null
   isAdmin?: boolean
+  customerTier?: string | null
   onSignOut?: () => void | Promise<void>
 }
 
@@ -239,6 +249,7 @@ function PublicHeaderInner({
   isLoggedIn = false,
   user,
   isAdmin = false,
+  customerTier = null,
   onSignOut,
   searchParams,
 }: PublicHeaderInnerProps) {
@@ -345,6 +356,7 @@ function PublicHeaderInner({
                 isAdmin={isAdmin}
                 onSignOut={onSignOut}
                 user={user}
+                customerTier={customerTier}
               />
               <CartPopover
                 triggerClassName={ICON_BTN}
@@ -381,6 +393,7 @@ function PublicHeaderInner({
               isAdmin={isAdmin}
               onSignOut={onSignOut}
               user={user}
+              customerTier={customerTier}
             />
 
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>

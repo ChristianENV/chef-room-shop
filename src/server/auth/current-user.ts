@@ -1,6 +1,6 @@
 import 'server-only'
 
-import type { RoleSlug } from '@prisma/client'
+import type { RoleSlug, CustomerTier } from '@prisma/client'
 import { headers } from 'next/headers'
 
 import { prisma } from '@/src/server/db/prisma'
@@ -18,6 +18,7 @@ type UserWithRoles = {
   phone: string | null
   image: string | null
   deletedAt: Date | null
+  customerTier: CustomerTier
   roles: {
     role: {
       slug: RoleSlug
@@ -48,6 +49,7 @@ export function mapPrismaUserToCurrentUser(user: UserWithRoles): CurrentUser {
     lastName: user.lastName,
     phone: user.phone,
     image: user.image,
+    customerTier: user.customerTier,
     roles,
     permissions: [...permissionSet],
   }

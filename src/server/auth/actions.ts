@@ -100,11 +100,12 @@ export async function getCurrentUserRedirectAction(): Promise<{
   authenticated: boolean
   redirectTo: string | null
   isAdmin: boolean
+  customerTier: string | null
 }> {
   const user = await getCurrentUser()
 
   if (!user) {
-    return { authenticated: false, redirectTo: null, isAdmin: false }
+    return { authenticated: false, redirectTo: null, isAdmin: false, customerTier: null }
   }
 
   const isAdmin = await userHasAdminAccess(user.id)
@@ -113,6 +114,7 @@ export async function getCurrentUserRedirectAction(): Promise<{
     authenticated: true,
     redirectTo: getPostAuthRedirectPath({ roles: user.roles }),
     isAdmin,
+    customerTier: user.customerTier,
   }
 }
 

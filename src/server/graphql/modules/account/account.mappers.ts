@@ -135,6 +135,7 @@ export function mapUserToAccountUser(user: UserWithRoles): AccountUserGql {
     phone: user.phone,
     image: user.image,
     marketingOptIn: user.marketingOptIn,
+    customerTier: user.customerTier,
     roles: user.roles.map((r) => r.role.slug),
     createdAt: user.createdAt.toISOString(),
   }

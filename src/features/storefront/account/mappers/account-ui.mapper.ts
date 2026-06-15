@@ -10,6 +10,7 @@ import type {
   UserProfile,
 } from '@/lib/types'
 import { centsToPesos } from '@/src/lib/formatters'
+import { mapCustomerTierToUiStatus } from '@/src/lib/customer/customer-tier'
 import { extractSelectionFromConfigJson } from '@/src/lib/customization/build-customization-snapshot'
 import { resolveDesignPreviewUrl } from '../lib/design-preview.utils'
 import type {
@@ -69,7 +70,7 @@ export function mapAccountUserToProfile(user: AccountUser): UserProfile {
     phone: user.phone ?? '',
     avatar: user.image ?? undefined,
     createdAt: user.createdAt,
-    customerStatus: 'regular',
+    customerStatus: mapCustomerTierToUiStatus(user.customerTier),
   }
 }
 

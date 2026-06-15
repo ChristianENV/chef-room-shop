@@ -14,6 +14,7 @@ export function PublicNavbarSession() {
   const router = useRouter()
   const { data: session, isPending } = useSession()
   const [isAdmin, setIsAdmin] = useState(false)
+  const [customerTier, setCustomerTier] = useState<string | null>(null)
 
   const user = session?.user
   const isLoggedIn = Boolean(user)
@@ -27,11 +28,13 @@ export function PublicNavbarSession() {
       .then((result) => {
         if (!cancelled) {
           setIsAdmin(result.isAdmin)
+          setCustomerTier(result.customerTier)
         }
       })
       .catch(() => {
         if (!cancelled) {
           setIsAdmin(false)
+          setCustomerTier(null)
         }
       })
 
@@ -51,6 +54,7 @@ export function PublicNavbarSession() {
       isLoggedIn={isLoggedIn && !isPending}
       user={user}
       isAdmin={isAdmin}
+      customerTier={customerTier}
       onSignOut={handleSignOut}
     />
   )

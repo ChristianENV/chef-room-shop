@@ -13,6 +13,7 @@ export const ME_PROFILE_QUERY = /* GraphQL */ `
       phone
       image
       marketingOptIn
+      customerTier
       roles
       createdAt
     }

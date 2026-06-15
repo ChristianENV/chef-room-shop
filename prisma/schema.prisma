@@ -21,6 +21,12 @@ enum UserStatus {
   DELETED
 }
 
+enum CustomerTier {
+  REGULAR
+  PREMIUM
+  VIP
+}
+
 enum RoleSlug {
   CUSTOMER
   ADMIN
@@ -191,6 +197,7 @@ model User {
   /// Profile image URL (Better Auth `image`; synced from Google, etc.).
   image         String?
   status        UserStatus @default(ACTIVE)
+  customerTier  CustomerTier @default(REGULAR)
   firstName     String?
   lastName      String?
   phone         String?
@@ -214,6 +221,7 @@ model User {
   orderClaimTransferRequests OrderClaimTransferRequest[]
 
   @@index([status])
+  @@index([customerTier])
   @@index([deletedAt])
   @@map("users")
 }
