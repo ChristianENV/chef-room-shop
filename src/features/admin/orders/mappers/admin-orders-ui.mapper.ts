@@ -3,7 +3,6 @@ import {
   formatCurrencyMXN,
 } from '@/src/lib/formatters'
 import {
-  parseDesignSnapshot,
   parseProductSnapshot,
 } from '@/src/features/storefront/account/order-detail/order-detail.utils'
 
@@ -15,13 +14,14 @@ import type {
   AdminOrdersFilterInput,
   AdminOrdersListVariables,
 } from '../types'
+import {
+  buildAdminCustomizationFromItem,
+} from '../lib/admin-customization.utils'
 import type {
   AdminOrderStatusFilter,
   AdminOrdersProductionSheetUi,
   AdminOrdersStatusCardCounts,
   AdminOrdersUiAddress,
-  AdminOrdersUiCustomization,
-  AdminOrdersUiCustomizationArea,
   AdminOrdersUiItem,
   AdminOrdersUiOrder,
   AdminOrdersUiTableRow,
@@ -110,19 +110,6 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
   CASH: 'Efectivo',
   OTHER: 'Otro',
   MANUAL: 'Manual',
-}
-
-type LayerSnapshot = {
-  type?: string
-  areaName?: string
-  areaId?: string
-  text?: string
-  logoUrl?: string
-  font?: string
-  color?: string
-  width?: number
-  height?: number
-  priceCents?: number
 }
 
 /**
@@ -244,82 +231,11 @@ function mapAddressToUi(
   }
 }
 
-function buildCustomizationFromSnapshots(
-  item: AdminOrderItem,
-): AdminOrdersUiCustomization | undefined {
-  if (!item.hasCustomDesign) return undefined
-
-  const design = parseDesignSnapshot(item.designSnapshotJson)
-  const areas: AdminOrdersUiCustomizationArea[] = []
-
-  if (design?.areas?.length) {
-    design.areas.forEach((areaName, index) => {
-      areas.push({
-        areaId: `area-${index}`,
-        areaName,
-        type: design.hasEmbroidery ? 'bordado' : design.hasLogo ? 'logo' : 'personalización',
-        text: design.embroideredName ?? undefined,
-        width: 0,
-        height: 0,
-        price: centsToPesos(item.customizationPriceCents),
-      })
-    })
-  }
-
-  const raw = item.designSnapshotJson
-  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
-    const record = raw as Record<string, unknown>
-    const layers = record.layers
-    if (Array.isArray(layers)) {
-      layers.forEach((layer, index) => {
-        if (!layer || typeof layer !== 'object') return
-        const l = layer as LayerSnapshot
-        areas.push({
-          areaId: l.areaId ?? `layer-${index}`,
-          areaName: l.areaName ?? `Área ${index + 1}`,
-          type: l.type ?? 'personalización',
-          text: l.text,
-          logoUrl: l.logoUrl,
-          font: l.font,
-          color: l.color,
-          width: l.width ?? 0,
-          height: l.height ?? 0,
-          price: centsToPesos(l.priceCents ?? item.customizationPriceCents),
-        })
-      })
-    }
-  }
-
-  if (areas.length === 0 && design?.summary?.length) {
-    design.summary.forEach((line, index) => {
-      areas.push({
-        areaId: `summary-${index}`,
-        areaName: line,
-        type: 'resumen',
-        width: 0,
-        height: 0,
-        price: 0,
-      })
-    })
-  }
-
-  if (areas.length === 0 && !design) {
-    return undefined
-  }
-
-  return {
-    designId: item.designId ?? design?.designId ?? '—',
-    previewUrl: design?.previewUrl ?? '',
-    areas,
-    productionNotes: item.productionNotes ?? undefined,
-    summaryLines: design?.summary,
-  }
-}
-
 function mapItemToUi(item: AdminOrderItem): AdminOrdersUiItem {
   const product = parseProductSnapshot(item.productSnapshotJson)
   const unitPesos = centsToPesos(item.unitPriceCents)
   const linePesos = centsToPesos(item.lineTotalCents)
+  const customizationPesos = centsToPesos(item.customizationPriceCents)
 
   return {
     id: item.id,
@@ -327,14 +243,15 @@ function mapItemToUi(item: AdminOrderItem): AdminOrdersUiItem {
     productName: item.name,
     productImage: product.imageUrl ?? '',
     sku: item.sku ?? product.sku ?? '—',
-    color: product.colorName ?? '—',
-    colorHex: '#e5e5e5',
+    color: product.fabricColorName ?? product.colorName ?? '—',
+    colorHex: product.colorHex ?? '#e5e5e5',
     size: product.sizeName ?? '—',
     quantity: item.quantity,
     unitPrice: unitPesos,
     totalPrice: linePesos,
+    customizationPrice: customizationPesos,
     hasCustomization: item.hasCustomDesign,
-    customization: buildCustomizationFromSnapshots(item),
+    customization: buildAdminCustomizationFromItem(item),
   }
 }
 

@@ -3,6 +3,11 @@ import { STRUCTURAL_LAYERS } from '../lib/customizer-defaults'
 import { isEditableElement } from '../lib/customizer-utils'
 import { parseDesignConfigForHydration } from '../lib/parse-design-config'
 import {
+  buildCustomizerBaseline,
+  hasMeaningfulCustomization,
+  type CustomizerBaseline,
+} from '../lib/customizer-save-intent'
+import {
   computeDefaultCustomizerVariant,
   findColorByHex,
   findSizeByLabel,
@@ -56,6 +61,9 @@ type CustomizerState = DesignSnapshot & {
   isDirty: boolean
   lastSavedAt: string | null
   saveStatus: SaveStatus
+  defaultBaseline: CustomizerBaseline | null
+  interactionCount: number
+  hasLocalDraft: boolean
   past: DesignSnapshot[]
   future: DesignSnapshot[]
   initFromProduct: (product: CustomizerProductData) => void
@@ -66,6 +74,10 @@ type CustomizerState = DesignSnapshot & {
       configJson: unknown
       updatedAt?: string | null
     },
+  ) => void
+  hydrateFromLocalDraft: (
+    product: CustomizerProductData,
+    configJson: unknown,
   ) => void
   syncProductCatalog: (product: CustomizerProductData) => void
   setSelectedProduct: (product: CustomizerProductData) => void
@@ -85,6 +97,8 @@ type CustomizerState = DesignSnapshot & {
   setSaveStatus: (status: SaveStatus) => void
   setLastSavedAt: (iso: string | null) => void
   markDirty: (dirty?: boolean) => void
+  setHasLocalDraft: (value: boolean) => void
+  recordInteraction: () => void
   setViewMode: (mode: ViewMode) => void
   setViewAngle: (angle: ViewAngle) => void
   setCaptureInstant: (value: boolean) => void
@@ -94,6 +108,10 @@ type CustomizerState = DesignSnapshot & {
   setActiveTool: (tool: DesignTool) => void
   toggleLayerVisibility: (id: string) => void
   updateLayer: (id: string, patch: LayerPatch) => void
+  syncLayerAssets: (
+    id: string,
+    patch: Pick<LayerPatch, 'assetUrl' | 'assetPublicId'>,
+  ) => void
   updateLayerPosition: (id: string, position: { x: number; y: number }) => void
   updateLayerSize: (id: string, size: { width: number; height: number }) => void
   updateLayerRotation: (id: string, rotation: number) => void
@@ -105,7 +123,7 @@ type CustomizerState = DesignSnapshot & {
   addLogoElement: (input: {
     name?: string
     assetUrl: string
-    assetPublicId: string
+    assetPublicId?: string
     zone?: DesignZone
   }) => void
   addTextElement: (input?: TextElementInput) => void
@@ -140,6 +158,9 @@ const INITIAL_STATE = {
   isDirty: false,
   lastSavedAt: null as string | null,
   saveStatus: 'idle' as SaveStatus,
+  defaultBaseline: null as CustomizerBaseline | null,
+  interactionCount: 0,
+  hasLocalDraft: false,
   past: [] as DesignSnapshot[],
   future: [] as DesignSnapshot[],
 }
@@ -179,6 +200,8 @@ function buildProductState(product: CustomizerProductData) {
     size: firstSize,
   })
 
+  const baseline = buildCustomizerBaseline(product)
+
   return {
     product,
     selectedProductId: product.id,
@@ -206,6 +229,9 @@ function buildProductState(product: CustomizerProductData) {
     isDirty: false,
     lastSavedAt: null,
     saveStatus: 'idle' as SaveStatus,
+    defaultBaseline: baseline,
+    interactionCount: 0,
+    hasLocalDraft: false,
     past: [] as DesignSnapshot[],
     future: [] as DesignSnapshot[],
   }
@@ -246,6 +272,7 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
     set((state) => ({
       layers: state.layers.map((layer) => (layer.id === id ? { ...layer, ...patch } : layer)),
       isDirty: true,
+      interactionCount: state.interactionCount + 1,
     }))
   }
 
@@ -262,26 +289,83 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
           size: parsed.size,
         })
 
+        const hydratedLayers = parsed.layers
+        const hydratedSize = parsed.size
+        const hydratedBaseColor = parsed.baseColor
+
         return {
           ...base,
           selectedVariantId: parsed.selectedVariantId ?? resolved?.id ?? base.selectedVariantId,
-          baseColor: parsed.baseColor,
+          baseColor: hydratedBaseColor,
           detailColor: parsed.detailColor,
           collarStyle: parsed.collarStyle,
           sleeveStyle: parsed.sleeveStyle,
           sleeveOption: parsed.sleeveOption,
           buttonStyle: parsed.buttonStyle,
-          size: parsed.size,
+          size: hydratedSize,
           quantity: parsed.quantity,
           viewMode: parsed.viewMode,
           viewAngle: parsed.viewAngle,
-          layers: parsed.layers,
+          layers: hydratedLayers,
           selectedLayerId: parsed.selectedLayerId,
           activeTool: parsed.activeTool,
           designId: input.designId,
           isDirty: false,
           lastSavedAt: input.updatedAt ?? null,
           saveStatus: 'saved',
+          defaultBaseline: {
+            selectedVariantId: parsed.selectedVariantId ?? resolved?.id ?? base.selectedVariantId,
+            baseColor: hydratedBaseColor,
+            detailColor: parsed.detailColor,
+            collarStyle: parsed.collarStyle,
+            sleeveStyle: parsed.sleeveStyle,
+            sleeveOption: parsed.sleeveOption,
+            buttonStyle: parsed.buttonStyle,
+            size: hydratedSize,
+            layers: hydratedLayers,
+          },
+          interactionCount: 0,
+          hasLocalDraft: false,
+          past: [],
+          future: [],
+        }
+      }),
+    hydrateFromLocalDraft: (product, configJson) =>
+      set(() => {
+        const base = buildProductState(product)
+        const parsed = parseDesignConfigForHydration(configJson, product)
+        const resolved = resolveCustomizerVariant(product, {
+          baseColor: parsed.baseColor,
+          size: parsed.size,
+        })
+
+        const hydratedLayers = parsed.layers
+        const hydratedSize = parsed.size
+        const hydratedBaseColor = parsed.baseColor
+
+        return {
+          ...base,
+          selectedVariantId: parsed.selectedVariantId ?? resolved?.id ?? base.selectedVariantId,
+          baseColor: hydratedBaseColor,
+          detailColor: parsed.detailColor,
+          collarStyle: parsed.collarStyle,
+          sleeveStyle: parsed.sleeveStyle,
+          sleeveOption: parsed.sleeveOption,
+          buttonStyle: parsed.buttonStyle,
+          size: hydratedSize,
+          quantity: parsed.quantity,
+          viewMode: parsed.viewMode,
+          viewAngle: parsed.viewAngle,
+          layers: hydratedLayers,
+          selectedLayerId: parsed.selectedLayerId,
+          activeTool: parsed.activeTool,
+          designId: null,
+          isDirty: false,
+          lastSavedAt: null,
+          saveStatus: 'idle',
+          defaultBaseline: buildCustomizerBaseline(product),
+          interactionCount: 0,
+          hasLocalDraft: true,
           past: [],
           future: [],
         }
@@ -316,7 +400,9 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
     setBaseColor: (color) => {
       commitHistory()
       set((state) => {
-        if (!state.product) return { baseColor: color, isDirty: true }
+        if (!state.product) {
+          return { baseColor: color, isDirty: true, interactionCount: state.interactionCount + 1 }
+        }
         const matchedColor = findColorByHex(state.product.colors, color)
         const baseColor = matchedColor?.hex ?? color
         const resolved = resolveCustomizerVariant(state.product, {
@@ -332,33 +418,60 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
           selectedVariantId: resolved?.id ?? null,
           size: nextSize,
           isDirty: true,
+          interactionCount: state.interactionCount + 1,
         }
       })
     },
     setDetailColor: (color) => {
       commitHistory()
-      set({ detailColor: color, isDirty: true })
+      set((state) => ({
+        detailColor: color,
+        isDirty: true,
+        interactionCount: state.interactionCount + 1,
+      }))
     },
     setCollarStyle: (style) => {
       commitHistory()
-      set({ collarStyle: style, isDirty: true })
+      set((state) => ({
+        collarStyle: style,
+        isDirty: true,
+        interactionCount: state.interactionCount + 1,
+      }))
     },
     setSleeveStyle: (style) => {
       commitHistory()
-      set({ sleeveStyle: style, isDirty: true })
+      set((state) => ({
+        sleeveStyle: style,
+        isDirty: true,
+        interactionCount: state.interactionCount + 1,
+      }))
     },
     setSleeveOption: (option) => {
       commitHistory()
-      set({ sleeveOption: option, isDirty: true })
+      set((state) => ({
+        sleeveOption: option,
+        isDirty: true,
+        interactionCount: state.interactionCount + 1,
+      }))
     },
     setButtonStyle: (style) => {
       commitHistory()
-      set({ buttonStyle: style, isDirty: true })
+      set((state) => ({
+        buttonStyle: style,
+        isDirty: true,
+        interactionCount: state.interactionCount + 1,
+      }))
     },
     setSize: (size) => {
       commitHistory()
       set((state) => {
-        if (!state.product) return { size: size as Size, isDirty: true }
+        if (!state.product) {
+          return {
+            size: size as Size,
+            isDirty: true,
+            interactionCount: state.interactionCount + 1,
+          }
+        }
         const matchedSize = findSizeByLabel(state.product.sizes, size)
         const nextSize = (matchedSize?.name ?? size) as Size
         const resolved = resolveCustomizerVariant(state.product, {
@@ -370,11 +483,16 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
           size: nextSize,
           selectedVariantId: resolved?.id ?? null,
           isDirty: true,
+          interactionCount: state.interactionCount + 1,
         }
       })
     },
     setQuantity: (quantity) =>
-      set({ quantity: Math.max(1, Math.min(99, Math.round(quantity))), isDirty: true }),
+      set((state) => ({
+        quantity: Math.max(1, Math.min(99, Math.round(quantity))),
+        isDirty: true,
+        interactionCount: state.interactionCount + 1,
+      })),
     setCustomizationRuleAvailability: (key, enabled) =>
       set((state) => ({
         customizationRuleAvailability: {
@@ -382,11 +500,15 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
           [key]: enabled,
         },
         isDirty: true,
+        interactionCount: state.interactionCount + 1,
       })),
     setDesignId: (designId) => set({ designId }),
     setSaveStatus: (saveStatus) => set({ saveStatus }),
     setLastSavedAt: (lastSavedAt) => set({ lastSavedAt }),
     markDirty: (dirty = true) => set({ isDirty: dirty }),
+    setHasLocalDraft: (value) => set({ hasLocalDraft: value }),
+    recordInteraction: () =>
+      set((state) => ({ interactionCount: state.interactionCount + 1, isDirty: true })),
     setViewMode: (mode) => set({ viewMode: mode }),
     setViewAngle: (angle) => set({ viewAngle: angle }),
     setCaptureInstant: (value) => set({ captureInstant: value }),
@@ -402,9 +524,16 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
           layer.id === id ? { ...layer, visible: !layer.visible } : layer,
         ),
         isDirty: true,
+        interactionCount: state.interactionCount + 1,
       }))
     },
     updateLayer: (id, patch) => patchLayer(id, patch, true),
+    syncLayerAssets: (id, patch) =>
+      set((state) => ({
+        layers: state.layers.map((layer) =>
+          layer.id === id ? { ...layer, ...patch } : layer,
+        ),
+      })),
     updateLayerPosition: (id, position) => patchLayer(id, { position }, true),
     updateLayerSize: (id, size) => patchLayer(id, { size }, true),
     updateLayerRotation: (id, rotation) => patchLayer(id, { rotation }, true),
@@ -429,6 +558,7 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
           layers: [duplicate, ...state.layers],
           selectedLayerId: duplicate.id,
           isDirty: true,
+          interactionCount: state.interactionCount + 1,
         }
       })
     },
@@ -440,6 +570,7 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
         layers: state.layers.filter((item) => item.id !== id),
         selectedLayerId: state.selectedLayerId === id ? null : state.selectedLayerId,
         isDirty: true,
+        interactionCount: state.interactionCount + 1,
       }))
     },
     addTextElement: (input) => {
@@ -450,6 +581,7 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
         selectedLayerId: layer.id,
         activeTool: 'select',
         isDirty: true,
+        interactionCount: state.interactionCount + 1,
       }))
     },
     addNameElement: (input) => {
@@ -465,6 +597,7 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
         selectedLayerId: layer.id,
         activeTool: 'select',
         isDirty: true,
+        interactionCount: state.interactionCount + 1,
       }))
     },
     addElement: (type, name) => {
@@ -478,6 +611,7 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
             selectedLayerId: layer.id,
             activeTool: 'select',
             isDirty: true,
+            interactionCount: state.interactionCount + 1,
           }
         }
         const id = `${type}-${Date.now()}`
@@ -499,6 +633,7 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
           selectedLayerId: id,
           activeTool: 'select',
           isDirty: true,
+          interactionCount: state.interactionCount + 1,
         }
       })
     },
@@ -525,6 +660,7 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
         selectedLayerId: layer.id,
         activeTool: 'select',
         isDirty: true,
+        interactionCount: state.interactionCount + 1,
       }))
     },
     undo: () => {
@@ -536,6 +672,7 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
         past: state.past.slice(0, -1),
         future: [snapshot(state), ...state.future].slice(0, MAX_HISTORY),
         isDirty: true,
+        interactionCount: state.interactionCount + 1,
       })
     },
     redo: () => {
@@ -547,6 +684,7 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
         past: [...state.past, snapshot(state)].slice(-MAX_HISTORY),
         future: state.future.slice(1),
         isDirty: true,
+        interactionCount: state.interactionCount + 1,
       })
     },
   }
@@ -558,6 +696,24 @@ export function selectCanUndo(state: CustomizerState): boolean {
 
 export function selectCanRedo(state: CustomizerState): boolean {
   return state.future.length > 0
+}
+
+export function selectHasMeaningfulCustomization(state: CustomizerState): boolean {
+  if (!state.defaultBaseline) return false
+  return hasMeaningfulCustomization(
+    {
+      selectedVariantId: state.selectedVariantId,
+      baseColor: state.baseColor,
+      detailColor: state.detailColor,
+      collarStyle: state.collarStyle,
+      sleeveStyle: state.sleeveStyle,
+      sleeveOption: state.sleeveOption,
+      buttonStyle: state.buttonStyle,
+      size: state.size,
+      layers: state.layers,
+    },
+    state.defaultBaseline,
+  )
 }
 
 let priceBreakdownCache: { key: string; value: CustomizerPriceBreakdown } | null = null

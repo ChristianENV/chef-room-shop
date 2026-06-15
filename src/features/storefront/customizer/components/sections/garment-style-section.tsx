@@ -64,11 +64,11 @@ const BUTTONS: { value: ButtonStyle; label: string; icon: ReactNode }[] = [
   { value: 'automaticos', label: 'Automáticos', icon: <Zap className="size-5" /> },
 ]
 
-export function GarmentStyleSection() {
+export function GarmentStyleSection({ embedded = false }: { embedded?: boolean }) {
   const { sleeveStyle, buttonStyle, setSleeveStyle, setButtonStyle } = useCustomizerStore()
 
   return (
-    <div className="space-y-6 p-4">
+    <div className={embedded ? 'space-y-6 px-1 pb-2' : 'space-y-6 p-4'}>
       <section className="space-y-2">
         <h3 className="text-sm font-semibold text-foreground">Manga</h3>
         <div className="grid grid-cols-3 gap-2">

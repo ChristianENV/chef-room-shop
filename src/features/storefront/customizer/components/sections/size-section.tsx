@@ -24,7 +24,7 @@ const SIZE_GUIDE: { size: string; chest: string; length: string }[] = [
   { size: 'XXL', chest: '116–122 cm', length: '78 cm' },
 ]
 
-export function SizeSection() {
+export function SizeSection({ embedded = false }: { embedded?: boolean }) {
   const { product, size, baseColor, setSize } = useCustomizerStore()
 
   if (!product) {
@@ -60,12 +60,16 @@ export function SizeSection() {
   }
 
   return (
-    <div className="space-y-3 p-4" data-testid="customizer-size-options">
+    <div className={embedded ? 'space-y-3 px-1 pb-2' : 'space-y-3 p-4'} data-testid="customizer-size-options">
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-semibold text-foreground">Talla</h3>
+        {!embedded ? (
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">Talla</h3>
+            <p className="text-xs text-muted-foreground">Elige tu talla.</p>
+          </div>
+        ) : (
           <p className="text-xs text-muted-foreground">Elige tu talla.</p>
-        </div>
+        )}
         <Dialog>
           <DialogTrigger asChild>
             <button

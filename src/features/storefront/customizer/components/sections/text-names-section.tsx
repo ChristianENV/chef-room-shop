@@ -19,7 +19,7 @@ const CLOSED: DialogState = { open: false, layerId: null, mode: 'create' }
  * Unified "Texto y nombres" flow. Adding either opens a modal editor
  * immediately so the user always knows where to type.
  */
-export function TextNamesSection() {
+export function TextNamesSection({ embedded = false }: { embedded?: boolean }) {
   const { layers, addTextElement, addNameElement, selectLayer } = useCustomizerStore()
   const [dialog, setDialog] = useState<DialogState>(CLOSED)
 
@@ -44,13 +44,19 @@ export function TextNamesSection() {
   }
 
   return (
-    <div className="space-y-4 p-4">
-      <div>
-        <h3 className="text-sm font-semibold text-foreground">Texto y nombres</h3>
+    <div className={embedded ? 'space-y-4 px-1 pb-2' : 'space-y-4 p-4'}>
+      {!embedded ? (
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">Texto y nombres</h3>
+          <p className="text-xs text-muted-foreground">
+            Agrega frases o el nombre del chef. Al agregar, escribes directo en un editor.
+          </p>
+        </div>
+      ) : (
         <p className="text-xs text-muted-foreground">
           Agrega frases o el nombre del chef. Al agregar, escribes directo en un editor.
         </p>
-      </div>
+      )}
 
       <div className="grid grid-cols-2 gap-2">
         <Button

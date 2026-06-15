@@ -11,4 +11,6 @@ export const adminOrdersQueryKeys = {
     [...adminOrdersQueryKeys.all, 'production-queue', { limit }] as const,
   productionSheet: (orderNumber: string) =>
     [...adminOrdersQueryKeys.all, 'production-sheet', orderNumber] as const,
+  designConfig: (designId: string) =>
+    [...adminOrdersQueryKeys.all, 'design-config', designId] as const,
 }

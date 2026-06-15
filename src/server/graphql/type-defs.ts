@@ -1433,6 +1433,7 @@ export const typeDefs = /* GraphQL */ `
     adminOrderStatusSummary: AdminOrderStatusSummary!
     adminOrderProductionQueue(limit: Int): [AdminOrder!]!
     adminOrderProductionSheet(orderNumber: String!): AdminProductionSheet
+    adminDesignConfigJson(designId: ID!): JSON
     adminShipmentByOrderNumber(orderNumber: String!): AdminShipment
     adminProducts(
       filter: AdminProductsFilterInput

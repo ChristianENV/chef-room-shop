@@ -35,6 +35,15 @@ export type AdminOrdersUiAddress = {
   isDefaultBilling: boolean
 }
 
+export type AdminOrdersUiCustomizationElement = {
+  id: string
+  type: string
+  name?: string
+  text?: string
+  zone?: string
+  assetUrl?: string
+}
+
 export type AdminOrdersUiCustomizationArea = {
   areaId: string
   areaName: string
@@ -51,9 +60,22 @@ export type AdminOrdersUiCustomizationArea = {
 export type AdminOrdersUiCustomization = {
   designId: string
   previewUrl: string
+  previewBackUrl?: string
+  size: string
+  fabricColor: string
+  fabricColorHex?: string
+  detailColor: string
+  detailColorHex?: string
+  customizationPrice: number
+  elements: AdminOrdersUiCustomizationElement[]
   areas: AdminOrdersUiCustomizationArea[]
   productionNotes?: string
   summaryLines?: string[]
+  rawSnapshots?: {
+    productSnapshotJson: unknown
+    designSnapshotJson: unknown
+    designId: string | null
+  }
 }
 
 export type AdminOrdersUiItem = {
@@ -68,6 +90,7 @@ export type AdminOrdersUiItem = {
   quantity: number
   unitPrice: number
   totalPrice: number
+  customizationPrice: number
   hasCustomization: boolean
   customization?: AdminOrdersUiCustomization
 }

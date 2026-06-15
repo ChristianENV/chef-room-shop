@@ -8,9 +8,13 @@ import { routes } from '@/src/config/routes'
 import type { AccountDesign } from '@/src/features/storefront/account/types'
 import type { CatalogProduct } from '@/src/features/storefront/catalog/types'
 import { useAddCartItemMutation } from '@/src/features/storefront/cart/api/use-add-cart-item-mutation'
+import { useSession } from '@/src/lib/auth/auth-client'
 import type { CustomizerProductData } from '../types/customizer-product.types'
 import type { SavePhase } from '../types/customizer.types'
-import { useCustomizerStore } from '../store/customizer.store'
+import {
+  selectHasMeaningfulCustomization,
+  useCustomizerStore,
+} from '../store/customizer.store'
 import { useCreateDesignDraftMutation } from '../api/use-create-design-draft'
 import { useUpdateDesignMutation } from '../api/use-update-design'
 import { ensureDesignPreviews } from '../lib/ensure-design-previews'
@@ -18,6 +22,16 @@ import { readPreviewsFromConfig } from '../lib/design-preview-config'
 import { uploadDesignPreviewBlobs } from '../lib/upload-design-previews'
 import { buildDesignConfigJson } from '../lib/build-design-config'
 import { cacheGuestDesign } from '../lib/guest-design-cache'
+import {
+  clearCustomizerLocalDraft,
+  loadCustomizerLocalDraft,
+  saveCustomizerLocalDraft,
+} from '../lib/customizer-local-draft'
+import {
+  shouldAutosaveDraft,
+  shouldCreateDesignInDatabase,
+  shouldUpdateExistingDesign,
+} from '../lib/customizer-save-intent'
 import {
   CUSTOMIZER_CART_VARIANT_MESSAGES,
   validateCustomizerCartVariant,
@@ -36,7 +50,16 @@ interface CustomizerShellProps {
   loadedDesign?: AccountDesign | null
 }
 
-function savePhaseLabel(phase: SavePhase, isDirty: boolean, saveStatus: string): string {
+function savePhaseLabel(params: {
+  phase: SavePhase
+  isDirty: boolean
+  saveStatus: string
+  isAuthenticated: boolean
+  designId: string | null
+  hasLocalDraft: boolean
+}): string {
+  const { phase, isDirty, saveStatus, isAuthenticated, designId, hasLocalDraft } = params
+
   switch (phase) {
     case 'saving_config':
       return 'Guardando configuración…'
@@ -56,8 +79,9 @@ function savePhaseLabel(phase: SavePhase, isDirty: boolean, saveStatus: string):
       return 'Error al guardar'
     case 'idle':
     default:
-      if (saveStatus === 'saved' && !isDirty) return 'Guardado'
-      if (isDirty) return 'Cambios sin guardar'
+      if (isAuthenticated && designId && saveStatus === 'saved' && !isDirty) return 'Guardado'
+      if (!isAuthenticated && hasLocalDraft && !isDirty) return 'Guardado localmente'
+      if (isDirty) return 'Sin guardar'
       return 'Listo para diseñar'
   }
 }
@@ -69,17 +93,24 @@ export function CustomizerShell({
   onSelectProduct,
   loadedDesign = null,
 }: CustomizerShellProps) {
+  const { data: session } = useSession()
+  const isAuthenticated = Boolean(session?.user)
+
   const {
     initFromProduct,
     hydrateFromDesign,
+    hydrateFromLocalDraft,
     syncProductCatalog,
     setDesignId,
     setSaveStatus,
     setLastSavedAt,
     markDirty,
+    setHasLocalDraft,
     designId,
     isDirty,
     saveStatus,
+    hasLocalDraft,
+    interactionCount,
     selectedVariantId,
     setSelectedVariant,
     baseColor,
@@ -94,7 +125,10 @@ export function CustomizerShell({
     viewAngle,
     layers,
     addLogoElement,
+    syncLayerAssets,
   } = useCustomizerStore()
+
+  const meaningfulCustomization = useCustomizerStore(selectHasMeaningfulCustomization)
 
   const storeProduct = useCustomizerStore((state) => state.product)
 
@@ -111,6 +145,8 @@ export function CustomizerShell({
   const previewUrlRef = useRef<string | null>(null)
   const configJsonRef = useRef<unknown>(null)
   const hydratedDesignIdRef = useRef<string | null>(null)
+  const hydratedProductRef = useRef<string | null>(null)
+  const pendingLogoByLayerRef = useRef<Map<string, File>>(new Map())
 
   const [cartActionError, setCartActionError] = useState<string | null>(null)
   const [addToCartSuccessOpen, setAddToCartSuccessOpen] = useState(false)
@@ -130,6 +166,44 @@ export function CustomizerShell({
   const canAddToCart = cartVariantValidation.status === 'ok'
   const isEditingSavedDesign = Boolean(loadedDesign?.id)
 
+  const buildConfigPayload = useCallback(
+    (overrides?: { productVariantId?: string | null }) => {
+      const existingPreviews = readPreviewsFromConfig(configJsonRef.current)
+      const variantId = overrides?.productVariantId ?? selectedVariantId
+      const payloadBase = buildDesignConfigJson({
+        product,
+        productVariantId: variantId,
+        baseColor,
+        detailColor,
+        collarStyle,
+        sleeveStyle,
+        sleeveOption,
+        buttonStyle,
+        size,
+        quantity,
+        viewMode,
+        viewAngle,
+        layers: useCustomizerStore.getState().layers,
+      })
+      return existingPreviews ? { ...payloadBase, previews: existingPreviews } : payloadBase
+    },
+    [
+      product,
+      selectedVariantId,
+      baseColor,
+      detailColor,
+      collarStyle,
+      sleeveStyle,
+      sleeveOption,
+      buttonStyle,
+      size,
+      quantity,
+      viewMode,
+      viewAngle,
+      layers,
+    ],
+  )
+
   // Initialize or hydrate store before paint so panels never use fallback on first frame.
   useLayoutEffect(() => {
     if (loadedDesign && hydratedDesignIdRef.current !== loadedDesign.id) {
@@ -141,15 +215,28 @@ export function CustomizerShell({
       previewUrlRef.current = loadedDesign.previewUrl
       configJsonRef.current = loadedDesign.configJson
       hydratedDesignIdRef.current = loadedDesign.id
+      hydratedProductRef.current = product.id
       return
     }
 
     if (loadedDesign) return
 
+    if (hydratedProductRef.current === product.id) return
+
+    const localDraft = loadCustomizerLocalDraft(product.slug)
+    if (localDraft?.productId === product.id) {
+      hydrateFromLocalDraft(product, localDraft.configJson)
+      configJsonRef.current = localDraft.configJson
+      hydratedProductRef.current = product.id
+      hydratedDesignIdRef.current = null
+      return
+    }
+
     initFromProduct(product)
+    hydratedProductRef.current = product.id
     hydratedDesignIdRef.current = null
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reset only when switching products
-  }, [product.id, product.slug, loadedDesign, hydrateFromDesign, initFromProduct])
+  }, [product.id, product.slug, loadedDesign, hydrateFromDesign, hydrateFromLocalDraft, initFromProduct])
 
   // Keep catalog variants/colors/sizes in sync when BFF data refreshes (rules, stock).
   useEffect(() => {
@@ -190,70 +277,121 @@ export function CustomizerShell({
     ],
   )
 
-  const persistConfig = useCallback(
-    async (overrides?: { productVariantId?: string | null }): Promise<string | null> => {
-      if (!product) return null
-      const existingPreviews = readPreviewsFromConfig(configJsonRef.current)
-      const variantId = overrides?.productVariantId ?? selectedVariantId
-      const payloadBase = buildDesignConfigJson({
-        product,
-        productVariantId: variantId,
-        baseColor,
-        detailColor,
-        collarStyle,
-        sleeveStyle,
-        sleeveOption,
-        buttonStyle,
-        size,
-        quantity,
-        viewMode,
-        viewAngle,
-        layers,
-      })
-      const payload = existingPreviews ? { ...payloadBase, previews: existingPreviews } : payloadBase
+  const uploadPendingLogos = useCallback(
+    async (targetDesignId: string) => {
+      const state = useCustomizerStore.getState()
+      for (const layer of state.layers) {
+        const pendingFile = pendingLogoByLayerRef.current.get(layer.id)
+        if (!pendingFile) continue
+        if (!layer.assetUrl?.startsWith('blob:')) continue
 
-      if (!designId) {
+        const uploaded = await uploadDesignLogo({
+          file: pendingFile,
+          designId: targetDesignId,
+        })
+        syncLayerAssets(layer.id, {
+          assetUrl: uploaded.assetUrl,
+          assetPublicId: uploaded.assetPublicId,
+        })
+        URL.revokeObjectURL(layer.assetUrl)
+        pendingLogoByLayerRef.current.delete(layer.id)
+      }
+    },
+    [syncLayerAssets],
+  )
+
+  const persistToDatabase = useCallback(
+    async (options?: {
+      force?: boolean
+      productVariantId?: string | null
+    }): Promise<string | null> => {
+      if (!product) return null
+
+      const force = options?.force ?? false
+      const state = useCustomizerStore.getState()
+      const meaningful = selectHasMeaningfulCustomization(state)
+
+      if (!state.designId) {
+        if (
+          !shouldCreateDesignInDatabase({
+            isAuthenticated,
+            force,
+            interactionCount: state.interactionCount,
+            meaningful,
+          })
+        ) {
+          return null
+        }
+      } else if (
+        !shouldUpdateExistingDesign({
+          isAuthenticated,
+          force,
+          isDirty: state.isDirty,
+          interactionCount: state.interactionCount,
+          meaningful,
+        })
+      ) {
+        return state.designId
+      }
+
+      let activeDesignId = state.designId
+
+      if (!activeDesignId) {
+        const payload = buildConfigPayload({ productVariantId: options?.productVariantId })
         const created = await createDraft.mutateAsync({
           productId: product.id,
-          productVariantId: variantId,
+          productVariantId: options?.productVariantId ?? selectedVariantId,
           configJson: payload,
         })
+        activeDesignId = created.id
         setDesignId(created.id)
         previewUrlRef.current = created.previewUrl
         configJsonRef.current = created.configJson
         cacheGuestDesign(created)
-        return created.id
       }
 
+      if (activeDesignId && pendingLogoByLayerRef.current.size > 0) {
+        await uploadPendingLogos(activeDesignId)
+      }
+
+      const payload = buildConfigPayload({ productVariantId: options?.productVariantId })
       const updated = await updateDesign.mutateAsync({
-        designId,
+        designId: activeDesignId,
         configJson: payload,
       })
       previewUrlRef.current = updated.previewUrl
       configJsonRef.current = updated.configJson
       cacheGuestDesign(updated)
-      return designId
+      return activeDesignId
     },
     [
       product,
-      designId,
+      isAuthenticated,
       createDraft,
       selectedVariantId,
-      baseColor,
-      detailColor,
-      collarStyle,
-      sleeveStyle,
-      sleeveOption,
-      buttonStyle,
-      size,
-      quantity,
-      viewMode,
-      viewAngle,
-      layers,
+      buildConfigPayload,
       setDesignId,
       updateDesign,
+      uploadPendingLogos,
     ],
   )
+
+  const persistLocalDraft = useCallback(() => {
+    if (!product) return
+    const payload = buildConfigPayload()
+    saveCustomizerLocalDraft({
+      productId: product.id,
+      productSlug: product.slug,
+      savedAt: new Date().toISOString(),
+      configJson: payload,
+    })
+    configJsonRef.current = payload
+    setHasLocalDraft(true)
+    setLastSavedAt(new Date().toISOString())
+    markDirty(false)
+    setSaveStatus('saved')
+    setSavePhase('idle')
+  }, [product, buildConfigPayload, setHasLocalDraft, setLastSavedAt, markDirty, setSaveStatus])
 
   const captureAndUploadPreviews = useCallback(
     async (targetDesignId: string): Promise<boolean> => {
@@ -307,23 +445,45 @@ export function CustomizerShell({
   /** Saves config only (autosave). Does not capture previews. */
   const runSaveConfig = useCallback(async (): Promise<string | null> => {
     if (!product) return null
+
+    const state = useCustomizerStore.getState()
+    const meaningful = selectHasMeaningfulCustomization(state)
+    if (
+      !shouldAutosaveDraft({
+        isDirty: state.isDirty,
+        interactionCount: state.interactionCount,
+        meaningful,
+      })
+    ) {
+      return state.designId
+    }
+
     setSaveStatus('saving')
     setSavePhase('saving_config')
     try {
-      const id = await persistConfig()
-      setLastSavedAt(new Date().toISOString())
-      markDirty(false)
-      setSaveStatus('saved')
-      setSavePhase('idle')
-      return id
+      if (isAuthenticated) {
+        const id = await persistToDatabase({ force: false })
+        if (id) {
+          setLastSavedAt(new Date().toISOString())
+          markDirty(false)
+          setSaveStatus('saved')
+        } else {
+          setSaveStatus('idle')
+        }
+        setSavePhase('idle')
+        return id
+      }
+
+      persistLocalDraft()
+      return null
     } catch {
       setSaveStatus('error')
       setSavePhase('error')
       return null
     }
-  }, [product, persistConfig, setSaveStatus, setLastSavedAt, markDirty])
+  }, [product, isAuthenticated, persistToDatabase, persistLocalDraft, setSaveStatus, setLastSavedAt, markDirty])
 
-  /** Manual save: config + front/back previews. */
+  /** Manual save: config + front/back previews for auth; local draft for guests. */
   const runSaveWithPreviews = useCallback(async (): Promise<string | null> => {
     if (!product) return null
     setSaveStatus('saving')
@@ -332,7 +492,14 @@ export function CustomizerShell({
     setLastPreviewSuccess(false)
 
     try {
-      const id = await persistConfig()
+      if (!isAuthenticated) {
+        persistLocalDraft()
+        setSaveStatus('saved')
+        setSavePhase('idle')
+        return null
+      }
+
+      const id = await persistToDatabase({ force: true })
       if (!id) {
         setSaveStatus('error')
         setSavePhase('error')
@@ -352,7 +519,9 @@ export function CustomizerShell({
     }
   }, [
     product,
-    persistConfig,
+    isAuthenticated,
+    persistToDatabase,
+    persistLocalDraft,
     captureAndUploadPreviews,
     setSaveStatus,
     setLastSavedAt,
@@ -382,8 +551,11 @@ export function CustomizerShell({
     }
 
     let ensuredDesignId = designId
-    if (!ensuredDesignId || isDirty) {
-      ensuredDesignId = await persistConfig({ productVariantId: resolvedVariantId })
+    if (!ensuredDesignId || isDirty || pendingLogoByLayerRef.current.size > 0) {
+      ensuredDesignId = await persistToDatabase({
+        force: true,
+        productVariantId: resolvedVariantId,
+      })
     }
 
     if (!ensuredDesignId) {
@@ -421,6 +593,11 @@ export function CustomizerShell({
         quantity,
       })
 
+      clearCustomizerLocalDraft()
+      setHasLocalDraft(false)
+      markDirty(false)
+      setSaveStatus('saved')
+
       const previewFromConfig = readPreviewsFromConfig(configJsonRef.current)?.front?.url
       setAddToCartSuccessPreviewUrl(
         previewUrlRef.current ?? previewFromConfig ?? previewResult.previewUrl ?? null,
@@ -435,7 +612,6 @@ export function CustomizerShell({
     catalogProduct,
     designId,
     isDirty,
-    runSaveConfig,
     configJson,
     viewMode,
     addToCart,
@@ -444,35 +620,49 @@ export function CustomizerShell({
     baseColor,
     size,
     quantity,
+    persistToDatabase,
+    setHasLocalDraft,
+    markDirty,
+    setSaveStatus,
   ])
 
   const handleUploadLogo = useCallback(
     async (file: File) => {
       setLogoUploadError(null)
-      const ensuredDesignId = designId ?? (await persistConfig())
-      if (!ensuredDesignId) {
-        throw new Error('No pudimos preparar el diseño para subir el logotipo.')
+
+      if (designId) {
+        try {
+          const uploaded = await uploadDesignLogo({
+            file,
+            designId,
+          })
+          addLogoElement({
+            name: 'Logotipo',
+            assetUrl: uploaded.assetUrl,
+            assetPublicId: uploaded.assetPublicId,
+            zone: 'pecho',
+          })
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : 'No pudimos subir el logotipo.'
+          setLogoUploadError(message)
+          throw error
+        }
+        return
       }
 
-      try {
-        const uploaded = await uploadDesignLogo({
-          file,
-          designId: ensuredDesignId,
-        })
-        addLogoElement({
-          name: 'Logotipo',
-          assetUrl: uploaded.assetUrl,
-          assetPublicId: uploaded.assetPublicId,
-          zone: 'pecho',
-        })
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : 'No pudimos subir el logotipo.'
-        setLogoUploadError(message)
-        throw error
+      const blobUrl = URL.createObjectURL(file)
+      addLogoElement({
+        name: 'Logotipo',
+        assetUrl: blobUrl,
+        zone: 'pecho',
+      })
+      const layerId = useCustomizerStore.getState().selectedLayerId
+      if (layerId) {
+        pendingLogoByLayerRef.current.set(layerId, file)
       }
     },
-    [addLogoElement, designId, persistConfig],
+    [addLogoElement, designId],
   )
 
   useEffect(() => {
@@ -480,6 +670,19 @@ export function CustomizerShell({
     if (savePhase !== 'idle' && savePhase !== 'saved' && savePhase !== 'preview_failed') {
       return
     }
+
+    const state = useCustomizerStore.getState()
+    const meaningful = selectHasMeaningfulCustomization(state)
+    if (
+      !shouldAutosaveDraft({
+        isDirty: state.isDirty,
+        interactionCount: state.interactionCount,
+        meaningful,
+      })
+    ) {
+      return
+    }
+
     if (autosaveTimerRef.current) {
       window.clearTimeout(autosaveTimerRef.current)
     }
@@ -491,7 +694,7 @@ export function CustomizerShell({
         window.clearTimeout(autosaveTimerRef.current)
       }
     }
-  }, [isDirty, product, runSaveConfig, savePhase])
+  }, [isDirty, product, runSaveConfig, savePhase, interactionCount, meaningfulCustomization])
 
   const isSaving =
     saveStatus === 'saving' ||
@@ -501,7 +704,14 @@ export function CustomizerShell({
     savePhase === 'uploading_previews' ||
     savePhase === 'confirming_previews'
 
-  const saveStatusLabel = savePhaseLabel(savePhase, isDirty, saveStatus)
+  const saveStatusLabel = savePhaseLabel({
+    phase: savePhase,
+    isDirty,
+    saveStatus,
+    isAuthenticated,
+    designId,
+    hasLocalDraft,
+  })
 
   return (
     <div

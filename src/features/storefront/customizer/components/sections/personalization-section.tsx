@@ -58,7 +58,7 @@ function resolveOptionPriceLabel(
   return fallback
 }
 
-export function PersonalizationSection() {
+export function PersonalizationSection({ embedded = false }: { embedded?: boolean }) {
   const { product, layers, customizationRuleAvailability, addElement, addTextElement, addNameElement } =
     useCustomizerStore()
 
@@ -117,19 +117,28 @@ export function PersonalizationSection() {
   }
 
   return (
-    <div className="space-y-5 p-4" data-testid="customizer-personalization-options">
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <Sparkles className="size-4" />
-          </span>
-          <h3 className="text-sm font-semibold text-foreground">Bordados por zona</h3>
+    <div
+      className={embedded ? 'space-y-5 px-1 pb-2' : 'space-y-5 p-4'}
+      data-testid="customizer-personalization-options"
+    >
+      {!embedded ? (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Sparkles className="size-4" />
+            </span>
+            <h3 className="text-sm font-semibold text-foreground">Bordados por zona</h3>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Toda la personalización es bordada. Elige una zona y agrega logo, texto o nombre. Si
+            repites el mismo logo del pecho en la espalda, obtienes precio especial.
+          </p>
         </div>
+      ) : (
         <p className="text-xs text-muted-foreground">
-          Toda la personalización es bordada. Elige una zona y agrega logo, texto o nombre. Si
-          repites el mismo logo del pecho en la espalda, obtienes precio especial.
+          Toda la personalización es bordada. Elige una zona y agrega logo, texto o nombre.
         </p>
-      </div>
+      )}
 
       {zones.map((zone) => (
         <section key={zone.slug} className="space-y-2">

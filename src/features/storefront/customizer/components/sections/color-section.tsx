@@ -4,7 +4,7 @@ import { useCustomizerStore } from '../../store/customizer.store'
 import { FabricColorsSection } from '../fabric-colors-section'
 import { DETAIL_FABRIC_COLORS } from '../../constants/fabric-colors'
 
-export function ColorSection() {
+export function ColorSection({ embedded = false }: { embedded?: boolean }) {
   const { product, baseColor, detailColor, setBaseColor, setDetailColor } = useCustomizerStore()
 
   if (!product) {
@@ -24,7 +24,7 @@ export function ColorSection() {
   const usingFallback = fromBff.length === 0 && !requiresVariant
 
   return (
-    <div className="space-y-4 p-4">
+    <div className={embedded ? 'space-y-4 px-1 pb-2' : 'space-y-4 p-4'}>
       <section data-testid="customizer-base-colors">
         <FabricColorsSection
           catalogColors={fromBff.length > 0 ? fromBff : undefined}

@@ -6,6 +6,7 @@ import {
   getAdminOrderByNumber,
   getAdminOrderProductionQueue,
   getAdminOrderProductionSheet,
+  getAdminDesignConfigJson,
   getAdminOrders,
   getAdminOrderStatusSummary,
   markAdminOrderReadyToShip,
@@ -27,6 +28,10 @@ type OrderNumberArgs = {
 
 type ProductionQueueArgs = {
   limit?: number | null
+}
+
+type DesignConfigArgs = {
+  designId: string
 }
 
 type CancelOrderArgs = {
@@ -69,6 +74,12 @@ export const adminOrdersResolvers = {
       args: OrderNumberArgs,
       context: GraphQLContext,
     ) => getAdminOrderProductionSheet(context, args.orderNumber),
+
+    adminDesignConfigJson: (
+      _parent: unknown,
+      args: DesignConfigArgs,
+      context: GraphQLContext,
+    ) => getAdminDesignConfigJson(context, args.designId),
   },
 
   Mutation: {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { ImagePlus, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -12,6 +12,8 @@ type UploadState = 'idle' | 'optimizing' | 'uploading' | 'ready' | 'error'
 
 interface LogoUploadSectionProps {
   onUploadLogo: (file: File) => Promise<void>
+  embedded?: boolean
+  onErrorChange?: (error: string | null) => void
 }
 
 function stateLabel(state: UploadState): string {
@@ -30,7 +32,11 @@ function stateLabel(state: UploadState): string {
   }
 }
 
-export function LogoUploadSection({ onUploadLogo }: LogoUploadSectionProps) {
+export function LogoUploadSection({
+  onUploadLogo,
+  embedded = false,
+  onErrorChange,
+}: LogoUploadSectionProps) {
   const { layers, selectedLayerId, selectLayer } = useCustomizerStore()
   const logos = layers.filter((layer) => layer.type === 'logo')
   const chestPrice = getEstimatedElementPrice({ type: 'logo', zone: 'pecho', layers })
@@ -39,6 +45,10 @@ export function LogoUploadSection({ onUploadLogo }: LogoUploadSectionProps) {
   const [uploadState, setUploadState] = useState<UploadState>('idle')
   const [error, setError] = useState<string | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    onErrorChange?.(error)
+  }, [error, onErrorChange])
 
   const handleFile = async (file: File) => {
     const validation = validateLogoFile(file)
@@ -66,15 +76,23 @@ export function LogoUploadSection({ onUploadLogo }: LogoUploadSectionProps) {
   }
 
   return (
-    <div className="space-y-4 p-4">
-      <div>
-        <h3 className="text-sm font-semibold text-foreground">Logotipos</h3>
+    <div className={embedded ? 'space-y-4 px-1 pb-2' : 'space-y-4 p-4'}>
+      {!embedded ? (
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">Logotipos</h3>
+          <p className="text-xs text-muted-foreground">
+            Solo bordado. Sube un logo en PNG, JPG o WebP. Pecho {chestPrice.formatted} · Espalda{' '}
+            {backPrice.formatted}
+            {backPrice.hint ? ` (${backPrice.hint.toLowerCase()})` : ''}.
+          </p>
+        </div>
+      ) : (
         <p className="text-xs text-muted-foreground">
           Solo bordado. Sube un logo en PNG, JPG o WebP. Pecho {chestPrice.formatted} · Espalda{' '}
           {backPrice.formatted}
           {backPrice.hint ? ` (${backPrice.hint.toLowerCase()})` : ''}.
         </p>
-      </div>
+      )}
 
       <input
         ref={inputRef}
