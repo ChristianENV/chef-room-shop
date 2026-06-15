@@ -3,6 +3,16 @@
 import { cn } from '@/lib/utils'
 import type { CustomizerCategory, CustomizerCategoryItem } from '../lib/customizer-categories'
 
+const NAV_TEST_IDS: Record<CustomizerCategory, string> = {
+  producto: 'customizer-left-nav-product',
+  colores: 'customizer-left-nav-colors',
+  texto: 'customizer-left-nav-text',
+  logotipos: 'customizer-left-nav-logos',
+  extras: 'customizer-left-nav-extras',
+  disenos: 'customizer-left-nav-designs',
+  debug3d: 'customizer-left-nav-debug3d',
+}
+
 interface CustomizerLeftRailProps {
   categories: CustomizerCategoryItem[]
   active: CustomizerCategory
@@ -26,6 +36,7 @@ export function CustomizerLeftRail({ categories, active, onChange }: CustomizerL
             onClick={() => onChange(category.id)}
             aria-current={isActive ? 'page' : undefined}
             title={category.label}
+            data-testid={NAV_TEST_IDS[category.id]}
             className={cn(
               'flex w-[58px] flex-col items-center gap-1 rounded-lg py-2 text-[10px] font-medium transition-colors',
               isActive
