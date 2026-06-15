@@ -357,10 +357,14 @@ export async function addCartItem(
       design: designRow,
     } as CartItemWithRelations
 
-    const productSnapshot = buildProductSnapshot(draftItem)
+    const productSnapshot = buildProductSnapshot(draftItem, designRow?.configJson)
     const customizationSnapshot = buildCustomizationSnapshot(
       designRow,
       designRow?.configJson,
+      {
+        variant,
+        customizationPriceCents,
+      },
     )
     const configRecord =
       designRow?.configJson &&
@@ -369,12 +373,12 @@ export async function addCartItem(
         ? (designRow.configJson as DesignConfigJson)
         : null
     const previewBackUrl =
-      configRecord?.previews?.back?.url && typeof configRecord.previews.back.url === 'string'
+      customizationSnapshot.previewBackUrl ??
+      (configRecord?.previews?.back?.url && typeof configRecord.previews.back.url === 'string'
         ? configRecord.previews.back.url
-        : null
-    const elements = Array.isArray(configRecord?.elements) ? configRecord.elements : []
-    const selectedOptions =
-      configRecord?.style && typeof configRecord.style === 'object' ? configRecord.style : {}
+        : null)
+    const elements = customizationSnapshot.elements ?? []
+    const selectedOptions = customizationSnapshot.selectedOptions ?? {}
 
     await context.prisma.cartItem.create({
       data: {

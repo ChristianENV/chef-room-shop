@@ -11,6 +11,8 @@ import {
   CartErrorState,
 } from '@/src/features/storefront/cart'
 import { useMyCartQuery } from '@/src/features/storefront/cart/api/use-my-cart-query'
+import { useMeProfileQuery } from '@/src/features/storefront/account/api/use-me-profile-query'
+import { PremiumBenefitsNotice } from '@/src/features/storefront/account/components/premium-benefits-notice'
 import { useUpdateCartItemQuantityMutation } from '@/src/features/storefront/cart/api/use-update-cart-item-quantity-mutation'
 import { useRemoveCartItemMutation } from '@/src/features/storefront/cart/api/use-remove-cart-item-mutation'
 import {
@@ -28,6 +30,7 @@ const GENERIC_ACTION_ERROR =
 
 export default function CartPage() {
   const { data, isLoading, isError, refetch, isFetching } = useMyCartQuery()
+  const profileQuery = useMeProfileQuery()
   const updateQuantity = useUpdateCartItemQuantityMutation()
   const removeItem = useRemoveCartItemMutation()
   const [pendingItemId, setPendingItemId] = useState<string | null>(null)
@@ -99,6 +102,8 @@ export default function CartPage() {
               </div>
             </div>
           </div>
+
+          <PremiumBenefitsNotice customerTier={profileQuery.data?.customerTier} />
 
           {actionError ? (
             <p className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 font-serif text-sm text-destructive">

@@ -10,6 +10,9 @@ import type {
   UserProfile,
 } from '@/lib/types'
 import { centsToPesos } from '@/src/lib/formatters'
+import { mapCustomerTierToUiStatus } from '@/src/lib/customer/customer-tier'
+import { extractSelectionFromConfigJson } from '@/src/lib/customization/build-customization-snapshot'
+import { resolveDesignPreviewUrl } from '../lib/design-preview.utils'
 import type {
   AccountAddress,
   AccountDashboardSummary,
@@ -28,6 +31,10 @@ export type UiAddress = Address & {
 type DesignConfig = {
   garment?: { baseColor?: string }
   layers?: Array<{ type?: string }>
+}
+
+function parseString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() ? value.trim() : null
 }
 
 const ORDER_STATUS_MAP: Record<string, OrderStatus> = {
@@ -63,7 +70,7 @@ export function mapAccountUserToProfile(user: AccountUser): UserProfile {
     phone: user.phone ?? '',
     avatar: user.image ?? undefined,
     createdAt: user.createdAt,
-    customerStatus: 'regular',
+    customerStatus: mapCustomerTierToUiStatus(user.customerTier),
   }
 }
 
@@ -200,23 +207,36 @@ function inferProductCategory(design: AccountDesign): ProductCategory {
  * Maps BFF design to legacy SavedDesign UI shape.
  */
 export function mapAccountDesignToUi(design: AccountDesign): SavedDesign {
-  const config = design.configJson as DesignConfig | undefined
-  const garmentColor = config?.garment?.baseColor ?? '#FFFFFF'
-  const layer = config?.layers?.[0]
+  const selection = extractSelectionFromConfigJson(design.configJson)
+  const legacyConfig = design.configJson as DesignConfig | undefined
+  const fabricHex =
+    selection.fabricColor.hex ??
+    selection.selectedColor.hex ??
+    legacyConfig?.garment?.baseColor ??
+    '#FFFFFF'
+  const fabricName =
+    selection.fabricColor.name ?? selection.selectedColor.name ?? 'Personalizado'
+  const previewUrl = resolveDesignPreviewUrl(design)
+  const hasLogo = selection.elements.some((element) => element.type === 'logo')
+  const textElement = selection.elements.find((element) => element.type === 'text')
+  const embroideryText = parseString(textElement?.text)
 
   return {
     id: design.id,
     name: design.name ?? 'Diseño sin nombre',
     productType: inferProductCategory(design),
     productName: design.product?.name ?? 'Producto',
-    previewImage: design.previewUrl ?? '',
+    productSlug: design.product?.slug,
+    previewImage: previewUrl ?? '',
     lastEdited: design.updatedAt,
     estimatedPrice: centsToPesos(design.finalPriceCents),
     status: mapDesignStatus(design.status),
     customization: {
-      color: garmentColor,
-      embroideryType: layer?.type,
+      color: fabricHex,
+      embroideryType: hasLogo ? 'Logo' : legacyConfig?.layers?.[0]?.type,
+      embroideryText: embroideryText ?? undefined,
     },
+    fabricName,
   }
 }
 

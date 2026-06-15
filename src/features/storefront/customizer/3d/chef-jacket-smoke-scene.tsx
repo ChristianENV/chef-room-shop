@@ -258,9 +258,7 @@ export function ChefJacketSmokeViewport({
     }))
   }, [])
 
-  useEffect(() => {
-    setDebug((prev) => ({ ...prev, debugMaterial }))
-  }, [debugMaterial])
+  // debugMaterial is merged into the HUD display inline — no effect needed.
 
   return (
     <div className={className}>

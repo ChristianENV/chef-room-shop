@@ -1,10 +1,11 @@
 'use client'
 
 import { EditableAvatar } from '@/src/features/uploads/components/editable-avatar'
+import { CustomerTierBadge } from '@/src/features/storefront/account/components/customer-tier-badge'
 import type { UserDisplayInput } from '@/src/lib/user/user-display'
 
 export type AccountProfileHeaderProps = {
-  user: UserDisplayInput | null
+  user: (UserDisplayInput & { customerTier?: string | null }) | null
 }
 
 /**
@@ -28,6 +29,9 @@ export function AccountProfileHeader({ user }: AccountProfileHeaderProps) {
         {user?.email && (
           <p className="font-serif text-sm text-muted-foreground">{user.email}</p>
         )}
+        <div className="mt-2 flex justify-center sm:justify-start">
+          <CustomerTierBadge customerTier={user?.customerTier} showRegular />
+        </div>
       </div>
     </div>
   )

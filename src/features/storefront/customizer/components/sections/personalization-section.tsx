@@ -58,7 +58,7 @@ function resolveOptionPriceLabel(
   return fallback
 }
 
-export function PersonalizationSection() {
+export function PersonalizationSection({ embedded = false }: { embedded?: boolean }) {
   const { product, layers, customizationRuleAvailability, addElement, addTextElement, addNameElement } =
     useCustomizerStore()
 
@@ -117,20 +117,37 @@ export function PersonalizationSection() {
   }
 
   return (
-    <div className="space-y-5 p-4" data-testid="customizer-personalization-options">
-      <div>
-        <h3 className="text-sm font-semibold text-foreground">Personalización</h3>
+    <div
+      className={embedded ? 'space-y-5 px-1 pb-2' : 'space-y-5 p-4'}
+      data-testid="customizer-personalization-options"
+    >
+      {!embedded ? (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Sparkles className="size-4" />
+            </span>
+            <h3 className="text-sm font-semibold text-foreground">Bordados por zona</h3>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Toda la personalización es bordada. Elige una zona y agrega logo, texto o nombre. Si
+            repites el mismo logo del pecho en la espalda, obtienes precio especial.
+          </p>
+        </div>
+      ) : (
         <p className="text-xs text-muted-foreground">
-          Solo bordado. Agrega logos, textos y nombres por zona. El logo en espalda tiene precio
-          especial si usas el mismo logo del pecho.
+          Toda la personalización es bordada. Elige una zona y agrega logo, texto o nombre.
         </p>
-      </div>
+      )}
 
       {zones.map((zone) => (
         <section key={zone.slug} className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {zone.name}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-foreground">
+              {zone.name}
+            </p>
+            <span className="h-px flex-1 bg-border/50" />
+          </div>
           <div className="space-y-2">
             {zone.options.map((option) => {
               const meta = KIND_META[option.kind]
@@ -186,7 +203,7 @@ export function PersonalizationSection() {
 
       {usingFallback ? (
         <p className="text-[11px] text-muted-foreground/70">
-          Zonas sugeridas. Las reglas de personalización por prenda aún no están en catálogo (TODO BFF).
+          Mostrando zonas sugeridas para esta prenda.
         </p>
       ) : null}
     </div>

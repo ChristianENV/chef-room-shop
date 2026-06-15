@@ -17,6 +17,30 @@ export type CartProductSnapshot = {
 export type CartCustomizationSnapshot = {
   designId: string | null
   previewUrl: string | null
+  previewBackUrl?: string | null
+  selectedVariantId?: string | null
+  selectedSize?: {
+    id: string | null
+    name: string | null
+    label: string | null
+  }
+  selectedColor?: {
+    id: string | null
+    name: string | null
+    hex: string | null
+    label?: string | null
+  }
+  fabricColor?: {
+    name: string | null
+    hex: string | null
+  }
+  detailColor?: {
+    name: string | null
+    hex: string | null
+  }
+  selectedOptions?: Record<string, unknown>
+  elements?: Array<Record<string, unknown>>
+  customizationPriceCents?: number | null
   summary: string[]
   areas: string[]
   hasLogo: boolean

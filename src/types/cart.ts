@@ -8,6 +8,7 @@ export type CartPreviewCustomizationSummary = {
   embroideredName?: string
   areas?: string[]
   lines?: string[]
+  personalizationLine?: string
 }
 
 /** Lightweight cart line item for navbar popover preview. */
@@ -21,6 +22,8 @@ export type CartPreviewItem = {
   size: string
   colorName: string
   colorHex: string
+  detailColorName?: string | null
+  detailColorHex?: string | null
   quantity: number
   unitPrice: number
   customizationPrice?: number

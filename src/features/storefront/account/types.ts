@@ -8,6 +8,7 @@ export type AccountUser = {
   phone: string | null
   image: string | null
   marketingOptIn: boolean
+  customerTier: string
   roles: string[]
   createdAt: string
 }

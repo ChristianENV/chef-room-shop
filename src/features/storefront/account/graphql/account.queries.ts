@@ -13,6 +13,7 @@ export const ME_PROFILE_QUERY = /* GraphQL */ `
       phone
       image
       marketingOptIn
+      customerTier
       roles
       createdAt
     }
@@ -174,6 +175,7 @@ export const MY_DESIGNS_QUERY = /* GraphQL */ `
       createdAt
       updatedAt
       purchasedAt
+      configJson
       product {
         id
         slug

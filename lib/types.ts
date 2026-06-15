@@ -190,6 +190,7 @@ export interface SavedDesign {
   name: string
   productType: ProductCategory
   productName: string
+  productSlug?: string
   previewImage: string
   lastEdited: string
   estimatedPrice: number
@@ -200,6 +201,8 @@ export interface SavedDesign {
     embroideryText?: string
     embroideryPosition?: string
   }
+  /** Resolved fabric color label from configJson. */
+  fabricName?: string
 }
 
 // Admin Product Types

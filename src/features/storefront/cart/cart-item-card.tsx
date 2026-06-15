@@ -92,13 +92,13 @@ export function CartItemCard({
           </div>
 
           <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-1.5" data-testid="cart-item-selected-size">
               <span className="font-serif">Talla:</span>
               <span className="font-sans font-medium text-foreground">{item.size}</span>
             </span>
             <span className="text-border">|</span>
-            <span className="flex items-center gap-1.5">
-              <span className="font-serif">Color:</span>
+            <span className="flex items-center gap-1.5" data-testid="cart-item-selected-fabric-color">
+              <span className="font-serif">Tela:</span>
               <span className="flex items-center gap-1">
                 <span
                   className="inline-block h-4 w-4 rounded-full border border-border"
@@ -110,6 +110,26 @@ export function CartItemCard({
                 </span>
               </span>
             </span>
+            {item.detailColorName ? (
+              <>
+                <span className="text-border">|</span>
+                <span className="flex items-center gap-1.5" data-testid="cart-item-selected-detail-color">
+                  <span className="font-serif">Detalle:</span>
+                  <span className="flex items-center gap-1">
+                    {item.detailColorHex ? (
+                      <span
+                        className="inline-block h-4 w-4 rounded-full border border-border"
+                        style={{ backgroundColor: item.detailColorHex }}
+                        aria-hidden
+                      />
+                    ) : null}
+                    <span className="font-sans font-medium text-foreground">
+                      {item.detailColorName}
+                    </span>
+                  </span>
+                </span>
+              </>
+            ) : null}
           </div>
 
           {item.isCustomized && (

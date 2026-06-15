@@ -26,6 +26,7 @@ import {
 import { accountNav } from '@/src/config/navigation.storefront'
 import { useMeProfileQuery } from '@/src/features/storefront/account/api/use-me-profile-query'
 import { getUserDisplayName } from '@/src/lib/user/user-display'
+import { CustomerTierBadge } from '@/src/features/storefront/account/components/customer-tier-badge'
 
 const accountNavItems = [
   {
@@ -171,7 +172,11 @@ export function AccountLayout({
                       <p className="truncate font-sans text-sm font-semibold text-foreground">
                         {sidebarDisplayName}
                       </p>
-                      <p className="font-serif text-xs text-muted-foreground">Cliente Premium</p>
+                      <CustomerTierBadge
+                        customerTier={sidebarUser?.customerTier}
+                        className="mt-1"
+                        showRegular
+                      />
                     </div>
                   </div>
                 </div>

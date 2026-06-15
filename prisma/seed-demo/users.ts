@@ -1,4 +1,4 @@
-import { PrismaClient, RoleSlug, UserStatus } from '@prisma/client'
+import { PrismaClient, RoleSlug, UserStatus, CustomerTier } from '@prisma/client'
 import { buildAuth } from '../../src/server/auth/build-auth'
 
 import { DEMO_PASSWORD } from './constants'
@@ -17,6 +17,7 @@ type DemoUserSpec = {
   phone: string
   marketingOptIn: boolean
   roles: RoleSlug[]
+  customerTier?: CustomerTier
   social?: SocialLink[]
 }
 
@@ -137,6 +138,7 @@ function buildCustomerSpecs(): DemoUserSpec[] {
       phone: `+5255${String(1000000 + n).slice(-7)}`,
       marketingOptIn: n % 2 === 0,
       roles: [RoleSlug.CUSTOMER],
+      customerTier: n === 1 ? CustomerTier.PREMIUM : CustomerTier.REGULAR,
       social,
     }
   })
@@ -232,6 +234,7 @@ async function ensureDemoUser(
       phone: spec.phone,
       marketingOptIn: spec.marketingOptIn,
       status: UserStatus.ACTIVE,
+      customerTier: spec.customerTier ?? CustomerTier.REGULAR,
       emailVerified: true,
     },
   })

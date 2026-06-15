@@ -34,6 +34,11 @@ export function CartCustomizationSummary({
       )}
       {summary && (
         <ul className="mt-1 space-y-0.5 font-serif text-xs text-muted-foreground">
+          {summary.personalizationLine ? (
+            <li data-testid="cart-item-customization-summary">
+              Personalización: {summary.personalizationLine}
+            </li>
+          ) : null}
           {summary.hasLogo && <li>Logo incluido</li>}
           {summary.hasEmbroidery && <li>Bordado</li>}
           {summary.embroideredName && (

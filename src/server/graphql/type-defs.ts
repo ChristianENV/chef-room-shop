@@ -139,6 +139,7 @@ export const accountTypeDefs = /* GraphQL */ `
     phone: String
     image: String
     marketingOptIn: Boolean!
+    customerTier: String!
     roles: [String!]!
     createdAt: String!
   }
@@ -309,9 +310,35 @@ export const cartTypeDefs = /* GraphQL */ `
     sizeName: String
   }
 
+  type CartSnapshotColor {
+    id: ID
+    name: String
+    hex: String
+    label: String
+  }
+
+  type CartSnapshotSize {
+    id: ID
+    name: String
+    label: String
+  }
+
+  type CartSnapshotFabricColor {
+    name: String
+    hex: String
+  }
+
   type CartCustomizationSnapshot {
     designId: ID
     previewUrl: String
+    previewBackUrl: String
+    selectedVariantId: ID
+    selectedSize: CartSnapshotSize
+    selectedColor: CartSnapshotColor
+    fabricColor: CartSnapshotFabricColor
+    detailColor: CartSnapshotFabricColor
+    selectedOptions: JSON
+    customizationPriceCents: Int
     summary: [String!]!
     areas: [String!]!
     hasLogo: Boolean!
@@ -1407,6 +1434,7 @@ export const typeDefs = /* GraphQL */ `
     adminOrderStatusSummary: AdminOrderStatusSummary!
     adminOrderProductionQueue(limit: Int): [AdminOrder!]!
     adminOrderProductionSheet(orderNumber: String!): AdminProductionSheet
+    adminDesignConfigJson(designId: ID!): JSON
     adminShipmentByOrderNumber(orderNumber: String!): AdminShipment
     adminProducts(
       filter: AdminProductsFilterInput

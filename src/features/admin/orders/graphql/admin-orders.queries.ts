@@ -64,3 +64,9 @@ export const ADMIN_ORDER_PRODUCTION_SHEET_QUERY = /* GraphQL */ `
     }
   }
 `
+
+export const ADMIN_DESIGN_CONFIG_JSON_QUERY = /* GraphQL */ `
+  query AdminDesignConfigJson($designId: ID!) {
+    adminDesignConfigJson(designId: $designId)
+  }
+`

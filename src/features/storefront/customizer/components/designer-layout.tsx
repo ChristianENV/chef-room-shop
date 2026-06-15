@@ -115,11 +115,11 @@ export function DesignerLayout({
               <Layers className="size-3.5" />
               Elementos
             </SheetTrigger>
-            <SheetContent side="right" className="w-[88vw] max-w-sm p-0">
+            <SheetContent side="right" className="flex w-[88vw] max-w-[420px] flex-col p-0">
               <SheetHeader className="sr-only">
                 <SheetTitle>Elementos del diseño</SheetTitle>
               </SheetHeader>
-              <div className="h-full overflow-hidden">
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
                 <RightSidebar />
               </div>
             </SheetContent>
@@ -138,7 +138,7 @@ export function DesignerLayout({
         initial={{ x: 100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.3 }}
-        className="relative z-10 hidden h-full xl:block"
+        className="relative z-10 hidden h-full min-h-0 shrink-0 xl:block"
       >
         <RightSidebar />
       </motion.div>

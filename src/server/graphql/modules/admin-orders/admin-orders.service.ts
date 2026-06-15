@@ -631,3 +631,23 @@ export async function addAdminOrderNote(
 
   return mapOrderToAdminGql(await loadOrderByNumber(context, parsed.orderNumber))
 }
+
+/**
+ * Returns persisted Design.configJson for admin audit (no customer ownership check).
+ */
+export async function getAdminDesignConfigJson(
+  context: GraphQLContext,
+  designId: string,
+): Promise<unknown | null> {
+  requireAdminGraphQL(context)
+
+  const normalized = designId.trim()
+  if (!normalized) return null
+
+  const design = await context.prisma.design.findFirst({
+    where: { id: normalized, deletedAt: null },
+    select: { configJson: true },
+  })
+
+  return design?.configJson ?? null
+}

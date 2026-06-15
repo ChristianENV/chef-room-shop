@@ -5,7 +5,6 @@ import {
   Shirt,
   SlidersHorizontal,
   Sticker,
-  Tag,
   Type,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -15,7 +14,6 @@ export type CustomizerCategory =
   | 'colores'
   | 'texto'
   | 'logotipos'
-  | 'nombres'
   | 'extras'
   | 'disenos'
   | 'debug3d'
@@ -29,9 +27,8 @@ export type CustomizerCategoryItem = {
 export const CUSTOMIZER_CATEGORIES: CustomizerCategoryItem[] = [
   { id: 'producto', label: 'Producto', icon: Shirt },
   { id: 'colores', label: 'Colores', icon: Palette },
-  { id: 'texto', label: 'Texto', icon: Type },
+  { id: 'texto', label: 'Texto y nombres', icon: Type },
   { id: 'logotipos', label: 'Logotipos', icon: Sticker },
-  { id: 'nombres', label: 'Nombres', icon: Tag },
   { id: 'extras', label: 'Extras', icon: SlidersHorizontal },
   { id: 'disenos', label: 'Mis diseños', icon: Bookmark },
 ]

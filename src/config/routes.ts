@@ -28,6 +28,7 @@ export const routes = {
   verifyEmail: '/verify-email',
   authSocialComplete: '/auth/social-complete',
   account: '/account',
+  accountDesigns: '/account/designs',
   claimOrder: '/claim-order',
   claimOrderAuthorize: '/claim-order/authorize',
   accountOrderDetail: (orderNumber: string) => `/account/orders/${orderNumber}`,
@@ -79,6 +80,15 @@ export function postCheckoutOrderDetail(orderNumber: string, token: string) {
 /** @deprecated Use postCheckoutOrderDetail for auth callbacks after purchase. */
 export function purchaseCallbackByToken(token: string) {
   return checkoutSuccess({ token: token.trim() })
+}
+
+/** Opens the customizer to edit a saved design (supports optional product slug). */
+export function customizeEditDesign(
+  designId: string,
+  productSlug?: string | null,
+): string {
+  const base = productSlug ? routes.customizeProduct(productSlug) : routes.customize
+  return appendQuery(base, { designId })
 }
 
 export function login(options?: { callbackUrl?: string }) {

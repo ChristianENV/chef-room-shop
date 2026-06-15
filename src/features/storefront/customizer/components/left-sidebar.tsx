@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { PanelLeftClose } from 'lucide-react'
 import type { CatalogProduct } from '@/src/features/storefront/catalog/types'
 import { cn } from '@/lib/utils'
-import { useCustomizerStore } from '../store/customizer.store'
 import {
   CUSTOMIZER_ADMIN_CATEGORY,
   CUSTOMIZER_CATEGORIES,
@@ -12,104 +11,13 @@ import {
 import type { CustomizerCategory, CustomizerCategoryItem } from '../lib/customizer-categories'
 import { useIsAdminUser } from '@/src/features/storefront/hooks/use-is-admin-user'
 import { CustomizerLeftRail } from './customizer-left-rail'
-import { CustomizerProductSelector } from './customizer-product-selector'
-import { ColorSection } from './sections/color-section'
-import { SizeSection } from './sections/size-section'
-import { GarmentStyleSection } from './sections/garment-style-section'
-import { PersonalizationSection } from './sections/personalization-section'
-import { SavedDesignsSection } from './sections/saved-designs-section'
-import { ElementAddSection } from './sections/element-add-section'
-import { LogoUploadSection } from './sections/logo-upload-section'
-import { Debug3dSection } from './sections/debug-3d-section'
+import { CustomizerLeftAccordionPanel } from './customizer-left-accordion-panel'
 
 interface LeftSidebarProps {
   productOptions?: CatalogProduct[]
   selectedProductSlug?: string | null
   onSelectProduct?: (slug: string) => void
   onUploadLogo?: (file: File) => Promise<void>
-}
-
-function CategoryContent({
-  category,
-  productOptions,
-  selectedProductSlug,
-  onSelectProduct,
-  onUploadLogo,
-}: {
-  category: CustomizerCategory
-  productOptions: CatalogProduct[]
-  selectedProductSlug?: string | null
-  onSelectProduct?: (slug: string) => void
-  onUploadLogo?: (file: File) => Promise<void>
-}) {
-  const product = useCustomizerStore((state) => state.product)
-
-  switch (category) {
-    case 'producto':
-      return (
-        <div className="space-y-4 p-4">
-          <div>
-            <h3 className="text-sm font-semibold text-foreground">Producto</h3>
-            <p className="text-xs text-muted-foreground">Elige la prenda a personalizar.</p>
-          </div>
-          {productOptions.length > 0 && onSelectProduct ? (
-            <CustomizerProductSelector
-              products={productOptions}
-              selectedSlug={selectedProductSlug ?? product?.slug ?? null}
-              onSelectProduct={onSelectProduct}
-            />
-          ) : (
-            <div className="rounded-lg border border-border/60 bg-card px-3 py-2 text-sm font-medium">
-              {product?.name ?? 'Producto'}
-            </div>
-          )}
-        </div>
-      )
-    case 'colores':
-      return <ColorSection />
-    case 'texto':
-      return (
-        <ElementAddSection
-          title="Texto"
-          description="Agrega una frase o palabra a tu prenda."
-          ctaLabel="Agregar texto"
-          elementType="text"
-          elementName="Texto"
-          matchTypes={['text']}
-          variant="text"
-        />
-      )
-    case 'logotipos':
-      return onUploadLogo ? <LogoUploadSection onUploadLogo={onUploadLogo} /> : null
-    case 'nombres':
-      return (
-        <ElementAddSection
-          title="Nombres"
-          description="Agrega el nombre del chef o del equipo."
-          ctaLabel="Agregar nombre"
-          elementType="text"
-          elementName="Nombre"
-          matchTypes={['text']}
-          variant="name"
-        />
-      )
-    case 'extras':
-      return (
-        <>
-          <GarmentStyleSection />
-          <div className="border-t border-border/30" />
-          <SizeSection />
-          <div className="border-t border-border/30" />
-          <PersonalizationSection />
-        </>
-      )
-    case 'disenos':
-      return <SavedDesignsSection />
-    case 'debug3d':
-      return <Debug3dSection />
-    default:
-      return null
-  }
 }
 
 export function LeftSidebar({
@@ -126,7 +34,7 @@ export function LeftSidebar({
     ? [...CUSTOMIZER_CATEGORIES, CUSTOMIZER_ADMIN_CATEGORY]
     : CUSTOMIZER_CATEGORIES
 
-  const activeLabel = railCategories.find((item) => item.id === active)?.label ?? ''
+  const activeLabel = railCategories.find((item) => item.id === active)?.label ?? 'Opciones'
 
   return (
     <div className="flex h-full">
@@ -155,15 +63,15 @@ export function LeftSidebar({
             <PanelLeftClose className="size-4" />
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          <CategoryContent
-            category={active}
-            productOptions={productOptions}
-            selectedProductSlug={selectedProductSlug}
-            onSelectProduct={onSelectProduct}
-            onUploadLogo={onUploadLogo}
-          />
-        </div>
+        <CustomizerLeftAccordionPanel
+          productOptions={productOptions}
+          selectedProductSlug={selectedProductSlug}
+          onSelectProduct={onSelectProduct}
+          onUploadLogo={onUploadLogo}
+          activeRailCategory={active}
+          isAdmin={isAdmin}
+          panelCollapsed={collapsed}
+        />
       </div>
       {collapsed ? (
         <button

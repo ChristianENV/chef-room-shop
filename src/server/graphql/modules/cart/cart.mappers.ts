@@ -1,5 +1,10 @@
 import type { Design, Prisma } from '@prisma/client'
 
+import {
+  buildCustomizationSnapshot as buildSharedCustomizationSnapshot,
+  enrichProductSnapshotWithConfig,
+} from '@/src/lib/customization/build-customization-snapshot'
+
 import { mapDesignToGql } from '../account/account.mappers'
 import { mapProductToGql } from '../catalog/catalog.mappers'
 import type {
@@ -11,21 +16,6 @@ import type {
   CartProductSnapshotGql,
   CartWithRelations,
 } from './cart.types'
-
-type DesignConfigJson = {
-  productId?: string
-  productSlug?: string
-  finalPriceCents?: number
-  areas?: string[]
-  hasLogo?: boolean
-  hasEmbroidery?: boolean
-  embroideredName?: string
-  summary?: string[]
-  elements?: Array<Record<string, unknown>>
-  previews?: {
-    back?: { url?: string }
-  }
-}
 
 function parseJsonRecord(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -67,10 +57,11 @@ function primaryImageUrl(
  */
 export function buildProductSnapshot(
   item: CartItemWithRelations,
+  configJson?: unknown,
 ): CartProductSnapshotGql {
   const { product, productVariant } = item
 
-  return {
+  const snapshot: CartProductSnapshotGql = {
     productId: product.id,
     variantId: productVariant?.id ?? null,
     slug: product.slug,
@@ -82,6 +73,11 @@ export function buildProductSnapshot(
     colorHex: productVariant?.color.hex ?? null,
     sizeName: productVariant?.size.name ?? null,
   }
+
+  const config = configJson ?? item.design?.configJson
+  if (!config) return snapshot
+
+  return enrichProductSnapshotWithConfig(snapshot, config) as CartProductSnapshotGql
 }
 
 /**
@@ -90,11 +86,24 @@ export function buildProductSnapshot(
 export function buildCustomizationSnapshot(
   design: Design | null,
   configJson?: unknown,
+  options?: {
+    variant?: CartItemWithRelations['productVariant']
+    customizationPriceCents?: number | null
+  },
 ): CartCustomizationSnapshotGql {
   if (!design) {
     return {
       designId: null,
       previewUrl: null,
+      previewBackUrl: null,
+      selectedVariantId: null,
+      selectedSize: { id: null, name: null, label: null },
+      selectedColor: { id: null, name: null, hex: null, label: null },
+      fabricColor: { name: null, hex: null },
+      detailColor: { name: null, hex: null },
+      elements: [],
+      selectedOptions: {},
+      customizationPriceCents: options?.customizationPriceCents ?? null,
       summary: [],
       areas: [],
       hasLogo: false,
@@ -103,69 +112,51 @@ export function buildCustomizationSnapshot(
     }
   }
 
-  const config = parseJsonRecord(configJson ?? design.configJson) as DesignConfigJson
-  const elements = Array.isArray(config.elements) ? config.elements : []
-  const textElements = elements.filter(
-    (element) => element && typeof element === 'object' && element.type === 'text',
-  ) as Array<Record<string, unknown>>
-  const logoElements = elements.filter(
-    (element) => element && typeof element === 'object' && element.type === 'logo',
-  )
-  const patchElements = elements.filter(
-    (element) => element && typeof element === 'object' && element.type === 'patch',
-  )
+  const snapshot = buildSharedCustomizationSnapshot({
+    design,
+    configJson: configJson ?? design.configJson,
+    variant: options?.variant
+      ? {
+          id: options.variant.id,
+          color: options.variant.color
+            ? {
+                id: options.variant.color.id,
+                name: options.variant.color.name,
+                hex: options.variant.color.hex,
+              }
+            : null,
+          size: options.variant.size
+            ? {
+                id: options.variant.size.id,
+                name: options.variant.size.name,
+              }
+            : null,
+        }
+      : null,
+    customizationPriceCents: options?.customizationPriceCents ?? null,
+  })
 
-  const summaryFromElements: string[] = []
-  for (const element of textElements) {
-    const rawText = element.text
-    if (typeof rawText === 'string' && rawText.trim()) {
-      summaryFromElements.push(rawText.trim())
-    }
-  }
-
-  const summary = Array.isArray(config.summary)
-    ? config.summary.filter((line): line is string => typeof line === 'string')
-    : summaryFromElements.length > 0
-      ? summaryFromElements
-      : design.name
-        ? [design.name]
-        : []
-
-  const areaSet = new Set<string>()
-  if (Array.isArray(config.areas)) {
-    for (const area of config.areas) {
-      if (typeof area === 'string' && area.trim()) areaSet.add(area)
-    }
-  }
-  for (const element of elements) {
-    if (!element || typeof element !== 'object') continue
-    const zone = element.zone
-    if (typeof zone === 'string' && zone.trim()) areaSet.add(zone)
-  }
-  const areas = Array.from(areaSet)
-
-  return {
-    designId: design.id,
-    previewUrl: design.previewUrl,
-    summary,
-    areas,
-    hasLogo: Boolean(config.hasLogo) || logoElements.length > 0,
-    hasEmbroidery: Boolean(config.hasEmbroidery) || patchElements.length > 0,
-    embroideredName:
-      typeof config.embroideredName === 'string' ? config.embroideredName : null,
-  }
+  return snapshot
 }
 
 function resolveProductSnapshot(item: CartItemWithRelations): CartProductSnapshotGql {
   const fromConfig = parseConfigSnapshot(item.configSnapshotJson).productSnapshot
-  if (fromConfig?.productId) return fromConfig
-  return buildProductSnapshot(item)
+  if (fromConfig?.productId) {
+    return enrichProductSnapshotWithConfig(
+      fromConfig,
+      item.design?.configJson,
+    ) as CartProductSnapshotGql
+  }
+  return buildProductSnapshot(item, item.design?.configJson)
 }
 
 function resolveCustomizationSnapshot(item: CartItemWithRelations): CartCustomizationSnapshotGql {
   const fromConfig = parseConfigSnapshot(item.configSnapshotJson).customizationSnapshot
   if (fromConfig) return fromConfig
-  return buildCustomizationSnapshot(item.design, item.design?.configJson)
+  return buildCustomizationSnapshot(item.design, item.design?.configJson, {
+    variant: item.productVariant,
+    customizationPriceCents: item.customizationPriceCents,
+  })
 }
 
 /**

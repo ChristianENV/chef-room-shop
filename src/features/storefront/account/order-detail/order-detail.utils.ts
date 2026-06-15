@@ -18,11 +18,35 @@ export type ProductSnapshot = {
   imageUrl?: string | null
   sizeName?: string | null
   colorName?: string | null
+  colorHex?: string | null
+  fabricColorName?: string | null
+  detailColorName?: string | null
 }
 
 export type DesignSnapshot = {
   designId?: string | null
   previewUrl?: string | null
+  previewBackUrl?: string | null
+  selectedVariantId?: string | null
+  selectedSize?: {
+    id?: string | null
+    name?: string | null
+    label?: string | null
+  }
+  selectedColor?: {
+    id?: string | null
+    name?: string | null
+    hex?: string | null
+    label?: string | null
+  }
+  fabricColor?: {
+    name?: string | null
+    hex?: string | null
+  }
+  detailColor?: {
+    name?: string | null
+    hex?: string | null
+  }
   summary?: string[]
   areas?: string[]
   hasLogo?: boolean
@@ -173,6 +197,12 @@ export function parseProductSnapshot(value: unknown): ProductSnapshot {
     return {}
   }
   const record = value as Record<string, unknown>
+  const fabricColor = record.fabricColor
+  const fabricRecord =
+    fabricColor && typeof fabricColor === 'object' && !Array.isArray(fabricColor)
+      ? (fabricColor as Record<string, unknown>)
+      : null
+
   return {
     name: typeof record.name === 'string' ? record.name : undefined,
     slug: typeof record.slug === 'string' ? record.slug : undefined,
@@ -180,6 +210,15 @@ export function parseProductSnapshot(value: unknown): ProductSnapshot {
     imageUrl: typeof record.imageUrl === 'string' ? record.imageUrl : null,
     sizeName: typeof record.sizeName === 'string' ? record.sizeName : null,
     colorName: typeof record.colorName === 'string' ? record.colorName : null,
+    colorHex: typeof record.colorHex === 'string' ? record.colorHex : null,
+    fabricColorName:
+      typeof fabricRecord?.name === 'string'
+        ? fabricRecord.name
+        : typeof record.colorName === 'string'
+          ? record.colorName
+          : null,
+    detailColorName:
+      typeof record.detailColorName === 'string' ? record.detailColorName : null,
   }
 }
 
@@ -191,9 +230,66 @@ export function parseDesignSnapshot(value: unknown): DesignSnapshot | null {
     return null
   }
   const record = value as Record<string, unknown>
+  const selectedSize = record.selectedSize
+  const selectedColor = record.selectedColor
+  const fabricColor = record.fabricColor
+  const detailColor = record.detailColor
+
+  const parseFabric = (input: unknown) => {
+    if (!input || typeof input !== 'object' || Array.isArray(input)) return undefined
+    const row = input as Record<string, unknown>
+    return {
+      name: typeof row.name === 'string' ? row.name : null,
+      hex: typeof row.hex === 'string' ? row.hex : null,
+    }
+  }
+
   return {
     designId: typeof record.designId === 'string' ? record.designId : null,
     previewUrl: typeof record.previewUrl === 'string' ? record.previewUrl : null,
+    previewBackUrl: typeof record.previewBackUrl === 'string' ? record.previewBackUrl : null,
+    selectedVariantId:
+      typeof record.selectedVariantId === 'string' ? record.selectedVariantId : null,
+    selectedSize:
+      selectedSize && typeof selectedSize === 'object' && !Array.isArray(selectedSize)
+        ? {
+            id:
+              typeof (selectedSize as Record<string, unknown>).id === 'string'
+                ? ((selectedSize as Record<string, unknown>).id as string)
+                : null,
+            name:
+              typeof (selectedSize as Record<string, unknown>).name === 'string'
+                ? ((selectedSize as Record<string, unknown>).name as string)
+                : null,
+            label:
+              typeof (selectedSize as Record<string, unknown>).label === 'string'
+                ? ((selectedSize as Record<string, unknown>).label as string)
+                : null,
+          }
+        : undefined,
+    selectedColor:
+      selectedColor && typeof selectedColor === 'object' && !Array.isArray(selectedColor)
+        ? {
+            id:
+              typeof (selectedColor as Record<string, unknown>).id === 'string'
+                ? ((selectedColor as Record<string, unknown>).id as string)
+                : null,
+            name:
+              typeof (selectedColor as Record<string, unknown>).name === 'string'
+                ? ((selectedColor as Record<string, unknown>).name as string)
+                : null,
+            hex:
+              typeof (selectedColor as Record<string, unknown>).hex === 'string'
+                ? ((selectedColor as Record<string, unknown>).hex as string)
+                : null,
+            label:
+              typeof (selectedColor as Record<string, unknown>).label === 'string'
+                ? ((selectedColor as Record<string, unknown>).label as string)
+                : null,
+          }
+        : undefined,
+    fabricColor: parseFabric(fabricColor),
+    detailColor: parseFabric(detailColor),
     summary: Array.isArray(record.summary)
       ? record.summary.filter((s): s is string => typeof s === 'string')
       : [],

@@ -6,18 +6,13 @@ export type NamedColor = {
   hex: string
 }
 
+import { fabricColorsAsNamedColors } from '../constants/fabric-colors'
+
 /**
  * Fallback colors used when the product BFF has no color variants.
+ * Sourced from {@link DEFAULT_FABRIC_COLORS} — do not duplicate hex values here.
  */
-export const FALLBACK_COLORS: NamedColor[] = [
-  { id: 'blanco', name: 'Blanco', hex: '#FFFFFF' },
-  { id: 'negro', name: 'Negro', hex: '#1A1A1A' },
-  { id: 'gris', name: 'Gris', hex: '#9CA3AF' },
-  { id: 'azul', name: 'Azul', hex: '#2B3280' },
-  { id: 'rojo', name: 'Rojo', hex: '#DC2626' },
-  { id: 'verde', name: 'Verde', hex: '#16A34A' },
-  { id: 'naranja', name: 'Naranja', hex: '#EA580C' },
-]
+export const FALLBACK_COLORS: NamedColor[] = fabricColorsAsNamedColors()
 
 export const FALLBACK_SIZES: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 

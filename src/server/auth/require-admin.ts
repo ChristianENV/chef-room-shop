@@ -57,6 +57,7 @@ export async function requireAdminSession(): Promise<CurrentUser> {
       lastName: 'Admin',
       phone: null,
       image: null,
+      customerTier: 'REGULAR',
       roles: ['ADMIN'],
       permissions: [],
     }
