@@ -1,27 +1,29 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Image, Palette, Sparkles, Type } from 'lucide-react'
+import { ArrowRight, CircleDot, Image, Palette, Sparkles, Type } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { routes } from '@/src/config/routes'
 import { cn } from '@/lib/utils'
 
 import { ChefAvatarStack } from './components/chef-avatar-stack'
+import { Hero3DShowcase } from './components/hero-3d/hero-3d-showcase'
 import { LandingFloat, LandingReveal } from './components/landing-reveal'
-import { LandingMediaImage } from './components/landing-media-image'
-import { LANDING_CHEF_AVATARS, LANDING_MEDIA } from './lib/landing-media'
+import { LANDING_CHEF_AVATARS } from './lib/landing-media'
 
 const floatingFeatures = [
   { icon: Palette, label: 'Colores', detail: 'Paleta premium' },
   { icon: Type, label: 'Bordado', detail: 'Nombre o texto' },
   { icon: Image, label: 'Logo', detail: 'Alta resolución' },
+  { icon: CircleDot, label: 'Botones', detail: 'Estilo y acabado' },
 ] as const
 
 const floatPositions = [
-  'left-0 top-[14%] md:-left-6 lg:-left-12',
-  'right-0 top-[32%] md:-right-6 lg:-right-10',
-  'left-4 bottom-[18%] md:left-0 lg:-left-6',
+  'left-0 top-[10%] md:-left-6 lg:-left-12',
+  'right-0 top-[28%] md:-right-6 lg:-right-10',
+  'left-2 top-[52%] md:left-0 lg:-left-4',
+  'right-2 bottom-[14%] md:right-0 lg:-right-8',
 ] as const
 
 export function HeroSection() {
@@ -113,17 +115,7 @@ export function HeroSection() {
 
               <div className="relative overflow-visible rounded-[2rem] border border-white/10 bg-[#12162c]/75 shadow-2xl shadow-primary/15 ring-1 ring-white/5 backdrop-blur-sm">
                 <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem] sm:aspect-[3/4] lg:aspect-[4/5]">
-                  <LandingMediaImage
-                    asset={LANDING_MEDIA.hero}
-                    priority
-                    fit="contain"
-                    sizes="(max-width: 1024px) min(95vw, 500px), min(58vw, 640px)"
-                    overlay="none"
-                    frameClassName="bg-[#12162c]"
-                    className="absolute inset-0 !aspect-auto"
-                    imageClassName="!p-0"
-                  />
-
+                  <Hero3DShowcase priority className="absolute inset-0" />
                 </div>
               </div>
 
