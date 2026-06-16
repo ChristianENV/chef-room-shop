@@ -114,8 +114,8 @@ export function HeroSection() {
               />
 
               <div className="relative overflow-visible rounded-[2rem] border border-white/10 bg-[#12162c]/75 shadow-2xl shadow-primary/15 ring-1 ring-white/5 backdrop-blur-sm">
-                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem] sm:aspect-[3/4] lg:aspect-[4/5]">
-                  <Hero3DShowcase priority className="absolute inset-0" />
+                <div className="relative min-h-[420px] w-full overflow-hidden rounded-[2rem] sm:min-h-[480px] lg:min-h-[520px]">
+                  <Hero3DShowcase priority className="absolute inset-0 h-full w-full" />
                 </div>
               </div>
 

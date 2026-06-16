@@ -10,14 +10,13 @@ export const HERO_3D_MODEL_URL = CHEF_JACKET_GLTF_LOCAL
 export const HERO_3D_JACKET_TRANSFORM = {
   scale: 0.02,
   position: [0, -2.55, 0] as [number, number, number],
-  /** Slight 3/4 turn for a premium hero angle. */
-  rotation: [0, -0.42, 0] as [number, number, number],
+  rotation: [0, -0.35, 0] as [number, number, number],
 }
 
 export const HERO_3D_CAMERA = {
-  position: [1.15, 1.05, 4.35] as [number, number, number],
-  fov: 34,
-  target: [0, 0.55, 0] as [number, number, number],
+  position: [0, 0.9, 5.2] as [number, number, number],
+  fov: 35,
+  target: [0, -0.88, 0] as [number, number, number],
 }
 
 /** Idle showcase motion — radians per second. */
