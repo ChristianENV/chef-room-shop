@@ -8,6 +8,7 @@ import { routes } from '@/src/config/routes'
 import { cn } from '@/lib/utils'
 
 import { ChefAvatarStack } from './components/chef-avatar-stack'
+import { HERO_3D_STAGE } from './components/hero-3d/hero-3d-config'
 import { Hero3DShowcase } from './components/hero-3d/hero-3d-showcase'
 import { LandingFloat, LandingReveal } from './components/landing-reveal'
 import { LANDING_CHEF_AVATARS } from './lib/landing-media'
@@ -20,10 +21,10 @@ const floatingFeatures = [
 ] as const
 
 const floatPositions = [
-  'left-0 top-[10%] md:-left-6 lg:-left-12',
-  'right-0 top-[28%] md:-right-6 lg:-right-10',
-  'left-2 top-[52%] md:left-0 lg:-left-4',
-  'right-2 bottom-[14%] md:right-0 lg:-right-8',
+  'left-0 top-[6%] md:-left-8 lg:-left-14',
+  'right-0 top-[20%] md:-right-8 lg:-right-12',
+  'left-1 top-[56%] md:-left-2 lg:-left-6',
+  'right-1 bottom-[8%] md:-right-4 lg:-right-10',
 ] as const
 
 export function HeroSection() {
@@ -107,16 +108,26 @@ export function HeroSection() {
           </LandingReveal>
 
           <LandingReveal className="relative w-full lg:pl-0 xl:pl-2" delay={0.12}>
-            <div className="relative mx-auto w-full max-w-[min(100%,400px)] sm:max-w-[460px] md:max-w-[500px] lg:mx-0 lg:max-w-none">
+            <div
+              className={cn(
+                'relative mx-auto w-full max-w-[min(100%,400px)] sm:max-w-[460px] md:max-w-[500px] lg:mx-0',
+                HERO_3D_STAGE.maxWidthClass,
+              )}
+            >
               <div
-                className="pointer-events-none absolute -inset-4 rounded-[2.25rem] bg-[radial-gradient(ellipse_70%_80%_at_50%_45%,rgba(90,111,221,0.24)_0%,transparent_72%)] blur-sm lg:-inset-8"
+                className="pointer-events-none absolute -inset-4 rounded-[2.25rem] bg-[radial-gradient(ellipse_70%_80%_at_50%_45%,rgba(90,111,221,0.2)_0%,transparent_72%)] blur-sm lg:-inset-6"
                 aria-hidden
               />
 
-              <div className="relative overflow-visible rounded-[2rem] border border-white/10 bg-[#12162c]/75 shadow-2xl shadow-primary/15 ring-1 ring-white/5 backdrop-blur-sm">
-                <div className="relative min-h-[420px] w-full overflow-hidden rounded-[2rem] sm:min-h-[480px] lg:min-h-[520px]">
-                  <Hero3DShowcase priority className="absolute inset-0 h-full w-full" />
-                </div>
+              <div
+                className={cn(
+                  'relative w-full',
+                  HERO_3D_STAGE.minHeightClass,
+                  HERO_3D_STAGE.smMinHeightClass,
+                  HERO_3D_STAGE.lgMinHeightClass,
+                )}
+              >
+                <Hero3DShowcase priority className="absolute inset-0 h-full w-full" />
               </div>
 
               {floatingFeatures.map((feat, i) => (

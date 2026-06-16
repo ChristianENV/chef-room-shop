@@ -17,7 +17,7 @@ export function HeroStaticVisual({ priority, className }: HeroStaticVisualProps)
       fit="contain"
       sizes="(max-width: 1024px) min(95vw, 500px), min(58vw, 640px)"
       overlay="none"
-      frameClassName="bg-[#12162c]"
+      frameClassName="bg-transparent"
       className={className ?? 'absolute inset-0 !aspect-auto'}
       imageClassName="!p-0"
     />

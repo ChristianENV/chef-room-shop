@@ -6,13 +6,21 @@ import { useReducedMotion } from 'framer-motion'
 
 import { cn } from '@/lib/utils'
 
+import { Hero3DCalibrationPanel } from './hero-3d-calibration-panel'
 import {
   checkHero3DModelAssetsAvailable,
   createInitialHero3DDebugState,
+  isLandingHero3dCalibrateEnabled,
   isLandingHero3dDebugEnabled,
   type Hero3DDebugState,
   type Hero3DRenderMode,
 } from './hero-3d-debug'
+import {
+  cloneComposition,
+  HERO_3D_STAGE,
+  HERO_JACKET_COMPOSITION,
+  type HeroJacketComposition,
+} from './hero-3d-config'
 import { Hero3DDebugOverlay } from './hero-3d-debug-overlay'
 import { HeroStaticVisual } from './hero-static-visual'
 import type { Hero3DSceneReport } from './hero-3d-scene'
@@ -31,8 +39,7 @@ function detectWebGLAvailable(): boolean {
   if (typeof window === 'undefined') return true
   try {
     const canvas = document.createElement('canvas')
-    const gl =
-      canvas.getContext('webgl2') ?? canvas.getContext('webgl')
+    const gl = canvas.getContext('webgl2') ?? canvas.getContext('webgl')
     return Boolean(gl)
   } catch {
     return false
@@ -72,13 +79,19 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
   const webglAvailable = detectWebGLAvailable()
   const dpr = detectDeviceDpr()
   const containerRef = useRef<HTMLDivElement>(null)
+  const calibrateEnabled = isLandingHero3dCalibrateEnabled()
 
+  const [composition, setComposition] = useState<HeroJacketComposition>(() =>
+    cloneComposition(HERO_JACKET_COMPOSITION),
+  )
   const [debug, setDebug] = useState<Hero3DDebugState>(createInitialHero3DDebugState)
   const [assetsAvailable, setAssetsAvailable] = useState<boolean | null>(null)
   const [assetsChecked, setAssetsChecked] = useState(false)
   const [sceneFailed, setSceneFailed] = useState(false)
   const [sceneLoaded, setSceneLoaded] = useState(false)
   const [canvasMounted, setCanvasMounted] = useState(false)
+
+  const activeComposition = calibrateEnabled ? composition : HERO_JACKET_COMPOSITION
 
   useEffect(() => {
     let cancelled = false
@@ -131,8 +144,7 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
 
   const useStaticVisual = Boolean(fallbackReason)
   const renderMode: Hero3DRenderMode = useStaticVisual ? 'static-fallback' : '3d'
-  const showCanvas =
-    !useStaticVisual && canvasMounted && sceneLoaded && debug.meshCount > 0
+  const showCanvas = !useStaticVisual && canvasMounted && sceneLoaded && debug.meshCount > 0
 
   useEffect(() => {
     if (useStaticVisual || sceneLoaded) return
@@ -193,33 +205,44 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
   const animate = !reduceMotion && !useStaticVisual
   const showDebugPrimitive = isLandingHero3dDebugEnabled()
 
+  const glowStyle = {
+    transform: `translate(${activeComposition.glowOffsetX}px, ${activeComposition.glowOffsetY}px)`,
+  }
+
+  const pedestalStyle = {
+    transform: `translateY(${activeComposition.pedestalOffsetY}px)`,
+  }
+
   return (
     <div
       ref={containerRef}
       className={cn(
-        'relative min-h-[420px] w-full bg-[#0c1024] sm:min-h-[480px] lg:min-h-[520px]',
+        'relative w-full',
+        HERO_3D_STAGE.minHeightClass,
+        HERO_3D_STAGE.smMinHeightClass,
+        HERO_3D_STAGE.lgMinHeightClass,
         className,
       )}
       data-testid="landing-hero-3d-showcase"
     >
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_65%_70%_at_52%_42%,rgba(90,111,221,0.38)_0%,transparent_68%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_75%_at_50%_38%,rgba(90,111,221,0.32)_0%,transparent_70%)]"
+        style={glowStyle}
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-x-[12%] top-[18%] h-[42%] rounded-full bg-primary/25 blur-3xl"
+        className="pointer-events-none absolute inset-x-[14%] top-[16%] h-[40%] rounded-full bg-primary/20 blur-3xl"
+        style={glowStyle}
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-x-[8%] bottom-[8%] h-[28%] rounded-full bg-[#2B3280]/30 blur-2xl"
+        className="pointer-events-none absolute inset-x-[10%] bottom-[6%] h-[26%] rounded-full bg-[#2B3280]/25 blur-2xl"
+        style={pedestalStyle}
         aria-hidden
       />
 
       <div
-        className={cn(
-          'absolute inset-0 z-0',
-          showCanvas ? 'opacity-0' : 'opacity-100',
-        )}
+        className={cn('absolute inset-0 z-0', showCanvas ? 'opacity-0' : 'opacity-100')}
         data-testid={useStaticVisual ? 'landing-hero-3d-fallback' : undefined}
       >
         <HeroStaticVisual priority={priority} />
@@ -228,23 +251,29 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
       {!useStaticVisual ? (
         <div
           className={cn(
-            'absolute inset-0 z-10 min-h-[420px] sm:min-h-[480px] lg:min-h-[520px]',
+            'absolute inset-0 z-10',
+            HERO_3D_STAGE.minHeightClass,
+            HERO_3D_STAGE.smMinHeightClass,
+            HERO_3D_STAGE.lgMinHeightClass,
             showCanvas ? 'opacity-100' : 'opacity-0',
           )}
           data-testid={showCanvas ? 'landing-hero-3d-loaded' : undefined}
         >
           <Hero3DSceneCanvas
             animate={animate}
+            composition={activeComposition}
             dpr={dpr}
             showDebugPrimitive={showDebugPrimitive}
             onError={handleSceneError}
             onReport={handleSceneReport}
             onCameraPosition={handleCameraPosition}
             onMounted={handleCanvasMounted}
-            className="h-full w-full"
+            className="h-full w-full cursor-grab active:cursor-grabbing"
           />
         </div>
       ) : null}
+
+      <Hero3DCalibrationPanel composition={composition} onChange={setComposition} />
 
       <Hero3DDebugOverlay
         debug={{

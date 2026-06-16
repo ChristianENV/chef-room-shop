@@ -29,8 +29,11 @@ export const HERO_3D_MODEL_ASSET_PATHS = [
 ] as const
 
 export function isLandingHero3dDebugEnabled(): boolean {
-  if (process.env.NEXT_PUBLIC_LANDING_HERO_3D_DEBUG === 'true') return true
-  return process.env.NODE_ENV === 'development'
+  return process.env.NEXT_PUBLIC_LANDING_HERO_3D_DEBUG === 'true'
+}
+
+export function isLandingHero3dCalibrateEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_LANDING_HERO_3D_CALIBRATE === 'true'
 }
 
 export function isLandingHero3dDebugMaterialEnabled(): boolean {

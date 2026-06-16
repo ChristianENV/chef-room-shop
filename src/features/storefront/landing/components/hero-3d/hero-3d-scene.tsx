@@ -3,6 +3,7 @@
 import {
   Component,
   Suspense,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -10,7 +11,7 @@ import {
   type ReactNode,
 } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { ContactShadows, useGLTF } from '@react-three/drei'
+import { ContactShadows, PerspectiveCamera, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 
 import {
@@ -18,13 +19,7 @@ import {
   isLandingHero3dDebugMaterialEnabled,
   type Hero3DModelLoadState,
 } from './hero-3d-debug'
-import {
-  HERO_3D_CAMERA,
-  HERO_3D_FLOAT_AMPLITUDE,
-  HERO_3D_IDLE_ROTATION_SPEED,
-  HERO_3D_JACKET_TRANSFORM,
-  HERO_3D_MODEL_URL,
-} from './hero-3d-config'
+import { HERO_3D_MODEL_URL, type HeroJacketComposition } from './hero-3d-config'
 
 useGLTF.preload(HERO_3D_MODEL_URL)
 
@@ -36,6 +31,10 @@ export type Hero3DSceneReport = {
   radius: number | null
   cameraPosition: [number, number, number] | null
   errorMessage?: string | null
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
 }
 
 function applyDebugMaterials(root: THREE.Object3D): void {
@@ -101,14 +100,95 @@ function getWorldBounds(root: THREE.Object3D): {
   return { size, center, radius }
 }
 
+function HeroSceneCamera({ composition }: { composition: HeroJacketComposition }) {
+  const target = useMemo(
+    () => new THREE.Vector3(...composition.cameraTarget),
+    [composition.cameraTarget],
+  )
+
+  return (
+    <PerspectiveCamera
+      makeDefault
+      position={composition.cameraPosition}
+      fov={composition.cameraFov}
+      near={0.01}
+      far={100}
+      onUpdate={(camera) => camera.lookAt(target)}
+    />
+  )
+}
+
+function HeroDragControls({
+  composition,
+  onDragYawChange,
+}: {
+  composition: HeroJacketComposition
+  onDragYawChange: (yaw: number) => void
+}) {
+  const { gl } = useThree()
+  const dragYawRef = useRef(0)
+  const draggingRef = useRef(false)
+  const lastXRef = useRef(0)
+
+  useEffect(() => {
+    const canvas = gl.domElement
+
+    const onPointerDown = (event: PointerEvent) => {
+      draggingRef.current = true
+      lastXRef.current = event.clientX
+      canvas.setPointerCapture(event.pointerId)
+    }
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (!draggingRef.current) return
+      const delta = event.clientX - lastXRef.current
+      lastXRef.current = event.clientX
+      dragYawRef.current = clamp(
+        dragYawRef.current + delta * composition.dragSensitivity,
+        -composition.dragRotationLimit,
+        composition.dragRotationLimit,
+      )
+      onDragYawChange(dragYawRef.current)
+    }
+
+    const onPointerUp = (event: PointerEvent) => {
+      draggingRef.current = false
+      if (canvas.hasPointerCapture(event.pointerId)) {
+        canvas.releasePointerCapture(event.pointerId)
+      }
+    }
+
+    canvas.addEventListener('pointerdown', onPointerDown)
+    canvas.addEventListener('pointermove', onPointerMove)
+    canvas.addEventListener('pointerup', onPointerUp)
+    canvas.addEventListener('pointercancel', onPointerUp)
+
+    return () => {
+      canvas.removeEventListener('pointerdown', onPointerDown)
+      canvas.removeEventListener('pointermove', onPointerMove)
+      canvas.removeEventListener('pointerup', onPointerUp)
+      canvas.removeEventListener('pointercancel', onPointerUp)
+    }
+  }, [gl, composition.dragRotationLimit, composition.dragSensitivity, onDragYawChange])
+
+  return null
+}
+
 type HeroJacketModelProps = {
   animate: boolean
+  composition: HeroJacketComposition
   showDebugPrimitive: boolean
   onReport: (report: Hero3DSceneReport) => void
 }
 
-function HeroJacketModel({ animate, showDebugPrimitive, onReport }: HeroJacketModelProps) {
+function HeroJacketModel({
+  animate,
+  composition,
+  showDebugPrimitive,
+  onReport,
+}: HeroJacketModelProps) {
   const groupRef = useRef<THREE.Group>(null)
+  const dragYawRef = useRef(0)
   const { scene } = useGLTF(HERO_3D_MODEL_URL)
 
   const clonedScene = useMemo(() => {
@@ -154,25 +234,32 @@ function HeroJacketModel({ animate, showDebugPrimitive, onReport }: HeroJacketMo
 
   useFrame((state) => {
     const group = groupRef.current
-    if (!group) return
+    if (!group || !animate) return
 
-    if (animate) {
-      group.rotation.y =
-        HERO_3D_JACKET_TRANSFORM.rotation[1] +
-        Math.sin(state.clock.elapsedTime * HERO_3D_IDLE_ROTATION_SPEED) * 0.08
-      group.position.y =
-        HERO_3D_JACKET_TRANSFORM.position[1] +
-        Math.sin(state.clock.elapsedTime * 0.85) * HERO_3D_FLOAT_AMPLITUDE
-    }
+    const idleYaw = composition.idleRotationSpeed * state.clock.elapsedTime
+    group.rotation.x = composition.modelRotationX
+    group.rotation.y = composition.modelRotationY + idleYaw + dragYawRef.current
+    group.position.y =
+      composition.modelPosition[1] +
+      Math.sin(state.clock.elapsedTime * 0.85) * composition.floatAmplitude
   })
 
+  const setDragYaw = useCallback((yaw: number) => {
+    dragYawRef.current = yaw
+  }, [])
+
   return (
-    <group
-      ref={groupRef}
-      scale={HERO_3D_JACKET_TRANSFORM.scale}
-      position={HERO_3D_JACKET_TRANSFORM.position}
-      rotation={HERO_3D_JACKET_TRANSFORM.rotation}
-    >
+    <>
+      {animate ? (
+        <HeroDragControls composition={composition} onDragYawChange={setDragYaw} />
+      ) : null}
+      <group
+        ref={groupRef}
+        name="hero-jacket-group"
+        scale={composition.modelScale}
+        position={composition.modelPosition}
+        rotation={[composition.modelRotationX, composition.modelRotationY, 0]}
+      >
       {showDebugPrimitive ? (
         <mesh position={[0, 0, 0]}>
           <sphereGeometry args={[0.35, 24, 24]} />
@@ -180,25 +267,26 @@ function HeroJacketModel({ animate, showDebugPrimitive, onReport }: HeroJacketMo
         </mesh>
       ) : null}
       <primitive object={clonedScene} />
-    </group>
+      </group>
+    </>
   )
 }
 
 function HeroSceneLights() {
   return (
     <>
-      <ambientLight intensity={0.85} color="#ffffff" />
-      <directionalLight position={[4.5, 6.5, 4]} intensity={1.8} color="#ffffff" />
-      <directionalLight position={[-3.5, 2.5, -2]} intensity={0.55} color="#c8d0ff" />
+      <ambientLight intensity={0.72} color="#f0f2ff" />
+      <directionalLight position={[4, 7, 5]} intensity={1.35} color="#ffffff" />
+      <directionalLight position={[-4, 2.5, -3]} intensity={0.45} color="#9aa8ff" />
       <spotLight
-        position={[-1.5, 2.5, -3.5]}
-        angle={0.55}
-        penumbra={0.85}
-        intensity={1.8}
+        position={[-1.5, 3, -4]}
+        angle={0.5}
+        penumbra={0.9}
+        intensity={1.4}
         color="#5a6fdd"
-        distance={14}
+        distance={16}
       />
-      <pointLight position={[0.5, 1.2, 2.5]} intensity={0.45} color="#ffffff" />
+      <pointLight position={[1, 1.5, 3]} intensity={0.35} color="#ffffff" />
     </>
   )
 }
@@ -208,7 +296,7 @@ function HeroDebugHelpers({ enabled }: { enabled: boolean }) {
   return (
     <>
       <gridHelper args={[12, 12, '#4455aa', '#223366']} position={[0, -1.5, 0]} />
-      <axesHelper args={[1.5]} position={[0, -0.88, 0]} />
+      <axesHelper args={[1.5]} position={[0, -0.75, 0]} />
     </>
   )
 }
@@ -249,6 +337,7 @@ class SceneErrorBoundary extends Component<SceneErrorBoundaryProps, SceneErrorBo
 
 type Hero3DSceneCanvasProps = {
   animate: boolean
+  composition: HeroJacketComposition
   dpr: number
   showDebugPrimitive: boolean
   onError: (message: string) => void
@@ -260,6 +349,7 @@ type Hero3DSceneCanvasProps = {
 
 export function Hero3DSceneCanvas({
   animate,
+  composition,
   dpr,
   showDebugPrimitive,
   onError,
@@ -274,47 +364,40 @@ export function Hero3DSceneCanvas({
     <Canvas
       className={className}
       dpr={dpr}
-      camera={{
-        position: HERO_3D_CAMERA.position,
-        fov: HERO_3D_CAMERA.fov,
-        near: 0.01,
-        far: 100,
-      }}
       gl={{
-        alpha: false,
+        alpha: true,
         antialias: true,
         powerPreference: 'high-performance',
       }}
       shadows={false}
-      onCreated={({ camera, scene: threeScene }) => {
-        threeScene.background = new THREE.Color('#0c1024')
-        if (camera instanceof THREE.PerspectiveCamera) {
-          camera.lookAt(...HERO_3D_CAMERA.target)
-          camera.updateProjectionMatrix()
-        }
+      onCreated={({ gl, scene: threeScene }) => {
+        gl.setClearColor(0x000000, 0)
+        threeScene.background = null
         onMounted?.()
       }}
       data-testid="landing-hero-3d-canvas"
     >
+      <HeroSceneCamera composition={composition} />
       <HeroSceneLights />
-      <HeroDebugHelpers enabled={debugEnabled && showDebugPrimitive} />
+      <HeroDebugHelpers enabled={debugEnabled} />
       <CameraReporter onCamera={onCameraPosition ?? (() => undefined)} />
       <SceneErrorBoundary onError={onError}>
         <Suspense fallback={null}>
           <HeroJacketModel
             animate={animate}
-            showDebugPrimitive={showDebugPrimitive}
+            composition={composition}
+            showDebugPrimitive={showDebugPrimitive && debugEnabled}
             onReport={onReport}
           />
         </Suspense>
       </SceneErrorBoundary>
       <ContactShadows
-        position={[0, -1.65, 0]}
-        opacity={0.45}
-        scale={9}
-        blur={2.4}
-        far={4.2}
-        color="#0a0e22"
+        position={[0, composition.pedestalShadowY, 0]}
+        opacity={0.38}
+        scale={8.5}
+        blur={2.6}
+        far={4}
+        color="#060a18"
       />
     </Canvas>
   )
