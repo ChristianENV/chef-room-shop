@@ -1,3 +1,4 @@
+import { PrismaPg } from '@prisma/adapter-pg'
 import { Prisma, PrismaClient } from '@prisma/client'
 
 const globalForPrisma = globalThis as unknown as {
@@ -57,12 +58,15 @@ function isReconnectableError(error: unknown): boolean {
 
 function clientOptions(): ConstructorParameters<typeof PrismaClient>[0] {
   const url = normalizeDatabaseUrl(process.env.DATABASE_URL)
+  const log: Prisma.LogLevel[] =
+    process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error']
 
-  return {
-    ...(url ? { datasources: { db: { url } } } : {}),
-    log:
-      process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+  if (!url) {
+    throw new Error('DATABASE_URL is required to initialize PrismaClient')
   }
+
+  const adapter = new PrismaPg({ connectionString: url })
+  return { adapter, log }
 }
 
 function withReconnectRetry(client: PrismaClient): PrismaClient {

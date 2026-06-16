@@ -24,7 +24,7 @@ export function AuthLayout({ children, className }: AuthLayoutProps) {
         {/* Mobile Header with Logo */}
         <header className="flex items-center justify-between p-4 lg:hidden">
           <Link href={routes.home}>
-            <ChefRoomLogo variant="horizontal" colorScheme="light" size="sm" />
+            <ChefRoomLogo variant="horizontal" colorScheme="dark" size="sm" />
           </Link>
         </header>
         
@@ -72,7 +72,7 @@ function AuthBrandPanel() {
       <div className="relative flex flex-1 flex-col items-center justify-center p-12">
         {/* Logo */}
         <Link href={routes.home}>
-          <ChefRoomLogo variant="vertical" colorScheme="light" size="xl" />
+          <ChefRoomLogo variant="horizontal" colorScheme="light" size="xl" />
         </Link>
         
         {/* Customization Preview Mock */}

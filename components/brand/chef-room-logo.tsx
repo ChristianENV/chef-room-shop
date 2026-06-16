@@ -1,12 +1,35 @@
-'use client'
-
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { BRAND_SHORT, CHEF_ROOM_LOGO_SRC } from '@/lib/brand'
 
 interface ChefRoomLogoProps {
   variant?: 'full' | 'horizontal' | 'vertical' | 'wordmark'
   colorScheme?: 'auto' | 'light' | 'dark'
   className?: string
   size?: 'sm' | 'md' | 'lg' | 'xl'
+  priority?: boolean
+}
+
+const LOGO_WIDTH = 963
+const LOGO_HEIGHT = 222
+
+const heightClasses = {
+  sm: 'h-5',
+  md: 'h-7',
+  lg: 'h-9',
+  xl: 'h-14',
+} as const
+
+function colorSchemeClasses(colorScheme: ChefRoomLogoProps['colorScheme']): string {
+  switch (colorScheme) {
+    case 'light':
+      return 'mix-blend-screen'
+    case 'dark':
+      return 'invert'
+    case 'auto':
+    default:
+      return 'invert dark:mix-blend-screen dark:invert-0'
+  }
 }
 
 export function ChefRoomLogo({
@@ -14,94 +37,24 @@ export function ChefRoomLogo({
   colorScheme = 'auto',
   className,
   size = 'md',
+  priority = false,
 }: ChefRoomLogoProps) {
-  // auto = uses foreground color (works with both themes)
-  // light = white text (for use on dark/blue backgrounds)
-  // dark = brand blue text (for explicit light backgrounds)
-  const primaryColor =
-    colorScheme === 'light'
-      ? 'text-white'
-      : colorScheme === 'dark'
-        ? 'text-[#2B3280]'
-        : 'text-foreground'
+  const resolvedSize = variant === 'wordmark' ? 'sm' : size
 
-  const secondaryColor =
-    colorScheme === 'light'
-      ? 'text-white/60'
-      : colorScheme === 'dark'
-        ? 'text-[#6B6F85]'
-        : 'text-muted-foreground'
-
-  const sizeMap = {
-    sm: { main: 'text-sm', sub: 'text-[9px]', gap: 'gap-0.5' },
-    md: { main: 'text-base', sub: 'text-[10px]', gap: 'gap-0.5' },
-    lg: { main: 'text-lg', sub: 'text-[11px]', gap: 'gap-1' },
-    xl: { main: 'text-2xl', sub: 'text-xs', gap: 'gap-1' },
-  }
-
-  const s = sizeMap[size]
-
-  if (variant === 'wordmark') {
-    return (
-      <span
-        className={cn(
-          'font-sans font-bold tracking-[0.15em] uppercase',
-          s.main,
-          primaryColor,
-          className
-        )}
-      >
-        Chef Room
-      </span>
-    )
-  }
-
-  if (variant === 'vertical') {
-    return (
-      <div className={cn('flex flex-col items-center', s.gap, className)}>
-        <span
-          className={cn(
-            'font-sans font-bold tracking-[0.15em] uppercase leading-none',
-            s.main,
-            primaryColor
-          )}
-        >
-          Chef Room
-        </span>
-        <span
-          className={cn(
-            'font-serif font-light tracking-[0.25em] uppercase leading-none',
-            s.sub,
-            secondaryColor
-          )}
-        >
-          by Bedolla
-        </span>
-      </div>
-    )
-  }
-
-  // Default: horizontal
   return (
-    <div className={cn('flex items-baseline', s.gap, className)}>
-      <span
-        className={cn(
-          'font-sans font-bold tracking-[0.15em] uppercase leading-none',
-          s.main,
-          primaryColor
-        )}
-      >
-        Chef Room
-      </span>
-      <span
-        className={cn(
-          'font-serif font-light tracking-[0.2em] uppercase leading-none',
-          s.sub,
-          secondaryColor
-        )}
-      >
-        by Bedolla
-      </span>
-    </div>
+    <Image
+      src={CHEF_ROOM_LOGO_SRC}
+      alt={`${BRAND_SHORT} by Bedolla`}
+      width={LOGO_WIDTH}
+      height={LOGO_HEIGHT}
+      priority={priority}
+      className={cn(
+        'w-auto shrink-0 object-contain object-left',
+        heightClasses[resolvedSize],
+        colorSchemeClasses(colorScheme),
+        variant === 'vertical' && 'mx-auto object-center',
+        className
+      )}
+    />
   )
 }

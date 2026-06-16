@@ -1,6 +1,8 @@
 import 'server-only'
 
+import { CHEF_ROOM_LOGO_SRC } from '@/lib/brand'
 import { BRAND_VARS } from '@/src/config/vars'
+import { getAppBaseUrl } from '@/src/server/payments/app-url'
 
 import type {
   RenderedEmail,
@@ -23,12 +25,15 @@ function formatMoney(cents: number | undefined, currency = 'MXN'): string {
 }
 
 function layoutHtml(body: string): string {
+  const logoUrl = `${getAppBaseUrl()}${CHEF_ROOM_LOGO_SRC}`
   return `<!DOCTYPE html>
 <html lang="es">
 <head><meta charset="utf-8"><title>${BRAND_NAME}</title></head>
 <body style="margin:0;padding:24px;font-family:Georgia,serif;background:#f8f9fc;color:#1a1a2e;">
   <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:8px;border:1px solid #e5e7eb;padding:32px;">
-    <p style="margin:0 0 24px;font-family:system-ui,sans-serif;font-size:20px;font-weight:700;color:${BRAND_COLOR};">${BRAND_NAME}</p>
+    <p style="margin:0 0 24px;">
+      <img src="${logoUrl}" alt="${BRAND_NAME}" width="220" height="51" style="display:block;width:220px;height:auto;max-width:100%;" />
+    </p>
     ${body}
     <p style="margin-top:32px;font-size:12px;color:#6b7280;">Este es un mensaje automático. No respondas a este correo.</p>
   </div>
