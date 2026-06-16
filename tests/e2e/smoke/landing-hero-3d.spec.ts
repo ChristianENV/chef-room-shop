@@ -48,6 +48,13 @@ async function loadHeroShowcase(page: import('@playwright/test').Page) {
   return { used3d, usedFallback, consoleErrors, failedRequests }
 }
 
+async function readModelRotationY(page: import('@playwright/test').Page): Promise<number | null> {
+  const value = await page.getByTestId('landing-hero-3d-loaded').getAttribute('data-hero-rotation-y')
+  if (value == null) return null
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 test.describe('landing hero 3D showcase', () => {
   test.beforeAll(() => {
     fs.mkdirSync(RESULTS_DIR, { recursive: true })
@@ -74,6 +81,29 @@ test.describe('landing hero 3D showcase', () => {
       type: 'hero-render-mode',
       description: used3d ? '3d' : 'static-fallback',
     })
+  })
+
+  test('idle rotation changes over time on desktop', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    const { used3d } = await loadHeroShowcase(page)
+    test.skip(!used3d, '3D canvas not active in this environment')
+
+    const rotationA = await readModelRotationY(page)
+    expect(rotationA).not.toBeNull()
+
+    await page.waitForTimeout(3_000)
+
+    const rotationB = await readModelRotationY(page)
+    expect(rotationB).not.toBeNull()
+    expect(Math.abs((rotationB as number) - (rotationA as number))).toBeGreaterThan(0.04)
+  })
+
+  test('mobile viewport uses static fallback', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/')
+    await expect(page.getByTestId('landing-hero-3d-showcase')).toBeVisible()
+    await expect(page.getByTestId('landing-hero-3d-fallback')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByTestId('landing-hero-3d-loaded')).toHaveCount(0)
   })
 
   test('calibration panel visible when calibrate env enabled', async ({ page }) => {

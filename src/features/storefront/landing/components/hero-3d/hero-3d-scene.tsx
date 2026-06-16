@@ -3,11 +3,11 @@
 import {
   Component,
   Suspense,
-  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
+  type MutableRefObject,
   type ReactNode,
 } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
@@ -120,27 +120,27 @@ function HeroSceneCamera({ composition }: { composition: HeroJacketComposition }
 
 function HeroDragControls({
   composition,
-  onDragYawChange,
+  dragYawRef,
+  isDraggingRef,
 }: {
   composition: HeroJacketComposition
-  onDragYawChange: (yaw: number) => void
+  dragYawRef: MutableRefObject<number>
+  isDraggingRef: MutableRefObject<boolean>
 }) {
   const { gl } = useThree()
-  const dragYawRef = useRef(0)
-  const draggingRef = useRef(false)
   const lastXRef = useRef(0)
 
   useEffect(() => {
     const canvas = gl.domElement
 
     const onPointerDown = (event: PointerEvent) => {
-      draggingRef.current = true
+      isDraggingRef.current = true
       lastXRef.current = event.clientX
       canvas.setPointerCapture(event.pointerId)
     }
 
     const onPointerMove = (event: PointerEvent) => {
-      if (!draggingRef.current) return
+      if (!isDraggingRef.current) return
       const delta = event.clientX - lastXRef.current
       lastXRef.current = event.clientX
       dragYawRef.current = clamp(
@@ -148,11 +148,10 @@ function HeroDragControls({
         -composition.dragRotationLimit,
         composition.dragRotationLimit,
       )
-      onDragYawChange(dragYawRef.current)
     }
 
     const onPointerUp = (event: PointerEvent) => {
-      draggingRef.current = false
+      isDraggingRef.current = false
       if (canvas.hasPointerCapture(event.pointerId)) {
         canvas.releasePointerCapture(event.pointerId)
       }
@@ -169,9 +168,19 @@ function HeroDragControls({
       canvas.removeEventListener('pointerup', onPointerUp)
       canvas.removeEventListener('pointercancel', onPointerUp)
     }
-  }, [gl, composition.dragRotationLimit, composition.dragSensitivity, onDragYawChange])
+  }, [gl, composition.dragRotationLimit, composition.dragSensitivity, dragYawRef, isDraggingRef])
 
   return null
+}
+
+function computeIdleYaw(composition: HeroJacketComposition, elapsedTime: number): number {
+  if (composition.idleRotationMode === 'continuous') {
+    return composition.idleRotationSpeed * elapsedTime
+  }
+
+  return (
+    Math.sin(elapsedTime * composition.idleRotationSpeed) * composition.idleRotationAmplitude
+  )
 }
 
 type HeroJacketModelProps = {
@@ -179,6 +188,7 @@ type HeroJacketModelProps = {
   composition: HeroJacketComposition
   showDebugPrimitive: boolean
   onReport: (report: Hero3DSceneReport) => void
+  onModelRotationY?: (rotationY: number) => void
 }
 
 function HeroJacketModel({
@@ -186,9 +196,11 @@ function HeroJacketModel({
   composition,
   showDebugPrimitive,
   onReport,
+  onModelRotationY,
 }: HeroJacketModelProps) {
   const groupRef = useRef<THREE.Group>(null)
   const dragYawRef = useRef(0)
+  const isDraggingRef = useRef(false)
   const { scene } = useGLTF(HERO_3D_MODEL_URL)
 
   const clonedScene = useMemo(() => {
@@ -236,22 +248,35 @@ function HeroJacketModel({
     const group = groupRef.current
     if (!group || !animate) return
 
-    const idleYaw = composition.idleRotationSpeed * state.clock.elapsedTime
+    if (!isDraggingRef.current) {
+      dragYawRef.current = THREE.MathUtils.lerp(
+        dragYawRef.current,
+        0,
+        composition.dragReturnSpeed,
+      )
+    }
+
+    const idleYaw = isDraggingRef.current
+      ? 0
+      : computeIdleYaw(composition, state.clock.elapsedTime)
+
     group.rotation.x = composition.modelRotationX
     group.rotation.y = composition.modelRotationY + idleYaw + dragYawRef.current
     group.position.y =
       composition.modelPosition[1] +
       Math.sin(state.clock.elapsedTime * 0.85) * composition.floatAmplitude
-  })
 
-  const setDragYaw = useCallback((yaw: number) => {
-    dragYawRef.current = yaw
-  }, [])
+    onModelRotationY?.(group.rotation.y)
+  })
 
   return (
     <>
       {animate ? (
-        <HeroDragControls composition={composition} onDragYawChange={setDragYaw} />
+        <HeroDragControls
+          composition={composition}
+          dragYawRef={dragYawRef}
+          isDraggingRef={isDraggingRef}
+        />
       ) : null}
       <group
         ref={groupRef}
@@ -343,6 +368,7 @@ type Hero3DSceneCanvasProps = {
   onError: (message: string) => void
   onReport: (report: Hero3DSceneReport) => void
   onCameraPosition?: (position: [number, number, number]) => void
+  onModelRotationY?: (rotationY: number) => void
   onMounted?: () => void
   className?: string
 }
@@ -355,6 +381,7 @@ export function Hero3DSceneCanvas({
   onError,
   onReport,
   onCameraPosition,
+  onModelRotationY,
   onMounted,
   className,
 }: Hero3DSceneCanvasProps) {
@@ -388,6 +415,7 @@ export function Hero3DSceneCanvas({
             composition={composition}
             showDebugPrimitive={showDebugPrimitive && debugEnabled}
             onReport={onReport}
+            onModelRotationY={onModelRotationY}
           />
         </Suspense>
       </SceneErrorBoundary>

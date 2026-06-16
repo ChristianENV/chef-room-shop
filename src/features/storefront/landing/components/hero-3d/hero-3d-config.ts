@@ -13,6 +13,8 @@ export const HERO_3D_STAGE = {
   lgMinHeightClass: 'lg:min-h-[500px]',
 } as const
 
+export type HeroIdleRotationMode = 'oscillate' | 'continuous'
+
 export type HeroJacketComposition = {
   modelPosition: [number, number, number]
   modelScale: number
@@ -21,9 +23,12 @@ export type HeroJacketComposition = {
   cameraPosition: [number, number, number]
   cameraTarget: [number, number, number]
   cameraFov: number
+  idleRotationMode: HeroIdleRotationMode
   idleRotationSpeed: number
+  idleRotationAmplitude: number
   dragRotationLimit: number
   dragSensitivity: number
+  dragReturnSpeed: number
   floatAmplitude: number
   glowOffsetX: number
   glowOffsetY: number
@@ -34,15 +39,18 @@ export type HeroJacketComposition = {
 /** Single source of truth for landing hero 3D jacket framing. */
 export const HERO_JACKET_COMPOSITION: HeroJacketComposition = {
   modelPosition: [0, -3.2, 0],
-  modelScale: 0.02,
+  modelScale: 0.022,
   modelRotationX: -0.03,
   modelRotationY: -0.72,
   cameraPosition: [0.45, 0.85, 5.3],
   cameraTarget: [0, -0.75, 0],
   cameraFov: 35,
-  idleRotationSpeed: 0.04,
+  idleRotationMode: 'oscillate',
+  idleRotationSpeed: 0.55,
+  idleRotationAmplitude: 0.12,
   dragRotationLimit: 0.32,
   dragSensitivity: 0.004,
+  dragReturnSpeed: 0.08,
   floatAmplitude: 0.035,
   glowOffsetX: 0,
   glowOffsetY: 24,
@@ -62,7 +70,9 @@ export function compositionToCalibrationJson(composition: HeroJacketComposition)
     glowOffsetX: composition.glowOffsetX,
     glowOffsetY: composition.glowOffsetY,
     pedestalOffsetY: composition.pedestalOffsetY,
+    idleRotationMode: composition.idleRotationMode,
     idleRotationSpeed: composition.idleRotationSpeed,
+    idleRotationAmplitude: composition.idleRotationAmplitude,
   }
 }
 

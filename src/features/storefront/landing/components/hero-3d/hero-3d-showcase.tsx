@@ -79,6 +79,7 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
   const webglAvailable = detectWebGLAvailable()
   const dpr = detectDeviceDpr()
   const containerRef = useRef<HTMLDivElement>(null)
+  const loadedLayerRef = useRef<HTMLDivElement>(null)
   const calibrateEnabled = isLandingHero3dCalibrateEnabled()
 
   const [composition, setComposition] = useState<HeroJacketComposition>(() =>
@@ -202,6 +203,12 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
     }))
   }, [])
 
+  const handleModelRotationY = useCallback((rotationY: number) => {
+    const node = loadedLayerRef.current
+    if (!node) return
+    node.dataset.heroRotationY = rotationY.toFixed(4)
+  }, [])
+
   const animate = !reduceMotion && !useStaticVisual
   const showDebugPrimitive = isLandingHero3dDebugEnabled()
 
@@ -250,6 +257,7 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
 
       {!useStaticVisual ? (
         <div
+          ref={loadedLayerRef}
           className={cn(
             'absolute inset-0 z-10',
             HERO_3D_STAGE.minHeightClass,
@@ -267,6 +275,7 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
             onError={handleSceneError}
             onReport={handleSceneReport}
             onCameraPosition={handleCameraPosition}
+            onModelRotationY={handleModelRotationY}
             onMounted={handleCanvasMounted}
             className="h-full w-full cursor-grab active:cursor-grabbing"
           />

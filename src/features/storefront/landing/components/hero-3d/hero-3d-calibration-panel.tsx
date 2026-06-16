@@ -227,9 +227,17 @@ export function Hero3DCalibrationPanel({ composition, onChange }: Hero3DCalibrat
           label="Idle rotation speed"
           value={composition.idleRotationSpeed}
           min={0}
-          max={0.2}
-          step={0.005}
+          max={2}
+          step={0.05}
           onChange={(idleRotationSpeed) => update({ idleRotationSpeed })}
+        />
+        <SliderRow
+          label="Idle rotation amplitude"
+          value={composition.idleRotationAmplitude}
+          min={0}
+          max={0.4}
+          step={0.01}
+          onChange={(idleRotationAmplitude) => update({ idleRotationAmplitude })}
         />
       </div>
 
