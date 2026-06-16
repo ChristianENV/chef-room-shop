@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
+import { useState } from 'react'
 import { ChevronDown, LogOut, Settings } from 'lucide-react'
-import { ChefRoomLogo } from '@/components/brand/chef-room-logo'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -51,6 +52,32 @@ function EnvironmentBadge({ environment }: { environment: AdminEnvironment }) {
   )
 }
 
+const LOGO_WIDTH = 963
+const LOGO_HEIGHT = 222
+
+function AdminSidebarLogo() {
+  const [imageError, setImageError] = useState(false)
+
+  if (imageError) {
+    return (
+      <span className="font-sans text-sm font-semibold leading-tight text-sidebar-foreground">
+        Chef Room by Bedolla
+      </span>
+    )
+  }
+
+  return (
+    <Image
+      src="/chef-room-logo.png"
+      alt="Chef Room by Bedolla"
+      width={LOGO_WIDTH}
+      height={LOGO_HEIGHT}
+      onError={() => setImageError(true)}
+      className="h-7 w-auto max-w-[9.5rem] shrink-0 object-contain object-left mix-blend-screen"
+    />
+  )
+}
+
 interface AdminSidebarProps {
   environment?: AdminEnvironment
 }
@@ -63,11 +90,14 @@ export function AdminSidebar({ environment = 'DEV' }: AdminSidebarProps) {
     <Sidebar variant="sidebar" collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <div className="flex items-center gap-3">
-          <ChefRoomLogo variant="horizontal" colorScheme="light" size="md" />
+          <Link
+            href={routes.adminDashboard}
+            className="inline-flex shrink-0 transition-opacity hover:opacity-90"
+            aria-label="Chef Room by Bedolla"
+          >
+            <AdminSidebarLogo />
+          </Link>
           <div className="flex flex-col gap-0.5 group-data-[collapsible=icon]:hidden">
-            <span className="font-sans text-sm font-semibold text-sidebar-foreground">
-              Chef Room
-            </span>
             <EnvironmentBadge environment={environment} />
           </div>
         </div>
