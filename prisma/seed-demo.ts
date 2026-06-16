@@ -8,16 +8,15 @@ import { config } from 'dotenv'
 config({ path: '.env.local' })
 config({ path: '.env' })
 
-import { PrismaClient } from '@prisma/client'
-
 import { buildAuth } from '../src/server/auth/build-auth'
+import { createPrismaClient } from '../src/server/db/create-prisma'
 import { assertDemoSeedEnvironment } from './seed-demo/assert-env'
 import { seedDemoCatalog } from './seed-demo/catalog'
 import { seedDemoCommerce } from './seed-demo/commerce'
 import { resetDemoData } from './seed-demo/reset'
 import { seedDemoUsers } from './seed-demo/users'
 
-const prisma = new PrismaClient()
+const prisma = createPrismaClient()
 
 async function main() {
   assertDemoSeedEnvironment()

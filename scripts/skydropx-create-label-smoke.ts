@@ -9,7 +9,8 @@
  */
 
 import { config } from 'dotenv'
-import { PrismaClient } from '@prisma/client'
+
+import { createPrismaClient } from '../src/server/db/create-prisma'
 
 config({ path: '.env.local' })
 
@@ -35,7 +36,7 @@ async function main(): Promise<void> {
   const { sanitizeSkydropxDebugPayload } =
     await import('../src/server/shipping/skydropx/skydropx.sanitize')
 
-  const prisma = new PrismaClient()
+  const prisma = createPrismaClient()
 
   try {
     const order = await prisma.order.findFirst({

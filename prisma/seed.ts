@@ -8,11 +8,12 @@ import { config } from 'dotenv'
 config({ path: '.env.local' })
 config({ path: '.env' })
 
-import { PrismaClient, RoleSlug, UserStatus } from '@prisma/client'
+import { RoleSlug, UserStatus } from '@prisma/client'
 
 import { buildAuth } from '../src/server/auth/build-auth'
+import { createPrismaClient } from '../src/server/db/create-prisma'
 
-const prisma = new PrismaClient()
+const prisma = createPrismaClient()
 
 const PERMISSIONS = [
   { slug: 'products.read', name: 'Ver productos' },

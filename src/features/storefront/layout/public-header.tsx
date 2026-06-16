@@ -278,7 +278,7 @@ function PublicHeaderInner({
             className="shrink-0 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#121421]"
             data-testid="storefront-logo-link"
           >
-            <ChefRoomLogo variant="horizontal" colorScheme="light" size="md" />
+            <ChefRoomLogo variant="horizontal" colorScheme="light" size="md" priority />
           </Link>
 
           <nav

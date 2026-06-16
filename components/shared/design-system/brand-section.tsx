@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { ChefRoomLogo } from '@/components/brand'
+import { CHEF_ROOM_LOGO_SRC } from '@/lib/brand'
 import { AlertTriangle, Check, X } from 'lucide-react'
 
 export function BrandSection() {
@@ -122,12 +123,10 @@ export function BrandSection() {
               <div>
                 <p className="font-sans font-medium text-foreground">Archivos de Logo</p>
                 <p className="mt-1 font-serif text-sm text-muted-foreground">
-                  Cuando los archivos oficiales estén disponibles, reemplazar los placeholders con:
+                  Archivo oficial del logo en la aplicación:
                 </p>
                 <ul className="mt-2 space-y-1 font-mono text-xs text-muted-foreground">
-                  <li>/brand/chef-room-logo.svg</li>
-                  <li>/brand/chef-room-symbol.svg</li>
-                  <li>/brand/chef-room-vertical.svg</li>
+                  <li>{CHEF_ROOM_LOGO_SRC}</li>
                 </ul>
               </div>
             </div>
