@@ -952,6 +952,32 @@ export const adminDashboardTypeDefs = /* GraphQL */ `
   }
 `
 
+export const adminUsersTypeDefs = /* GraphQL */ `
+  type AdminUser {
+    id: ID!
+    name: String!
+    email: String!
+    roles: [String!]!
+    status: String!
+    customerTier: String!
+    emailVerified: Boolean!
+    isActive: Boolean!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type AdminUsersPayload {
+    items: [AdminUser!]!
+    total: Int!
+  }
+
+  input AdminUsersFilterInput {
+    search: String
+    role: String
+    status: String
+  }
+`
+
 export const paymentsTypeDefs = /* GraphQL */ `
   input CreateConektaCheckoutInput {
     orderNumber: String!
@@ -1424,6 +1450,11 @@ export const typeDefs = /* GraphQL */ `
     adminRecentDesigns(limit: Int): [AdminRecentDesign!]!
     adminRecentPayments(limit: Int): [AdminRecentPayment!]!
     adminTopProducts(limit: Int): [AdminTopProduct!]!
+    adminUsers(
+      filter: AdminUsersFilterInput
+      limit: Int
+      offset: Int
+    ): AdminUsersPayload!
     adminOrders(
       filter: AdminOrdersFilterInput
       sort: AdminOrdersSortInput
@@ -1543,6 +1574,7 @@ export const typeDefs = /* GraphQL */ `
   ${orderClaimTypeDefs}
   ${paymentsTypeDefs}
   ${adminDashboardTypeDefs}
+  ${adminUsersTypeDefs}
   ${adminOrdersTypeDefs}
   ${adminShippingTypeDefs}
   ${adminProductsTypeDefs}
