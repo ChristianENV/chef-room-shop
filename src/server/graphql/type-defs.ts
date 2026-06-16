@@ -1107,6 +1107,55 @@ export const adminDesignsTypeDefs = /* GraphQL */ `
   }
 `
 
+export const adminSettingsTypeDefs = /* GraphQL */ `
+  type AdminStoreIdentitySettings {
+    storeName: String!
+    legalName: String!
+    supportEmail: String!
+    phone: String!
+    addressFormatted: String
+    addressAvailable: Boolean!
+  }
+
+  type AdminBrandSettings {
+    primaryColor: String!
+    warmGray: String!
+    logoUrl: String!
+  }
+
+  type AdminNotificationSettings {
+    configuredProvider: String!
+    activeProvider: String!
+    fromAddress: String!
+    credentialsConfigured: Boolean!
+  }
+
+  type AdminShippingDefaultsSettings {
+    lengthCm: Float!
+    widthCm: Float!
+    heightCm: Float!
+    weightKg: Float!
+    skydropxEnv: String!
+    skydropxConfigured: Boolean!
+  }
+
+  type AdminEnvironmentSettings {
+    appUrl: String!
+    nodeEnv: String!
+    environmentLabel: String!
+    deploymentLabel: String
+  }
+
+  type AdminSettingsOverview {
+    readOnly: Boolean!
+    store: AdminStoreIdentitySettings!
+    brand: AdminBrandSettings!
+    notifications: AdminNotificationSettings!
+    shipping: AdminShippingDefaultsSettings!
+    environment: AdminEnvironmentSettings!
+  }
+`
+
 export const paymentsTypeDefs = /* GraphQL */ `
   input CreateConektaCheckoutInput {
     orderNumber: String!
@@ -1606,6 +1655,7 @@ export const typeDefs = /* GraphQL */ `
       offset: Int
     ): AdminDesignsPayload!
     adminDesignById(id: ID!): AdminDesignDetail
+    adminSettingsOverview: AdminSettingsOverview!
     adminShipmentByOrderNumber(orderNumber: String!): AdminShipment
     adminShipments(
       filter: AdminShipmentsFilterInput
@@ -1722,6 +1772,7 @@ export const typeDefs = /* GraphQL */ `
   ${adminUsersTypeDefs}
   ${adminPaymentsTypeDefs}
   ${adminDesignsTypeDefs}
+  ${adminSettingsTypeDefs}
   ${adminOrdersTypeDefs}
   ${adminShippingTypeDefs}
   ${adminProductsTypeDefs}

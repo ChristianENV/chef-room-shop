@@ -1,5 +1,6 @@
 import { accountResolvers } from './account.resolver'
 import { adminDesignsResolvers } from './admin-designs.resolver'
+import { adminSettingsResolvers } from './admin-settings.resolver'
 import { adminPaymentsResolvers } from './admin-payments.resolver'
 import { adminUsersResolvers } from './admin-users.resolver'
 import { adminDashboardResolvers } from './admin-dashboard.resolver'
@@ -27,6 +28,7 @@ export const resolvers = {
     ...adminUsersResolvers.Query,
     ...adminPaymentsResolvers.Query,
     ...adminDesignsResolvers.Query,
+    ...adminSettingsResolvers.Query,
     ...adminOrdersResolvers.Query,
     ...adminShippingResolvers.Query,
     ...adminProductsResolvers.Query,
