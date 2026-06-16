@@ -1033,6 +1033,129 @@ export const adminPaymentsTypeDefs = /* GraphQL */ `
   }
 `
 
+export const adminDesignsTypeDefs = /* GraphQL */ `
+  type AdminDesignCustomizationElement {
+    id: String!
+    type: String!
+    name: String
+    text: String
+    zone: String
+  }
+
+  type AdminDesignCustomizationSummary {
+    size: String
+    fabricColor: String
+    fabricColorHex: String
+    detailColor: String
+    detailColorHex: String
+    summaryLines: [String!]!
+    elements: [AdminDesignCustomizationElement!]!
+    previewBackUrl: String
+  }
+
+  type AdminDesignListItem {
+    id: ID!
+    shortId: String!
+    name: String
+    previewUrl: String
+    productName: String!
+    productSlug: String
+    ownerType: String!
+    customerName: String
+    customerEmail: String
+    status: String!
+    finalPriceCents: Int
+    currency: String!
+    createdAt: String!
+    updatedAt: String!
+    relatedOrderNumber: String
+    relatedCartId: String
+    relatedCartStatus: String
+  }
+
+  type AdminDesignDetail {
+    id: ID!
+    shortId: String!
+    name: String
+    previewUrl: String
+    productName: String!
+    productSlug: String
+    ownerType: String!
+    customerName: String
+    customerEmail: String
+    status: String!
+    finalPriceCents: Int
+    currency: String!
+    createdAt: String!
+    updatedAt: String!
+    relatedOrderNumber: String
+    relatedCartId: String
+    relatedCartStatus: String
+    customizationSummary: AdminDesignCustomizationSummary!
+    configJson: JSON!
+  }
+
+  type AdminDesignsPayload {
+    items: [AdminDesignListItem!]!
+    total: Int!
+  }
+
+  input AdminDesignsFilterInput {
+    search: String
+    status: String
+    ownerType: String
+  }
+`
+
+export const adminSettingsTypeDefs = /* GraphQL */ `
+  type AdminStoreIdentitySettings {
+    storeName: String!
+    legalName: String!
+    supportEmail: String!
+    phone: String!
+    addressFormatted: String
+    addressAvailable: Boolean!
+  }
+
+  type AdminBrandSettings {
+    primaryColor: String!
+    warmGray: String!
+    logoUrl: String!
+  }
+
+  type AdminNotificationSettings {
+    configuredProvider: String!
+    activeProvider: String!
+    fromAddress: String!
+    credentialsConfigured: Boolean!
+  }
+
+  type AdminShippingDefaultsSettings {
+    lengthCm: Float!
+    widthCm: Float!
+    heightCm: Float!
+    weightKg: Float!
+    skydropxEnv: String!
+    skydropxConfigured: Boolean!
+  }
+
+  type AdminEnvironmentSettings {
+    appUrl: String!
+    nodeEnv: String!
+    environmentLabel: String!
+    deploymentLabel: String
+  }
+
+  type AdminSettingsOverview {
+    readOnly: Boolean!
+    store: AdminStoreIdentitySettings!
+    brand: AdminBrandSettings!
+    notifications: AdminNotificationSettings!
+    shipping: AdminShippingDefaultsSettings!
+    environment: AdminEnvironmentSettings!
+  }
+`
+
 export const paymentsTypeDefs = /* GraphQL */ `
   input CreateConektaCheckoutInput {
     orderNumber: String!
@@ -1526,6 +1649,13 @@ export const typeDefs = /* GraphQL */ `
     adminOrderProductionQueue(limit: Int): [AdminOrder!]!
     adminOrderProductionSheet(orderNumber: String!): AdminProductionSheet
     adminDesignConfigJson(designId: ID!): JSON
+    adminDesigns(
+      filter: AdminDesignsFilterInput
+      limit: Int
+      offset: Int
+    ): AdminDesignsPayload!
+    adminDesignById(id: ID!): AdminDesignDetail
+    adminSettingsOverview: AdminSettingsOverview!
     adminShipmentByOrderNumber(orderNumber: String!): AdminShipment
     adminShipments(
       filter: AdminShipmentsFilterInput
@@ -1641,6 +1771,8 @@ export const typeDefs = /* GraphQL */ `
   ${adminDashboardTypeDefs}
   ${adminUsersTypeDefs}
   ${adminPaymentsTypeDefs}
+  ${adminDesignsTypeDefs}
+  ${adminSettingsTypeDefs}
   ${adminOrdersTypeDefs}
   ${adminShippingTypeDefs}
   ${adminProductsTypeDefs}
