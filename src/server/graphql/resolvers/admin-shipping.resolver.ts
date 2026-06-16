@@ -3,15 +3,23 @@ import {
   cancelAdminShippingLabel,
   createAdminShippingLabel,
   getAdminShipmentByOrderNumber,
+  getAdminShipments,
   refreshAdminShipmentTracking,
 } from '../modules/admin-shipping/admin-shipping.service'
 import type {
   AdminCancelShippingLabelInput,
   AdminCreateShippingLabelInput,
+  AdminShipmentsListInput,
 } from '../modules/admin-shipping/admin-shipping.types'
 
 type OrderNumberArgs = {
   orderNumber: string
+}
+
+type AdminShipmentsArgs = {
+  filter?: AdminShipmentsListInput['filter'] | null
+  limit?: number | null
+  offset?: number | null
 }
 
 type MutationInputArgs<T> = {
@@ -25,6 +33,17 @@ export const adminShippingResolvers = {
       args: OrderNumberArgs,
       context: GraphQLContext,
     ) => getAdminShipmentByOrderNumber(context, args.orderNumber),
+
+    adminShipments: (
+      _parent: unknown,
+      args: AdminShipmentsArgs,
+      context: GraphQLContext,
+    ) =>
+      getAdminShipments(context, {
+        filter: args.filter,
+        limit: args.limit,
+        offset: args.offset,
+      }),
   },
 
   Mutation: {

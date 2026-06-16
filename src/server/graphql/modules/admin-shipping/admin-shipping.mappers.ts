@@ -1,9 +1,22 @@
-import type { Prisma, Shipment, ShipmentEvent } from '@prisma/client'
+import type { Prisma, Shipment, ShipmentEvent, User } from '@prisma/client'
 
-import type { AdminShipmentEventGql, AdminShipmentGql } from './admin-shipping.types'
+import type {
+  AdminShipmentEventGql,
+  AdminShipmentGql,
+  AdminShipmentListItemGql,
+} from './admin-shipping.types'
 
 export type ShipmentWithOrderAndEvents = Shipment & {
   order: { orderNumber: string }
+  events: ShipmentEvent[]
+}
+
+export type ShipmentWithOrderForList = Shipment & {
+  order: {
+    orderNumber: string
+    customerEmail: string
+    user: Pick<User, 'name' | 'firstName' | 'lastName' | 'email'> | null
+  }
   events: ShipmentEvent[]
 }
 
@@ -54,5 +67,73 @@ export function mapShipmentToAdminGql(
         createdAt: event.createdAt.toISOString(),
       }),
     ),
+  }
+}
+
+function resolveCustomerName(
+  email: string,
+  user: Pick<User, 'name' | 'firstName' | 'lastName' | 'email'> | null,
+): string | null {
+  const fromParts = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim()
+  if (fromParts) return fromParts
+
+  const fromName = user?.name?.trim()
+  if (fromName) return fromName
+
+  const local = email.split('@')[0]?.trim()
+  return local || null
+}
+
+/**
+ * Human-readable label status for admin shipping list (no raw Skydropx payloads).
+ */
+export function deriveShipmentLabelStatus(shipment: Shipment): string {
+  const status = shipment.status.toUpperCase()
+
+  if (status === 'CANCELLED') {
+    return 'Etiqueta cancelada'
+  }
+
+  const hasLabel = Boolean(
+    shipment.labelUrl?.trim() ||
+      shipment.providerLabelId?.trim() ||
+      shipment.providerShipmentId?.trim(),
+  )
+
+  if (!hasLabel) {
+    return 'Sin etiqueta'
+  }
+
+  if (status === 'LABEL_CREATED') {
+    return 'Etiqueta creada'
+  }
+
+  return 'Etiqueta activa'
+}
+
+/**
+ * Maps a Prisma shipment row to a safe admin list item (no events/raw JSON).
+ */
+export function mapShipmentToAdminListItemGql(
+  shipment: ShipmentWithOrderForList,
+): AdminShipmentListItemGql {
+  const latestEvent = shipment.events[0]
+
+  return {
+    id: shipment.id,
+    orderNumber: shipment.order.orderNumber,
+    customerName: resolveCustomerName(shipment.order.customerEmail, shipment.order.user),
+    customerEmail: shipment.order.customerEmail,
+    status: shipment.status,
+    carrier: shipment.carrier,
+    trackingNumber: shipment.trackingNumber,
+    labelStatus: deriveShipmentLabelStatus(shipment),
+    costCents: shipment.costCents,
+    currency: shipment.currency,
+    createdAt: shipment.createdAt.toISOString(),
+    updatedAt: shipment.updatedAt.toISOString(),
+    trackingUpdatedAt: latestEvent
+      ? latestEvent.createdAt.toISOString()
+      : shipment.shippedAt?.toISOString() ?? shipment.updatedAt.toISOString(),
   }
 }

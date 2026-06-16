@@ -877,6 +877,32 @@ export const adminShippingTypeDefs = /* GraphQL */ `
     orderNumber: String!
     reason: String
   }
+
+  type AdminShipmentListItem {
+    id: ID!
+    orderNumber: String!
+    customerName: String
+    customerEmail: String!
+    status: String!
+    carrier: String
+    trackingNumber: String
+    labelStatus: String!
+    costCents: Int
+    currency: String!
+    createdAt: String!
+    updatedAt: String!
+    trackingUpdatedAt: String
+  }
+
+  type AdminShipmentsPayload {
+    items: [AdminShipmentListItem!]!
+    total: Int!
+  }
+
+  input AdminShipmentsFilterInput {
+    search: String
+    status: String
+  }
 `
 
 export const adminDashboardTypeDefs = /* GraphQL */ `
@@ -1501,6 +1527,11 @@ export const typeDefs = /* GraphQL */ `
     adminOrderProductionSheet(orderNumber: String!): AdminProductionSheet
     adminDesignConfigJson(designId: ID!): JSON
     adminShipmentByOrderNumber(orderNumber: String!): AdminShipment
+    adminShipments(
+      filter: AdminShipmentsFilterInput
+      limit: Int
+      offset: Int
+    ): AdminShipmentsPayload!
     adminProducts(
       filter: AdminProductsFilterInput
       sort: AdminProductsSortInput
