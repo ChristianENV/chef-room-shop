@@ -37,3 +37,62 @@ export type AdminCancelShippingLabelInput = {
   orderNumber: string
   reason?: string | null
 }
+
+export type AdminShipmentListItem = {
+  id: string
+  orderNumber: string
+  customerName: string | null
+  customerEmail: string
+  status: string
+  carrier: string | null
+  trackingNumber: string | null
+  labelStatus: string
+  costCents: number | null
+  currency: string
+  createdAt: string
+  updatedAt: string
+  trackingUpdatedAt: string | null
+}
+
+export type AdminShipmentsPayload = {
+  items: AdminShipmentListItem[]
+  total: number
+}
+
+export type AdminShipmentsFilter = {
+  search?: string | null
+  status?: string | null
+}
+
+export type AdminShipmentsListVariables = {
+  filter?: AdminShipmentsFilter | null
+  limit?: number | null
+  offset?: number | null
+}
+
+export type AdminShipmentStatusFilter =
+  | 'all'
+  | 'PENDING'
+  | 'LABEL_CREATED'
+  | 'IN_TRANSIT'
+  | 'OUT_FOR_DELIVERY'
+  | 'DELIVERED'
+  | 'FAILED'
+  | 'RETURNED'
+  | 'CANCELLED'
+
+export type AdminShipmentsUiTableRow = {
+  id: string
+  orderNumber: string
+  customerName: string
+  customerEmail: string
+  status: string
+  statusLabel: string
+  carrier: string
+  trackingNumber: string
+  labelStatus: string
+  costLabel: string
+  currency: string
+  createdAtLabel: string
+  trackingUpdatedAtLabel: string
+}

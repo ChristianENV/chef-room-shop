@@ -36,17 +36,21 @@ import type { GraphQLContext } from '../../context'
 import { requireAdminGraphQL } from './admin-shipping.auth'
 import {
   mapShipmentToAdminGql,
+  mapShipmentToAdminListItemGql,
   type ShipmentWithOrderAndEvents,
 } from './admin-shipping.mappers'
 import type {
   AdminCancelShippingLabelInput,
   AdminCreateShippingLabelInput,
   AdminShipmentGql,
+  AdminShipmentsListInput,
+  AdminShipmentsPayloadGql,
 } from './admin-shipping.types'
 import {
   adminCancelShippingLabelInputSchema,
   adminCreateShippingLabelInputSchema,
   orderNumberSchema,
+  parseAdminShipmentsListInput,
 } from './admin-shipping.validation'
 
 const shipmentInclude = {
@@ -159,6 +163,97 @@ function hasActiveSkydropxLabel(shipment: {
 }): boolean {
   if (shipment.status === ShipmentStatus.CANCELLED) return false
   return Boolean(shipment.providerShipmentId?.trim() || shipment.labelUrl?.trim())
+}
+
+const shipmentListInclude = {
+  order: {
+    select: {
+      orderNumber: true,
+      customerEmail: true,
+      deletedAt: true,
+      user: {
+        select: {
+          name: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+    },
+  },
+  events: {
+    orderBy: { createdAt: 'desc' as const },
+    take: 1,
+  },
+} satisfies Prisma.ShipmentInclude
+
+function buildShipmentSearchWhere(search: string): Prisma.ShipmentWhereInput {
+  const term = search.trim()
+  return {
+    OR: [
+      { order: { orderNumber: { contains: term, mode: 'insensitive' } } },
+      { order: { customerEmail: { contains: term, mode: 'insensitive' } } },
+      { trackingNumber: { contains: term, mode: 'insensitive' } },
+      { carrier: { contains: term, mode: 'insensitive' } },
+      {
+        order: {
+          user: {
+            OR: [
+              { name: { contains: term, mode: 'insensitive' } },
+              { firstName: { contains: term, mode: 'insensitive' } },
+              { lastName: { contains: term, mode: 'insensitive' } },
+              { email: { contains: term, mode: 'insensitive' } },
+            ],
+          },
+        },
+      },
+    ],
+  }
+}
+
+function buildShipmentListWhere(
+  filter: AdminShipmentsListInput['filter'],
+): Prisma.ShipmentWhereInput {
+  const and: Prisma.ShipmentWhereInput[] = [{ order: { deletedAt: null } }]
+
+  if (filter?.search?.trim()) {
+    and.push(buildShipmentSearchWhere(filter.search))
+  }
+
+  if (filter?.status) {
+    and.push({ status: filter.status as ShipmentStatus })
+  }
+
+  return { AND: and }
+}
+
+/**
+ * Read-only paginated shipments list for admin panel.
+ */
+export async function getAdminShipments(
+  context: GraphQLContext,
+  input: AdminShipmentsListInput,
+): Promise<AdminShipmentsPayloadGql> {
+  requireAdminGraphQL(context)
+
+  const { filter, limit, offset } = parseAdminShipmentsListInput(input)
+  const where = buildShipmentListWhere(filter)
+
+  const [shipments, total] = await Promise.all([
+    context.prisma.shipment.findMany({
+      where,
+      include: shipmentListInclude,
+      orderBy: { updatedAt: 'desc' },
+      take: limit,
+      skip: offset,
+    }),
+    context.prisma.shipment.count({ where }),
+  ])
+
+  return {
+    total,
+    items: shipments.map(mapShipmentToAdminListItemGql),
+  }
 }
 
 /**

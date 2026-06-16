@@ -37,3 +37,35 @@ export type AdminCancelShippingLabelInput = {
   orderNumber: string
   reason?: string | null
 }
+
+export type AdminShipmentListItemGql = {
+  id: string
+  orderNumber: string
+  customerName: string | null
+  customerEmail: string
+  status: string
+  carrier: string | null
+  trackingNumber: string | null
+  labelStatus: string
+  costCents: number | null
+  currency: string
+  createdAt: string
+  updatedAt: string
+  trackingUpdatedAt: string | null
+}
+
+export type AdminShipmentsPayloadGql = {
+  items: AdminShipmentListItemGql[]
+  total: number
+}
+
+export type AdminShipmentsFilterInput = {
+  search?: string | null
+  status?: string | null
+}
+
+export type AdminShipmentsListInput = {
+  filter?: AdminShipmentsFilterInput | null
+  limit?: number | null
+  offset?: number | null
+}
