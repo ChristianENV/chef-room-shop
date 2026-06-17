@@ -37,6 +37,7 @@ import { CartPopover } from '@/src/features/storefront/cart/components/cart-popo
 import { useCartBadgeCount } from '@/src/features/storefront/cart/api/use-my-cart-query'
 import {
   authNav,
+  accountNav,
   ctaNav,
   isNavGroup,
   mobileNavMainLinks,
@@ -48,6 +49,7 @@ import {
 } from '@/src/config/navigation.storefront'
 import { getUserDisplayName, type UserDisplayInput } from '@/src/lib/user/user-display'
 import { CustomerTierBadge } from '@/src/features/storefront/account/components/customer-tier-badge'
+import { NotificationPopover } from '@/src/features/notifications/components/notification-popover'
 
 const NAVBAR_SURFACE =
   'border-b border-white/[0.08] bg-[#121421]/95 text-white shadow-[0_8px_32px_rgba(0,0,0,0.12)] backdrop-blur-xl'
@@ -128,6 +130,9 @@ function AccountMenu({
             </div>
             <DropdownMenuItem asChild className="focus:bg-white/10 focus:text-white">
               <Link href={routes.account}>Mi perfil</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className="focus:bg-white/10 focus:text-white">
+              <Link href={routes.accountNotifications}>Notificaciones</Link>
             </DropdownMenuItem>
             {isAdmin && (
               <DropdownMenuItem asChild className="focus:bg-white/10 focus:text-white">
@@ -351,6 +356,7 @@ function PublicHeaderInner({
                 className={ICON_BTN}
                 data-testid="storefront-theme-toggle"
               />
+              <NotificationPopover isLoggedIn={isLoggedIn} triggerClassName={ICON_BTN} />
               <AccountMenu
                 isLoggedIn={isLoggedIn}
                 isAdmin={isAdmin}
@@ -529,6 +535,12 @@ function PublicHeaderInner({
                               {user ? getUserDisplayName(user) : 'Mi cuenta'}
                             </span>
                           </Link>
+                          <MobileNavLink
+                            link={accountNav.notifications}
+                            pathname={pathname}
+                            searchParams={searchParams}
+                            onNavigate={closeMobileMenu}
+                          />
                           {isAdmin && (
                             <MobileNavLink
                               link={{ label: 'Panel admin', href: routes.adminDashboard }}

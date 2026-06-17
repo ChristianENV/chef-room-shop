@@ -89,6 +89,7 @@ export const accountNav = {
   orders: { label: 'Mis pedidos', href: `${routes.account}/orders` },
   designs: { label: 'Diseños guardados', href: `${routes.account}/designs` },
   addresses: { label: 'Direcciones', href: `${routes.account}/addresses` },
+  notifications: { label: 'Notificaciones', href: routes.accountNotifications },
 } as const
 
 export const accountNavLinks: NavLink[] = [
@@ -96,6 +97,7 @@ export const accountNavLinks: NavLink[] = [
   accountNav.orders,
   accountNav.designs,
   accountNav.addresses,
+  accountNav.notifications,
 ]
 
 export const footerProductLinks: NavLink[] = [
