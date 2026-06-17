@@ -43,6 +43,7 @@ export const notificationsTypeDefs = /* GraphQL */ `
   input MyNotificationsInput {
     first: Int = 20
     unreadOnly: Boolean = false
+    audience: NotificationAudience
   }
 
   type MarkAllNotificationsReadPayload {

@@ -27,6 +27,7 @@ import {
   createNotificationInputSchema,
   createUserNotificationInputSchema,
   myNotificationsInputSchema,
+  notificationAudienceFilterSchema,
   notificationIdSchema,
 } from './notification.validation'
 
@@ -112,6 +113,17 @@ export async function createAdminNotification(
   })
 }
 
+function applyAudienceFilter(
+  where: Prisma.NotificationWhereInput,
+  audience?: NotificationAudience,
+): Prisma.NotificationWhereInput {
+  if (!audience) return where
+
+  return {
+    AND: [where, { audience }],
+  }
+}
+
 export async function getMyNotifications(
   context: GraphQLContext,
   input?: Partial<MyNotificationsFilters> | null,
@@ -119,10 +131,12 @@ export async function getMyNotifications(
   const user = requireAuthenticatedUser(context)
   const filters = myNotificationsInputSchema.parse(input ?? {})
 
-  const baseWhere = buildReadableNotificationsWhere(user)
-  const where = filters.unreadOnly
-    ? { AND: [baseWhere, { readAt: null }] }
-    : baseWhere
+  let where = buildReadableNotificationsWhere(user)
+  where = applyAudienceFilter(where, filters.audience)
+
+  if (filters.unreadOnly) {
+    where = { AND: [where, { readAt: null }] }
+  }
 
   const [rows, totalCount] = await Promise.all([
     context.prisma.notification.findMany({
@@ -141,9 +155,12 @@ export async function getMyNotifications(
 
 export async function getMyUnreadNotificationCount(
   context: GraphQLContext,
+  audience?: NotificationAudience | null,
 ): Promise<number> {
   const user = requireAuthenticatedUser(context)
-  const where = buildReadableNotificationsWhere(user)
+  const parsedAudience = notificationAudienceFilterSchema.parse(audience ?? undefined)
+  let where = buildReadableNotificationsWhere(user)
+  where = applyAudienceFilter(where, parsedAudience)
 
   return context.prisma.notification.count({
     where: {
@@ -192,9 +209,12 @@ export async function markNotificationRead(
 
 export async function markAllNotificationsRead(
   context: GraphQLContext,
+  audience?: NotificationAudience | null,
 ): Promise<MarkAllNotificationsReadPayloadGql> {
   const user = requireAuthenticatedUser(context)
-  const where = buildReadableNotificationsWhere(user)
+  const parsedAudience = notificationAudienceFilterSchema.parse(audience ?? undefined)
+  let where = buildReadableNotificationsWhere(user)
+  where = applyAudienceFilter(where, parsedAudience)
 
   const result = await context.prisma.notification.updateMany({
     where: {

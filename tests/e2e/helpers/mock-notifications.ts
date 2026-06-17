@@ -33,6 +33,44 @@ function buildNotification(
   }
 }
 
+function countUnread(
+  notifications: MockNotification[],
+  audience?: 'USER' | 'ADMIN',
+): number {
+  return notifications.filter(
+    (item) => !item.readAt && (audience ? item.audience === audience : true),
+  ).length
+}
+
+export const defaultAdminMockNotifications: MockNotificationsState = {
+  unreadCount: 2,
+  notifications: [
+    buildNotification({
+      id: '22222222-2222-4222-8222-222222222201',
+      audience: 'ADMIN',
+      title: 'Nuevo pedido demo',
+      message: 'Pedido CR-DEMO-042 requiere revisión.',
+      href: '/admin/orders',
+      type: 'ADMIN_NEW_ORDER',
+    }),
+    buildNotification({
+      id: '22222222-2222-4222-8222-222222222202',
+      audience: 'ADMIN',
+      title: 'Pago recibido',
+      message: 'Se confirmó el pago del pedido CR-DEMO-041.',
+      type: 'ADMIN_PAYMENT_RECEIVED',
+    }),
+    buildNotification({
+      id: '22222222-2222-4222-8222-222222222203',
+      audience: 'ADMIN',
+      title: 'Excepción de envío',
+      message: 'Revisar guía con incidencia en Skydropx.',
+      readAt: new Date().toISOString(),
+      type: 'ADMIN_SHIPMENT_EXCEPTION',
+    }),
+  ],
+}
+
 export const defaultMockNotifications: MockNotificationsState = {
   unreadCount: 2,
   notifications: [
@@ -90,10 +128,13 @@ export async function mockNotificationsGraphQL(
     const query = payload.query ?? ''
 
     if (query.includes('myUnreadNotificationCount')) {
+      const audience = payload.variables?.audience as 'USER' | 'ADMIN' | undefined
+      const unreadCount = countUnread(state.notifications, audience)
+
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ data: { myUnreadNotificationCount: state.unreadCount } }),
+        body: JSON.stringify({ data: { myUnreadNotificationCount: unreadCount } }),
       })
       return
     }
@@ -102,10 +143,12 @@ export async function mockNotificationsGraphQL(
       const input = (payload.variables?.input ?? {}) as {
         unreadOnly?: boolean
         first?: number
+        audience?: 'USER' | 'ADMIN'
       }
       const unreadOnly = Boolean(input.unreadOnly)
       const first = Number(input.first ?? 20)
       const nodes = state.notifications
+        .filter((item) => (input.audience ? item.audience === input.audience : true))
         .filter((item) => (unreadOnly ? !item.readAt : true))
         .slice(0, first)
 
@@ -129,8 +172,8 @@ export async function mockNotificationsGraphQL(
       const notification = state.notifications.find((item) => item.id === id)
       if (notification && !notification.readAt) {
         notification.readAt = new Date().toISOString()
-        state.unreadCount = Math.max(0, state.unreadCount - 1)
       }
+      state.unreadCount = countUnread(state.notifications)
 
       await route.fulfill({
         status: 200,
@@ -141,14 +184,15 @@ export async function mockNotificationsGraphQL(
     }
 
     if (query.includes('markAllNotificationsRead')) {
+      const audience = payload.variables?.audience as 'USER' | 'ADMIN' | undefined
       let updatedCount = 0
       for (const notification of state.notifications) {
-        if (!notification.readAt) {
+        if (!notification.readAt && (!audience || notification.audience === audience)) {
           notification.readAt = new Date().toISOString()
           updatedCount += 1
         }
       }
-      state.unreadCount = 0
+      state.unreadCount = countUnread(state.notifications)
 
       await route.fulfill({
         status: 200,

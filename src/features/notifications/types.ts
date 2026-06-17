@@ -42,4 +42,5 @@ export type MarkAllNotificationsReadPayload = {
 export type MyNotificationsInput = {
   first?: number
   unreadOnly?: boolean
+  audience?: NotificationAudience
 }

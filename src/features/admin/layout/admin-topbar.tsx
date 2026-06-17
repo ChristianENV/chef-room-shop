@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { UserAvatar } from '@/components/shared/user-avatar'
-import { Bell, LogOut, Search } from 'lucide-react'
+import { LogOut, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { SidebarTrigger } from '@/components/ui/sidebar'
@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/breadcrumb'
 import { routes } from '@/src/config/routes'
 import type { AdminShellUser } from './admin-page-config'
+import { AdminNotificationPopover } from '@/src/features/admin/notifications/components/admin-notification-popover'
 import { useAdminSignOut } from './use-admin-sign-out'
 
 export interface AdminBreadcrumbItem {
@@ -25,13 +26,11 @@ export interface AdminBreadcrumbItem {
 
 interface AdminTopbarProps {
   breadcrumb?: AdminBreadcrumbItem[]
-  notificationCount?: number
   adminUser?: AdminShellUser
 }
 
 export function AdminTopbar({
   breadcrumb = [],
-  notificationCount = 0,
   adminUser,
 }: AdminTopbarProps) {
   const handleSignOut = useAdminSignOut()
@@ -99,15 +98,7 @@ export function AdminTopbar({
           <LogOut className="h-5 w-5" />
           <span className="sr-only">Cerrar sesión</span>
         </Button>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          {notificationCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-semibold text-destructive-foreground">
-              {notificationCount > 9 ? '9+' : notificationCount}
-            </span>
-          )}
-          <span className="sr-only">Notificaciones</span>
-        </Button>
+        <AdminNotificationPopover />
       </div>
     </header>
   )

@@ -54,4 +54,5 @@ export type CreateAdminNotificationInput = Omit<
 export type MyNotificationsFilters = {
   first: number
   unreadOnly: boolean
+  audience?: NotificationAudience
 }

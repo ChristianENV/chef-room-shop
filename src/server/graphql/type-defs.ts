@@ -1694,7 +1694,7 @@ export const typeDefs = /* GraphQL */ `
     orderClaimPreview(token: String!): OrderClaimPreview
     designById(designId: ID!): AccountDesign
     myNotifications(input: MyNotificationsInput): NotificationConnection!
-    myUnreadNotificationCount: Int!
+    myUnreadNotificationCount(audience: NotificationAudience): Int!
   }
 
   type Mutation {
@@ -1764,7 +1764,7 @@ export const typeDefs = /* GraphQL */ `
     confirmDesignAssetUpload(input: ConfirmDesignAssetUploadInput!): DesignAsset!
     deleteDesignDraft(input: DeleteDesignDraftInput!): Boolean!
     markNotificationRead(id: ID!): Notification!
-    markAllNotificationsRead: MarkAllNotificationsReadPayload!
+    markAllNotificationsRead(audience: NotificationAudience): MarkAllNotificationsReadPayload!
   }
 
   ${catalogTypeDefs}
