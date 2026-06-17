@@ -88,7 +88,7 @@ export function TypographySection() {
               
               <TypographyExample label="Small" font="body" size="14px" weight="Regular">
                 <p className="font-serif text-sm text-muted-foreground">
-                  Incluye personalización de nombre o logo. Envío gratis en pedidos mayores a $999 MXN.
+                  Incluye personalización de nombre o logo. Envío gratis en pedidos mayores a $1999 MXN.
                 </p>
               </TypographyExample>
               
