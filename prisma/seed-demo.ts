@@ -13,6 +13,7 @@ import { createPrismaClient } from '../src/server/db/create-prisma'
 import { assertDemoSeedEnvironment } from './seed-demo/assert-env'
 import { seedDemoCatalog } from './seed-demo/catalog'
 import { seedDemoCommerce } from './seed-demo/commerce'
+import { seedDemoNotifications } from './seed-demo/notifications'
 import { resetDemoData } from './seed-demo/reset'
 import { seedDemoUsers } from './seed-demo/users'
 
@@ -40,6 +41,12 @@ async function main() {
     customerEmails,
     superAdminId: users.superAdminId,
     catalog,
+  })
+
+  const notifications = await seedDemoNotifications({
+    prisma,
+    customerIds: users.customerIds,
+    adminIds: users.adminIds,
   })
 
   const userCount = await prisma.user.count({
@@ -75,6 +82,7 @@ async function main() {
   console.log('Shipments:', commerce.shipments)
   console.log('Shipment events:', commerce.shipmentEvents)
   console.log('Emails:', commerce.emails)
+  console.log('Notifications:', notifications.notifications)
   console.log('Audit logs:', commerce.auditLogs)
   console.log('\nDemo credentials: see docs/demo-seed.md')
   console.log('Demo seed completed.')

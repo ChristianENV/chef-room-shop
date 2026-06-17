@@ -211,6 +211,35 @@ export const OrderClaimTransferRequestStatus = {
 export type OrderClaimTransferRequestStatus = (typeof OrderClaimTransferRequestStatus)[keyof typeof OrderClaimTransferRequestStatus]
 
 
+export const NotificationAudience = {
+  USER: 'USER',
+  ADMIN: 'ADMIN'
+} as const
+
+export type NotificationAudience = (typeof NotificationAudience)[keyof typeof NotificationAudience]
+
+
+export const NotificationType = {
+  ORDER_CREATED: 'ORDER_CREATED',
+  PAYMENT_CONFIRMED: 'PAYMENT_CONFIRMED',
+  PAYMENT_PENDING: 'PAYMENT_PENDING',
+  PAYMENT_FAILED: 'PAYMENT_FAILED',
+  ORDER_IN_PRODUCTION: 'ORDER_IN_PRODUCTION',
+  ORDER_READY_TO_SHIP: 'ORDER_READY_TO_SHIP',
+  ORDER_SHIPPED: 'ORDER_SHIPPED',
+  ORDER_DELIVERED: 'ORDER_DELIVERED',
+  DESIGN_SAVED: 'DESIGN_SAVED',
+  ACCOUNT_EMAIL_VERIFICATION: 'ACCOUNT_EMAIL_VERIFICATION',
+  ADMIN_NEW_ORDER: 'ADMIN_NEW_ORDER',
+  ADMIN_PAYMENT_RECEIVED: 'ADMIN_PAYMENT_RECEIVED',
+  ADMIN_SHIPMENT_EXCEPTION: 'ADMIN_SHIPMENT_EXCEPTION',
+  ORDER_CLAIM_TRANSFER: 'ORDER_CLAIM_TRANSFER',
+  SYSTEM: 'SYSTEM'
+} as const
+
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
+
+
 export const AuditAction = {
   CREATE: 'CREATE',
   UPDATE: 'UPDATE',

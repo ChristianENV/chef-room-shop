@@ -274,6 +274,7 @@ export type UserWhereInput = {
   mergedGuestSessions?: Prisma.GuestSessionListRelationFilter
   shippingQuotes?: Prisma.ShippingQuoteListRelationFilter
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestListRelationFilter
+  notifications?: Prisma.NotificationListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -304,6 +305,7 @@ export type UserOrderByWithRelationInput = {
   mergedGuestSessions?: Prisma.GuestSessionOrderByRelationAggregateInput
   shippingQuotes?: Prisma.ShippingQuoteOrderByRelationAggregateInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestOrderByRelationAggregateInput
+  notifications?: Prisma.NotificationOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -337,6 +339,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   mergedGuestSessions?: Prisma.GuestSessionListRelationFilter
   shippingQuotes?: Prisma.ShippingQuoteListRelationFilter
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestListRelationFilter
+  notifications?: Prisma.NotificationListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -409,6 +412,7 @@ export type UserCreateInput = {
   mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -439,6 +443,7 @@ export type UserUncheckedCreateInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -469,6 +474,7 @@ export type UserUpdateInput = {
   mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -499,6 +505,7 @@ export type UserUncheckedUpdateInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -815,6 +822,22 @@ export type UserUpdateOneWithoutShippingQuotesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutShippingQuotesInput, Prisma.UserUpdateWithoutShippingQuotesInput>, Prisma.UserUncheckedUpdateWithoutShippingQuotesInput>
 }
 
+export type UserCreateNestedOneWithoutNotificationsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutNotificationsInput, Prisma.UserUncheckedCreateWithoutNotificationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutNotificationsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutNotificationsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutNotificationsInput, Prisma.UserUncheckedCreateWithoutNotificationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutNotificationsInput
+  upsert?: Prisma.UserUpsertWithoutNotificationsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutNotificationsInput, Prisma.UserUpdateWithoutNotificationsInput>, Prisma.UserUncheckedUpdateWithoutNotificationsInput>
+}
+
 export type UserCreateNestedOneWithoutAuditLogsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutAuditLogsInput, Prisma.UserUncheckedCreateWithoutAuditLogsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutAuditLogsInput
@@ -858,6 +881,7 @@ export type UserCreateWithoutRolesInput = {
   mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutRolesInput = {
@@ -887,6 +911,7 @@ export type UserUncheckedCreateWithoutRolesInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutRolesInput = {
@@ -932,6 +957,7 @@ export type UserUpdateWithoutRolesInput = {
   mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRolesInput = {
@@ -961,6 +987,7 @@ export type UserUncheckedUpdateWithoutRolesInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -990,6 +1017,7 @@ export type UserCreateWithoutSessionsInput = {
   mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -1019,6 +1047,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -1064,6 +1093,7 @@ export type UserUpdateWithoutSessionsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -1093,6 +1123,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -1122,6 +1153,7 @@ export type UserCreateWithoutAccountsInput = {
   mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -1151,6 +1183,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -1196,6 +1229,7 @@ export type UserUpdateWithoutAccountsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -1225,6 +1259,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutLoginAttemptsInput = {
@@ -1254,6 +1289,7 @@ export type UserCreateWithoutLoginAttemptsInput = {
   mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutLoginAttemptsInput = {
@@ -1283,6 +1319,7 @@ export type UserUncheckedCreateWithoutLoginAttemptsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutLoginAttemptsInput = {
@@ -1328,6 +1365,7 @@ export type UserUpdateWithoutLoginAttemptsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutLoginAttemptsInput = {
@@ -1357,6 +1395,7 @@ export type UserUncheckedUpdateWithoutLoginAttemptsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMergedGuestSessionsInput = {
@@ -1386,6 +1425,7 @@ export type UserCreateWithoutMergedGuestSessionsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMergedGuestSessionsInput = {
@@ -1415,6 +1455,7 @@ export type UserUncheckedCreateWithoutMergedGuestSessionsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMergedGuestSessionsInput = {
@@ -1460,6 +1501,7 @@ export type UserUpdateWithoutMergedGuestSessionsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMergedGuestSessionsInput = {
@@ -1489,6 +1531,7 @@ export type UserUncheckedUpdateWithoutMergedGuestSessionsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAddressesInput = {
@@ -1518,6 +1561,7 @@ export type UserCreateWithoutAddressesInput = {
   mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAddressesInput = {
@@ -1547,6 +1591,7 @@ export type UserUncheckedCreateWithoutAddressesInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAddressesInput = {
@@ -1592,6 +1637,7 @@ export type UserUpdateWithoutAddressesInput = {
   mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAddressesInput = {
@@ -1621,6 +1667,7 @@ export type UserUncheckedUpdateWithoutAddressesInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutDesignsInput = {
@@ -1650,6 +1697,7 @@ export type UserCreateWithoutDesignsInput = {
   mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutDesignsInput = {
@@ -1679,6 +1727,7 @@ export type UserUncheckedCreateWithoutDesignsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutDesignsInput = {
@@ -1724,6 +1773,7 @@ export type UserUpdateWithoutDesignsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDesignsInput = {
@@ -1753,6 +1803,7 @@ export type UserUncheckedUpdateWithoutDesignsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCartsInput = {
@@ -1782,6 +1833,7 @@ export type UserCreateWithoutCartsInput = {
   mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCartsInput = {
@@ -1811,6 +1863,7 @@ export type UserUncheckedCreateWithoutCartsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCartsInput = {
@@ -1856,6 +1909,7 @@ export type UserUpdateWithoutCartsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCartsInput = {
@@ -1885,6 +1939,7 @@ export type UserUncheckedUpdateWithoutCartsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOrdersInput = {
@@ -1914,6 +1969,7 @@ export type UserCreateWithoutOrdersInput = {
   mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOrdersInput = {
@@ -1943,6 +1999,7 @@ export type UserUncheckedCreateWithoutOrdersInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOrdersInput = {
@@ -1988,6 +2045,7 @@ export type UserUpdateWithoutOrdersInput = {
   mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOrdersInput = {
@@ -2017,6 +2075,7 @@ export type UserUncheckedUpdateWithoutOrdersInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOrderClaimTransferRequestsInput = {
@@ -2046,6 +2105,7 @@ export type UserCreateWithoutOrderClaimTransferRequestsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOrderClaimTransferRequestsInput = {
@@ -2075,6 +2135,7 @@ export type UserUncheckedCreateWithoutOrderClaimTransferRequestsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOrderClaimTransferRequestsInput = {
@@ -2120,6 +2181,7 @@ export type UserUpdateWithoutOrderClaimTransferRequestsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOrderClaimTransferRequestsInput = {
@@ -2149,6 +2211,7 @@ export type UserUncheckedUpdateWithoutOrderClaimTransferRequestsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutShippingQuotesInput = {
@@ -2178,6 +2241,7 @@ export type UserCreateWithoutShippingQuotesInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutShippingQuotesInput = {
@@ -2207,6 +2271,7 @@ export type UserUncheckedCreateWithoutShippingQuotesInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutShippingQuotesInput = {
@@ -2252,6 +2317,7 @@ export type UserUpdateWithoutShippingQuotesInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutShippingQuotesInput = {
@@ -2280,6 +2346,143 @@ export type UserUncheckedUpdateWithoutShippingQuotesInput = {
   orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
+  orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutNotificationsInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  status?: $Enums.UserStatus
+  customerTier?: $Enums.CustomerTier
+  firstName?: string | null
+  lastName?: string | null
+  phone?: string | null
+  marketingOptIn?: boolean
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  roles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  loginAttempts?: Prisma.LoginAttemptCreateNestedManyWithoutUserInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
+  carts?: Prisma.CartCreateNestedManyWithoutUserInput
+  designs?: Prisma.DesignCreateNestedManyWithoutUserInput
+  orders?: Prisma.OrderCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
+  shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
+  orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+}
+
+export type UserUncheckedCreateWithoutNotificationsInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  status?: $Enums.UserStatus
+  customerTier?: $Enums.CustomerTier
+  firstName?: string | null
+  lastName?: string | null
+  phone?: string | null
+  marketingOptIn?: boolean
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  roles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  loginAttempts?: Prisma.LoginAttemptUncheckedCreateNestedManyWithoutUserInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
+  carts?: Prisma.CartUncheckedCreateNestedManyWithoutUserInput
+  designs?: Prisma.DesignUncheckedCreateNestedManyWithoutUserInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
+  shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
+  orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+}
+
+export type UserCreateOrConnectWithoutNotificationsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutNotificationsInput, Prisma.UserUncheckedCreateWithoutNotificationsInput>
+}
+
+export type UserUpsertWithoutNotificationsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutNotificationsInput, Prisma.UserUncheckedUpdateWithoutNotificationsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutNotificationsInput, Prisma.UserUncheckedCreateWithoutNotificationsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutNotificationsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutNotificationsInput, Prisma.UserUncheckedUpdateWithoutNotificationsInput>
+}
+
+export type UserUpdateWithoutNotificationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  customerTier?: Prisma.EnumCustomerTierFieldUpdateOperationsInput | $Enums.CustomerTier
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  marketingOptIn?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  roles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  loginAttempts?: Prisma.LoginAttemptUpdateManyWithoutUserNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
+  carts?: Prisma.CartUpdateManyWithoutUserNestedInput
+  designs?: Prisma.DesignUpdateManyWithoutUserNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
+  shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
+  orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutNotificationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  customerTier?: Prisma.EnumCustomerTierFieldUpdateOperationsInput | $Enums.CustomerTier
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  marketingOptIn?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  loginAttempts?: Prisma.LoginAttemptUncheckedUpdateManyWithoutUserNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
+  carts?: Prisma.CartUncheckedUpdateManyWithoutUserNestedInput
+  designs?: Prisma.DesignUncheckedUpdateManyWithoutUserNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
+  shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
 }
 
@@ -2310,6 +2513,7 @@ export type UserCreateWithoutAuditLogsInput = {
   mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -2339,6 +2543,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -2384,6 +2589,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -2413,6 +2619,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -2433,6 +2640,7 @@ export type UserCountOutputType = {
   mergedGuestSessions: number
   shippingQuotes: number
   orderClaimTransferRequests: number
+  notifications: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2448,6 +2656,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   mergedGuestSessions?: boolean | UserCountOutputTypeCountMergedGuestSessionsArgs
   shippingQuotes?: boolean | UserCountOutputTypeCountShippingQuotesArgs
   orderClaimTransferRequests?: boolean | UserCountOutputTypeCountOrderClaimTransferRequestsArgs
+  notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
 }
 
 /**
@@ -2544,6 +2753,13 @@ export type UserCountOutputTypeCountOrderClaimTransferRequestsArgs<ExtArgs exten
   where?: Prisma.OrderClaimTransferRequestWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.NotificationWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2573,6 +2789,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   mergedGuestSessions?: boolean | Prisma.User$mergedGuestSessionsArgs<ExtArgs>
   shippingQuotes?: boolean | Prisma.User$shippingQuotesArgs<ExtArgs>
   orderClaimTransferRequests?: boolean | Prisma.User$orderClaimTransferRequestsArgs<ExtArgs>
+  notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -2644,6 +2861,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   mergedGuestSessions?: boolean | Prisma.User$mergedGuestSessionsArgs<ExtArgs>
   shippingQuotes?: boolean | Prisma.User$shippingQuotesArgs<ExtArgs>
   orderClaimTransferRequests?: boolean | Prisma.User$orderClaimTransferRequestsArgs<ExtArgs>
+  notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -2664,6 +2882,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     mergedGuestSessions: Prisma.$GuestSessionPayload<ExtArgs>[]
     shippingQuotes: Prisma.$ShippingQuotePayload<ExtArgs>[]
     orderClaimTransferRequests: Prisma.$OrderClaimTransferRequestPayload<ExtArgs>[]
+    notifications: Prisma.$NotificationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3090,6 +3309,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   mergedGuestSessions<T extends Prisma.User$mergedGuestSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$mergedGuestSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GuestSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   shippingQuotes<T extends Prisma.User$shippingQuotesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$shippingQuotesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ShippingQuotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   orderClaimTransferRequests<T extends Prisma.User$orderClaimTransferRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$orderClaimTransferRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderClaimTransferRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  notifications<T extends Prisma.User$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3812,6 +4032,30 @@ export type User$orderClaimTransferRequestsArgs<ExtArgs extends runtime.Types.Ex
   take?: number
   skip?: number
   distinct?: Prisma.OrderClaimTransferRequestScalarFieldEnum | Prisma.OrderClaimTransferRequestScalarFieldEnum[]
+}
+
+/**
+ * User.notifications
+ */
+export type User$notificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Notification
+   */
+  select?: Prisma.NotificationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Notification
+   */
+  omit?: Prisma.NotificationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotificationInclude<ExtArgs> | null
+  where?: Prisma.NotificationWhereInput
+  orderBy?: Prisma.NotificationOrderByWithRelationInput | Prisma.NotificationOrderByWithRelationInput[]
+  cursor?: Prisma.NotificationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.NotificationScalarFieldEnum | Prisma.NotificationScalarFieldEnum[]
 }
 
 /**
