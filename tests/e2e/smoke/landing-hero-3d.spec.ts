@@ -4,6 +4,8 @@ import { expect, test } from '@playwright/test'
 
 const RESULTS_DIR = path.join(process.cwd(), 'test-results')
 const COMPOSITION_SCREENSHOT = path.join(RESULTS_DIR, 'landing-hero-3d-composition.png')
+const ROTATION_SCREENSHOT = path.join(RESULTS_DIR, 'landing-hero-3d-rotation.png')
+const EDITORIAL_SCREENSHOT = path.join(RESULTS_DIR, 'landing-hero-3d-editorial-pass.png')
 const CALIBRATION_SCREENSHOT = path.join(RESULTS_DIR, 'landing-hero-3d-calibration.png')
 const LEGACY_SCREENSHOT = path.join(RESULTS_DIR, 'landing-hero-3d.png')
 
@@ -81,6 +83,17 @@ test.describe('landing hero 3D showcase', () => {
     await page.locator('section').first().screenshot({
       path: COMPOSITION_SCREENSHOT,
     })
+
+    await page.locator('section').first().screenshot({
+      path: EDITORIAL_SCREENSHOT,
+    })
+
+    if (used3d) {
+      await page.waitForTimeout(3_000)
+      await page.locator('section').first().screenshot({
+        path: ROTATION_SCREENSHOT,
+      })
+    }
 
     await page.getByTestId('landing-hero-3d-showcase').screenshot({
       path: LEGACY_SCREENSHOT,

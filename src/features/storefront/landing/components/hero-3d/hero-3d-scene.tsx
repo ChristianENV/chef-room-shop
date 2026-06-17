@@ -432,6 +432,7 @@ function HeroJacketSceneContent({
   const animatedGroupRef = useRef<THREE.Group>(null)
   const dragYawRef = useRef(0)
   const isDraggingRef = useRef(false)
+  const frozenIdleYawRef = useRef(0)
   const modelPreparedReportedRef = useRef(false)
   const pedestalSetRef = useRef(false)
   const debugFitSetRef = useRef(false)
@@ -632,8 +633,12 @@ function HeroJacketSceneContent({
     }
 
     const idleYaw = isDraggingRef.current
-      ? 0
+      ? frozenIdleYawRef.current
       : computeIdleYaw(composition, state.clock.elapsedTime)
+
+    if (!isDraggingRef.current) {
+      frozenIdleYawRef.current = idleYaw
+    }
 
     animatedGroup.rotation.y = idleYaw + dragYawRef.current
 
@@ -702,18 +707,19 @@ function HeroJacketSceneContent({
 function HeroSceneLights() {
   return (
     <>
-      <ambientLight intensity={0.72} color="#f0f2ff" />
-      <directionalLight position={[4, 7, 5]} intensity={1.35} color="#ffffff" />
-      <directionalLight position={[-4, 2.5, -3]} intensity={0.45} color="#9aa8ff" />
+      <ambientLight intensity={0.68} color="#eef1ff" />
+      <directionalLight position={[4, 7, 5]} intensity={1.4} color="#ffffff" />
+      <directionalLight position={[-4, 2.5, -3]} intensity={0.5} color="#9aa8ff" />
+      <directionalLight position={[-3.5, 2.8, -4.5]} intensity={0.62} color="#7d93ff" />
       <spotLight
         position={[-1.5, 3, -4]}
         angle={0.5}
         penumbra={0.9}
-        intensity={1.4}
+        intensity={1.35}
         color="#5a6fdd"
         distance={16}
       />
-      <pointLight position={[1, 1.5, 3]} intensity={0.35} color="#ffffff" />
+      <pointLight position={[1, 1.5, 3]} intensity={0.38} color="#ffffff" />
     </>
   )
 }

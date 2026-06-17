@@ -277,19 +277,11 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
 
   const animate = !reduceMotion && !useStaticVisual
 
-  const glowStyle = {
-    transform: `translate(${activeComposition.glowOffsetX}px, ${activeComposition.glowOffsetY}px)`,
-  }
-
-  const pedestalStyle = {
-    transform: `translateY(${activeComposition.pedestalOffsetY}px)`,
-  }
-
   return (
     <div
       ref={containerRef}
       className={cn(
-        'relative w-full',
+        'relative w-full overflow-visible',
         HERO_3D_STAGE.minHeightClass,
         HERO_3D_STAGE.smMinHeightClass,
         HERO_3D_STAGE.lgMinHeightClass,
@@ -297,22 +289,6 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
       )}
       data-testid="landing-hero-3d-showcase"
     >
-      <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_75%_at_50%_38%,rgba(90,111,221,0.32)_0%,transparent_70%)]"
-        style={glowStyle}
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute inset-x-[14%] top-[16%] h-[40%] rounded-full bg-primary/20 blur-3xl"
-        style={glowStyle}
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute inset-x-[10%] bottom-[6%] h-[26%] rounded-full bg-[#2B3280]/25 blur-2xl"
-        style={pedestalStyle}
-        aria-hidden
-      />
-
       <div
         className={cn('absolute inset-0 z-0', showCanvas ? 'opacity-0' : 'opacity-100')}
         data-testid={
