@@ -11,6 +11,7 @@ import {
   Package,
   Palette,
   User,
+  Bell,
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -53,6 +54,12 @@ const accountNavItems = [
     icon: MapPin,
     description: 'Direcciones de envío',
   },
+  {
+    href: accountNav.notifications.href,
+    label: accountNav.notifications.label,
+    icon: Bell,
+    description: 'Avisos de pedidos y diseños',
+  },
 ]
 
 interface AccountSidebarProps {
@@ -66,7 +73,9 @@ function AccountSidebar({ className, onNavigate }: AccountSidebarProps) {
   return (
     <nav className={cn('flex flex-col gap-1', className)}>
       {accountNavItems.map((item) => {
-        const isActive = pathname === item.href
+        const isActive =
+          pathname === item.href ||
+          (item.href !== accountNav.profile.href && pathname.startsWith(`${item.href}/`))
         const Icon = item.icon
 
         return (
