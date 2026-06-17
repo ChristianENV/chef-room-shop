@@ -10,8 +10,8 @@ import { Hero3DCalibrationPanel } from './hero-3d-calibration-panel'
 import {
   checkHero3DModelAssetsAvailable,
   createInitialHero3DDebugState,
+  hero3dLog,
   isLandingHero3dCalibrateEnabled,
-  isLandingHero3dDebugEnabled,
   type Hero3DDebugState,
   type Hero3DRenderMode,
 } from './hero-3d-debug'
@@ -29,6 +29,8 @@ const Hero3DSceneCanvas = dynamic(
   () => import('./hero-3d-scene').then((mod) => mod.Hero3DSceneCanvas),
   { ssr: false, loading: () => null },
 )
+
+const MODEL_LOAD_TIMEOUT_MS = 12_000
 
 type Hero3DShowcaseProps = {
   className?: string
@@ -69,6 +71,47 @@ function usePrefersMobileViewport(): boolean {
   return isMobile
 }
 
+function resolveTimeoutMessage(debug: Hero3DDebugState): string {
+  if (debug.hero3dReady) return 'Camera fit failed'
+  if (debug.assetLoadState === 'loaded' && debug.meshCount > 0) return 'Camera fit failed'
+  if (debug.modelPreparedState === 'prepared') return 'Camera fit failed'
+  return 'Model load timeout (12s)'
+}
+
+function mergeSceneReport(
+  previous: Hero3DDebugState,
+  report: Hero3DSceneReport,
+): Hero3DDebugState {
+  return {
+    ...previous,
+    assetLoadState: report.assetLoadState,
+    modelPreparedState: report.modelPreparedState,
+    boundsFitState: report.boundsFitState,
+    hero3dReady: report.hero3dReady || previous.hero3dReady,
+    modelLoadState: report.modelLoadState,
+    meshCount: report.meshCount,
+    boundsSize: report.boundsSize ?? previous.boundsSize,
+    boundsCenter: report.boundsCenter ?? previous.boundsCenter,
+    radius: report.radius ?? previous.radius,
+    cameraPosition: report.cameraPosition ?? previous.cameraPosition,
+    fittedCameraDistance: report.fittedCameraDistance ?? previous.fittedCameraDistance,
+    paddingRatio: report.paddingRatio ?? previous.paddingRatio,
+    fitCalculationCount: report.fitCalculationCount ?? previous.fitCalculationCount,
+    cameraUpdateCount: report.cameraUpdateCount ?? previous.cameraUpdateCount,
+    modelCloneCount: report.modelCloneCount ?? previous.modelCloneCount,
+    errorMessage: report.errorMessage ?? previous.errorMessage,
+    lastError: report.lastError ?? previous.lastError,
+    visibleMeshCount: report.visibleMeshCount ?? previous.visibleMeshCount,
+    materialNames: report.materialNames ?? previous.materialNames,
+    materialOpacities: report.materialOpacities ?? previous.materialOpacities,
+    materialTransparentFlags:
+      report.materialTransparentFlags ?? previous.materialTransparentFlags,
+    boundsMin: report.boundsMin ?? previous.boundsMin,
+    boundsMax: report.boundsMax ?? previous.boundsMax,
+    cameraTarget: report.cameraTarget ?? previous.cameraTarget,
+  }
+}
+
 /**
  * Premium landing hero 3D jacket showcase with static fallback.
  * Isolated from the customizer — read-only visual, no editing state.
@@ -80,6 +123,7 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
   const dpr = detectDeviceDpr()
   const containerRef = useRef<HTMLDivElement>(null)
   const loadedLayerRef = useRef<HTMLDivElement>(null)
+  const hero3dReadyRef = useRef(false)
   const calibrateEnabled = isLandingHero3dCalibrateEnabled()
 
   const [composition, setComposition] = useState<HeroJacketComposition>(() =>
@@ -89,7 +133,7 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
   const [assetsAvailable, setAssetsAvailable] = useState<boolean | null>(null)
   const [assetsChecked, setAssetsChecked] = useState(false)
   const [sceneFailed, setSceneFailed] = useState(false)
-  const [sceneLoaded, setSceneLoaded] = useState(false)
+  const [sceneReady, setSceneReady] = useState(false)
   const [canvasMounted, setCanvasMounted] = useState(false)
 
   const activeComposition = calibrateEnabled ? composition : HERO_JACKET_COMPOSITION
@@ -101,6 +145,7 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
       setAssetsAvailable(available)
       setAssetsChecked(true)
       setDebug((prev) => ({ ...prev, assetsAvailable: available }))
+      hero3dLog(`asset HEAD checks: ${available ? 'ok' : 'failed'}`)
     })
     return () => {
       cancelled = true
@@ -132,7 +177,10 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
     if (isMobile) return 'mobile-viewport'
     if (!webglAvailable) return 'webgl-unavailable'
     if (assetsChecked && assetsAvailable === false) return 'model-assets-missing'
-    if (sceneFailed) return debug.errorMessage ?? 'scene-error-or-timeout'
+    if (sceneFailed) {
+      if (debug.timeoutTriggered) return 'model-timeout'
+      return debug.errorMessage ?? 'scene-error'
+    }
     return null
   }, [
     isMobile,
@@ -140,58 +188,75 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
     assetsChecked,
     assetsAvailable,
     sceneFailed,
+    debug.timeoutTriggered,
     debug.errorMessage,
   ])
 
+  useEffect(() => {
+    if (fallbackReason) {
+      hero3dLog(`fallback reason: ${fallbackReason}`)
+    }
+  }, [fallbackReason])
+
   const useStaticVisual = Boolean(fallbackReason)
   const renderMode: Hero3DRenderMode = useStaticVisual ? 'static-fallback' : '3d'
-  const showCanvas = !useStaticVisual && canvasMounted && sceneLoaded && debug.meshCount > 0
+  const showCanvas = !useStaticVisual && canvasMounted && sceneReady
 
   useEffect(() => {
-    if (useStaticVisual || sceneLoaded) return
-    const timer = window.setTimeout(() => {
+    if (useStaticVisual || sceneReady || !canvasMounted) return
+
+    const timeout = window.setTimeout(() => {
+      if (hero3dReadyRef.current) {
+        setDebug((prev) => ({
+          ...prev,
+          boundsFitState: prev.boundsFitState === 'fitting' ? 'fallback' : prev.boundsFitState,
+          lastError: prev.lastError ?? 'Camera fit failed',
+        }))
+        hero3dLog('camera fit failed (timeout waiting for bounds fit)')
+        return
+      }
+
       setSceneFailed(true)
-      setDebug((prev) => ({
-        ...prev,
-        modelLoadState: 'error',
-        errorMessage: prev.errorMessage ?? 'Model load timeout (12s)',
-      }))
-    }, 12_000)
-    return () => window.clearTimeout(timer)
-  }, [useStaticVisual, sceneLoaded])
+      setDebug((prev) => {
+        const message = resolveTimeoutMessage(prev)
+        return {
+          ...prev,
+          timeoutTriggered: true,
+          modelLoadState: prev.hero3dReady ? prev.modelLoadState : 'error',
+          errorMessage: prev.errorMessage ?? message,
+          lastError: prev.lastError ?? message,
+        }
+      })
+    }, MODEL_LOAD_TIMEOUT_MS)
+
+    return () => {
+      window.clearTimeout(timeout)
+    }
+  }, [useStaticVisual, sceneReady, canvasMounted])
 
   const handleSceneError = useCallback((message: string) => {
+    hero3dLog(`scene error: ${message}`)
     setSceneFailed(true)
     setDebug((prev) => ({
       ...prev,
       modelLoadState: 'error',
+      assetLoadState: 'error',
       errorMessage: message,
+      lastError: message,
     }))
   }, [])
 
   const handleSceneReport = useCallback((report: Hero3DSceneReport) => {
-    setDebug((prev) => ({
-      ...prev,
-      modelLoadState: report.modelLoadState,
-      meshCount: report.meshCount,
-      boundsSize: report.boundsSize,
-      boundsCenter: report.boundsCenter,
-      radius: report.radius,
-      cameraPosition: report.cameraPosition ?? prev.cameraPosition,
-      errorMessage: report.errorMessage ?? prev.errorMessage,
-    }))
+    setDebug((prev) => mergeSceneReport(prev, report))
 
-    if (report.modelLoadState === 'loaded' && report.meshCount > 0) {
-      setSceneLoaded(true)
+    if (report.hero3dReady) {
+      hero3dReadyRef.current = true
+      setSceneReady((prev) => prev || true)
     }
 
-    if (report.modelLoadState === 'error') {
+    if (report.modelPreparedState === 'error' || report.assetLoadState === 'error') {
       setSceneFailed(true)
     }
-  }, [])
-
-  const handleCameraPosition = useCallback((position: [number, number, number]) => {
-    setDebug((prev) => ({ ...prev, cameraPosition: position }))
   }, [])
 
   const handleCanvasMounted = useCallback(() => {
@@ -199,6 +264,7 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
     setDebug((prev) => ({
       ...prev,
       canvasMounted: true,
+      assetLoadState: prev.assetLoadState === 'idle' ? 'loading' : prev.assetLoadState,
       modelLoadState: prev.modelLoadState === 'idle' ? 'loading' : prev.modelLoadState,
     }))
   }, [])
@@ -210,7 +276,6 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
   }, [])
 
   const animate = !reduceMotion && !useStaticVisual
-  const showDebugPrimitive = isLandingHero3dDebugEnabled()
 
   const glowStyle = {
     transform: `translate(${activeComposition.glowOffsetX}px, ${activeComposition.glowOffsetY}px)`,
@@ -250,7 +315,9 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
 
       <div
         className={cn('absolute inset-0 z-0', showCanvas ? 'opacity-0' : 'opacity-100')}
-        data-testid={useStaticVisual ? 'landing-hero-3d-fallback' : undefined}
+        data-testid={
+          useStaticVisual ? 'landing-hero-3d-fallback' : 'landing-hero-3d-static-backdrop'
+        }
       >
         <HeroStaticVisual priority={priority} />
       </div>
@@ -271,10 +338,8 @@ export function Hero3DShowcase({ className, priority }: Hero3DShowcaseProps) {
             animate={animate}
             composition={activeComposition}
             dpr={dpr}
-            showDebugPrimitive={showDebugPrimitive}
             onError={handleSceneError}
             onReport={handleSceneReport}
-            onCameraPosition={handleCameraPosition}
             onModelRotationY={handleModelRotationY}
             onMounted={handleCanvasMounted}
             className="h-full w-full cursor-grab active:cursor-grabbing"

@@ -6,6 +6,7 @@ import {
   cloneComposition,
   compositionToCalibrationJson,
   HERO_JACKET_COMPOSITION,
+  type HeroFitMode,
   type HeroJacketComposition,
 } from './hero-3d-config'
 import { isLandingHero3dCalibrateEnabled } from './hero-3d-debug'
@@ -44,37 +45,6 @@ function SliderRow({ label, value, min, max, step, onChange }: SliderRowProps) {
   )
 }
 
-type Vec3SlidersProps = {
-  label: string
-  value: [number, number, number]
-  mins: [number, number, number]
-  maxs: [number, number, number]
-  step: number
-  onChange: (axis: 0 | 1 | 2, next: number) => void
-}
-
-function Vec3Sliders({ label, value, mins, maxs, step, onChange }: Vec3SlidersProps) {
-  const axes = ['X', 'Y', 'Z'] as const
-  return (
-    <fieldset className="space-y-1 rounded border border-white/10 p-2">
-      <legend className="px-1 text-[10px] font-semibold uppercase tracking-wide text-white/60">
-        {label}
-      </legend>
-      {axes.map((axis, index) => (
-        <SliderRow
-          key={axis}
-          label={`${label} ${axis}`}
-          value={value[index]}
-          min={mins[index]}
-          max={maxs[index]}
-          step={step}
-          onChange={(next) => onChange(index as 0 | 1 | 2, next)}
-        />
-      ))}
-    </fieldset>
-  )
-}
-
 export function Hero3DCalibrationPanel({ composition, onChange }: Hero3DCalibrationPanelProps) {
   const [copied, setCopied] = useState(false)
 
@@ -83,33 +53,6 @@ export function Hero3DCalibrationPanel({ composition, onChange }: Hero3DCalibrat
       onChange({ ...composition, ...patch })
     },
     [composition, onChange],
-  )
-
-  const updateModelPosition = useCallback(
-    (axis: 0 | 1 | 2, next: number) => {
-      const modelPosition = [...composition.modelPosition] as [number, number, number]
-      modelPosition[axis] = next
-      update({ modelPosition })
-    },
-    [composition.modelPosition, update],
-  )
-
-  const updateCameraPosition = useCallback(
-    (axis: 0 | 1 | 2, next: number) => {
-      const cameraPosition = [...composition.cameraPosition] as [number, number, number]
-      cameraPosition[axis] = next
-      update({ cameraPosition })
-    },
-    [composition.cameraPosition, update],
-  )
-
-  const updateCameraTarget = useCallback(
-    (axis: 0 | 1 | 2, next: number) => {
-      const cameraTarget = [...composition.cameraTarget] as [number, number, number]
-      cameraTarget[axis] = next
-      update({ cameraTarget })
-    },
-    [composition.cameraTarget, update],
   )
 
   const handleCopy = useCallback(async () => {
@@ -149,14 +92,6 @@ export function Hero3DCalibrationPanel({ composition, onChange }: Hero3DCalibrat
       </div>
 
       <div className="space-y-2">
-        <Vec3Sliders
-          label="Model position"
-          value={composition.modelPosition}
-          mins={[-2, -5, -2]}
-          maxs={[2, 0, 2]}
-          step={0.05}
-          onChange={updateModelPosition}
-        />
         <SliderRow
           label="Model scale"
           value={composition.modelScale}
@@ -173,14 +108,32 @@ export function Hero3DCalibrationPanel({ composition, onChange }: Hero3DCalibrat
           step={0.01}
           onChange={(modelRotationY) => update({ modelRotationY })}
         />
-
-        <Vec3Sliders
-          label="Camera position"
-          value={composition.cameraPosition}
-          mins={[-3, -1, 2]}
-          maxs={[3, 3, 10]}
-          step={0.05}
-          onChange={updateCameraPosition}
+        <SliderRow
+          label="Padding ratio"
+          value={composition.paddingRatio}
+          min={0.05}
+          max={0.4}
+          step={0.01}
+          onChange={(paddingRatio) => update({ paddingRatio })}
+        />
+        <label className="flex flex-col gap-0.5">
+          <span className="text-[10px] text-white/70">Fit mode</span>
+          <select
+            value={composition.fitMode}
+            onChange={(event) => update({ fitMode: event.target.value as HeroFitMode })}
+            className="rounded border border-white/20 bg-black/60 px-2 py-1 text-[11px]"
+          >
+            <option value="contain">contain</option>
+            <option value="contain-height">contain-height</option>
+          </select>
+        </label>
+        <SliderRow
+          label="Vertical bias"
+          value={composition.verticalBias}
+          min={-0.25}
+          max={0.25}
+          step={0.01}
+          onChange={(verticalBias) => update({ verticalBias })}
         />
         <SliderRow
           label="Camera FOV"
@@ -189,39 +142,6 @@ export function Hero3DCalibrationPanel({ composition, onChange }: Hero3DCalibrat
           max={60}
           step={1}
           onChange={(cameraFov) => update({ cameraFov })}
-        />
-        <Vec3Sliders
-          label="Camera target"
-          value={composition.cameraTarget}
-          mins={[-2, -3, -2]}
-          maxs={[2, 2, 2]}
-          step={0.05}
-          onChange={updateCameraTarget}
-        />
-
-        <SliderRow
-          label="Glow offset X"
-          value={composition.glowOffsetX}
-          min={-80}
-          max={80}
-          step={1}
-          onChange={(glowOffsetX) => update({ glowOffsetX })}
-        />
-        <SliderRow
-          label="Glow offset Y"
-          value={composition.glowOffsetY}
-          min={-80}
-          max={80}
-          step={1}
-          onChange={(glowOffsetY) => update({ glowOffsetY })}
-        />
-        <SliderRow
-          label="Pedestal offset Y"
-          value={composition.pedestalOffsetY}
-          min={-40}
-          max={80}
-          step={1}
-          onChange={(pedestalOffsetY) => update({ pedestalOffsetY })}
         />
         <SliderRow
           label="Idle rotation speed"
@@ -238,6 +158,22 @@ export function Hero3DCalibrationPanel({ composition, onChange }: Hero3DCalibrat
           max={0.4}
           step={0.01}
           onChange={(idleRotationAmplitude) => update({ idleRotationAmplitude })}
+        />
+        <SliderRow
+          label="Rotation fit padding"
+          value={composition.rotationFitPadding}
+          min={0}
+          max={0.2}
+          step={0.01}
+          onChange={(rotationFitPadding) => update({ rotationFitPadding })}
+        />
+        <SliderRow
+          label="Target torso ratio"
+          value={composition.targetTorsoRatio}
+          min={0.35}
+          max={0.65}
+          step={0.01}
+          onChange={(targetTorsoRatio) => update({ targetTorsoRatio })}
         />
       </div>
 
