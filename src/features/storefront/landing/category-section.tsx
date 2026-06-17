@@ -79,7 +79,7 @@ function CategoryCard({ cat }: { cat: LandingCategory }) {
           'relative w-full shrink-0 overflow-hidden',
           isFeatured
             ? 'aspect-[4/5] min-h-[280px] sm:min-h-[320px] lg:min-h-[360px] lg:flex-1'
-            : 'aspect-[16/9] min-h-[200px] lg:h-[280px] lg:min-h-[280px] lg:aspect-auto',
+            : 'aspect-[16/9] min-h-[200px] lg:h-[280px] lg:min-h-[420px] lg:aspect-auto',
         )}
       >
         <LandingMediaImage
