@@ -39,14 +39,14 @@ export type HeroJacketComposition = {
 /** Single source of truth for landing hero 3D jacket framing. */
 export const HERO_JACKET_COMPOSITION: HeroJacketComposition = {
   modelPosition: [0, -3.2, 0],
-  modelScale: 0.022,
+  modelScale: 0.0275,
   modelRotationX: -0.03,
   modelRotationY: -0.72,
   cameraPosition: [0.45, 0.85, 5.3],
   cameraTarget: [0, -0.75, 0],
   cameraFov: 35,
   idleRotationMode: 'oscillate',
-  idleRotationSpeed: 0.55,
+  idleRotationSpeed: 0.825,
   idleRotationAmplitude: 0.12,
   dragRotationLimit: 0.32,
   dragSensitivity: 0.004,
