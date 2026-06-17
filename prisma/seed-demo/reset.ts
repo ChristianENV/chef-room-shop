@@ -63,6 +63,14 @@ export async function resetDemoData(prisma: PrismaClient): Promise<void> {
   })
 
   if (demoUserIds.length > 0) {
+    await prisma.notification.deleteMany({
+      where: {
+        OR: [
+          { userId: { in: demoUserIds } },
+          { audience: 'ADMIN', userId: { in: demoUserIds } },
+        ],
+      },
+    })
     await prisma.cartItem.deleteMany({
       where: { cart: { userId: { in: demoUserIds } } },
     })

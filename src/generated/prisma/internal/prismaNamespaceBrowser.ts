@@ -91,6 +91,7 @@ export const ModelName = {
   ShippingWebhookEvent: 'ShippingWebhookEvent',
   Shipment: 'Shipment',
   ShipmentEvent: 'ShipmentEvent',
+  Notification: 'Notification',
   EmailMessage: 'EmailMessage',
   AuditLog: 'AuditLog'
 } as const
@@ -735,6 +736,24 @@ export const ShipmentEventScalarFieldEnum = {
 } as const
 
 export type ShipmentEventScalarFieldEnum = (typeof ShipmentEventScalarFieldEnum)[keyof typeof ShipmentEventScalarFieldEnum]
+
+
+export const NotificationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  audience: 'audience',
+  type: 'type',
+  title: 'title',
+  message: 'message',
+  href: 'href',
+  metadataJson: 'metadataJson',
+  readAt: 'readAt',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
 
 
 export const EmailMessageScalarFieldEnum = {

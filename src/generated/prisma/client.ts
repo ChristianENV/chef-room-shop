@@ -242,6 +242,11 @@ export type Shipment = Prisma.ShipmentModel
  */
 export type ShipmentEvent = Prisma.ShipmentEventModel
 /**
+ * Model Notification
+ * 
+ */
+export type Notification = Prisma.NotificationModel
+/**
  * Model EmailMessage
  * 
  */

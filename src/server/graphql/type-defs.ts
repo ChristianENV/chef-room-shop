@@ -1,3 +1,5 @@
+import { notificationsTypeDefs } from '@/src/server/notifications/notification.type-defs'
+
 export const catalogTypeDefs = /* GraphQL */ `
   type ProductType {
     id: ID!
@@ -1691,6 +1693,8 @@ export const typeDefs = /* GraphQL */ `
     orderByCheckoutToken(orderNumber: String!, token: String!): CheckoutOrderDetailAccess
     orderClaimPreview(token: String!): OrderClaimPreview
     designById(designId: ID!): AccountDesign
+    myNotifications(input: MyNotificationsInput): NotificationConnection!
+    myUnreadNotificationCount: Int!
   }
 
   type Mutation {
@@ -1759,6 +1763,8 @@ export const typeDefs = /* GraphQL */ `
     createDesignAssetUpload(input: CreateDesignAssetUploadInput!): DesignAssetUploadPayload!
     confirmDesignAssetUpload(input: ConfirmDesignAssetUploadInput!): DesignAsset!
     deleteDesignDraft(input: DeleteDesignDraftInput!): Boolean!
+    markNotificationRead(id: ID!): Notification!
+    markAllNotificationsRead: MarkAllNotificationsReadPayload!
   }
 
   ${catalogTypeDefs}
@@ -1779,4 +1785,5 @@ export const typeDefs = /* GraphQL */ `
   ${adminCustomizationTypeDefs}
   ${uploadsTypeDefs}
   ${designsTypeDefs}
+  ${notificationsTypeDefs}
 `

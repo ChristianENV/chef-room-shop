@@ -16,6 +16,7 @@ import { orderClaimResolvers } from './order-claim.resolver'
 import { paymentsResolvers } from './payments.resolver'
 import { uploadsResolvers } from './uploads.resolver'
 import { designsResolvers } from './designs.resolver'
+import { notificationsResolvers } from '@/src/server/notifications/notification.resolver'
 import { JSONScalar } from '../scalars/json.scalar'
 
 export const resolvers = {
@@ -38,6 +39,7 @@ export const resolvers = {
     ...checkoutResolvers.Query,
     ...orderClaimResolvers.Query,
     ...designsResolvers.Query,
+    ...notificationsResolvers.Query,
   },
   Mutation: {
     ...accountResolvers.Mutation,
@@ -52,5 +54,6 @@ export const resolvers = {
     ...adminCustomizationResolvers.Mutation,
     ...uploadsResolvers.Mutation,
     ...designsResolvers.Mutation,
+    ...notificationsResolvers.Mutation,
   },
 }
