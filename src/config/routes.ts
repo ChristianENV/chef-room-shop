@@ -52,6 +52,7 @@ export const routes = {
   adminShipping: '/admin/shipping',
   adminAnalytics: '/admin/analytics',
   adminSettings: '/admin/settings',
+  adminNotifications: '/admin/notifications',
 } as const
 
 /** Conekta return URL with checkout token. */

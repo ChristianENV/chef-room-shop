@@ -41,7 +41,7 @@ export function FinalCTA({ className }: FinalCTAProps) {
           </h2>
           <p className="mx-auto mt-6 max-w-xl font-serif text-lg leading-relaxed text-muted-foreground">
             Diseña tu uniforme personalizado hoy y destaca en cada servicio. Envío gratis en pedidos
-            mayores a $999 MXN.
+            mayores a $1999 MXN.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button

@@ -23,7 +23,7 @@ export function AdminLayout({
     <SidebarProvider>
       <AdminSidebar environment={environment} />
       <SidebarInset>
-        <AdminTopbar breadcrumb={breadcrumb} notificationCount={notificationCount} />
+        <AdminTopbar breadcrumb={breadcrumb} />
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
