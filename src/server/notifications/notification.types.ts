@@ -37,6 +37,7 @@ export type CreateNotificationInput = {
   href?: string | null
   metadataJson?: Record<string, unknown> | null
   expiresAt?: Date | null
+  dedupeKey?: string | null
 }
 
 export type CreateUserNotificationInput = Omit<

@@ -12,6 +12,7 @@ export const createNotificationInputSchema = z.object({
   href: z.string().trim().max(500).nullable().optional(),
   metadataJson: metadataJsonSchema,
   expiresAt: z.coerce.date().nullable().optional(),
+  dedupeKey: z.string().trim().min(1).max(200).nullable().optional(),
 })
 
 export const createUserNotificationInputSchema = createNotificationInputSchema

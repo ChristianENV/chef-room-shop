@@ -1087,6 +1087,7 @@ model Notification {
   metadataJson Json?
   readAt       DateTime?
   expiresAt    DateTime?
+  dedupeKey    String?              @unique
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
 

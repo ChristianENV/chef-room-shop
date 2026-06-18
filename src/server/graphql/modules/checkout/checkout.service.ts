@@ -41,6 +41,7 @@ import {
 } from '@/src/server/email/email.links'
 import { safeSendTransactionalEmail } from '@/src/server/email/email.service'
 import { createOrderClaimToken } from '@/src/server/orders/order-claim-token'
+import { safeNotifyOrderCreated } from '@/src/server/notifications/notify-order-created'
 
 function parseConfigSnapshot(value: unknown): CartConfigSnapshotJson {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -388,6 +389,8 @@ export async function finalizeCheckoutOrderSideEffects(
       accountOrderUrl: trackingLinks.accountOrderUrl,
     },
   })
+
+  void safeNotifyOrderCreated(context.prisma, params.order)
 
   return {
     claimUrl: trackingLinks.claimUrl ?? null,

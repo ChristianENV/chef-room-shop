@@ -4304,6 +4304,7 @@ export const NotificationScalarFieldEnum = {
   metadataJson: 'metadataJson',
   readAt: 'readAt',
   expiresAt: 'expiresAt',
+  dedupeKey: 'dedupeKey',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
