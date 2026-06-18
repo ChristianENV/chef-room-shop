@@ -41,3 +41,11 @@ export const ADMIN_REFRESH_SHIPMENT_TRACKING_MUTATION = /* GraphQL */ `
     }
   }
 `
+
+export const ADMIN_SIMULATE_MOCK_SHIPMENT_TRACKING_MUTATION = /* GraphQL */ `
+  mutation AdminSimulateMockShipmentTracking($input: AdminSimulateMockShipmentTrackingInput!) {
+    adminSimulateMockShipmentTrackingStatus(input: $input) {
+      ${ADMIN_SHIPMENT_MUTATION_FIELDS}
+    }
+  }
+`

@@ -14,6 +14,10 @@ import {
   cancelSkydropxLabelOrShipment,
   getSkydropxTracking,
 } from '@/src/server/shipping/skydropx/skydropx.client'
+import {
+  MockTrackingSimulationError,
+  simulateMockShipmentTrackingStatus,
+} from '@/src/server/shipping/skydropx/skydropx.mock-tracking'
 import { isSkydropxMockMode } from '@/src/server/shipping/skydropx/skydropx.mode'
 import { createShippingProvider } from '@/src/server/shipping/skydropx/skydropx.provider'
 import { SkydropxApiError } from '@/src/server/shipping/skydropx/skydropx.errors'
@@ -46,10 +50,12 @@ import type {
   AdminShipmentGql,
   AdminShipmentsListInput,
   AdminShipmentsPayloadGql,
+  AdminSimulateMockShipmentTrackingInput,
 } from './admin-shipping.types'
 import {
   adminCancelShippingLabelInputSchema,
   adminCreateShippingLabelInputSchema,
+  adminSimulateMockShipmentTrackingInputSchema,
   orderNumberSchema,
   parseAdminShipmentsListInput,
 } from './admin-shipping.validation'
@@ -86,8 +92,22 @@ function skydropxGraphQLError(error: SkydropxApiError): GraphQLError {
   return skydropxErrorToGraphQLError(error, 'label')
 }
 
+function mockTrackingSimulationGraphQLError(error: MockTrackingSimulationError): GraphQLError {
+  return new GraphQLError(error.message, { extensions: { code: 'BAD_REQUEST' } })
+}
+
 function validationGraphQLError(error: SkydropxValidationError): GraphQLError {
   return new GraphQLError(error.message, { extensions: { code: 'BAD_REQUEST' } })
+}
+
+async function loadShipmentWithEventsById(
+  context: GraphQLContext,
+  shipmentId: string,
+): Promise<ShipmentWithOrderAndEvents> {
+  return context.prisma.shipment.findUniqueOrThrow({
+    where: { id: shipmentId },
+    include: shipmentInclude,
+  })
 }
 
 async function createAdminOrderEvent(
@@ -558,6 +578,13 @@ export async function refreshAdminShipmentTracking(
   orderNumber: string,
 ): Promise<AdminShipmentGql> {
   requireAdminGraphQL(context)
+
+  if (isSkydropxMockMode()) {
+    throw badRequestError(
+      'En modo mock usa adminSimulateMockShipmentTrackingStatus para simular tracking.',
+    )
+  }
+
   const parsed = orderNumberSchema.parse(orderNumber)
 
   const shipment = await loadShipmentByOrderNumber(context, parsed)
@@ -622,4 +649,29 @@ export async function refreshAdminShipmentTracking(
   })
 
   return mapShipmentToAdminGql(updated)
+}
+
+/**
+ * Simulates shipment tracking status changes in mock mode (admin only).
+ */
+export async function adminSimulateMockShipmentTrackingStatus(
+  context: GraphQLContext,
+  input: AdminSimulateMockShipmentTrackingInput,
+): Promise<AdminShipmentGql> {
+  requireAdminGraphQL(context)
+  const parsed = adminSimulateMockShipmentTrackingInputSchema.parse(input)
+
+  try {
+    const updated = await simulateMockShipmentTrackingStatus(context.prisma, {
+      orderNumber: parsed.orderNumber,
+      status: parsed.trackingStatus,
+    })
+    const withEvents = await loadShipmentWithEventsById(context, updated.id)
+    return mapShipmentToAdminGql(withEvents)
+  } catch (error) {
+    if (error instanceof MockTrackingSimulationError) {
+      throw mockTrackingSimulationGraphQLError(error)
+    }
+    throw error
+  }
 }

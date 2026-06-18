@@ -880,6 +880,19 @@ export const adminShippingTypeDefs = /* GraphQL */ `
     reason: String
   }
 
+  enum MockTrackingStatus {
+    created
+    label_generated
+    in_transit
+    delivered
+    exception
+  }
+
+  input AdminSimulateMockShipmentTrackingInput {
+    orderNumber: String!
+    trackingStatus: MockTrackingStatus!
+  }
+
   type AdminShipmentListItem {
     id: ID!
     orderNumber: String!
@@ -1730,6 +1743,9 @@ export const typeDefs = /* GraphQL */ `
     adminCreateShippingLabel(input: AdminCreateShippingLabelInput!): AdminShipment!
     adminCancelShippingLabel(input: AdminCancelShippingLabelInput!): AdminShipment!
     adminRefreshShipmentTracking(orderNumber: String!): AdminShipment!
+    adminSimulateMockShipmentTrackingStatus(
+      input: AdminSimulateMockShipmentTrackingInput!
+    ): AdminShipment!
     createAdminProduct(input: AdminProductInput!): AdminProduct!
     updateAdminProduct(id: ID!, input: AdminProductInput!): AdminProduct!
     archiveAdminProduct(id: ID!): AdminProduct!
