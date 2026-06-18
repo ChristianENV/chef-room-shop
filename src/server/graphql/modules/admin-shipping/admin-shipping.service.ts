@@ -12,9 +12,10 @@ import { GraphQLError } from 'graphql'
 import type { CurrentUser } from '@/src/server/auth/types'
 import {
   cancelSkydropxLabelOrShipment,
-  createSkydropxShipment,
   getSkydropxTracking,
 } from '@/src/server/shipping/skydropx/skydropx.client'
+import { isSkydropxMockMode } from '@/src/server/shipping/skydropx/skydropx.mode'
+import { createShippingProvider } from '@/src/server/shipping/skydropx/skydropx.provider'
 import { SkydropxApiError } from '@/src/server/shipping/skydropx/skydropx.errors'
 import { skydropxErrorToGraphQLError } from '@/src/server/shipping/skydropx/skydropx-graphql-errors'
 import { summarizeLabelAddressForDebug } from '@/src/server/shipping/skydropx/skydropx-address'
@@ -383,9 +384,11 @@ export async function createAdminShippingLabel(
     recipient: recipientAddress,
   })
 
+  const shippingProvider = createShippingProvider()
+
   let skydropxRaw: unknown
   try {
-    skydropxRaw = await createSkydropxShipment(skydropxPayload, {
+    skydropxRaw = await shippingProvider.createShipment(skydropxPayload, {
       orderNumber: order.orderNumber,
       providerQuoteId: quote.providerQuoteId,
       providerRateId: rate.providerRateId,
@@ -414,7 +417,9 @@ export async function createAdminShippingLabel(
     : FulfillmentStatus.PROCESSING
 
   const carrierLabel = parsedShipment.carrier ?? rate.carrier ?? 'paquetería'
-  const eventMessage = `Guía generada con ${carrierLabel}.`
+  const eventMessage = isSkydropxMockMode()
+    ? `Guía mock generada con ${carrierLabel} (modo prueba).`
+    : `Guía generada con ${carrierLabel}.`
 
   const created = await context.prisma.$transaction(async (tx) => {
     const shipment = await tx.shipment.create({
@@ -445,7 +450,9 @@ export async function createAdminShippingLabel(
         status: shipmentStatus,
         message: hasTracking
           ? `Etiqueta creada. Tracking: ${parsedShipment.trackingNumber}`
-          : 'Etiqueta creada en Skydropx.',
+          : isSkydropxMockMode()
+            ? 'Etiqueta mock generada (modo prueba).'
+            : 'Etiqueta creada en Skydropx.',
         metadataJson: {
           providerShipmentId: parsedShipment.providerShipmentId,
           labelUrl: parsedShipment.labelUrl,
