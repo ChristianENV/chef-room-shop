@@ -37,6 +37,7 @@ import {
   parseAdminProductionQueueLimit,
   updateAdminOrderStatusInputSchema,
 } from './admin-orders.validation'
+import { safeNotifyOrderStatusChanged } from '@/src/server/notifications/notify-order-status-changed'
 
 const PRODUCTION_QUEUE_STATUSES: OrderStatus[] = [
   OrderStatus.PAID,
@@ -391,11 +392,13 @@ export async function updateAdminOrderStatus(
   const message =
     parsed.message?.trim() ||
     `Estado actualizado a ${parsed.status} por operaciones.`
+  const previousStatus = order.status
+  const newStatus = parsed.status as OrderStatus
 
   await context.prisma.$transaction(async (tx) => {
     await tx.order.update({
       where: { id: order.id },
-      data: { status: parsed.status as OrderStatus },
+      data: { status: newStatus },
     })
     await createAdminOrderEvent(tx, {
       orderId: order.id,
@@ -403,6 +406,16 @@ export async function updateAdminOrderStatus(
       message,
       actor: admin,
     })
+  })
+
+  void safeNotifyOrderStatusChanged(context.prisma, {
+    order: {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      userId: order.userId,
+    },
+    previousStatus,
+    newStatus,
   })
 
   return mapOrderToAdminGql(await loadOrderByNumber(context, parsed.orderNumber))
@@ -433,11 +446,14 @@ export async function moveAdminOrderToProduction(
     throw forbiddenAction('No se puede enviar este pedido a producción.')
   }
 
+  const previousStatus = order.status
+  const newStatus = OrderStatus.IN_PRODUCTION
+
   await context.prisma.$transaction(async (tx) => {
     await tx.order.update({
       where: { id: order.id },
       data: {
-        status: OrderStatus.IN_PRODUCTION,
+        status: newStatus,
         fulfillmentStatus: FulfillmentStatus.PROCESSING,
       },
     })
@@ -447,6 +463,16 @@ export async function moveAdminOrderToProduction(
       message: 'Pedido enviado a producción.',
       actor: admin,
     })
+  })
+
+  void safeNotifyOrderStatusChanged(context.prisma, {
+    order: {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      userId: order.userId,
+    },
+    previousStatus,
+    newStatus,
   })
 
   return mapOrderToAdminGql(await loadOrderByNumber(context, parsedNumber))
@@ -473,11 +499,14 @@ export async function markAdminOrderReadyToShip(
     )
   }
 
+  const previousStatus = order.status
+  const newStatus = OrderStatus.READY_TO_SHIP
+
   await context.prisma.$transaction(async (tx) => {
     await tx.order.update({
       where: { id: order.id },
       data: {
-        status: OrderStatus.READY_TO_SHIP,
+        status: newStatus,
         fulfillmentStatus: FulfillmentStatus.PROCESSING,
       },
     })
@@ -487,6 +516,16 @@ export async function markAdminOrderReadyToShip(
       message: 'Pedido marcado como listo para envío.',
       actor: admin,
     })
+  })
+
+  void safeNotifyOrderStatusChanged(context.prisma, {
+    order: {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      userId: order.userId,
+    },
+    previousStatus,
+    newStatus,
   })
 
   return mapOrderToAdminGql(await loadOrderByNumber(context, parsedNumber))

@@ -175,14 +175,66 @@ Dedupe keys:
 
 Error handling: `safeNotifyPaymentConfirmed` logs failures and never throws, so webhooks and payment verification are not blocked.
 
+### `ORDER_IN_PRODUCTION`
+
+Hook location: `admin-orders.service.ts`, called after successful status persistence from:
+
+- `updateAdminOrderStatus`
+- `moveAdminOrderToProduction`
+
+Implementation: `src/server/notifications/notify-order-status-changed.ts`
+
+Notifications are created **only on transition** into `OrderStatus.IN_PRODUCTION` (`previousStatus !== IN_PRODUCTION`). Repeated saves or already-in-production orders do not create new rows.
+
+| Audience | When | Type | Notes |
+| --- | --- | --- | --- |
+| `USER` | Transition to `IN_PRODUCTION` and `order.userId` is set | `ORDER_IN_PRODUCTION` | Skipped for guest orders |
+
+Copy:
+
+- User: title `Tu pedido está en producción`, message `Tu pedido {orderNumber} ya entró a producción.`, href `/account/orders/{orderNumber}`
+
+Metadata allowed: `{ orderId, orderNumber, status }` only.
+
+Dedupe key: `order-status:in-production:{orderId}`
+
+Error handling: `safeNotifyOrderStatusChanged` logs failures and never throws, so admin status updates are not blocked.
+
+### `ORDER_READY_TO_SHIP`
+
+Hook location: `admin-orders.service.ts`, called after successful status persistence from:
+
+- `updateAdminOrderStatus`
+- `markAdminOrderReadyToShip`
+
+Implementation: `src/server/notifications/notify-order-status-changed.ts`
+
+Notifications are created **only on transition** into `OrderStatus.READY_TO_SHIP` (`previousStatus !== READY_TO_SHIP`).
+
+| Audience | When | Type | Notes |
+| --- | --- | --- | --- |
+| `USER` | Transition to `READY_TO_SHIP` and `order.userId` is set | `ORDER_READY_TO_SHIP` | Skipped for guest orders |
+
+Copy:
+
+- User: title `Tu pedido está listo para envío`, message `Tu pedido {orderNumber} ya está listo para envío.`, href `/account/orders/{orderNumber}`
+
+Metadata allowed: `{ orderId, orderNumber, status }` only.
+
+Dedupe key: `order-status:ready-to-ship:{orderId}`
+
+Error handling: `safeNotifyOrderStatusChanged` logs failures and never throws, so admin status updates are not blocked.
+
+No admin notifications, emails, or realtime delivery are part of this phase.
+
 ## v1 limitations
 
 - No WebSockets, SSE, or push notifications (polling/refetch in UI)
 - Simple `first` pagination only (no cursor/`after`)
 - Metadata is filtered server-side for obvious sensitive keys but is not a full PII scrubber
-- Payment pending/failed, shipping, and other commerce events are not hooked yet
+- Payment pending/failed, shipping carrier events, delivered, and other commerce events are not hooked yet
 
 ## Future phases
 
-1. **More event hooks** — payment pending/failed, fulfillment, design saves
+1. **More event hooks** — shipping carrier updates, delivered, design saves
 2. **Realtime / push** — optional subscriptions or mobile push after MVP polling proves out
