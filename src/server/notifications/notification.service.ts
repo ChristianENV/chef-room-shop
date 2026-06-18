@@ -69,24 +69,51 @@ function toMetadataJson(
   return value as Prisma.InputJsonValue
 }
 
+function isPrismaUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: string }).code === 'P2002'
+  )
+}
+
 export async function createNotification(
   prisma: PrismaClient,
   input: CreateNotificationInput,
 ): Promise<NotificationRecord> {
   const data = parseCreateInput(createNotificationInputSchema, input)
 
-  return prisma.notification.create({
-    data: {
-      userId: data.userId ?? null,
-      audience: data.audience,
-      type: data.type,
-      title: data.title,
-      message: data.message,
-      href: data.href ?? null,
-      metadataJson: toMetadataJson(data.metadataJson),
-      expiresAt: data.expiresAt ?? null,
-    },
-  })
+  if (data.dedupeKey) {
+    const existing = await prisma.notification.findUnique({
+      where: { dedupeKey: data.dedupeKey },
+    })
+    if (existing) return existing
+  }
+
+  try {
+    return await prisma.notification.create({
+      data: {
+        userId: data.userId ?? null,
+        audience: data.audience,
+        type: data.type,
+        title: data.title,
+        message: data.message,
+        href: data.href ?? null,
+        metadataJson: toMetadataJson(data.metadataJson),
+        expiresAt: data.expiresAt ?? null,
+        dedupeKey: data.dedupeKey ?? null,
+      },
+    })
+  } catch (error) {
+    if (data.dedupeKey && isPrismaUniqueViolation(error)) {
+      const existing = await prisma.notification.findUnique({
+        where: { dedupeKey: data.dedupeKey },
+      })
+      if (existing) return existing
+    }
+    throw error
+  }
 }
 
 export async function createUserNotification(

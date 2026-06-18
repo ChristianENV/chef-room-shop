@@ -1,6 +1,6 @@
-# In-app notifications (foundation)
+# In-app notifications
 
-Persistent in-app notifications for authenticated users. This phase covers database storage, server services, and GraphQL operations only — no UI, realtime delivery, or commerce event hooks yet.
+Persistent in-app notifications for authenticated users and admins. Covers database storage, server services, GraphQL operations, customer/admin UI, and commerce event hooks.
 
 ## Model overview
 
@@ -12,8 +12,9 @@ Persistent in-app notifications for authenticated users. This phase covers datab
 | `audience` | `USER` (storefront) or `ADMIN` (admin panel) |
 | `type` | Semantic category (`ORDER_CREATED`, `ADMIN_NEW_ORDER`, `SYSTEM`, …) |
 | `title` / `message` | Display copy |
-| `href` | Optional deep link for a future UI |
+| `href` | Optional deep link |
 | `metadataJson` | Safe, non-sensitive context (order numbers, ids) |
+| `dedupeKey` | Optional unique key to prevent duplicate event notifications |
 | `readAt` | Set when the recipient marks the notification read |
 | `expiresAt` | Optional TTL; expired rows are hidden by default |
 
@@ -46,8 +47,8 @@ query MyNotifications($input: MyNotificationsInput) {
   }
 }
 
-query MyUnreadNotificationCount {
-  myUnreadNotificationCount
+query MyUnreadNotificationCount($audience: NotificationAudience) {
+  myUnreadNotificationCount(audience: $audience)
 }
 ```
 
@@ -61,8 +62,8 @@ mutation MarkNotificationRead($id: ID!) {
   }
 }
 
-mutation MarkAllNotificationsRead {
-  markAllNotificationsRead {
+mutation MarkAllNotificationsRead($audience: NotificationAudience) {
+  markAllNotificationsRead(audience: $audience) {
     updatedCount
   }
 }
@@ -72,10 +73,11 @@ mutation MarkAllNotificationsRead {
 
 - `first` (default `20`, max `100`)
 - `unreadOnly` (default `false`)
+- `audience` (optional `USER` or `ADMIN` filter)
 
 ## Service usage examples
 
-Create helpers live in `src/server/notifications/notification.service.ts` and accept a `PrismaClient` so future order/payment hooks can call them without GraphQL context.
+Create helpers live in `src/server/notifications/notification.service.ts` and accept a `PrismaClient` so order/payment hooks can call them without GraphQL context.
 
 ```ts
 import { prisma } from '@/src/server/db/prisma'
@@ -90,7 +92,7 @@ await createUserNotification(prisma, {
   type: NotificationType.ORDER_CREATED,
   title: 'Pedido registrado',
   message: `Tu pedido ${orderNumber} fue creado.`,
-  href: `/cuenta/pedidos/${orderNumber}`,
+  href: `/account/orders/${orderNumber}`,
   metadataJson: { orderNumber },
 })
 
@@ -105,7 +107,7 @@ await createAdminNotification(prisma, {
 
 Read/update operations use `GraphQLContext` and enforce ownership in the service layer.
 
-## Client hooks (foundation)
+## Client hooks
 
 Typed fetch helpers and TanStack Query hooks are under `src/features/notifications/`:
 
@@ -114,19 +116,43 @@ Typed fetch helpers and TanStack Query hooks are under `src/features/notificatio
 - `useMarkNotificationReadMutation`
 - `useMarkAllNotificationsReadMutation`
 
-No UI components consume these yet.
+Customer UI: navbar bell + `/account/notifications`. Admin UI: topbar bell + `/admin/notifications`.
+
+## Event hooks
+
+### `ORDER_CREATED`
+
+Hook location: `finalizeCheckoutOrderSideEffects` in `src/server/graphql/modules/checkout/checkout.service.ts`, called after the checkout order transaction succeeds (`createCheckoutOrder` and `completeCheckout`).
+
+Implementation: `src/server/notifications/notify-order-created.ts`
+
+| Audience | When | Type | Notes |
+| --- | --- | --- | --- |
+| `USER` | `order.userId` is set | `ORDER_CREATED` | Skipped for guest checkout (`userId` null) |
+| `ADMIN` | Always | `ADMIN_NEW_ORDER` | Broadcast (`userId: null`) |
+
+Copy:
+
+- User: title `Pedido creado`, message `Recibimos tu pedido {orderNumber}.`, href `/account/orders/{orderNumber}`
+- Admin: title `Nuevo pedido`, message `Pedido {orderNumber} recibido.`, href `/admin/orders/{orderNumber}`
+
+Metadata allowed: `{ orderId, orderNumber }` only.
+
+Dedupe keys (unique `dedupeKey` column):
+
+- User: `order-created:user:{orderId}`
+- Admin: `order-created:admin:{orderId}`
+
+Error handling: `safeNotifyOrderCreated` logs failures and never throws, so checkout/order creation is not blocked.
 
 ## v1 limitations
 
-- No navbar bell or notification drawer UI
-- No order/payment/shipping event integration
-- No WebSockets, SSE, or push notifications (polling/refetch in a later UI phase)
+- No WebSockets, SSE, or push notifications (polling/refetch in UI)
 - Simple `first` pagination only (no cursor/`after`)
 - Metadata is filtered server-side for obvious sensitive keys but is not a full PII scrubber
+- Payment, shipping, and other commerce events are not hooked yet
 
 ## Future phases
 
-1. **Customer UI** — bell icon, list panel, unread badge using existing hooks
-2. **Admin UI** — admin notification center for `ADMIN` audience rows
-3. **Event hooks** — emit notifications from checkout, payments, fulfillment, design saves
-4. **Realtime / push** — optional subscriptions or mobile push after MVP polling proves out
+1. **More event hooks** — payments, fulfillment, design saves
+2. **Realtime / push** — optional subscriptions or mobile push after MVP polling proves out
