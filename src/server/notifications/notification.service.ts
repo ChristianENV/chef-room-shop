@@ -85,7 +85,7 @@ export async function createNotification(
   const data = parseCreateInput(createNotificationInputSchema, input)
 
   if (data.dedupeKey) {
-    const existing = await prisma.notification.findUnique({
+    const existing = await prisma.notification.findFirst({
       where: { dedupeKey: data.dedupeKey },
     })
     if (existing) return existing
@@ -107,7 +107,7 @@ export async function createNotification(
     })
   } catch (error) {
     if (data.dedupeKey && isPrismaUniqueViolation(error)) {
-      const existing = await prisma.notification.findUnique({
+      const existing = await prisma.notification.findFirst({
         where: { dedupeKey: data.dedupeKey },
       })
       if (existing) return existing

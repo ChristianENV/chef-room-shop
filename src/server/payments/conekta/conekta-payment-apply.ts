@@ -14,6 +14,11 @@ import {
 import { buildOrderEmailTrackingLinks } from '@/src/server/email/email.links'
 import { safeSendTransactionalEmailOnce } from '@/src/server/email/email.service'
 import { createOrderClaimToken } from '@/src/server/orders/order-claim-token'
+import {
+  isPaymentConfirmedTransition,
+  safeNotifyPaymentConfirmed,
+} from '@/src/server/notifications/notify-payment-confirmed'
+import { prisma } from '@/src/server/db/prisma'
 
 export type ApplyConektaPaymentStatusParams = {
   payment: Payment & { order: Order }
@@ -213,6 +218,17 @@ export async function sendConektaPaymentStatusEmails(
         orderStatus: 'PAID',
       },
     })
+
+    if (isPaymentConfirmedTransition(paymentStatus, previousPaymentStatus)) {
+      await safeNotifyPaymentConfirmed(prisma, {
+        paymentId: payment.id,
+        order: {
+          id: payment.orderId,
+          orderNumber: order.orderNumber,
+          userId: order.userId,
+        },
+      })
+    }
     return
   }
 
