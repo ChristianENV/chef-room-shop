@@ -29,6 +29,7 @@ export const routes = {
   authSocialComplete: '/auth/social-complete',
   account: '/account',
   accountDesigns: '/account/designs',
+  accountNotifications: '/account/notifications',
   claimOrder: '/claim-order',
   claimOrderAuthorize: '/claim-order/authorize',
   accountOrderDetail: (orderNumber: string) => `/account/orders/${orderNumber}`,
@@ -51,6 +52,7 @@ export const routes = {
   adminShipping: '/admin/shipping',
   adminAnalytics: '/admin/analytics',
   adminSettings: '/admin/settings',
+  adminNotifications: '/admin/notifications',
 } as const
 
 /** Conekta return URL with checkout token. */

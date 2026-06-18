@@ -9,6 +9,7 @@ import type {
   MarkAllNotificationsReadPayload,
   MyNotificationsInput,
   Notification,
+  NotificationAudience,
   NotificationConnection,
 } from '../types'
 
@@ -30,9 +31,15 @@ export async function getMyNotifications(
   return data.myNotifications
 }
 
-export async function getMyUnreadNotificationCount(): Promise<number> {
-  const data = await fetchGraphQL<MyUnreadNotificationCountData>({
+export async function getMyUnreadNotificationCount(
+  audience?: NotificationAudience,
+): Promise<number> {
+  const data = await fetchGraphQL<
+    MyUnreadNotificationCountData,
+    { audience?: NotificationAudience }
+  >({
     query: MY_UNREAD_NOTIFICATION_COUNT_QUERY,
+    variables: { audience },
   })
 
   return data.myUnreadNotificationCount
@@ -47,9 +54,15 @@ export async function markNotificationRead(id: string): Promise<Notification> {
   return data.markNotificationRead
 }
 
-export async function markAllNotificationsRead(): Promise<MarkAllNotificationsReadPayload> {
-  const data = await fetchGraphQL<MarkAllNotificationsReadData>({
+export async function markAllNotificationsRead(
+  audience?: NotificationAudience,
+): Promise<MarkAllNotificationsReadPayload> {
+  const data = await fetchGraphQL<
+    MarkAllNotificationsReadData,
+    { audience?: NotificationAudience }
+  >({
     query: MARK_ALL_NOTIFICATIONS_READ_MUTATION,
+    variables: { audience },
   })
 
   return data.markAllNotificationsRead

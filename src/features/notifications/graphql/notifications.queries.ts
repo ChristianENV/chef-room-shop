@@ -18,7 +18,7 @@ export const MY_NOTIFICATIONS_QUERY = /* GraphQL */ `
 `
 
 export const MY_UNREAD_NOTIFICATION_COUNT_QUERY = /* GraphQL */ `
-  query MyUnreadNotificationCount {
-    myUnreadNotificationCount
+  query MyUnreadNotificationCount($audience: NotificationAudience) {
+    myUnreadNotificationCount(audience: $audience)
   }
 `

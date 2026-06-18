@@ -46,7 +46,6 @@ export function AdminShell({
         <SidebarInset>
           <AdminTopbar
             breadcrumb={pageConfig.breadcrumb}
-            notificationCount={pageConfig.notificationCount}
             adminUser={adminUser}
           />
           <main className="flex-1 p-4 md:p-6">{children}</main>

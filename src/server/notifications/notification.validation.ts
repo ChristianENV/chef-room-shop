@@ -26,6 +26,11 @@ export const createAdminNotificationInputSchema =
 export const myNotificationsInputSchema = z.object({
   first: z.number().int().min(1).max(100).default(20),
   unreadOnly: z.boolean().default(false),
+  audience: z.nativeEnum(NotificationAudience).optional(),
 })
+
+export const notificationAudienceFilterSchema = z
+  .nativeEnum(NotificationAudience)
+  .optional()
 
 export const notificationIdSchema = z.string().uuid()

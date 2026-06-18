@@ -1,3 +1,5 @@
+import type { NotificationAudience } from '@prisma/client'
+
 import type { GraphQLContext } from '@/src/server/graphql/context'
 
 import {
@@ -16,6 +18,14 @@ type MarkNotificationReadArgs = {
   id: string
 }
 
+type MyUnreadCountArgs = {
+  audience?: NotificationAudience | null
+}
+
+type MarkAllNotificationsReadArgs = {
+  audience?: NotificationAudience | null
+}
+
 export const notificationsResolvers = {
   Query: {
     myNotifications: (
@@ -26,9 +36,9 @@ export const notificationsResolvers = {
 
     myUnreadNotificationCount: (
       _parent: unknown,
-      _args: unknown,
+      args: MyUnreadCountArgs,
       context: GraphQLContext,
-    ) => getMyUnreadNotificationCount(context),
+    ) => getMyUnreadNotificationCount(context, args.audience),
   },
 
   Mutation: {
@@ -40,8 +50,8 @@ export const notificationsResolvers = {
 
     markAllNotificationsRead: (
       _parent: unknown,
-      _args: unknown,
+      args: MarkAllNotificationsReadArgs,
       context: GraphQLContext,
-    ) => markAllNotificationsRead(context),
+    ) => markAllNotificationsRead(context, args.audience),
   },
 }
