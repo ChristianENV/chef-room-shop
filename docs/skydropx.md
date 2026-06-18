@@ -15,8 +15,42 @@ Chef Room uses **Skydropx PRO** (`api-pro.skydropx.com`) as the logistics aggreg
 | `SKYDROPX_CLIENT_ID` | OAuth client id |
 | `SKYDROPX_CLIENT_SECRET` | OAuth secret — never expose to the browser |
 | `SKYDROPX_WEBHOOK_SECRET` | Webhook HMAC/Bearer/header (required in production) |
+| `SKYDROPX_MODE` | `live` or `mock` — see [Mock mode](#mock-mode-devtest) below |
 
-Missing credentials **do not** break `npm run build`. Any server call into the Skydropx client throws `SkydropxConfigError` at runtime.
+Missing credentials **do not** break `npm run build`. Live mode throws `SkydropxConfigError` at runtime when credentials are missing.
+
+## Mock mode (dev/test)
+
+Set in `.env.local`:
+
+```env
+SKYDROPX_MODE=mock
+```
+
+| Mode | When | Behavior |
+|------|------|----------|
+| `live` | Explicit, or default when credentials exist | Real Skydropx PRO API (`skydropx.client.ts`) |
+| `mock` | Explicit, or default in non-production when `SKYDROPX_CLIENT_ID` / `SECRET` are missing | Deterministic label data; **no HTTP calls** to Skydropx |
+
+**Production safety:** `NODE_ENV=production` never defaults to mock. Use `SKYDROPX_MODE=mock` in production only if you explicitly intend to (not recommended).
+
+**Provider boundary:** `createShippingProvider()` in `skydropx.provider.ts` selects live vs mock for admin label creation (`createAdminShippingLabel`).
+
+**Example mock data** (order `CR-2026-000099`):
+
+| Field | Value |
+|-------|--------|
+| `providerShipmentId` | `mock-shipment-CR-2026-000099` |
+| `providerLabelId` | `mock-label-CR-2026-000099` |
+| `trackingNumber` | `CRMOCK-CR-2026-000099` |
+| `labelUrl` | `/mock-labels/CR-2026-000099.pdf` |
+| `tracking_url_provider` (in `rawResponseJson` only) | `https://tracking.example.test/CRMOCK-CR-2026-000099` |
+| `carrier` / `service` | `fedex` / `standard` (or checkout rate values) |
+| `status` | `label_generated` |
+
+Mock mode applies to **admin guide generation only** in v1. Checkout quotes, cancel label, refresh tracking, and webhooks still use live Skydropx paths when invoked.
+
+Limitations: mock mode is for local/dev/QA only. It does not simulate webhook tracking updates or carrier delivery events.
 
 ## Authentication
 
@@ -97,6 +131,9 @@ src/server/shipping/
   shipping.package.ts
   skydropx/
     skydropx.config.ts
+    skydropx.mode.ts
+    skydropx.provider.ts
+    skydropx.mock-provider.ts
     skydropx.errors.ts
     skydropx.types.ts
     skydropx.auth.ts
