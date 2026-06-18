@@ -373,6 +373,35 @@ describe('notifications service', { skip: !hasDatabase }, () => {
     )
   })
 
+  it('admin sees targeted admin notifications', async () => {
+    const { prisma } = await loadPrisma()
+    const { createAdminNotification, getMyNotifications } = await loadNotificationModules()
+
+    const admin = await createUniqueTestUser(prisma, 'targeted-admin', cleanup)
+    const targeted = await createAdminNotification(prisma, {
+      userId: admin.id,
+      type: NotificationType.ADMIN_NEW_ORDER,
+      title: 'Pedido asignado',
+      message: 'Revisar este pedido',
+      dedupeKey: `test-targeted:${admin.id}:${Date.now()}`,
+    })
+    cleanup.trackNotification(targeted.id)
+
+    const adminContext = buildNotificationContext(
+      prisma,
+      buildTestUser({ id: admin.id, roles: ['ADMIN'] }),
+    )
+    const result = await getMyNotifications(adminContext, {
+      audience: NotificationAudience.ADMIN,
+    })
+
+    assert.ok(result.nodes.some((row) => row.id === targeted.id))
+    assert.equal(
+      result.nodes.find((row) => row.id === targeted.id)?.audience,
+      NotificationAudience.ADMIN,
+    )
+  })
+
   it('admin sees broadcast admin notifications', async () => {
     const { prisma } = await loadPrisma()
     const { createAdminNotification, getMyNotifications } = await loadNotificationModules()
