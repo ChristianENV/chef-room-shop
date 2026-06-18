@@ -14,6 +14,7 @@ import { useAdminRefreshShipmentTrackingMutation } from '../api/use-admin-refres
 import {
   canCreateShippingLabel,
   getCreateShippingLabelBlockedReason,
+  isMockTrackingNumber,
   mapAdminShipmentToUi,
 } from '../mappers/admin-shipping-ui.mapper'
 import { mapShippingMutationError } from '../lib/shipping-mutation-errors'
@@ -24,6 +25,7 @@ import { AdminShippingLabelPreview } from './admin-shipping-label-preview'
 import { AdminShippingLabelActions } from './admin-shipping-label-actions'
 import { AdminCreateLabelDialog } from './admin-create-label-dialog'
 import { AdminCancelLabelDialog } from './admin-cancel-label-dialog'
+import { AdminMockTrackingSimulation } from './admin-mock-tracking-simulation'
 
 type AdminShipmentCardProps = {
   orderNumber: string
@@ -58,6 +60,7 @@ export function AdminShipmentCard({
   const shipmentUi = shipment ? mapAdminShipmentToUi(shipment) : null
   const canCreate = canCreateShippingLabel(order, shipment)
   const blockedReason = getCreateShippingLabelBlockedReason(order, shipment)
+  const showMockSimulation = isMockTrackingNumber(shipment?.trackingNumber ?? null)
 
   const isMutating =
     createLabel.isPending || cancelLabel.isPending || refreshTracking.isPending
@@ -178,6 +181,13 @@ export function AdminShipmentCard({
                 isRefreshing={refreshTracking.isPending}
                 isCancelling={cancelLabel.isPending}
               />
+              {showMockSimulation ? (
+                <AdminMockTrackingSimulation
+                  orderNumber={orderNumber}
+                  onSuccessMessage={notifySuccess}
+                  onErrorMessage={(msg) => onErrorMessage?.(msg)}
+                />
+              ) : null}
             </>
           ) : (
             <>

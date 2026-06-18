@@ -38,6 +38,16 @@ export type AdminCancelShippingLabelInput = {
   reason?: string | null
 }
 
+export type AdminSimulateMockShipmentTrackingInput = {
+  orderNumber: string
+  trackingStatus:
+    | 'created'
+    | 'label_generated'
+    | 'in_transit'
+    | 'delivered'
+    | 'exception'
+}
+
 export type AdminShipmentListItemGql = {
   id: string
   orderNumber: string

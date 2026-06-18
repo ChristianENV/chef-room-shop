@@ -95,7 +95,17 @@ Cancela en Skydropx (`POST .../cancellations`) si hay `providerShipmentId`. Moti
 
 ### `adminRefreshShipmentTracking`
 
-Consulta `GET /api/v1/shipments/tracking` con `trackingNumber` + `carrier` del `Shipment` guardado.
+Consulta `GET /api/v1/shipments/tracking` con `trackingNumber` + `carrier` del `Shipment` guardado. **Bloqueado en `SKYDROPX_MODE=mock`.**
+
+### `adminSimulateMockShipmentTrackingStatus`
+
+Simula cambios de tracking sin llamar a Skydropx. Solo admin, solo mock mode, solo envíos mock (`CRMOCK-*`).
+
+Input: `{ orderNumber, trackingStatus }` donde `trackingStatus` ∈ `created | label_generated | in_transit | delivered | exception`.
+
+Persiste `Shipment.status`, `shippedAt`/`deliveredAt` cuando aplica, y actualiza `Order.status` / `fulfillmentStatus` igual que el webhook mapper (p. ej. `in_transit` → `SHIPPED`, `delivered` → `DELIVERED`).
+
+No crea notificaciones in-app en esta fase.
 
 ## Validaciones de error
 
