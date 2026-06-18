@@ -2,6 +2,7 @@ import type { GraphQLContext } from '../context'
 import {
   cancelAdminShippingLabel,
   createAdminShippingLabel,
+  adminSimulateMockShipmentTrackingStatus,
   getAdminShipmentByOrderNumber,
   getAdminShipments,
   refreshAdminShipmentTracking,
@@ -10,6 +11,7 @@ import type {
   AdminCancelShippingLabelInput,
   AdminCreateShippingLabelInput,
   AdminShipmentsListInput,
+  AdminSimulateMockShipmentTrackingInput,
 } from '../modules/admin-shipping/admin-shipping.types'
 
 type OrderNumberArgs = {
@@ -64,5 +66,11 @@ export const adminShippingResolvers = {
       args: OrderNumberArgs,
       context: GraphQLContext,
     ) => refreshAdminShipmentTracking(context, args.orderNumber),
+
+    adminSimulateMockShipmentTrackingStatus: (
+      _parent: unknown,
+      args: MutationInputArgs<AdminSimulateMockShipmentTrackingInput>,
+      context: GraphQLContext,
+    ) => adminSimulateMockShipmentTrackingStatus(context, args.input),
   },
 }

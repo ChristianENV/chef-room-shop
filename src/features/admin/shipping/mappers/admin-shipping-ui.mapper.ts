@@ -213,3 +213,10 @@ export function canRefreshShipment(shipment: AdminShipment | null | undefined): 
     shipment.trackingNumber?.trim() && shipment.carrier?.trim(),
   )
 }
+
+export function isMockTrackingNumber(
+  trackingNumber: string | null | undefined,
+): boolean {
+  const value = trackingNumber?.trim() ?? ''
+  return value.startsWith('CRMOCK-')
+}

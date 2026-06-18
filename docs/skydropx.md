@@ -48,9 +48,48 @@ SKYDROPX_MODE=mock
 | `carrier` / `service` | `fedex` / `standard` (or checkout rate values) |
 | `status` | `label_generated` |
 
-Mock mode applies to **admin guide generation only** in v1. Checkout quotes, cancel label, refresh tracking, and webhooks still use live Skydropx paths when invoked.
+Mock mode applies to **admin guide generation** and **mock tracking simulation**. Checkout quotes still call live Skydropx unless you add separate mock support later. Cancel label, refresh tracking (live API), and webhooks are unchanged.
 
-Limitations: mock mode is for local/dev/QA only. It does not simulate webhook tracking updates or carrier delivery events.
+### Mock tracking simulation
+
+Requires `SKYDROPX_MODE=mock` and a shipment with mock tracking (`CRMOCK-*` or `mock-shipment-*` provider id).
+
+GraphQL mutation (admin only):
+
+```graphql
+mutation SimulateMockTracking {
+  adminSimulateMockShipmentTrackingStatus(
+    input: { orderNumber: "CR-2026-000099", trackingStatus: in_transit }
+  ) {
+    status
+    trackingNumber
+    shippedAt
+    deliveredAt
+  }
+}
+```
+
+Supported `MockTrackingStatus` values:
+
+| Mock status | ShipmentStatus | OrderStatus (when updated) |
+|-------------|----------------|----------------------------|
+| `created` | `PENDING` | unchanged |
+| `label_generated` | `LABEL_CREATED` | unchanged |
+| `in_transit` | `IN_TRANSIT` | `SHIPPED` |
+| `delivered` | `DELIVERED` | `DELIVERED` |
+| `exception` | `FAILED` | unchanged |
+
+Implementation: `src/server/shipping/skydropx/skydropx.mock-tracking.ts` → `simulateMockShipmentTrackingStatus`.
+
+Admin order detail shows a **Simulación mock** panel when the tracking number starts with `CRMOCK-`.
+
+`adminRefreshShipmentTracking` is blocked in mock mode — use the simulation mutation instead.
+
+Safe `ShipmentEvent.metadataJson` fields only: `orderId`, `orderNumber`, `trackingNumber`, `carrierName`, `trackingStatus`, `occurredAt`.
+
+**Notification hooks are not wired in this phase** — shipped/delivered in-app notifications will be added in a later branch.
+
+Limitations: mock mode is for local/dev/QA only. No webhook replay, no carrier API calls, no realtime push.
 
 ## Authentication
 
@@ -134,6 +173,7 @@ src/server/shipping/
     skydropx.mode.ts
     skydropx.provider.ts
     skydropx.mock-provider.ts
+    skydropx.mock-tracking.ts
     skydropx.errors.ts
     skydropx.types.ts
     skydropx.auth.ts

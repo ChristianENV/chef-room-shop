@@ -34,6 +34,17 @@ export const adminCancelShippingLabelInputSchema = z.object({
     .nullable(),
 })
 
+export const adminSimulateMockShipmentTrackingInputSchema = z.object({
+  orderNumber: orderNumberSchema,
+  trackingStatus: z.enum([
+    'created',
+    'label_generated',
+    'in_transit',
+    'delivered',
+    'exception',
+  ]),
+})
+
 export type ParsedAdminCreateShippingLabelInput = z.infer<
   typeof adminCreateShippingLabelInputSchema
 >
