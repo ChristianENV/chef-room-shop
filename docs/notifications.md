@@ -145,14 +145,44 @@ Dedupe keys (unique `dedupeKey` column):
 
 Error handling: `safeNotifyOrderCreated` logs failures and never throws, so checkout/order creation is not blocked.
 
+### `PAYMENT_CONFIRMED`
+
+Hook location: `sendConektaPaymentStatusEmails` in `src/server/payments/conekta/conekta-payment-apply.ts`, called after `applyConektaPaymentStatusUpdate` from:
+
+- Conekta webhook processor (`conekta.webhook-processor.ts`)
+- Manual payment verification (`syncOrderPaymentWithConekta` in `verify-order-payment.service.ts`)
+
+Implementation: `src/server/notifications/notify-payment-confirmed.ts`
+
+Notifications are created **only on transition** into `PaymentStatus.PAID` (`previousPaymentStatus !== PAID`). Repeated webhooks, manual verify clicks, or already-paid orders do not create new rows.
+
+| Audience | When | Type | Notes |
+| --- | --- | --- | --- |
+| `USER` | Transition to PAID and `order.userId` is set | `PAYMENT_CONFIRMED` | Skipped for guest orders |
+| `ADMIN` | Transition to PAID | `ADMIN_PAYMENT_RECEIVED` | Broadcast (`userId: null`) |
+
+Copy:
+
+- User: title `Pago confirmado`, message `Tu pago del pedido {orderNumber} fue confirmado.`, href `/account/orders/{orderNumber}`
+- Admin: title `Pago recibido`, message `Pago confirmado para el pedido {orderNumber}.`, href `/admin/orders/{orderNumber}`
+
+Metadata allowed: `{ orderId, orderNumber, paymentId }` only. Raw Conekta payloads, card data, tokens, and webhook bodies are never stored.
+
+Dedupe keys:
+
+- User: `payment-confirmed:user:{orderId}`
+- Admin: `payment-confirmed:admin:{orderId}`
+
+Error handling: `safeNotifyPaymentConfirmed` logs failures and never throws, so webhooks and payment verification are not blocked.
+
 ## v1 limitations
 
 - No WebSockets, SSE, or push notifications (polling/refetch in UI)
 - Simple `first` pagination only (no cursor/`after`)
 - Metadata is filtered server-side for obvious sensitive keys but is not a full PII scrubber
-- Payment, shipping, and other commerce events are not hooked yet
+- Payment pending/failed, shipping, and other commerce events are not hooked yet
 
 ## Future phases
 
-1. **More event hooks** — payments, fulfillment, design saves
+1. **More event hooks** — payment pending/failed, fulfillment, design saves
 2. **Realtime / push** — optional subscriptions or mobile push after MVP polling proves out
