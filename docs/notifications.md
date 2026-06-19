@@ -225,6 +225,37 @@ Dedupe key: `order-status:ready-to-ship:{orderId}`
 
 Error handling: `safeNotifyOrderStatusChanged` logs failures and never throws, so admin status updates are not blocked.
 
+### `ORDER_SHIPPED`
+
+Hook locations, called after successful shipment/order status persistence:
+
+- `skydropx.mock-tracking.ts` → `simulateMockShipmentTrackingStatus` (mock `in_transit`)
+- `skydropx.webhook-processor.ts` → `processSkydropxWebhook` (Skydropx `in_transit` / shipped events)
+- `admin-shipping.service.ts` → `refreshAdminShipmentTracking` (shipment `LABEL_CREATED` → `IN_TRANSIT`)
+
+Implementation: `src/server/notifications/notify-order-shipped.ts`
+
+Notifications are created **only on transition** into shipped/in transit:
+
+- `Order.status` becomes `SHIPPED` (from a non-shipped state), or
+- `Shipment.status` advances from `PENDING` / `LABEL_CREATED` to `IN_TRANSIT` / `OUT_FOR_DELIVERY`
+
+Does **not** fire on mock/live label generation alone, tracking-number assignment only, or repeated same-status updates.
+
+| Audience | When | Type | Notes |
+| --- | --- | --- | --- |
+| `USER` | Shipped/in-transit transition and `order.userId` is set | `ORDER_SHIPPED` | Skipped for guest orders |
+
+Copy:
+
+- User: title `Tu pedido fue enviado`, message `Tu pedido {orderNumber} ya fue enviado.`, href `/account/orders/{orderNumber}`
+
+Metadata allowed: `{ orderId, orderNumber, trackingNumber, carrier, status }` only.
+
+Dedupe key: `order-shipped:{orderId}`
+
+Error handling: `safeNotifyOrderShipped` logs failures and never throws, so tracking/status updates are not blocked.
+
 No admin notifications, emails, or realtime delivery are part of this phase.
 
 ## v1 limitations
@@ -232,7 +263,7 @@ No admin notifications, emails, or realtime delivery are part of this phase.
 - No WebSockets, SSE, or push notifications (polling/refetch in UI)
 - Simple `first` pagination only (no cursor/`after`)
 - Metadata is filtered server-side for obvious sensitive keys but is not a full PII scrubber
-- Payment pending/failed, shipping carrier events, delivered, and other commerce events are not hooked yet
+- Payment pending/failed, delivered, and other commerce events are not hooked yet
 
 ## Future phases
 

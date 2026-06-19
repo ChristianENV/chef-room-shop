@@ -8,6 +8,8 @@ import {
   ShipmentStatus,
 } from '@prisma/client'
 
+import { safeNotifyOrderShipped } from '@/src/server/notifications/notify-order-shipped'
+
 import { buildMockTrackingNumber } from './skydropx.mock-provider'
 import { isSkydropxMockMode } from './skydropx.mode'
 
@@ -53,7 +55,7 @@ export class MockTrackingSimulationError extends Error {
 }
 
 const shipmentWithOrderInclude = {
-  order: { select: { id: true, orderNumber: true, status: true } },
+  order: { select: { id: true, orderNumber: true, status: true, userId: true } },
 } satisfies Prisma.ShipmentInclude
 
 type ShipmentWithOrder = Prisma.ShipmentGetPayload<{
@@ -201,6 +203,8 @@ export async function simulateMockShipmentTrackingStatus(
   const transition = mapMockTrackingStatusToTransition(status)
   const occurredAt = input.occurredAt ?? new Date()
   const shipment = await loadShipmentForSimulation(prisma, input)
+  const previousOrderStatus = shipment.order.status
+  const previousShipmentStatus = shipment.status
   const metadata = buildMockTrackingEventMetadata({
     order: shipment.order,
     shipment,
@@ -208,7 +212,7 @@ export async function simulateMockShipmentTrackingStatus(
     occurredAt,
   })
 
-  return prisma.$transaction(async (tx) => {
+  const updatedShipment = await prisma.$transaction(async (tx) => {
     const shipmentUpdate: Prisma.ShipmentUpdateInput = {
       status: transition.nextStatus,
       trackingNumber: metadata.trackingNumber,
@@ -220,7 +224,7 @@ export async function simulateMockShipmentTrackingStatus(
         : shipment.deliveredAt,
     }
 
-    const updatedShipment = await tx.shipment.update({
+    const nextShipment = await tx.shipment.update({
       where: { id: shipment.id },
       data: shipmentUpdate,
       include: shipmentWithOrderInclude,
@@ -247,6 +251,22 @@ export async function simulateMockShipmentTrackingStatus(
       })
     }
 
-    return updatedShipment
+    return nextShipment
   })
+
+  void safeNotifyOrderShipped(prisma, {
+    order: {
+      id: shipment.order.id,
+      orderNumber: shipment.order.orderNumber,
+      userId: shipment.order.userId,
+    },
+    previousOrderStatus,
+    newOrderStatus: transition.orderStatus ?? previousOrderStatus,
+    previousShipmentStatus,
+    newShipmentStatus: transition.nextStatus,
+    trackingNumber: metadata.trackingNumber,
+    carrier: metadata.carrierName,
+  })
+
+  return updatedShipment
 }

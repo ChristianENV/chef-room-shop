@@ -48,7 +48,15 @@ SKYDROPX_MODE=mock
 | `carrier` / `service` | `fedex` / `standard` (or checkout rate values) |
 | `status` | `label_generated` |
 
-Mock mode applies to **admin guide generation** and **mock tracking simulation**. Checkout quotes still call live Skydropx unless you add separate mock support later. Cancel label, refresh tracking (live API), and webhooks are unchanged.
+**Mock lifecycle (admin label + tracking simulation):**
+
+```txt
+Generate mock label → READY_TO_SHIP / LABEL_CREATED (tracking number present, not shipped yet)
+Simulate in_transit   → SHIPPED / IN_TRANSIT
+Simulate delivered    → DELIVERED
+```
+
+Mock labels include a tracking number for printing and QA, but admin label creation does **not** mark the order as shipped. Use `adminSimulateMockShipmentTrackingStatus` to advance the lifecycle. Checkout quotes still call live Skydropx unless you add separate mock support later. Cancel label, refresh tracking (live API), and webhooks are unchanged.
 
 ### Mock tracking simulation
 
@@ -75,8 +83,8 @@ Supported `MockTrackingStatus` values:
 |-------------|----------------|----------------------------|
 | `created` | `PENDING` | unchanged |
 | `label_generated` | `LABEL_CREATED` | unchanged |
-| `in_transit` | `IN_TRANSIT` | `SHIPPED` |
-| `delivered` | `DELIVERED` | `DELIVERED` |
+| `in_transit` | `IN_TRANSIT` | `SHIPPED` | Creates `ORDER_SHIPPED` USER notification (authenticated orders only) |
+| `delivered` | `DELIVERED` | `DELIVERED` | No in-app notification yet |
 | `exception` | `FAILED` | unchanged |
 
 Implementation: `src/server/shipping/skydropx/skydropx.mock-tracking.ts` → `simulateMockShipmentTrackingStatus`.
@@ -87,7 +95,7 @@ Admin order detail shows a **Simulación mock** panel when the tracking number s
 
 Safe `ShipmentEvent.metadataJson` fields only: `orderId`, `orderNumber`, `trackingNumber`, `carrierName`, `trackingStatus`, `occurredAt`.
 
-**Notification hooks are not wired in this phase** — shipped/delivered in-app notifications will be added in a later branch.
+**Notification hooks are not wired in this phase** — `ORDER_SHIPPED` is created on shipped/in-transit transitions (mock `in_transit`, webhook, refresh tracking). `ORDER_DELIVERED` will be added in a later branch.
 
 Limitations: mock mode is for local/dev/QA only. No webhook replay, no carrier API calls, no realtime push.
 
