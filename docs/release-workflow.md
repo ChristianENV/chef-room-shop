@@ -2,7 +2,7 @@
 
 Design document for Chef Room’s GitHub branch, CI, and release process.
 
-**Status:** design only — no GitHub Actions, branch protection, or package scripts are implemented yet.
+**Status:** PR quality CI is implemented (`.github/workflows/ci-pr.yml`). Branch protection, release PR automation, and deploy workflows are still manual / not in repo.
 
 ---
 
@@ -82,19 +82,23 @@ Document hotfix policy before enabling; not part of the default flow.
 
 ---
 
-## Required checks (target state)
+## Required checks
 
-These are the checks CI **should** enforce once GitHub Actions exist. Scripts marked ⚠️ do not exist yet.
+GitHub Actions workflow **PR Quality Checks** (`.github/workflows/ci-pr.yml`) runs on pull requests targeting `dev` and `main`.
+
+Configure branch protection manually in GitHub to require these status checks:
+
+| Job name    | Command                | Script                  | Notes                                |
+| ----------- | ---------------------- | ----------------------- | ------------------------------------ |
+| `format`    | `pnpm format:check`    | ✅ `format:check`       | Prettier baseline applied            |
+| `lint`      | `pnpm run lint`        | ✅ `lint`               | ESLint via `scripts/run-eslint.mjs`  |
+| `typecheck` | `pnpm run typecheck`   | ✅ `typecheck`          | Preceded by `pnpm db:generate` in CI |
+| `test`      | `pnpm test`            | ✅ `test` → `test:unit` | Does **not** include Playwright      |
+| `build`     | `pnpm exec next build` | —                       | Preceded by `pnpm db:generate` in CI |
+
+Playwright E2E (`pnpm run test:e2e:smoke`) is intentionally **not** required yet.
 
 ### PRs to `dev`
-
-| Check           | Command (target)       | Current script          | Notes                                                                                    |
-| --------------- | ---------------------- | ----------------------- | ---------------------------------------------------------------------------------------- |
-| Prettier format | `pnpm format:check`    | ✅ `format:check`       | Baseline formatting pass pending — see [Local quality commands](#local-quality-commands) |
-| Lint            | `pnpm run lint`        | ✅ `lint`               | ESLint via `scripts/run-eslint.mjs`                                                      |
-| Typecheck       | `pnpm run typecheck`   | ✅ `typecheck`          | Run `pnpm db:generate` first in CI                                                       |
-| Unit tests      | `pnpm test`            | ✅ `test` → `test:unit` | Does **not** include Playwright                                                          |
-| Build           | `pnpm exec next build` | ✅ `build`              | Includes `prisma generate` + `next build`                                                |
 
 ### PRs to `main` (release PR)
 
@@ -114,38 +118,28 @@ Same quality checks as `dev`, plus:
 
 ---
 
-## CI job design (future — not implemented)
+## CI workflow (implemented)
 
-When adding `.github/workflows/`:
+**Workflow file:** `.github/workflows/ci-pr.yml`  
+**Workflow name:** PR Quality Checks
 
-```yaml
-# Pseudocode — do not copy as-is until scripts exist
-on:
-  pull_request:
-    branches: [dev, main]
-  push:
-    branches: [dev, main]
+**Triggers:** `pull_request` → branches `dev`, `main`
 
-jobs:
-  quality:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm db:generate
-      - run: pnpm format:check # after Prettier added
-      - run: pnpm run lint
-      - run: pnpm run typecheck
-      - run: pnpm test:unit
-        env:
-          DATABASE_URL: ${{ secrets.CI_DATABASE_URL }} # optional; tests skip without DB
-      - run: pnpm run build
-```
+**Permissions:** `contents: read` only
+
+**Setup:** `actions/checkout`, `actions/setup-node` (Node **22** — no `.nvmrc` / `engines` yet; pin in a follow-up after confirming hosting runtime), `corepack enable`, `pnpm install --frozen-lockfile` (pnpm version from `packageManager` in `package.json`).
+
+**Jobs** (separate so branch protection can require each individually):
+
+| Job         | Steps after install                         |
+| ----------- | ------------------------------------------- |
+| `format`    | `pnpm format:check`                         |
+| `lint`      | `pnpm run lint`                             |
+| `typecheck` | `pnpm db:generate` → `pnpm run typecheck`   |
+| `test`      | `pnpm db:generate` → `pnpm test`            |
+| `build`     | `pnpm db:generate` → `pnpm exec next build` |
+
+CI does **not** run migrations, Playwright, or release PR validation. No production secrets are hardcoded; DB-backed tests skip when `DATABASE_URL` is unset.
 
 Separate workflows (later):
 
@@ -157,7 +151,7 @@ Separate workflows (later):
 
 ## Branch protection (configure manually in GitHub)
 
-Until automation exists, configure in **Settings → Branches → Branch protection rules**.
+Configure in **Settings → Branches → Branch protection rules**. Require the **PR Quality Checks** jobs: `format`, `lint`, `typecheck`, `test`, `build`.
 
 ### `main`
 
@@ -222,7 +216,7 @@ pnpm exec next build
 Notes:
 
 - `pnpm test` is an alias for `pnpm test:unit` only — it does **not** run Playwright (`pnpm run test:e2e:smoke` is separate and optional).
-- `pnpm format:check` may fail until a one-time formatting baseline is applied repo-wide; do not mass-format without an explicit baseline task.
+- Prettier formatting baseline is applied; `pnpm format:check` is a required CI gate.
 - `pnpm run build` already runs Prisma generate; `db:generate` is listed for parity with CI steps that typecheck before build.
 
 ### Node.js version
@@ -235,9 +229,9 @@ The repo does not pin Node via `.nvmrc`, `.node-version`, or `package.json` `eng
 
 | Area                      | State                                                  |
 | ------------------------- | ------------------------------------------------------ |
-| `.github/workflows/`      | **Missing** — no GitHub Actions                        |
-| `format` / `format:check` | **Added** — Prettier 3.x; baseline format pass pending |
-| `test`                    | **Added** — alias to `test:unit` (no Playwright)       |
+| `.github/workflows/`      | **Added** — `ci-pr.yml` (PR Quality Checks)            |
+| `format` / `format:check` | **Added** — Prettier 3.x; baseline applied             |
+| `test`                    | **Added** — alias to `test:unit` (no Playwright in CI) |
 | Release PR automation     | **Not implemented**                                    |
 | Deploy workflows          | **Not in repo** (likely Vercel/Railway dashboard)      |
 | Release / branch docs     | **This document**                                      |
@@ -246,12 +240,12 @@ The repo does not pin Node via `.nvmrc`, `.node-version`, or `package.json` `eng
 
 ## Future improvements
 
-- [ ] GitHub Actions quality workflow on PRs to `dev` and `main`
+- [x] GitHub Actions quality workflow on PRs to `dev` and `main` (`ci-pr.yml`)
 - [ ] Auto-create/update release PR (`dev` → `main`) on push to `dev`
 - [ ] Automatic changelog (release-please, semantic-release, or custom Action)
 - [ ] Semantic version labels on PRs (`major` / `minor` / `patch`)
 - [ ] Require Playwright smoke once login E2E has stable CI auth (see `docs/qa-e2e.md`)
-- [ ] One-time Prettier baseline (`pnpm format`) before gating PRs on `format:check`
+- [x] One-time Prettier baseline (`pnpm format`) before gating PRs on `format:check`
 - [ ] Pin Node version (`.nvmrc` / `engines`) after confirming hosting runtime
 - [ ] Hotfix back-merge policy and automation
 
