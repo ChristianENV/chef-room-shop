@@ -189,7 +189,7 @@ async function loadShipmentForSimulation(
 
   if (!isMockShipmentRecord(shipment)) {
     throw new MockTrackingSimulationError(
-      'Este envío no es mock. Genera una guía con SKYDROPX_MODE=mock primero.',
+      'Este envío no es mock. Genera una guía en un entorno local/np primero.',
     )
   }
 
@@ -206,7 +206,7 @@ export async function simulateMockShipmentTrackingStatus(
 ): Promise<ShipmentWithOrder> {
   if (!isSkydropxMockMode()) {
     throw new MockTrackingSimulationError(
-      'La simulación de tracking solo está disponible con SKYDROPX_MODE=mock.',
+      'La simulación de tracking solo está disponible en entornos local/np (modo mock).',
     )
   }
 

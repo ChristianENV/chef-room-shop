@@ -87,10 +87,10 @@ describe('isOrderShippedTransition', () => {
 describe('notifyOrderShipped', { skip: !hasDatabase }, () => {
   const cleanup = new NotificationTestCleanup()
   const orderIds: string[] = []
-  const ORIGINAL_SKYDROPX_MODE = process.env.SKYDROPX_MODE
+  const ORIGINAL_APP_ENV = process.env.APP_ENV
 
   after(async () => {
-    process.env.SKYDROPX_MODE = ORIGINAL_SKYDROPX_MODE
+    process.env.APP_ENV = ORIGINAL_APP_ENV
     const { prisma } = await loadPrisma()
 
     if (orderIds.length > 0) {
@@ -157,7 +157,7 @@ describe('notifyOrderShipped', { skip: !hasDatabase }, () => {
   }
 
   it('creates ORDER_SHIPPED on mock in_transit simulation', async () => {
-    process.env.SKYDROPX_MODE = 'mock'
+    process.env.APP_ENV = 'local'
     const { prisma } = await loadPrisma()
     const user = await createUniqueTestUser(prisma, 'shipped-notify', cleanup)
     const orderNumber = `CR-MOCK-SHIPPED-${Date.now()}`
@@ -194,7 +194,7 @@ describe('notifyOrderShipped', { skip: !hasDatabase }, () => {
   })
 
   it('skips USER notification for guest orders', async () => {
-    process.env.SKYDROPX_MODE = 'mock'
+    process.env.APP_ENV = 'local'
     const { prisma } = await loadPrisma()
     const orderNumber = `CR-MOCK-GUEST-SHIPPED-${Date.now()}`
     const order = await createReadyToShipMockOrder({ orderNumber, userId: null })
@@ -219,7 +219,7 @@ describe('notifyOrderShipped', { skip: !hasDatabase }, () => {
   })
 
   it('does not create ORDER_SHIPPED on label_generated simulation', async () => {
-    process.env.SKYDROPX_MODE = 'mock'
+    process.env.APP_ENV = 'local'
     const { prisma } = await loadPrisma()
     const user = await createUniqueTestUser(prisma, 'label-generated-notify', cleanup)
     const orderNumber = `CR-MOCK-LABEL-GEN-${Date.now()}`
@@ -295,7 +295,7 @@ describe('notifyOrderShipped', { skip: !hasDatabase }, () => {
   })
 
   it('does not create ORDER_SHIPPED on delivered simulation', async () => {
-    process.env.SKYDROPX_MODE = 'mock'
+    process.env.APP_ENV = 'local'
     const { prisma } = await loadPrisma()
     const user = await createUniqueTestUser(prisma, 'delivered-not-shipped', cleanup)
     const orderNumber = `CR-MOCK-DELIVERED-${Date.now()}`

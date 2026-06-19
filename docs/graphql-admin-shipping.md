@@ -31,23 +31,26 @@ Tras migración `skydropx_shipments`, cada guía guarda:
 ```graphql
 query AdminShipment($orderNumber: String!) {
   adminShipmentByOrderNumber(orderNumber: $orderNumber) {
-    id
-    orderNumber
-    carrier
-    trackingNumber
-    labelUrl
-    status
-    costCents
-    events {
+    isSkydropxMockMode
+    shipment {
+      id
+      orderNumber
+      carrier
+      trackingNumber
+      labelUrl
       status
-      message
-      createdAt
+      costCents
+      events {
+        status
+        message
+        createdAt
+      }
     }
   }
 }
 ```
 
-Retorna `null` si no hay envío.
+`shipment` is `null` if no envío exists. `isSkydropxMockMode` is `true` in local/np (mock Skydropx).
 
 ## Mutations
 
@@ -77,7 +80,7 @@ mutation CreateLabel {
 5. Tarifa: `rateId` del input (debe pertenecer a la quote) o tarifa con `selectedAt` en checkout.
 6. Tarifa no expirada (`expiresAt`).
 7. Validación de origen (`SHIPPING_ORIGIN_*`), dirección (colonia en `Address.label`, número en `line2`) y `providerQuoteId`.
-8. `createShippingProvider().createShipment()` → live Skydropx or mock provider (`SKYDROPX_MODE`)
+8. `createShippingProvider().createShipment()` → live Skydropx or mock provider (from `APP_ENV`: local/np → mock, prod → live)
 9. Transacción Prisma: `Shipment`, `ShipmentEvent`, `OrderEvent`, actualización de orden.
 
 **Estado de orden tras crear guía:**
@@ -106,7 +109,7 @@ Cancela en Skydropx (`POST .../cancellations`) si hay `providerShipmentId`. Moti
 
 ### `adminRefreshShipmentTracking`
 
-Consulta `GET /api/v1/shipments/tracking` con `trackingNumber` + `carrier` del `Shipment` guardado. **Bloqueado en `SKYDROPX_MODE=mock`.**
+Consulta `GET /api/v1/shipments/tracking` con `trackingNumber` + `carrier` del `Shipment` guardado. **Bloqueado en modo mock (local/np).**
 
 ### `adminSimulateMockShipmentTrackingStatus`
 

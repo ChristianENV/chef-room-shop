@@ -869,6 +869,11 @@ export const adminShippingTypeDefs = /* GraphQL */ `
     events: [AdminShipmentEvent!]!
   }
 
+  type AdminShipmentByOrderNumberPayload {
+    shipment: AdminShipment
+    isSkydropxMockMode: Boolean!
+  }
+
   input AdminCreateShippingLabelInput {
     orderNumber: String!
     rateId: ID
@@ -1671,7 +1676,7 @@ export const typeDefs = /* GraphQL */ `
     ): AdminDesignsPayload!
     adminDesignById(id: ID!): AdminDesignDetail
     adminSettingsOverview: AdminSettingsOverview!
-    adminShipmentByOrderNumber(orderNumber: String!): AdminShipment
+    adminShipmentByOrderNumber(orderNumber: String!): AdminShipmentByOrderNumberPayload!
     adminShipments(
       filter: AdminShipmentsFilterInput
       limit: Int

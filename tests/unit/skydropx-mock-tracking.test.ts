@@ -21,18 +21,18 @@ function canRunDbIntegrationTests(): boolean {
 
 const hasDatabase = canRunDbIntegrationTests()
 
-const ORIGINAL_SKYDROPX_MODE = process.env.SKYDROPX_MODE
+const ORIGINAL_APP_ENV = process.env.APP_ENV
 
-function setSkydropxMode(mode: 'live' | 'mock' | undefined): void {
-  if (mode === undefined) {
-    delete process.env.SKYDROPX_MODE
+function setAppEnv(appEnv: 'local' | 'np' | 'prod' | undefined): void {
+  if (appEnv === undefined) {
+    delete process.env.APP_ENV
   } else {
-    process.env.SKYDROPX_MODE = mode
+    process.env.APP_ENV = appEnv
   }
 }
 
 after(() => {
-  setSkydropxMode(ORIGINAL_SKYDROPX_MODE as 'live' | 'mock' | undefined)
+  setAppEnv(ORIGINAL_APP_ENV as 'local' | 'np' | 'prod' | undefined)
 })
 
 async function loadMockTrackingModules() {
@@ -105,7 +105,7 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   }
 
   after(async () => {
-    setSkydropxMode(ORIGINAL_SKYDROPX_MODE as 'live' | 'mock' | undefined)
+    setAppEnv(ORIGINAL_APP_ENV as 'local' | 'np' | 'prod' | undefined)
     const { prisma } = await loadPrisma()
 
     if (cleanup.orderIds.length > 0) {
@@ -174,7 +174,7 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   }
 
   it('updates shipment and order on delivered in mock mode', async () => {
-    setSkydropxMode('mock')
+    setAppEnv('local')
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus } = await loadMockTrackingModules()
     const orderNumber = `CR-MOCK-TRACK-DEL-${Date.now()}`
@@ -197,7 +197,7 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   })
 
   it('updates shipment and order on in_transit in mock mode', async () => {
-    setSkydropxMode('mock')
+    setAppEnv('local')
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus } = await loadMockTrackingModules()
     const orderNumber = `CR-MOCK-TRACK-TRANSIT-${Date.now()}`
@@ -251,7 +251,7 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   })
 
   it('blocks simulation in live mode', async () => {
-    setSkydropxMode('live')
+    setAppEnv('prod')
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus, MockTrackingSimulationError } =
       await loadMockTrackingModules()
@@ -269,7 +269,7 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   })
 
   it('fails when shipment is not mock', async () => {
-    setSkydropxMode('mock')
+    setAppEnv('local')
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus, MockTrackingSimulationError } =
       await loadMockTrackingModules()
@@ -313,7 +313,7 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   })
 
   it('does not create USER notifications for guest delivered simulation', async () => {
-    setSkydropxMode('mock')
+    setAppEnv('local')
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus } = await loadMockTrackingModules()
     const orderNumber = `CR-MOCK-TRACK-NOTIF-${Date.now()}`

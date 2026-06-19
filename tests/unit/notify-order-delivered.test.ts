@@ -116,7 +116,7 @@ describe('notifyOrderDelivered', { skip: !hasDatabase }, () => {
   }
 
   it('creates ORDER_DELIVERED on mock delivered simulation', async () => {
-    process.env.SKYDROPX_MODE = 'mock'
+    process.env.APP_ENV = 'local'
     const { prisma } = await loadPrisma()
     const user = await createUniqueTestUser(prisma, 'delivered-notify', cleanup)
     const orderNumber = `CR-MOCK-DELIVERED-${Date.now()}`
@@ -151,7 +151,7 @@ describe('notifyOrderDelivered', { skip: !hasDatabase }, () => {
   })
 
   it('skips USER notification for guest orders', async () => {
-    process.env.SKYDROPX_MODE = 'mock'
+    process.env.APP_ENV = 'local'
     const { prisma } = await loadPrisma()
     const orderNumber = `CR-MOCK-GUEST-DEL-${Date.now()}`
     const order = await createShippedMockOrder({ orderNumber, userId: null })
@@ -175,7 +175,7 @@ describe('notifyOrderDelivered', { skip: !hasDatabase }, () => {
   })
 
   it('does not create ORDER_DELIVERED on in_transit simulation', async () => {
-    process.env.SKYDROPX_MODE = 'mock'
+    process.env.APP_ENV = 'local'
     const { prisma } = await loadPrisma()
     const user = await createUniqueTestUser(prisma, 'in-transit-not-delivered', cleanup)
     const orderNumber = `CR-MOCK-INTRANSIT-${Date.now()}`
