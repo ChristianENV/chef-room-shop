@@ -1,3 +1,8 @@
+export type AdminShipmentByOrderNumberPayload = {
+  shipment: AdminShipment | null
+  isSkydropxMockMode: boolean
+}
+
 export type AdminShipmentEvent = {
   id: string
   status: string

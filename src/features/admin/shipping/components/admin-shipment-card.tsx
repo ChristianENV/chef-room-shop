@@ -26,6 +26,7 @@ import { AdminShippingLabelActions } from './admin-shipping-label-actions'
 import { AdminCreateLabelDialog } from './admin-create-label-dialog'
 import { AdminCancelLabelDialog } from './admin-cancel-label-dialog'
 import { AdminMockTrackingSimulation } from './admin-mock-tracking-simulation'
+import { AdminSkydropxMockModeNotice } from './admin-skydropx-mock-mode-notice'
 
 type AdminShipmentCardProps = {
   orderNumber: string
@@ -56,7 +57,9 @@ export function AdminShipmentCard({
   const cancelLabel = useAdminCancelShippingLabelMutation()
   const refreshTracking = useAdminRefreshShipmentTrackingMutation()
 
-  const shipment = shipmentQuery.data ?? null
+  const shipmentPayload = shipmentQuery.data ?? null
+  const shipment = shipmentPayload?.shipment ?? null
+  const isSkydropxMockMode = shipmentPayload?.isSkydropxMockMode ?? false
   const shipmentUi = shipment ? mapAdminShipmentToUi(shipment) : null
   const canCreate = canCreateShippingLabel(order, shipment)
   const blockedReason = getCreateShippingLabelBlockedReason(order, shipment)
@@ -167,6 +170,7 @@ export function AdminShipmentCard({
               : 'space-y-4 rounded-lg border border-border p-4'
           }
         >
+          <AdminSkydropxMockModeNotice visible={isSkydropxMockMode} />
           {shipmentUi?.hasActiveLabel ? (
             <>
               <AdminShippingLabelPreview shipment={shipmentUi} />

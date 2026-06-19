@@ -1,3 +1,8 @@
+export type AdminShipmentByOrderNumberPayloadGql = {
+  shipment: AdminShipmentGql | null
+  isSkydropxMockMode: boolean
+}
+
 export type AdminShipmentEventGql = {
   id: string
   status: string

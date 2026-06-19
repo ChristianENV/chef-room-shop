@@ -18,50 +18,53 @@ async function loadSkydropxProviderModules() {
   return { ...provider, ...mockProvider, ...mappers }
 }
 
-describe('resolveSkydropxMode', () => {
-  it('respects explicit mock mode even in production', async () => {
-    const { resolveSkydropxMode } = await loadSkydropxModeModule()
+describe('resolveSkydropxModeFromEnvironment', () => {
+  it('local resolves to mock', async () => {
+    const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
     assert.equal(
-      resolveSkydropxMode({
-        explicitMode: 'mock',
+      resolveSkydropxModeFromEnvironment({ nodeEnv: 'development' }),
+      'mock',
+    )
+  })
+
+  it('np resolves to mock', async () => {
+    const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
+    assert.equal(
+      resolveSkydropxModeFromEnvironment({
         nodeEnv: 'production',
-        configured: false,
+        vercelEnv: 'preview',
       }),
       'mock',
     )
   })
 
-  it('respects explicit live mode without credentials', async () => {
-    const { resolveSkydropxMode } = await loadSkydropxModeModule()
+  it('prod resolves to live', async () => {
+    const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
     assert.equal(
-      resolveSkydropxMode({
-        explicitMode: 'live',
-        nodeEnv: 'test',
-        configured: false,
-      }),
-      'live',
-    )
-  })
-
-  it('defaults to live in production without credentials', async () => {
-    const { resolveSkydropxMode } = await loadSkydropxModeModule()
-    assert.equal(
-      resolveSkydropxMode({
+      resolveSkydropxModeFromEnvironment({
         nodeEnv: 'production',
-        configured: false,
+        vercelEnv: 'production',
       }),
       'live',
     )
   })
 
-  it('defaults to mock in non-production without credentials', async () => {
-    const { resolveSkydropxMode } = await loadSkydropxModeModule()
+  it('production runtime cannot use mock', async () => {
+    const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
     assert.equal(
-      resolveSkydropxMode({
-        nodeEnv: 'test',
-        configured: false,
+      resolveSkydropxModeFromEnvironment({
+        nodeEnv: 'production',
+        vercelEnv: 'production',
       }),
-      'mock',
+      'live',
+    )
+  })
+
+  it('NODE_ENV=production without staging signals fails safe to live', async () => {
+    const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
+    assert.equal(
+      resolveSkydropxModeFromEnvironment({ nodeEnv: 'production' }),
+      'live',
     )
   })
 })

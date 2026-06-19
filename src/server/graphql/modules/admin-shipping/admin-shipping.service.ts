@@ -53,6 +53,7 @@ import {
 import type {
   AdminCancelShippingLabelInput,
   AdminCreateShippingLabelInput,
+  AdminShipmentByOrderNumberPayloadGql,
   AdminShipmentGql,
   AdminShipmentsListInput,
   AdminShipmentsPayloadGql,
@@ -285,16 +286,19 @@ export async function getAdminShipments(
 }
 
 /**
- * Returns the admin shipment for an order, or null if none exists.
+ * Returns the admin shipment for an order plus resolved Skydropx mock-mode flag.
  */
 export async function getAdminShipmentByOrderNumber(
   context: GraphQLContext,
   orderNumber: string,
-): Promise<AdminShipmentGql | null> {
+): Promise<AdminShipmentByOrderNumberPayloadGql> {
   requireAdminGraphQL(context)
   const parsed = orderNumberSchema.parse(orderNumber)
   const shipment = await loadShipmentByOrderNumber(context, parsed)
-  return shipment ? mapShipmentToAdminGql(shipment) : null
+  return {
+    shipment: shipment ? mapShipmentToAdminGql(shipment) : null,
+    isSkydropxMockMode: isSkydropxMockMode(),
+  }
 }
 
 /**
