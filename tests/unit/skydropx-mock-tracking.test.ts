@@ -3,6 +3,7 @@ import { after, describe, it } from 'node:test'
 
 import {
   FulfillmentStatus,
+  NotificationType,
   OrderStatus,
   RoleSlug,
   ShipmentStatus,
@@ -109,6 +110,13 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
     const { prisma } = await loadPrisma()
 
     if (cleanup.orderIds.length > 0) {
+      await prisma.notification.deleteMany({
+        where: {
+          dedupeKey: {
+            in: cleanup.orderIds.map((orderId) => `order-shipped:${orderId}`),
+          },
+        },
+      })
       await prisma.shipmentEvent.deleteMany({
         where: { shipment: { orderId: { in: cleanup.orderIds } } },
       })
@@ -302,22 +310,25 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
     )
   })
 
-  it('does not create notifications', async () => {
+  it('does not create ORDER_SHIPPED on delivered simulation', async () => {
     setSkydropxMode('mock')
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus } = await loadMockTrackingModules()
     const orderNumber = `CR-MOCK-TRACK-NOTIF-${Date.now()}`
     const { order } = await createMockShipmentOrder(orderNumber)
 
-    const beforeCount = await prisma.notification.count()
-
     await simulateMockShipmentTrackingStatus(prisma, {
       orderNumber,
       status: 'delivered',
     })
 
-    const afterCount = await prisma.notification.count()
-    assert.equal(afterCount, beforeCount)
+    const notification = await prisma.notification.findFirst({
+      where: {
+        type: NotificationType.ORDER_SHIPPED,
+        dedupeKey: `order-shipped:${order.id}`,
+      },
+    })
+    assert.equal(notification, null)
 
     const updatedOrder = await prisma.order.findUniqueOrThrow({ where: { id: order.id } })
     assert.equal(updatedOrder.status, OrderStatus.DELIVERED)

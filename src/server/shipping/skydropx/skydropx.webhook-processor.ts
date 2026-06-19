@@ -15,6 +15,7 @@ import {
 import { buildOrderEmailTrackingLinks } from '@/src/server/email/email.links'
 import { safeSendTransactionalEmailOnce } from '@/src/server/email/email.service'
 import { createOrderClaimToken } from '@/src/server/orders/order-claim-token'
+import { safeNotifyOrderShipped } from '@/src/server/notifications/notify-order-shipped'
 
 import { sanitizeSkydropxWebhookPayload } from './skydropx.sanitize'
 import type {
@@ -524,6 +525,7 @@ export async function processSkydropxWebhook(
   }
 
   const previousStatus = shipment.status
+  const previousOrderStatus = shipment.order.status
   const nextStatus = transition.nextStatus
 
   if (!shouldApplyShipmentStatus(previousStatus, nextStatus)) {
@@ -653,6 +655,40 @@ export async function processSkydropxWebhook(
 
   const updatedShipment = await prisma.shipment.findUniqueOrThrow({
     where: { id: shipment.id },
+  })
+
+  let newOrderStatus = previousOrderStatus
+  const order = shipment.order
+
+  if (
+    transition.orderStatus === OrderStatus.DELIVERED &&
+    order.status !== OrderStatus.DELIVERED &&
+    order.status !== OrderStatus.CANCELLED &&
+    order.status !== OrderStatus.REFUNDED
+  ) {
+    newOrderStatus = OrderStatus.DELIVERED
+  } else if (
+    transition.orderStatus === OrderStatus.SHIPPED &&
+    order.status !== OrderStatus.DELIVERED &&
+    order.status !== OrderStatus.SHIPPED &&
+    order.status !== OrderStatus.CANCELLED &&
+    order.status !== OrderStatus.REFUNDED
+  ) {
+    newOrderStatus = OrderStatus.SHIPPED
+  }
+
+  void safeNotifyOrderShipped(prisma, {
+    order: {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      userId: order.userId,
+    },
+    previousOrderStatus,
+    newOrderStatus,
+    previousShipmentStatus: previousStatus,
+    newShipmentStatus: nextStatus,
+    trackingNumber: updatedShipment.trackingNumber,
+    carrier: updatedShipment.carrier,
   })
 
   void sendShippingNotificationEmails(prisma, {
