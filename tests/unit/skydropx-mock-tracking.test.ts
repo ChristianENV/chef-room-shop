@@ -3,7 +3,6 @@ import { after, describe, it } from 'node:test'
 
 import {
   FulfillmentStatus,
-  NotificationType,
   OrderStatus,
   RoleSlug,
   ShipmentStatus,
@@ -112,16 +111,12 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
     if (cleanup.orderIds.length > 0) {
       await prisma.notification.deleteMany({
         where: {
-          OR: [
-            {
-              dedupeKey: {
-                in: cleanup.orderIds.flatMap((orderId) => [
-                  `order-shipped:${orderId}`,
-                  `order-delivered:${orderId}`,
-                ]),
-              },
-            },
-          ],
+          dedupeKey: {
+            in: cleanup.orderIds.flatMap((orderId) => [
+              `order-shipped:${orderId}`,
+              `order-delivered:${orderId}`,
+            ]),
+          },
         },
       })
       await prisma.shipmentEvent.deleteMany({

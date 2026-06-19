@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
+import { OrderStatus, ShipmentStatus } from '@prisma/client'
+
 async function loadSkydropxModeModule() {
   await import('./helpers/mock-server-only')
   return import('@/src/server/shipping/skydropx/skydropx.mode')
@@ -146,16 +148,27 @@ describe('mock admin label persistence shape', () => {
     ])
   })
 
-  it('preserves current order status transition when tracking is present', async () => {
+  it('does not infer shipped status from mock tracking number alone', async () => {
     const {
       buildMockSkydropxShipmentResponse,
       parseSkydropxShipmentResponse,
     } = await loadSkydropxProviderModules()
+    const { deriveAdminLabelCreationStatuses } = await import(
+      '@/src/server/graphql/modules/admin-shipping/admin-shipping-label-status'
+    )
 
     const parsed = parseSkydropxShipmentResponse(
       buildMockSkydropxShipmentResponse({ orderNumber: 'CR-2026-STATUS-001' }),
     )
 
     assert.ok(parsed.trackingNumber?.trim())
+
+    const statuses = deriveAdminLabelCreationStatuses({
+      isMockMode: true,
+      hasTracking: true,
+    })
+
+    assert.equal(statuses.orderStatus, OrderStatus.READY_TO_SHIP)
+    assert.equal(statuses.shipmentStatus, ShipmentStatus.LABEL_CREATED)
   })
 })

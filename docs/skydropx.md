@@ -48,8 +48,15 @@ SKYDROPX_MODE=mock
 | `carrier` / `service` | `fedex` / `standard` (or checkout rate values) |
 | `status` | `label_generated` |
 
-Mock mode applies to **admin guide generation** and **mock tracking simulation**. Checkout quotes still call live Skydropx unless you add separate mock support later. Cancel label, refresh tracking (live API), and webhooks are unchanged.
+**Mock lifecycle (admin label + tracking simulation):**
 
+```txt
+Generate mock label → READY_TO_SHIP / LABEL_CREATED (tracking number present, not shipped yet)
+Simulate in_transit   → SHIPPED / IN_TRANSIT → ORDER_SHIPPED
+Simulate delivered    → DELIVERED → ORDER_DELIVERED
+```
+
+Mock labels include a tracking number for printing and QA, but admin label creation does **not** mark the order as shipped. Use `adminSimulateMockShipmentTrackingStatus` to advance the lifecycle. Checkout quotes still call live Skydropx unless you add separate mock support later. Cancel label, refresh tracking (live API), and webhooks are unchanged.
 ### Mock tracking simulation
 
 Requires `SKYDROPX_MODE=mock` and a shipment with mock tracking (`CRMOCK-*` or `mock-shipment-*` provider id).

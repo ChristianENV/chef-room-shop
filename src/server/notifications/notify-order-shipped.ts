@@ -41,6 +41,9 @@ export function buildOrderShippedDedupeKey(orderId: string): string {
   return `order-shipped:${orderId}`
 }
 
+/**
+ * True when an order/shipment actually enters shipped/in-transit for the first time.
+ */
 export function isOrderShippedTransition(
   input: Pick<
     OrderShippedNotificationInput,
@@ -64,12 +67,19 @@ export function isOrderShippedTransition(
   )
 }
 
+/**
+ * Creates a USER in-app notification when an order enters shipped/in transit.
+ * Call only after shipment/order status persistence succeeds.
+ */
 export async function notifyOrderShipped(
   prisma: PrismaClient,
   input: OrderShippedNotificationInput,
 ): Promise<void> {
   if (!isOrderShippedTransition(input)) return
   if (!input.order.userId) return
+
+  const trackingNumber = input.trackingNumber?.trim() || null
+  const carrier = input.carrier?.trim() || null
 
   await createUserNotification(prisma, {
     userId: input.order.userId,
@@ -80,14 +90,17 @@ export async function notifyOrderShipped(
     metadataJson: {
       orderId: input.order.id,
       orderNumber: input.order.orderNumber,
-      trackingNumber: input.trackingNumber?.trim() || null,
-      carrier: input.carrier?.trim() || null,
+      trackingNumber,
+      carrier,
       status: OrderStatus.SHIPPED,
     },
     dedupeKey: buildOrderShippedDedupeKey(input.order.id),
   })
 }
 
+/**
+ * Fire-and-forget wrapper: notification failures must not break tracking updates.
+ */
 export async function safeNotifyOrderShipped(
   prisma: PrismaClient,
   input: OrderShippedNotificationInput,

@@ -1,5 +1,4 @@
 import {
-  FulfillmentStatus,
   OrderEventType,
   OrderStatus,
   PaymentStatus,
@@ -66,6 +65,7 @@ import {
   orderNumberSchema,
   parseAdminShipmentsListInput,
 } from './admin-shipping.validation'
+import { deriveAdminLabelCreationStatuses } from './admin-shipping-label-status'
 
 const shipmentInclude = {
   order: { select: { orderNumber: true } },
@@ -433,18 +433,14 @@ export async function createAdminShippingLabel(
   const costCents = rate.amountCents ?? parsedShipment.costCents
   const labelFormat = (parsed.labelFormat ?? 'PDF').toUpperCase()
   const hasTracking = Boolean(parsedShipment.trackingNumber?.trim())
-
-  const shipmentStatus = hasTracking
-    ? ShipmentStatus.IN_TRANSIT
-    : ShipmentStatus.LABEL_CREATED
-
-  const orderStatus = hasTracking ? OrderStatus.SHIPPED : OrderStatus.READY_TO_SHIP
-  const fulfillmentStatus = hasTracking
-    ? FulfillmentStatus.SHIPPED
-    : FulfillmentStatus.PROCESSING
+  const mockMode = isSkydropxMockMode()
+  const labelStatuses = deriveAdminLabelCreationStatuses({
+    isMockMode: mockMode,
+    hasTracking,
+  })
 
   const carrierLabel = parsedShipment.carrier ?? rate.carrier ?? 'paquetería'
-  const eventMessage = isSkydropxMockMode()
+  const eventMessage = mockMode
     ? `Guía mock generada con ${carrierLabel} (modo prueba).`
     : `Guía generada con ${carrierLabel}.`
 
@@ -452,7 +448,7 @@ export async function createAdminShippingLabel(
     const shipment = await tx.shipment.create({
       data: {
         orderId: order.id,
-        status: shipmentStatus,
+        status: labelStatuses.shipmentStatus,
         provider: ShippingProvider.SKYDROPX,
         providerShipmentId: parsedShipment.providerShipmentId,
         providerLabelId: parsedShipment.providerLabelId,
@@ -465,7 +461,7 @@ export async function createAdminShippingLabel(
         costCents,
         currency: rate.currency,
         trackingNumber: parsedShipment.trackingNumber,
-        shippedAt: hasTracking ? new Date() : null,
+        shippedAt: labelStatuses.setShippedAt ? new Date() : null,
         rawResponseJson: parsedShipment.rawJson as Prisma.InputJsonValue,
       },
       include: shipmentInclude,
@@ -474,11 +470,11 @@ export async function createAdminShippingLabel(
     await tx.shipmentEvent.create({
       data: {
         shipmentId: shipment.id,
-        status: shipmentStatus,
-        message: hasTracking
-          ? `Etiqueta creada. Tracking: ${parsedShipment.trackingNumber}`
-          : isSkydropxMockMode()
-            ? 'Etiqueta mock generada (modo prueba).'
+        status: labelStatuses.shipmentStatus,
+        message: mockMode
+          ? 'Etiqueta mock generada (modo prueba).'
+          : hasTracking
+            ? `Etiqueta creada. Tracking: ${parsedShipment.trackingNumber}`
             : 'Etiqueta creada en Skydropx.',
         metadataJson: {
           providerShipmentId: parsedShipment.providerShipmentId,
@@ -490,8 +486,8 @@ export async function createAdminShippingLabel(
     await tx.order.update({
       where: { id: order.id },
       data: {
-        status: orderStatus,
-        fulfillmentStatus,
+        status: labelStatuses.orderStatus,
+        fulfillmentStatus: labelStatuses.fulfillmentStatus,
       },
     })
 

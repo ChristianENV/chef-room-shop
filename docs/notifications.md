@@ -235,13 +235,26 @@ Hook locations, called after successful shipment/order status persistence:
 
 Implementation: `src/server/notifications/notify-order-shipped.ts`
 
+Notifications are created **only on transition** into shipped/in transit:
+
+- `Order.status` becomes `SHIPPED` (from a non-shipped state), or
+- `Shipment.status` advances from `PENDING` / `LABEL_CREATED` to `IN_TRANSIT` / `OUT_FOR_DELIVERY`
+
+Does **not** fire on mock/live label generation alone, tracking-number assignment only, or repeated same-status updates.
+
 | Audience | When | Type | Notes |
 | --- | --- | --- | --- |
 | `USER` | Shipped/in-transit transition and `order.userId` is set | `ORDER_SHIPPED` | Skipped for guest orders |
 
+Copy:
+
+- User: title `Tu pedido fue enviado`, message `Tu pedido {orderNumber} ya fue enviado.`, href `/account/orders/{orderNumber}`
+
+Metadata allowed: `{ orderId, orderNumber, trackingNumber, carrier, status }` only.
+
 Dedupe key: `order-shipped:{orderId}`
 
-Error handling: `safeNotifyOrderShipped` logs failures and never throws.
+Error handling: `safeNotifyOrderShipped` logs failures and never throws, so tracking/status updates are not blocked.
 
 ### `ORDER_DELIVERED`
 

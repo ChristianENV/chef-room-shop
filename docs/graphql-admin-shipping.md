@@ -82,10 +82,21 @@ mutation CreateLabel {
 
 **Estado de orden tras crear guía:**
 
-| Condición | `Order.status` | `fulfillmentStatus` |
-|-----------|----------------|---------------------|
-| Hay `trackingNumber` | `SHIPPED` | `SHIPPED` |
-| Solo `labelUrl` | `READY_TO_SHIP` | `PROCESSING` |
+| Modo | Condición | `Shipment.status` | `Order.status` | `fulfillmentStatus` |
+|------|-----------|-------------------|----------------|---------------------|
+| `mock` | Guía mock generada (incluye tracking) | `LABEL_CREATED` | `READY_TO_SHIP` | `PROCESSING` |
+| `live` | Hay `trackingNumber` | `IN_TRANSIT` | `SHIPPED` | `SHIPPED` |
+| `live` | Solo `labelUrl` | `LABEL_CREATED` | `READY_TO_SHIP` | `PROCESSING` |
+
+**Mock lifecycle:**
+
+```txt
+Generate mock label → READY_TO_SHIP
+Simulate in_transit → SHIPPED
+Simulate delivered  → DELIVERED
+```
+
+Ver `adminSimulateMockShipmentTrackingStatus` y `docs/skydropx.md`.
 
 **`labelFormat`:** `PDF` (default) → `standard`; `ZPL` / `EPL` → `thermal` en Skydropx.
 
