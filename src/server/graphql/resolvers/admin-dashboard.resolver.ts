@@ -20,34 +20,19 @@ export const adminDashboardResolvers = {
       context: GraphQLContext,
     ) => getAdminDashboardMetrics(context),
 
-    adminRecentOrders: (
-      _parent: unknown,
-      args: LimitArgs,
-      context: GraphQLContext,
-    ) => getAdminRecentOrders(context, args.limit),
+    adminRecentOrders: (_parent: unknown, args: LimitArgs, context: GraphQLContext) =>
+      getAdminRecentOrders(context, args.limit),
 
-    adminProductionQueue: (
-      _parent: unknown,
-      args: LimitArgs,
-      context: GraphQLContext,
-    ) => getAdminProductionQueue(context, args.limit),
+    adminProductionQueue: (_parent: unknown, args: LimitArgs, context: GraphQLContext) =>
+      getAdminProductionQueue(context, args.limit),
 
-    adminRecentDesigns: (
-      _parent: unknown,
-      args: LimitArgs,
-      context: GraphQLContext,
-    ) => getAdminRecentDesigns(context, args.limit),
+    adminRecentDesigns: (_parent: unknown, args: LimitArgs, context: GraphQLContext) =>
+      getAdminRecentDesigns(context, args.limit),
 
-    adminRecentPayments: (
-      _parent: unknown,
-      args: LimitArgs,
-      context: GraphQLContext,
-    ) => getAdminRecentPayments(context, args.limit),
+    adminRecentPayments: (_parent: unknown, args: LimitArgs, context: GraphQLContext) =>
+      getAdminRecentPayments(context, args.limit),
 
-    adminTopProducts: (
-      _parent: unknown,
-      args: LimitArgs,
-      context: GraphQLContext,
-    ) => getAdminTopProducts(context, args.limit),
+    adminTopProducts: (_parent: unknown, args: LimitArgs, context: GraphQLContext) =>
+      getAdminTopProducts(context, args.limit),
   },
 }

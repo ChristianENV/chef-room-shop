@@ -17,14 +17,14 @@ Legacy flow (`createCheckoutOrder` → success → manual Conekta) remains suppo
 
 ## GraphQL
 
-| Operation | Purpose |
-|-----------|---------|
-| `myCart` | Checkout summary |
-| `completeCheckout` | Order + Conekta + `paymentRedirectUrl` + `returnToken` |
-| `checkoutResultByToken(token)` | Success page (no session/email) |
-| `retryCheckoutPayment({ token })` | Retry Conekta from success |
-| `createCheckoutOrder` | Legacy order-only |
-| `orderByNumber(orderNumber, email)` | Legacy success fallback |
+| Operation                           | Purpose                                                |
+| ----------------------------------- | ------------------------------------------------------ |
+| `myCart`                            | Checkout summary                                       |
+| `completeCheckout`                  | Order + Conekta + `paymentRedirectUrl` + `returnToken` |
+| `checkoutResultByToken(token)`      | Success page (no session/email)                        |
+| `retryCheckoutPayment({ token })`   | Retry Conekta from success                             |
+| `createCheckoutOrder`               | Legacy order-only                                      |
+| `orderByNumber(orderNumber, email)` | Legacy success fallback                                |
 
 See [graphql-checkout.md](./graphql-checkout.md) and [payments.md](./payments.md).
 
@@ -68,14 +68,14 @@ UX:
 
 ## Files
 
-| Path | Role |
-|------|------|
-| `src/app/(storefront)/checkout/page.tsx` | Checkout flow + redirect |
-| `src/app/(storefront)/checkout/success/page.tsx` | Token-first confirmation |
-| `src/features/storefront/checkout/saved-address-selector.tsx` | Auth address picker |
+| Path                                                             | Role                           |
+| ---------------------------------------------------------------- | ------------------------------ |
+| `src/app/(storefront)/checkout/page.tsx`                         | Checkout flow + redirect       |
+| `src/app/(storefront)/checkout/success/page.tsx`                 | Token-first confirmation       |
+| `src/features/storefront/checkout/saved-address-selector.tsx`    | Auth address picker            |
 | `src/features/storefront/checkout/mappers/checkout-ui.mapper.ts` | Cart → summary, prefill mapper |
-| `src/features/storefront/checkout/lib/checkout-session.ts` | Session storage fallback |
-| `src/lib/checkout-redirect-urls.ts` | Token-based success URLs |
+| `src/features/storefront/checkout/lib/checkout-session.ts`       | Session storage fallback       |
+| `src/lib/checkout-redirect-urls.ts`                              | Token-based success URLs       |
 
 ## Conekta
 

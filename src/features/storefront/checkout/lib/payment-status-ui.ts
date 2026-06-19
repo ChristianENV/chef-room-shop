@@ -54,16 +54,11 @@ export function getPaymentStatusUi(input: {
     }
   }
 
-  if (
-    paymentStatus === 'CANCELLED' ||
-    paymentStatus === 'EXPIRED' ||
-    orderStatus === 'CANCELLED'
-  ) {
+  if (paymentStatus === 'CANCELLED' || paymentStatus === 'EXPIRED' || orderStatus === 'CANCELLED') {
     return {
       tone: 'error',
       title: 'Pago expirado',
-      description:
-        'La referencia o sesión de pago expiró. Genera un nuevo intento de pago.',
+      description: 'La referencia o sesión de pago expiró. Genera un nuevo intento de pago.',
       badgeLabel: 'Pago expirado',
       shouldPoll: false,
       canPay: false,
@@ -86,8 +81,7 @@ export function getPaymentStatusUi(input: {
   return {
     tone: 'pending',
     title: 'Confirmando pago',
-    description:
-      'Estamos confirmando tu pago con Conekta. Esto puede tardar unos momentos.',
+    description: 'Estamos confirmando tu pago con Conekta. Esto puede tardar unos momentos.',
     badgeLabel: 'Confirmando',
     shouldPoll: true,
     canPay: false,

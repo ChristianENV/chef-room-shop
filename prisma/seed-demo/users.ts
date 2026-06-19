@@ -126,9 +126,7 @@ function buildCustomerSpecs(): DemoUserSpec[] {
     if (n >= 9 && n <= 14) {
       social = [{ providerId: 'google', accountId: `google-demo-user-${n}` }]
     } else if (n >= 15) {
-      social = [
-        { providerId: 'facebook', accountId: `facebook-demo-user-${n}` },
-      ]
+      social = [{ providerId: 'facebook', accountId: `facebook-demo-user-${n}` }]
     }
 
     return {

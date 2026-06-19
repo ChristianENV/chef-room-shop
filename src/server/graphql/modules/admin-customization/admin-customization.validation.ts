@@ -32,10 +32,7 @@ export const adminCustomizationRuleInputSchema = z.object({
   basePriceCents: z.number().int().min(0).optional().nullable(),
   pricePerCmCents: z.number().int().min(0).optional().nullable(),
   extraProductionDays: z.number().int().min(0).optional().nullable(),
-  allowedFileTypes: z
-    .array(z.enum(allowedFileTypeValues))
-    .optional()
-    .nullable(),
+  allowedFileTypes: z.array(z.enum(allowedFileTypeValues)).optional().nullable(),
   validationMessage: z.string().trim().max(500).optional().nullable(),
   notes: z.string().trim().max(1000).optional().nullable(),
   metadataJson: z.record(z.string(), z.unknown()).optional().nullable(),

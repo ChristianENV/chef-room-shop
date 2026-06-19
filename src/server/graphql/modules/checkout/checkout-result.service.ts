@@ -2,22 +2,14 @@ import { PaymentMethod } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 
 import { CASH_PAYMENT_LOCATIONS } from '@/src/config/payment-vars'
-import {
-  accountOrderDetail,
-  login,
-  postCheckoutOrderDetail,
-  register,
-} from '@/src/config/routes'
+import { accountOrderDetail, login, postCheckoutOrderDetail, register } from '@/src/config/routes'
 import { validateCheckoutReturnToken } from '@/src/server/checkout/checkout-return-token'
 import { buildAccountOrderUrl } from '@/src/server/email/email.links'
 import { maskCustomerEmail } from '@/src/server/orders/order-claim-token'
 
 import type { GraphQLContext } from '../../context'
 import { resolveAccountPaymentActions } from '../account/account-payment-actions'
-import {
-  mapOrderItemToPublicGql,
-  mapPaymentToPublicGql,
-} from './checkout.mappers'
+import { mapOrderItemToPublicGql, mapPaymentToPublicGql } from './checkout.mappers'
 import type { CheckoutResultGql } from './checkout.types'
 import { getCashPaymentDetailsFromAttempts } from '../payments/payments.mappers'
 
@@ -34,16 +26,11 @@ const orderInclude = {
   checkoutReturnToken: true,
 } as const
 
-function derivePaymentStatus(
-  payments: Array<{ status: string }>,
-): string {
+function derivePaymentStatus(payments: Array<{ status: string }>): string {
   return payments[0]?.status ?? 'PENDING'
 }
 
-function viewerEmailMatchesOrder(
-  context: GraphQLContext,
-  orderEmail: string,
-): boolean {
+function viewerEmailMatchesOrder(context: GraphQLContext, orderEmail: string): boolean {
   const viewerEmail = context.currentUser?.email?.trim().toLowerCase()
   if (!viewerEmail) return false
   return viewerEmail === orderEmail.trim().toLowerCase()
@@ -75,9 +62,7 @@ export async function getCheckoutResultByToken(
     ? getCashPaymentDetailsFromAttempts(primaryPayment.attempts)
     : null
 
-  const accountOrderUrl = order.userId
-    ? buildAccountOrderUrl(order.orderNumber)
-    : null
+  const accountOrderUrl = order.userId ? buildAccountOrderUrl(order.orderNumber) : null
 
   const isAuthenticatedOwner =
     Boolean(context.currentUser) && context.currentUser?.id === order.userId
@@ -140,9 +125,7 @@ export async function getCheckoutResultByToken(
     paymentReference: cashDetails?.reference ?? null,
     paymentExpiresAt: cashDetails?.expiresAt ?? null,
     cashPaymentLocations:
-      primaryPayment?.method === PaymentMethod.OXXO
-        ? [...CASH_PAYMENT_LOCATIONS]
-        : null,
+      primaryPayment?.method === PaymentMethod.OXXO ? [...CASH_PAYMENT_LOCATIONS] : null,
     returnTokenValid: validation.valid,
     tokenExpired: validation.reason === 'EXPIRED',
     loginUrl: login({ callbackUrl: purchaseCallback }),

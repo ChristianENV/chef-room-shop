@@ -4,10 +4,10 @@ Storefront cart operations live on the business BFF at `/api/graphql`. Authentic
 
 ## Guest vs authenticated cart
 
-| Context | Owner key | Cookie / session |
-|--------|-----------|------------------|
-| Guest | `guestSessionId` on `Cart` | `chefroom_guest` (httpOnly, 30 days, `sameSite=lax`, `secure` in production) |
-| Logged-in customer | `userId` on `Cart` | Better Auth session |
+| Context            | Owner key                  | Cookie / session                                                             |
+| ------------------ | -------------------------- | ---------------------------------------------------------------------------- |
+| Guest              | `guestSessionId` on `Cart` | `chefroom_guest` (httpOnly, 30 days, `sameSite=lax`, `secure` in production) |
+| Logged-in customer | `userId` on `Cart`         | Better Auth session                                                          |
 
 `resolveCartOwner` (server) never accepts `userId` from the client:
 
@@ -110,8 +110,16 @@ query MyCart {
     items {
       id
       quantity
-      productSnapshot { name colorName sizeName }
-      customizationSnapshot { hasLogo hasEmbroidery summary }
+      productSnapshot {
+        name
+        colorName
+        sizeName
+      }
+      customizationSnapshot {
+        hasLogo
+        hasEmbroidery
+        summary
+      }
     }
   }
 }
@@ -119,11 +127,7 @@ query MyCart {
 
 ```graphql
 mutation AddItem {
-  addCartItem(input: {
-    productId: "PRODUCT_UUID"
-    productVariantId: "VARIANT_UUID"
-    quantity: 1
-  }) {
+  addCartItem(input: { productId: "PRODUCT_UUID", productVariantId: "VARIANT_UUID", quantity: 1 }) {
     totalItems
     totalCents
   }

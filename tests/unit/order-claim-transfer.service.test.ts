@@ -20,13 +20,12 @@ async function loadModules() {
 
 async function loadPrismaModules() {
   await import('./helpers/mock-server-only')
-  const [{ OrderStatus }, prismaModule, checkoutTokenModule, claimTokenModule] =
-    await Promise.all([
-      import('@prisma/client'),
-      import('@/src/server/db/prisma'),
-      import('@/src/server/checkout/checkout-return-token'),
-      import('@/src/server/orders/order-claim-token'),
-    ])
+  const [{ OrderStatus }, prismaModule, checkoutTokenModule, claimTokenModule] = await Promise.all([
+    import('@prisma/client'),
+    import('@/src/server/db/prisma'),
+    import('@/src/server/checkout/checkout-return-token'),
+    import('@/src/server/orders/order-claim-token'),
+  ])
 
   return {
     OrderStatus,
@@ -68,11 +67,7 @@ describe('order claim transfer service', { skip: !hasDatabase }, () => {
   })
 
   it('creates a pending transfer request when emails mismatch', async () => {
-    const {
-      OrderStatus,
-      prisma,
-      createCheckoutReturnToken,
-    } = await loadPrismaModules()
+    const { OrderStatus, prisma, createCheckoutReturnToken } = await loadPrismaModules()
     const { requestOrderClaimTransfer } = await loadModules()
     const { OrderClaimTransferRequestStatus } = await import('@prisma/client')
 

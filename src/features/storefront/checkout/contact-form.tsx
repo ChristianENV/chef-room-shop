@@ -27,9 +27,7 @@ export function ContactForm({ data, onChange, errors, className }: ContactFormPr
     <div className={cn('space-y-4', className)}>
       <div className="flex items-center gap-2">
         <User className="h-5 w-5 text-primary" />
-        <h2 className="font-sans text-lg font-semibold text-foreground">
-          Informacion de contacto
-        </h2>
+        <h2 className="font-sans text-lg font-semibold text-foreground">Informacion de contacto</h2>
       </div>
 
       <p className="font-serif text-sm text-muted-foreground">

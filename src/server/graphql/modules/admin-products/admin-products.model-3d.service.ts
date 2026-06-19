@@ -71,7 +71,16 @@ export async function createAdminProductModelUpload(
 ): Promise<ProductModelUploadPayloadGql> {
   requireAdminGraphQL(context)
 
-  const { productId, fileName, originalFileName, sizeBytes, contentType, originalSizeBytes, compressionRatio, optimizationReportJson } = input
+  const {
+    productId,
+    fileName,
+    originalFileName,
+    sizeBytes,
+    contentType,
+    originalSizeBytes,
+    compressionRatio,
+    optimizationReportJson,
+  } = input
 
   validateGlbUpload(fileName, contentType)
   validateUploadSize(sizeBytes, 'productModel')
@@ -149,10 +158,9 @@ export async function confirmAdminProductModelUpload(
   // Verify file actually exists in R2.
   const exists = await r2HeadObject(asset.publicId)
   if (!exists) {
-    throw new GraphQLError(
-      'El archivo no se encontró en el almacenamiento. Reintenta el upload.',
-      { extensions: { code: 'UPLOAD_NOT_FOUND' } },
-    )
+    throw new GraphQLError('El archivo no se encontró en el almacenamiento. Reintenta el upload.', {
+      extensions: { code: 'UPLOAD_NOT_FOUND' },
+    })
   }
 
   // Deactivate any other active models for this product.
@@ -210,7 +218,11 @@ export async function deleteAdminProductModelAsset(
   // If this was the active model, promote the next most-recent one.
   if (asset.isActive) {
     const next = await context.prisma.productModelAsset.findFirst({
-      where: { productId: asset.productId, deletedAt: null, status: ProductModelAssetStatus.ACTIVE },
+      where: {
+        productId: asset.productId,
+        deletedAt: null,
+        status: ProductModelAssetStatus.ACTIVE,
+      },
       orderBy: { createdAt: 'desc' },
     })
     if (next) {
@@ -245,7 +257,12 @@ export async function setActiveAdminProductModelAsset(
   if (!asset) throw notFoundError('Modelo 3D')
 
   await context.prisma.productModelAsset.updateMany({
-    where: { productId: asset.productId, isActive: true, id: { not: modelAssetId }, deletedAt: null },
+    where: {
+      productId: asset.productId,
+      isActive: true,
+      id: { not: modelAssetId },
+      deletedAt: null,
+    },
     data: { isActive: false, status: ProductModelAssetStatus.INACTIVE },
   })
 

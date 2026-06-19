@@ -1,7 +1,11 @@
 import { extractSelectionFromConfigJson } from '@/src/lib/customization/build-customization-snapshot'
 import { STRUCTURAL_LAYERS } from './customizer-defaults'
 import { isEditableElement } from './customizer-utils'
-import { findColorByHex, findSizeByLabel, resolveCustomizerVariant } from './resolve-customizer-variant'
+import {
+  findColorByHex,
+  findSizeByLabel,
+  resolveCustomizerVariant,
+} from './resolve-customizer-variant'
 import type { CustomizerProductData } from '../types/customizer-product.types'
 import type {
   ButtonStyle,
@@ -27,11 +31,7 @@ function parseNumber(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback
 }
 
-function parseStyleField<T extends string>(
-  value: unknown,
-  allowed: readonly T[],
-  fallback: T,
-): T {
+function parseStyleField<T extends string>(value: unknown, allowed: readonly T[], fallback: T): T {
   return typeof value === 'string' && (allowed as readonly string[]).includes(value)
     ? (value as T)
     : fallback
@@ -86,9 +86,7 @@ function parseLayer(value: unknown): Layer | null {
 
 function parseLayers(config: Record<string, unknown>): Layer[] {
   if (Array.isArray(config.layers)) {
-    const parsed = config.layers
-      .map(parseLayer)
-      .filter((layer): layer is Layer => layer != null)
+    const parsed = config.layers.map(parseLayer).filter((layer): layer is Layer => layer != null)
     if (parsed.length > 0) return parsed
   }
 
@@ -172,13 +170,9 @@ export function parseDesignConfigForHydration(
 
   return {
     productSlug: resolveDesignProductSlug(configJson, product),
-    selectedVariantId:
-      selection.selectedVariantId ?? resolvedVariant?.id ?? null,
+    selectedVariantId: selection.selectedVariantId ?? resolvedVariant?.id ?? null,
     baseColor: resolvedBaseColor,
-    detailColor:
-      selection.detailColor.hex ??
-      styleDetailColor ??
-      '#1a1a1a',
+    detailColor: selection.detailColor.hex ?? styleDetailColor ?? '#1a1a1a',
     collarStyle: parseStyleField(style.collarStyle, COLLAR_STYLES, 'mao'),
     sleeveStyle: parseStyleField(style.sleeveStyle, SLEEVE_STYLES, '3/4'),
     sleeveOption: parseString(style.sleeveOption),

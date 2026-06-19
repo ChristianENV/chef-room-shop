@@ -16,18 +16,14 @@ interface RelatedProductsProps {
 
 export function RelatedProducts({ currentProductId, products, className }: RelatedProductsProps) {
   // Filter out current product and take 4
-  const relatedProducts = products
-    .filter(p => p.id !== currentProductId)
-    .slice(0, 4)
+  const relatedProducts = products.filter((p) => p.id !== currentProductId).slice(0, 4)
 
   if (relatedProducts.length === 0) return null
 
   return (
     <section className={cn('py-12', className)}>
       <div className="mb-8">
-        <h2 className="font-sans text-2xl font-bold text-foreground">
-          Productos relacionados
-        </h2>
+        <h2 className="font-sans text-2xl font-bold text-foreground">Productos relacionados</h2>
         <p className="mt-2 font-serif text-muted-foreground">
           Otros productos que podrian interesarte
         </p>
@@ -56,12 +52,12 @@ function RelatedProductCard({ product }: { product: Product }) {
 
           {/* Badge */}
           {product.badge && (
-            <Badge 
+            <Badge
               className={cn(
                 'absolute left-2 top-2 text-xs',
                 product.badge === 'nuevo' && 'bg-success text-white',
                 product.badge === 'popular' && 'bg-primary text-primary-foreground',
-                product.badge === 'oferta' && 'bg-destructive text-destructive-foreground'
+                product.badge === 'oferta' && 'bg-destructive text-destructive-foreground',
               )}
             >
               {product.badge === 'nuevo' && 'Nuevo'}
@@ -72,7 +68,7 @@ function RelatedProductCard({ product }: { product: Product }) {
           )}
 
           {/* Wishlist */}
-          <button 
+          <button
             className="absolute right-2 top-2 rounded-full bg-card/90 p-1.5 opacity-0 transition-opacity group-hover:opacity-100"
             onClick={(e) => {
               e.preventDefault()
@@ -92,9 +88,7 @@ function RelatedProductCard({ product }: { product: Product }) {
           </h3>
           <div className="mt-1 flex items-center gap-1">
             <Star className="h-3 w-3 fill-warning text-warning" />
-            <span className="font-serif text-xs text-muted-foreground">
-              {product.rating}
-            </span>
+            <span className="font-serif text-xs text-muted-foreground">{product.rating}</span>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="font-sans font-bold text-foreground">

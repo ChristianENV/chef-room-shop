@@ -216,17 +216,12 @@ export function groupRulesByArea(
     byAreaId.set(card.areaId, list)
   }
 
-  const sortedAreas = [...allAreas].sort(
-    (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0),
-  )
+  const sortedAreas = [...allAreas].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
 
   return sortedAreas.map((area) => {
     const areaRules = byAreaId.get(area.id) ?? []
     const activeCount = areaRules.filter((r) => r.enabled).length
-    const minPrice =
-      areaRules.length > 0
-        ? Math.min(...areaRules.map((r) => r.basePricePesos))
-        : 0
+    const minPrice = areaRules.length > 0 ? Math.min(...areaRules.map((r) => r.basePricePesos)) : 0
 
     const maxW = areaRules.reduce<number | null>((acc, r) => {
       if (r.maxWidthCm == null) return acc
@@ -245,8 +240,7 @@ export function groupRulesByArea(
       rules: areaRules,
       ruleCount: areaRules.length,
       activeCount,
-      minPriceFormatted:
-        areaRules.length > 0 ? `Desde ${formatCurrencyMXN(minPrice)}` : '—',
+      minPriceFormatted: areaRules.length > 0 ? `Desde ${formatCurrencyMXN(minPrice)}` : '—',
       dimensionsSummary: formatDimensions(maxW, maxH),
       hasAnyEnabled: activeCount > 0,
       optionLabels: areaRules.map((r) => r.optionName),
@@ -294,7 +288,8 @@ export function mapAdminCustomizationRuleToFormValues(
     basePricePesos: centsToPesos(rule.basePriceCents),
     pricePerCmPesos: centsToPesos(rule.pricePerCmCents ?? 0),
     extraProductionDays: rule.extraProductionDays ?? 0,
-    allowedFileTypes: rule.allowedFileTypes.length > 0 ? rule.allowedFileTypes : ['png', 'jpg', 'svg'],
+    allowedFileTypes:
+      rule.allowedFileTypes.length > 0 ? rule.allowedFileTypes : ['png', 'jpg', 'svg'],
     validationMessage: rule.validationMessage ?? '',
     notes: rule.notes ?? '',
   }

@@ -133,10 +133,7 @@ export function calculateModelFitTransform(
 }
 
 /** Applies absolute transform values — never multiplies existing scale. */
-export function applyModelFitTransform(
-  group: THREE.Group,
-  transform: ModelFitTransform,
-): void {
+export function applyModelFitTransform(group: THREE.Group, transform: ModelFitTransform): void {
   group.rotation.copy(transform.rotation)
   group.position.copy(transform.position)
   group.scale.setScalar(transform.scale)

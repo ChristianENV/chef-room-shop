@@ -59,8 +59,14 @@ function resolveOptionPriceLabel(
 }
 
 export function PersonalizationSection({ embedded = false }: { embedded?: boolean }) {
-  const { product, layers, customizationRuleAvailability, addElement, addTextElement, addNameElement } =
-    useCustomizerStore()
+  const {
+    product,
+    layers,
+    customizationRuleAvailability,
+    addElement,
+    addTextElement,
+    addNameElement,
+  } = useCustomizerStore()
 
   const bffZones: Zone[] = (product?.customizationAreas ?? []).map((area) => {
     const options = (product?.rules ?? [])
@@ -156,8 +162,8 @@ export function PersonalizationSection({ embedded = false }: { embedded?: boolea
                 option.kind === 'nombre'
                   ? 'customizer-add-name-button'
                   : option.kind === 'texto'
-                  ? 'customizer-add-text-button'
-                  : undefined
+                    ? 'customizer-add-text-button'
+                    : undefined
               const canAddFromZone = option.available && option.kind !== 'logo'
               const disabledReason =
                 option.kind === 'logo'

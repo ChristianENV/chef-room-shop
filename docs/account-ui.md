@@ -23,15 +23,15 @@ La página `/account` muestra un `AccountProfileHeader` con el componente `Edita
 
 ### Componentes
 
-| Archivo | Responsabilidad |
-|---------|----------------|
-| `components/shared/user-avatar.tsx` | Avatar con imagen u opción de iniciales; sizes sm/md/lg/xl |
-| `src/features/uploads/components/editable-avatar.tsx` | Avatar xl + badge lápiz + abre dialog |
-| `src/features/uploads/components/avatar-upload-dialog.tsx` | Dialog 5 estados: empty/editing/uploading/success/error |
-| `src/features/uploads/components/avatar-cropper.tsx` | Crop circular + zoom + rotación (react-easy-crop) |
-| `src/features/uploads/lib/image-processing.ts` | Utilidades canvas: `getCroppedCanvas`, `canvasToBlob`, validación |
-| `src/features/uploads/lib/avatar-image-processing.ts` | `processAvatarImage` — produce WebP + JPG 256×256 |
-| `src/features/storefront/account/components/account-profile-header.tsx` | Header de perfil con `EditableAvatar` + nombre/email |
+| Archivo                                                                 | Responsabilidad                                                   |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `components/shared/user-avatar.tsx`                                     | Avatar con imagen u opción de iniciales; sizes sm/md/lg/xl        |
+| `src/features/uploads/components/editable-avatar.tsx`                   | Avatar xl + badge lápiz + abre dialog                             |
+| `src/features/uploads/components/avatar-upload-dialog.tsx`              | Dialog 5 estados: empty/editing/uploading/success/error           |
+| `src/features/uploads/components/avatar-cropper.tsx`                    | Crop circular + zoom + rotación (react-easy-crop)                 |
+| `src/features/uploads/lib/image-processing.ts`                          | Utilidades canvas: `getCroppedCanvas`, `canvasToBlob`, validación |
+| `src/features/uploads/lib/avatar-image-processing.ts`                   | `processAvatarImage` — produce WebP + JPG 256×256                 |
+| `src/features/storefront/account/components/account-profile-header.tsx` | Header de perfil con `EditableAvatar` + nombre/email              |
 
 ### Cámara móvil
 
@@ -51,13 +51,13 @@ En desktop el atributo es ignorado y el input funciona como un file picker norma
 
 ## Páginas conectadas
 
-| Ruta | Hooks | Datos |
-|------|-------|-------|
-| `/account` | `useMeProfileQuery`, `useAccountSummaryQuery` | Perfil, dirección default, pedidos y diseños recientes |
-| `/account/orders` | `useMyOrdersQuery`, `useMeProfileQuery` | Listado de pedidos con items y tracking |
+| Ruta                            | Hooks                                          | Datos                                                               |
+| ------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------- |
+| `/account`                      | `useMeProfileQuery`, `useAccountSummaryQuery`  | Perfil, dirección default, pedidos y diseños recientes              |
+| `/account/orders`               | `useMyOrdersQuery`, `useMeProfileQuery`        | Listado de pedidos con items y tracking                             |
 | `/account/orders/[orderNumber]` | `useMyOrderByNumberQuery`, `useMeProfileQuery` | Detalle premium del pedido (timeline, pago, envío, personalización) |
-| `/account/designs` | `useMyDesignsQuery`, `useMeProfileQuery` | Diseños guardados del usuario |
-| `/account/addresses` | `useMyAddressesQuery` + mutations | CRUD de direcciones |
+| `/account/designs`              | `useMyDesignsQuery`, `useMeProfileQuery`       | Diseños guardados del usuario                                       |
+| `/account/addresses`            | `useMyAddressesQuery` + mutations              | CRUD de direcciones                                                 |
 
 ## Hooks de mutación
 

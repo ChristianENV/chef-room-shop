@@ -215,7 +215,8 @@ export async function requestOrderClaimTransfer(input: {
       return {
         success: false,
         status: 'EMAIL_MATCHES_USE_DIRECT_CLAIM',
-        message: 'Tu correo coincide con el de la compra. Usa el flujo normal para guardar el pedido.',
+        message:
+          'Tu correo coincide con el de la compra. Usa el flujo normal para guardar el pedido.',
       }
     }
 
@@ -395,7 +396,10 @@ export async function approveOrderClaimTransfer(
 
     const status = await markExpiredIfNeeded(transfer.id, transfer.expiresAt, transfer.status)
 
-    if (status === OrderClaimTransferRequestStatus.EXPIRED || isTransferExpired(transfer.expiresAt)) {
+    if (
+      status === OrderClaimTransferRequestStatus.EXPIRED ||
+      isTransferExpired(transfer.expiresAt)
+    ) {
       return {
         success: false,
         status: 'TOKEN_EXPIRED',
@@ -540,7 +544,10 @@ export async function cancelOrderClaimTransfer(
 
     const status = await markExpiredIfNeeded(transfer.id, transfer.expiresAt, transfer.status)
 
-    if (status === OrderClaimTransferRequestStatus.EXPIRED || isTransferExpired(transfer.expiresAt)) {
+    if (
+      status === OrderClaimTransferRequestStatus.EXPIRED ||
+      isTransferExpired(transfer.expiresAt)
+    ) {
       return {
         success: false,
         status: 'TOKEN_EXPIRED',

@@ -34,7 +34,11 @@ import {
   mapAdminCustomizationRuleToFormValues,
   mapRuleFormValuesToInput,
 } from './mappers/admin-customization-ui.mapper'
-import type { AdminCustomizationArea, AdminCustomizationOption, AdminCustomizationRule } from './types'
+import type {
+  AdminCustomizationArea,
+  AdminCustomizationOption,
+  AdminCustomizationRule,
+} from './types'
 import type { RuleFormValues } from './types/admin-customization-ui.types'
 import { KNOWN_FILE_TYPES } from './types/admin-customization-ui.types'
 
@@ -293,9 +297,7 @@ function RuleEditorForm({
               type="number"
               min={0}
               value={values.extraProductionDays}
-              onChange={(e) =>
-                update('extraProductionDays', Math.max(0, Number(e.target.value)))
-              }
+              onChange={(e) => update('extraProductionDays', Math.max(0, Number(e.target.value)))}
             />
           </div>
         </section>

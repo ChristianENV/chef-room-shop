@@ -22,7 +22,10 @@ import { createShippingProvider } from '@/src/server/shipping/skydropx/skydropx.
 import { SkydropxApiError } from '@/src/server/shipping/skydropx/skydropx.errors'
 import { skydropxErrorToGraphQLError } from '@/src/server/shipping/skydropx/skydropx-graphql-errors'
 import { summarizeLabelAddressForDebug } from '@/src/server/shipping/skydropx/skydropx-address'
-import { logSkydropxDebug, isSkydropxDebugEnabled } from '@/src/server/shipping/skydropx/skydropx.debug'
+import {
+  logSkydropxDebug,
+  isSkydropxDebugEnabled,
+} from '@/src/server/shipping/skydropx/skydropx.debug'
 import {
   SkydropxValidationError,
   validateOrderShippingAddressForSkydropx,
@@ -159,9 +162,7 @@ function assertOrderEligibleForLabel(order: {
   status: OrderStatus
   payments: { status: PaymentStatus }[]
 }): void {
-  const paymentStatus = derivePaymentStatus(
-    order as Parameters<typeof derivePaymentStatus>[0],
-  )
+  const paymentStatus = derivePaymentStatus(order as Parameters<typeof derivePaymentStatus>[0])
   if (order.status === OrderStatus.CANCELLED || order.status === OrderStatus.REFUNDED) {
     throw badRequestError('No se puede generar guía para un pedido cancelado.')
   }
@@ -379,10 +380,7 @@ export async function createAdminShippingLabel(
   let recipientAddress
   try {
     originAddress = validateShippingOriginForLabel()
-    recipientAddress = validateOrderShippingAddressForSkydropx(
-      address,
-      order.customerEmail,
-    )
+    recipientAddress = validateOrderShippingAddressForSkydropx(address, order.customerEmail)
   } catch (error) {
     if (error instanceof SkydropxValidationError) {
       throw validationGraphQLError(error)
@@ -660,11 +658,9 @@ export async function refreshAdminShipmentTracking(
         shippedAt:
           transition?.setShippedAt && !shipment.shippedAt
             ? new Date()
-            : shipment.shippedAt ?? (nextTracking ? new Date() : null),
+            : (shipment.shippedAt ?? (nextTracking ? new Date() : null)),
         deliveredAt:
-          transition?.setDeliveredAt && !shipment.deliveredAt
-            ? new Date()
-            : shipment.deliveredAt,
+          transition?.setDeliveredAt && !shipment.deliveredAt ? new Date() : shipment.deliveredAt,
       },
       include: shipmentInclude,
     })

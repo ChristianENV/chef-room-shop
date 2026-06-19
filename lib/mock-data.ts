@@ -12,11 +12,22 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'filipinas',
     price: 1299,
     originalPrice: 1599,
-    description: 'Filipina profesional de alta calidad con diseno ejecutivo. Confeccionada en tela premium transpirable, perfecta para el chef moderno que busca comodidad y estilo.',
+    description:
+      'Filipina profesional de alta calidad con diseno ejecutivo. Confeccionada en tela premium transpirable, perfecta para el chef moderno que busca comodidad y estilo.',
     shortDescription: 'Filipina profesional con diseno ejecutivo premium',
     images: [
-      { id: '1', url: '/products/filipina-executive-white.jpg', alt: 'Filipina Executive Blanca - Vista frontal', isPrimary: true },
-      { id: '2', url: '/products/filipina-executive-white-back.jpg', alt: 'Filipina Executive Blanca - Vista trasera', isPrimary: false },
+      {
+        id: '1',
+        url: '/products/filipina-executive-white.jpg',
+        alt: 'Filipina Executive Blanca - Vista frontal',
+        isPrimary: true,
+      },
+      {
+        id: '2',
+        url: '/products/filipina-executive-white-back.jpg',
+        alt: 'Filipina Executive Blanca - Vista trasera',
+        isPrimary: false,
+      },
     ],
     colors: [
       { id: 'white', name: 'Blanco', hex: '#FFFFFF', available: true },
@@ -36,10 +47,16 @@ export const MOCK_PRODUCTS: Product[] = [
     slug: 'mandil-profesional-chef',
     category: 'mandiles',
     price: 599,
-    description: 'Mandil de alta durabilidad con bolsillos funcionales. Disenado para el trabajo intenso en cocina profesional.',
+    description:
+      'Mandil de alta durabilidad con bolsillos funcionales. Disenado para el trabajo intenso en cocina profesional.',
     shortDescription: 'Mandil resistente con bolsillos funcionales',
     images: [
-      { id: '3', url: '/products/mandil-professional.jpg', alt: 'Mandil Profesional Chef', isPrimary: true },
+      {
+        id: '3',
+        url: '/products/mandil-professional.jpg',
+        alt: 'Mandil Profesional Chef',
+        isPrimary: true,
+      },
     ],
     colors: [
       { id: 'black', name: 'Negro', hex: '#111111', available: true },
@@ -59,7 +76,8 @@ export const MOCK_PRODUCTS: Product[] = [
     slug: 'pantalon-chef-cargo',
     category: 'pantalones',
     price: 899,
-    description: 'Pantalon tipo cargo con multiples bolsillos y cintura elastica para maxima comodidad durante largas jornadas.',
+    description:
+      'Pantalon tipo cargo con multiples bolsillos y cintura elastica para maxima comodidad durante largas jornadas.',
     shortDescription: 'Pantalon cargo comodo con multiples bolsillos',
     images: [
       { id: '4', url: '/products/pantalon-cargo.jpg', alt: 'Pantalon Chef Cargo', isPrimary: true },
@@ -80,10 +98,16 @@ export const MOCK_PRODUCTS: Product[] = [
     slug: 'filipina-slim-fit-negra',
     category: 'filipinas',
     price: 1199,
-    description: 'Filipina de corte slim moderno en negro elegante. Ideal para el chef que busca un look contemporaneo y sofisticado.',
+    description:
+      'Filipina de corte slim moderno en negro elegante. Ideal para el chef que busca un look contemporaneo y sofisticado.',
     shortDescription: 'Filipina de corte moderno y elegante',
     images: [
-      { id: '5', url: '/products/filipina-slim-black.jpg', alt: 'Filipina Slim Fit Negra', isPrimary: true },
+      {
+        id: '5',
+        url: '/products/filipina-slim-black.jpg',
+        alt: 'Filipina Slim Fit Negra',
+        isPrimary: true,
+      },
     ],
     colors: [
       { id: 'black', name: 'Negro', hex: '#111111', available: true },
@@ -102,10 +126,16 @@ export const MOCK_PRODUCTS: Product[] = [
     slug: 'filipina-clasica-gris',
     category: 'filipinas',
     price: 999,
-    description: 'Filipina clasica en gris profesional. Corte tradicional con acabados de calidad para el chef que valora la elegancia atemporal.',
+    description:
+      'Filipina clasica en gris profesional. Corte tradicional con acabados de calidad para el chef que valora la elegancia atemporal.',
     shortDescription: 'Filipina clasica con corte tradicional',
     images: [
-      { id: '6', url: '/products/filipina-clasica-gris.jpg', alt: 'Filipina Clasica Gris', isPrimary: true },
+      {
+        id: '6',
+        url: '/products/filipina-clasica-gris.jpg',
+        alt: 'Filipina Clasica Gris',
+        isPrimary: true,
+      },
     ],
     colors: [
       { id: 'gray', name: 'Gris', hex: '#6B7280', available: true },
@@ -124,10 +154,16 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'mandiles',
     price: 749,
     originalPrice: 899,
-    description: 'Mandil estilo bistro con diseno europeo. Confeccionado en lona premium con correas ajustables de cuero sintetico.',
+    description:
+      'Mandil estilo bistro con diseno europeo. Confeccionado en lona premium con correas ajustables de cuero sintetico.',
     shortDescription: 'Mandil estilo bistro con diseno europeo',
     images: [
-      { id: '7', url: '/products/mandil-bistro.jpg', alt: 'Mandil Bistro Premium', isPrimary: true },
+      {
+        id: '7',
+        url: '/products/mandil-bistro.jpg',
+        alt: 'Mandil Bistro Premium',
+        isPrimary: true,
+      },
     ],
     colors: [
       { id: 'navy', name: 'Azul Marino', hex: '#0B1026', available: true },
@@ -147,10 +183,16 @@ export const MOCK_PRODUCTS: Product[] = [
     slug: 'pantalon-chef-clasico',
     category: 'pantalones',
     price: 799,
-    description: 'Pantalon clasico de chef con estampado de cuadros tradicional. Cintura elastica y tela transpirable.',
+    description:
+      'Pantalon clasico de chef con estampado de cuadros tradicional. Cintura elastica y tela transpirable.',
     shortDescription: 'Pantalon clasico con cuadros tradicionales',
     images: [
-      { id: '8', url: '/products/pantalon-clasico.jpg', alt: 'Pantalon Chef Clasico', isPrimary: true },
+      {
+        id: '8',
+        url: '/products/pantalon-clasico.jpg',
+        alt: 'Pantalon Chef Clasico',
+        isPrimary: true,
+      },
     ],
     colors: [
       { id: 'checkered', name: 'Cuadros', hex: '#333333', available: true },
@@ -168,10 +210,16 @@ export const MOCK_PRODUCTS: Product[] = [
     slug: 'filipina-mujer-executive',
     category: 'filipinas',
     price: 1399,
-    description: 'Filipina disenada especialmente para mujer con corte entallado y detalles femeninos. Tela premium con acabado suave.',
+    description:
+      'Filipina disenada especialmente para mujer con corte entallado y detalles femeninos. Tela premium con acabado suave.',
     shortDescription: 'Filipina con corte femenino y elegante',
     images: [
-      { id: '9', url: '/products/filipina-mujer.jpg', alt: 'Filipina Mujer Executive', isPrimary: true },
+      {
+        id: '9',
+        url: '/products/filipina-mujer.jpg',
+        alt: 'Filipina Mujer Executive',
+        isPrimary: true,
+      },
     ],
     colors: [
       { id: 'white', name: 'Blanco', hex: '#FFFFFF', available: true },
@@ -191,27 +239,33 @@ export const MOCK_PRODUCTS: Product[] = [
 // TODO: Replace with TanStack Query useQuery hook
 export async function fetchProducts(options?: { delay?: number }): Promise<Product[]> {
   const delay = options?.delay ?? 500
-  await new Promise(resolve => setTimeout(resolve, delay))
+  await new Promise((resolve) => setTimeout(resolve, delay))
   return MOCK_PRODUCTS
 }
 
-export async function fetchProductBySlug(slug: string, options?: { delay?: number }): Promise<Product | null> {
+export async function fetchProductBySlug(
+  slug: string,
+  options?: { delay?: number },
+): Promise<Product | null> {
   const delay = options?.delay ?? 300
-  await new Promise(resolve => setTimeout(resolve, delay))
-  return MOCK_PRODUCTS.find(p => p.slug === slug) ?? null
+  await new Promise((resolve) => setTimeout(resolve, delay))
+  return MOCK_PRODUCTS.find((p) => p.slug === slug) ?? null
 }
 
-export async function fetchProductsByCategory(category: string, options?: { delay?: number }): Promise<Product[]> {
+export async function fetchProductsByCategory(
+  category: string,
+  options?: { delay?: number },
+): Promise<Product[]> {
   const delay = options?.delay ?? 400
-  await new Promise(resolve => setTimeout(resolve, delay))
-  return MOCK_PRODUCTS.filter(p => p.category === category)
+  await new Promise((resolve) => setTimeout(resolve, delay))
+  return MOCK_PRODUCTS.filter((p) => p.category === category)
 }
 
 // Mock function for future Cloudinary integration
 // TODO: Integrate with Cloudinary for image uploads
 export async function uploadCustomizationImage(file: File): Promise<{ url: string }> {
   console.log('Mock upload:', file.name)
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  await new Promise((resolve) => setTimeout(resolve, 1000))
   return { url: '/mock-uploaded-image.jpg' }
 }
 
@@ -219,7 +273,7 @@ export async function uploadCustomizationImage(file: File): Promise<{ url: strin
 // TODO: Integrate with Conekta for payments
 export async function createPaymentIntent(amount: number): Promise<{ clientSecret: string }> {
   console.log('Mock payment intent for:', amount)
-  await new Promise(resolve => setTimeout(resolve, 500))
+  await new Promise((resolve) => setTimeout(resolve, 500))
   return { clientSecret: 'mock_client_secret_' + Date.now() }
 }
 
@@ -286,19 +340,16 @@ export const MOCK_CART: Cart = {
 // Fetch cart - mock API
 export async function fetchCart(options?: { delay?: number }): Promise<Cart> {
   const delay = options?.delay ?? 400
-  await new Promise(resolve => setTimeout(resolve, delay))
+  await new Promise((resolve) => setTimeout(resolve, delay))
   return MOCK_CART
 }
 
 // Update cart item quantity - mock API
-export async function updateCartItemQuantity(
-  itemId: string, 
-  quantity: number
-): Promise<Cart> {
+export async function updateCartItemQuantity(itemId: string, quantity: number): Promise<Cart> {
   // TODO: Replace with TanStack Query mutation
-  await new Promise(resolve => setTimeout(resolve, 300))
-  
-  const updatedItems = MOCK_CART.items.map(item => {
+  await new Promise((resolve) => setTimeout(resolve, 300))
+
+  const updatedItems = MOCK_CART.items.map((item) => {
     if (item.id === itemId) {
       const basePrice = item.product.price
       const customizationPrice = item.customization.embroidery ? 199 : 0
@@ -310,9 +361,9 @@ export async function updateCartItemQuantity(
     }
     return item
   })
-  
+
   const subtotal = updatedItems.reduce((sum, item) => sum + item.subtotal, 0)
-  
+
   return {
     items: updatedItems,
     subtotal,
@@ -325,11 +376,11 @@ export async function updateCartItemQuantity(
 // Remove cart item - mock API
 export async function removeCartItem(itemId: string): Promise<Cart> {
   // TODO: Replace with TanStack Query mutation
-  await new Promise(resolve => setTimeout(resolve, 300))
-  
-  const updatedItems = MOCK_CART.items.filter(item => item.id !== itemId)
+  await new Promise((resolve) => setTimeout(resolve, 300))
+
+  const updatedItems = MOCK_CART.items.filter((item) => item.id !== itemId)
   const subtotal = updatedItems.reduce((sum, item) => sum + item.subtotal, 0)
-  
+
   return {
     items: updatedItems,
     subtotal,
@@ -560,22 +611,22 @@ export const MOCK_SAVED_DESIGNS: SavedDesign[] = [
 
 // Mock API functions for account
 export async function fetchUserProfile(): Promise<UserProfile> {
-  await new Promise(resolve => setTimeout(resolve, 300))
+  await new Promise((resolve) => setTimeout(resolve, 300))
   return MOCK_USER
 }
 
 export async function fetchUserAddresses(): Promise<Address[]> {
-  await new Promise(resolve => setTimeout(resolve, 300))
+  await new Promise((resolve) => setTimeout(resolve, 300))
   return MOCK_ADDRESSES
 }
 
 export async function fetchUserOrders(): Promise<Order[]> {
-  await new Promise(resolve => setTimeout(resolve, 400))
+  await new Promise((resolve) => setTimeout(resolve, 400))
   return MOCK_ORDERS
 }
 
 export async function fetchSavedDesigns(): Promise<SavedDesign[]> {
-  await new Promise(resolve => setTimeout(resolve, 300))
+  await new Promise((resolve) => setTimeout(resolve, 300))
   return MOCK_SAVED_DESIGNS
 }
 
@@ -594,15 +645,36 @@ export const MOCK_ADMIN_PRODUCTS: AdminProduct[] = [
     productionDays: 5,
     customizable: true,
     status: 'activo',
-    images: [{ id: '1', url: '/products/filipina-executive-white.jpg', alt: 'Filipina Executive Blanca', isPrimary: true }],
+    images: [
+      {
+        id: '1',
+        url: '/products/filipina-executive-white.jpg',
+        alt: 'Filipina Executive Blanca',
+        isPrimary: true,
+      },
+    ],
     sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     colors: [
       { id: 'white', name: 'Blanco', hex: '#FFFFFF', available: true },
       { id: 'black', name: 'Negro', hex: '#111111', available: true },
     ],
     variants: [
-      { id: 'var-1', name: 'Manga Corta', sku: 'FIL-EXE-WHT-MC', priceModifier: 0, stock: 50, active: true },
-      { id: 'var-2', name: 'Manga Larga', sku: 'FIL-EXE-WHT-ML', priceModifier: 100, stock: 35, active: true },
+      {
+        id: 'var-1',
+        name: 'Manga Corta',
+        sku: 'FIL-EXE-WHT-MC',
+        priceModifier: 0,
+        stock: 50,
+        active: true,
+      },
+      {
+        id: 'var-2',
+        name: 'Manga Larga',
+        sku: 'FIL-EXE-WHT-ML',
+        priceModifier: 100,
+        stock: 35,
+        active: true,
+      },
     ],
     seoTitle: 'Filipina Executive Blanca - Chef Room',
     seoDescription: 'Filipina profesional premium para chefs',
@@ -620,7 +692,14 @@ export const MOCK_ADMIN_PRODUCTS: AdminProduct[] = [
     productionDays: 3,
     customizable: true,
     status: 'activo',
-    images: [{ id: '2', url: '/products/mandil-professional.jpg', alt: 'Mandil Profesional', isPrimary: true }],
+    images: [
+      {
+        id: '2',
+        url: '/products/mandil-professional.jpg',
+        alt: 'Mandil Profesional',
+        isPrimary: true,
+      },
+    ],
     sizes: ['Unitalla'],
     colors: [
       { id: 'black', name: 'Negro', hex: '#111111', available: true },
@@ -641,11 +720,11 @@ export const MOCK_ADMIN_PRODUCTS: AdminProduct[] = [
     productionDays: 4,
     customizable: false,
     status: 'activo',
-    images: [{ id: '3', url: '/products/pantalon-cargo.jpg', alt: 'Pantalon Cargo', isPrimary: true }],
-    sizes: ['28', '30', '32', '34', '36', '38', '40'],
-    colors: [
-      { id: 'black', name: 'Negro', hex: '#111111', available: true },
+    images: [
+      { id: '3', url: '/products/pantalon-cargo.jpg', alt: 'Pantalon Cargo', isPrimary: true },
     ],
+    sizes: ['28', '30', '32', '34', '36', '38', '40'],
+    colors: [{ id: 'black', name: 'Negro', hex: '#111111', available: true }],
     variants: [],
     createdAt: '2024-03-05',
     updatedAt: '2024-10-15',
@@ -661,11 +740,16 @@ export const MOCK_ADMIN_PRODUCTS: AdminProduct[] = [
     productionDays: 5,
     customizable: true,
     status: 'borrador',
-    images: [{ id: '4', url: '/products/filipina-slim-black.jpg', alt: 'Filipina Slim Negra', isPrimary: true }],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-    colors: [
-      { id: 'black', name: 'Negro', hex: '#111111', available: true },
+    images: [
+      {
+        id: '4',
+        url: '/products/filipina-slim-black.jpg',
+        alt: 'Filipina Slim Negra',
+        isPrimary: true,
+      },
     ],
+    sizes: ['XS', 'S', 'M', 'L', 'XL'],
+    colors: [{ id: 'black', name: 'Negro', hex: '#111111', available: true }],
     variants: [],
     createdAt: '2024-04-20',
     updatedAt: '2024-11-25',
@@ -681,7 +765,9 @@ export const MOCK_ADMIN_PRODUCTS: AdminProduct[] = [
     productionDays: 4,
     customizable: true,
     status: 'archivado',
-    images: [{ id: '5', url: '/products/mandil-bistro.jpg', alt: 'Mandil Bistro', isPrimary: true }],
+    images: [
+      { id: '5', url: '/products/mandil-bistro.jpg', alt: 'Mandil Bistro', isPrimary: true },
+    ],
     sizes: ['Unitalla'],
     colors: [
       { id: 'navy', name: 'Azul Marino', hex: '#0B1026', available: true },
@@ -695,18 +781,18 @@ export const MOCK_ADMIN_PRODUCTS: AdminProduct[] = [
 
 // Mock API functions for admin products
 export async function fetchAdminProducts(): Promise<AdminProduct[]> {
-  await new Promise(resolve => setTimeout(resolve, 400))
+  await new Promise((resolve) => setTimeout(resolve, 400))
   return MOCK_ADMIN_PRODUCTS
 }
 
 export async function fetchAdminProductById(id: string): Promise<AdminProduct | null> {
-  await new Promise(resolve => setTimeout(resolve, 300))
-  return MOCK_ADMIN_PRODUCTS.find(p => p.id === id) ?? null
+  await new Promise((resolve) => setTimeout(resolve, 300))
+  return MOCK_ADMIN_PRODUCTS.find((p) => p.id === id) ?? null
 }
 
 export async function createAdminProduct(data: AdminProductFormData): Promise<AdminProduct> {
   // TODO: Replace with GraphQL mutation
-  await new Promise(resolve => setTimeout(resolve, 500))
+  await new Promise((resolve) => setTimeout(resolve, 500))
   const newProduct: AdminProduct = {
     id: `admin-${Date.now()}`,
     ...data,
@@ -719,16 +805,19 @@ export async function createAdminProduct(data: AdminProductFormData): Promise<Ad
   return newProduct
 }
 
-export async function updateAdminProduct(id: string, data: Partial<AdminProductFormData>): Promise<AdminProduct> {
+export async function updateAdminProduct(
+  id: string,
+  data: Partial<AdminProductFormData>,
+): Promise<AdminProduct> {
   // TODO: Replace with GraphQL mutation
-  await new Promise(resolve => setTimeout(resolve, 500))
-  const existing = MOCK_ADMIN_PRODUCTS.find(p => p.id === id)
+  await new Promise((resolve) => setTimeout(resolve, 500))
+  const existing = MOCK_ADMIN_PRODUCTS.find((p) => p.id === id)
   if (!existing) throw new Error('Product not found')
   const colors =
     data.colors?.map((color) =>
       typeof color === 'string'
         ? { id: color, name: color, hex: '#000000', available: true }
-        : color
+        : color,
     ) ?? existing.colors
 
   return { ...existing, ...data, colors, updatedAt: new Date().toISOString() }
@@ -736,7 +825,7 @@ export async function updateAdminProduct(id: string, data: Partial<AdminProductF
 
 export async function deleteAdminProduct(id: string): Promise<boolean> {
   // TODO: Replace with GraphQL mutation
-  await new Promise(resolve => setTimeout(resolve, 300))
+  await new Promise((resolve) => setTimeout(resolve, 300))
   return true
 }
 
@@ -872,36 +961,41 @@ export const MOCK_CUSTOMIZATION_RULES: CustomizationAreaRule[] = [
 ]
 
 // Mock API functions for customization rules
-export async function fetchCustomizationRules(productId?: string): Promise<CustomizationAreaRule[]> {
-  await new Promise(resolve => setTimeout(resolve, 300))
+export async function fetchCustomizationRules(
+  productId?: string,
+): Promise<CustomizationAreaRule[]> {
+  await new Promise((resolve) => setTimeout(resolve, 300))
   if (productId) {
-    return MOCK_CUSTOMIZATION_RULES.filter(r => r.productId === productId)
+    return MOCK_CUSTOMIZATION_RULES.filter((r) => r.productId === productId)
   }
   return MOCK_CUSTOMIZATION_RULES
 }
 
 export async function updateCustomizationRule(
   ruleId: string,
-  data: Partial<CustomizationRuleFormData>
+  data: Partial<CustomizationRuleFormData>,
 ): Promise<CustomizationAreaRule> {
   // TODO: Replace with GraphQL mutation product_customization_rules.update
-  await new Promise(resolve => setTimeout(resolve, 400))
-  const existing = MOCK_CUSTOMIZATION_RULES.find(r => r.id === ruleId)
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  const existing = MOCK_CUSTOMIZATION_RULES.find((r) => r.id === ruleId)
   if (!existing) throw new Error('Rule not found')
   return { ...existing, ...data }
 }
 
-export async function saveAllCustomizationRules(
-  rules: CustomizationAreaRule[]
-): Promise<boolean> {
+export async function saveAllCustomizationRules(rules: CustomizationAreaRule[]): Promise<boolean> {
   // TODO: Replace with GraphQL mutation product_customization_rules.batch_update
-  await new Promise(resolve => setTimeout(resolve, 600))
+  await new Promise((resolve) => setTimeout(resolve, 600))
   console.log('Saving rules:', rules)
   return true
 }
 
 // Admin Orders Mock Data
-import type { AdminOrder, AdminOrderStatus, AdminPaymentStatus, AdminProductionStatus } from './types'
+import type {
+  AdminOrder,
+  AdminOrderStatus,
+  AdminPaymentStatus,
+  AdminProductionStatus,
+} from './types'
 
 export const MOCK_ADMIN_ORDERS: AdminOrder[] = [
   {
@@ -980,9 +1074,26 @@ export const MOCK_ADMIN_ORDERS: AdminOrder[] = [
     paymentReference: 'pi_3OkPwz2eZvKYlo2C1234',
     estimatedDelivery: '2024-12-10',
     timeline: [
-      { id: 't1', event: 'Orden creada', status: 'pendiente-pago', timestamp: '2024-11-28T10:30:00Z' },
-      { id: 't2', event: 'Pago recibido', status: 'pagado', timestamp: '2024-11-28T10:32:00Z', notes: 'Pago con tarjeta via Conekta' },
-      { id: 't3', event: 'En produccion', status: 'en-produccion', timestamp: '2024-11-28T14:45:00Z', user: 'Admin' },
+      {
+        id: 't1',
+        event: 'Orden creada',
+        status: 'pendiente-pago',
+        timestamp: '2024-11-28T10:30:00Z',
+      },
+      {
+        id: 't2',
+        event: 'Pago recibido',
+        status: 'pagado',
+        timestamp: '2024-11-28T10:32:00Z',
+        notes: 'Pago con tarjeta via Conekta',
+      },
+      {
+        id: 't3',
+        event: 'En produccion',
+        status: 'en-produccion',
+        timestamp: '2024-11-28T14:45:00Z',
+        user: 'Admin',
+      },
     ],
   },
   {
@@ -1059,10 +1170,32 @@ export const MOCK_ADMIN_ORDERS: AdminOrder[] = [
     trackingUrl: 'https://fedex.com/track/FDX789456123',
     estimatedDelivery: '2024-12-02',
     timeline: [
-      { id: 't1', event: 'Orden creada', status: 'pendiente-pago', timestamp: '2024-11-27T16:20:00Z' },
-      { id: 't2', event: 'Pago recibido', status: 'pagado', timestamp: '2024-11-27T18:45:00Z', notes: 'Pago OXXO confirmado' },
-      { id: 't3', event: 'En produccion', status: 'en-produccion', timestamp: '2024-11-27T19:00:00Z' },
-      { id: 't4', event: 'Produccion completada', status: 'listo-envio', timestamp: '2024-11-28T09:00:00Z', user: 'Produccion' },
+      {
+        id: 't1',
+        event: 'Orden creada',
+        status: 'pendiente-pago',
+        timestamp: '2024-11-27T16:20:00Z',
+      },
+      {
+        id: 't2',
+        event: 'Pago recibido',
+        status: 'pagado',
+        timestamp: '2024-11-27T18:45:00Z',
+        notes: 'Pago OXXO confirmado',
+      },
+      {
+        id: 't3',
+        event: 'En produccion',
+        status: 'en-produccion',
+        timestamp: '2024-11-27T19:00:00Z',
+      },
+      {
+        id: 't4',
+        event: 'Produccion completada',
+        status: 'listo-envio',
+        timestamp: '2024-11-28T09:00:00Z',
+        user: 'Produccion',
+      },
     ],
   },
   {
@@ -1121,7 +1254,12 @@ export const MOCK_ADMIN_ORDERS: AdminOrder[] = [
     paymentMethod: 'spei',
     notes: 'Cliente nuevo - pedido grande',
     timeline: [
-      { id: 't1', event: 'Orden creada', status: 'pendiente-pago', timestamp: '2024-11-27T09:15:00Z' },
+      {
+        id: 't1',
+        event: 'Orden creada',
+        status: 'pendiente-pago',
+        timestamp: '2024-11-27T09:15:00Z',
+      },
     ],
   },
   {
@@ -1200,11 +1338,32 @@ export const MOCK_ADMIN_ORDERS: AdminOrder[] = [
     trackingUrl: 'https://dhl.com/track/DHL123456789',
     estimatedDelivery: '2024-11-30',
     timeline: [
-      { id: 't1', event: 'Orden creada', status: 'pendiente-pago', timestamp: '2024-11-26T14:00:00Z' },
+      {
+        id: 't1',
+        event: 'Orden creada',
+        status: 'pendiente-pago',
+        timestamp: '2024-11-26T14:00:00Z',
+      },
       { id: 't2', event: 'Pago recibido', status: 'pagado', timestamp: '2024-11-26T14:02:00Z' },
-      { id: 't3', event: 'En produccion', status: 'en-produccion', timestamp: '2024-11-26T15:00:00Z' },
-      { id: 't4', event: 'Listo para envio', status: 'listo-envio', timestamp: '2024-11-28T10:00:00Z' },
-      { id: 't5', event: 'Enviado', status: 'enviado', timestamp: '2024-11-28T11:30:00Z', notes: 'DHL Express' },
+      {
+        id: 't3',
+        event: 'En produccion',
+        status: 'en-produccion',
+        timestamp: '2024-11-26T15:00:00Z',
+      },
+      {
+        id: 't4',
+        event: 'Listo para envio',
+        status: 'listo-envio',
+        timestamp: '2024-11-28T10:00:00Z',
+      },
+      {
+        id: 't5',
+        event: 'Enviado',
+        status: 'enviado',
+        timestamp: '2024-11-28T11:30:00Z',
+        notes: 'DHL Express',
+      },
     ],
   },
   {
@@ -1265,10 +1424,25 @@ export const MOCK_ADMIN_ORDERS: AdminOrder[] = [
     trackingNumber: 'ESTAFETA456789',
     trackingUrl: 'https://estafeta.com/track/ESTAFETA456789',
     timeline: [
-      { id: 't1', event: 'Orden creada', status: 'pendiente-pago', timestamp: '2024-11-25T11:00:00Z' },
+      {
+        id: 't1',
+        event: 'Orden creada',
+        status: 'pendiente-pago',
+        timestamp: '2024-11-25T11:00:00Z',
+      },
       { id: 't2', event: 'Pago recibido', status: 'pagado', timestamp: '2024-11-25T11:01:00Z' },
-      { id: 't3', event: 'En produccion', status: 'en-produccion', timestamp: '2024-11-25T12:00:00Z' },
-      { id: 't4', event: 'Listo para envio', status: 'listo-envio', timestamp: '2024-11-26T10:00:00Z' },
+      {
+        id: 't3',
+        event: 'En produccion',
+        status: 'en-produccion',
+        timestamp: '2024-11-25T12:00:00Z',
+      },
+      {
+        id: 't4',
+        event: 'Listo para envio',
+        status: 'listo-envio',
+        timestamp: '2024-11-26T10:00:00Z',
+      },
       { id: 't5', event: 'Enviado', status: 'enviado', timestamp: '2024-11-26T11:00:00Z' },
       { id: 't6', event: 'Entregado', status: 'entregado', timestamp: '2024-11-27T16:00:00Z' },
     ],
@@ -1283,44 +1457,45 @@ export async function fetchAdminOrders(filters?: {
   search?: string
 }): Promise<AdminOrder[]> {
   // TODO: Replace with GraphQL query orders.list
-  await new Promise(resolve => setTimeout(resolve, 400))
+  await new Promise((resolve) => setTimeout(resolve, 400))
   let orders = [...MOCK_ADMIN_ORDERS]
-  
+
   if (filters?.status) {
-    orders = orders.filter(o => o.status === filters.status)
+    orders = orders.filter((o) => o.status === filters.status)
   }
   if (filters?.paymentStatus) {
-    orders = orders.filter(o => o.paymentStatus === filters.paymentStatus)
+    orders = orders.filter((o) => o.paymentStatus === filters.paymentStatus)
   }
   if (filters?.productionStatus) {
-    orders = orders.filter(o => o.productionStatus === filters.productionStatus)
+    orders = orders.filter((o) => o.productionStatus === filters.productionStatus)
   }
   if (filters?.search) {
     const search = filters.search.toLowerCase()
-    orders = orders.filter(o => 
-      o.orderNumber.toLowerCase().includes(search) ||
-      o.customer.name.toLowerCase().includes(search) ||
-      o.customer.email.toLowerCase().includes(search)
+    orders = orders.filter(
+      (o) =>
+        o.orderNumber.toLowerCase().includes(search) ||
+        o.customer.name.toLowerCase().includes(search) ||
+        o.customer.email.toLowerCase().includes(search),
     )
   }
-  
+
   return orders
 }
 
 export async function fetchAdminOrderById(id: string): Promise<AdminOrder | null> {
   // TODO: Replace with GraphQL query orders.get
-  await new Promise(resolve => setTimeout(resolve, 300))
-  return MOCK_ADMIN_ORDERS.find(o => o.id === id) ?? null
+  await new Promise((resolve) => setTimeout(resolve, 300))
+  return MOCK_ADMIN_ORDERS.find((o) => o.id === id) ?? null
 }
 
 export async function updateAdminOrderStatus(
   orderId: string,
   status: AdminOrderStatus,
-  notes?: string
+  notes?: string,
 ): Promise<AdminOrder> {
   // TODO: Replace with GraphQL mutation orders.updateStatus
-  await new Promise(resolve => setTimeout(resolve, 400))
-  const order = MOCK_ADMIN_ORDERS.find(o => o.id === orderId)
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  const order = MOCK_ADMIN_ORDERS.find((o) => o.id === orderId)
   if (!order) throw new Error('Order not found')
   return { ...order, status, updatedAt: new Date().toISOString() }
 }
@@ -1328,11 +1503,11 @@ export async function updateAdminOrderStatus(
 export async function addTrackingNumber(
   orderId: string,
   trackingNumber: string,
-  carrier: string
+  carrier: string,
 ): Promise<AdminOrder> {
   // TODO: Replace with GraphQL mutation orders.addTracking
-  await new Promise(resolve => setTimeout(resolve, 400))
-  const order = MOCK_ADMIN_ORDERS.find(o => o.id === orderId)
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  const order = MOCK_ADMIN_ORDERS.find((o) => o.id === orderId)
   if (!order) throw new Error('Order not found')
   return {
     ...order,

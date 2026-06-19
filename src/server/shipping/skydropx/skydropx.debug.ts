@@ -2,14 +2,7 @@ import 'server-only'
 
 import { sanitizeSkydropxDebugPayload } from './skydropx.sanitize'
 
-const PII_KEYS = new Set([
-  'email',
-  'phone',
-  'name',
-  'full_name',
-  'tax_id_number',
-  'rfc',
-])
+const PII_KEYS = new Set(['email', 'phone', 'name', 'full_name', 'tax_id_number', 'rfc'])
 
 /**
  * True when Skydropx request/response debug logging is enabled.
@@ -60,9 +53,7 @@ export function logSkydropxDebug(input: SkydropxDebugLogInput): void {
     service: input.service ?? undefined,
     statusCode: input.statusCode,
     requestId: input.requestId ?? undefined,
-    request: input.requestSummary
-      ? redactPiiInSummary(input.requestSummary)
-      : undefined,
+    request: input.requestSummary ? redactPiiInSummary(input.requestSummary) : undefined,
     error: input.errorBody ? redactPiiInSummary(input.errorBody) : undefined,
   }
 

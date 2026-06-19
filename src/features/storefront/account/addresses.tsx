@@ -1,13 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { 
-  Edit,
-  MapPin,
-  MoreHorizontal,
-  Plus,
-  Trash2,
-} from 'lucide-react'
+import { Edit, MapPin, MoreHorizontal, Plus, Trash2 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -41,12 +35,38 @@ import { Checkbox } from '@/components/ui/checkbox'
 import type { Address } from '@/lib/types'
 
 const MEXICAN_STATES = [
-  'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche',
-  'Chiapas', 'Chihuahua', 'CDMX', 'Coahuila', 'Colima', 'Durango',
-  'Estado de Mexico', 'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco',
-  'Michoacan', 'Morelos', 'Nayarit', 'Nuevo Leon', 'Oaxaca', 'Puebla',
-  'Queretaro', 'Quintana Roo', 'San Luis Potosi', 'Sinaloa', 'Sonora',
-  'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz', 'Yucatan', 'Zacatecas',
+  'Aguascalientes',
+  'Baja California',
+  'Baja California Sur',
+  'Campeche',
+  'Chiapas',
+  'Chihuahua',
+  'CDMX',
+  'Coahuila',
+  'Colima',
+  'Durango',
+  'Estado de Mexico',
+  'Guanajuato',
+  'Guerrero',
+  'Hidalgo',
+  'Jalisco',
+  'Michoacan',
+  'Morelos',
+  'Nayarit',
+  'Nuevo Leon',
+  'Oaxaca',
+  'Puebla',
+  'Queretaro',
+  'Quintana Roo',
+  'San Luis Potosi',
+  'Sinaloa',
+  'Sonora',
+  'Tabasco',
+  'Tamaulipas',
+  'Tlaxcala',
+  'Veracruz',
+  'Yucatan',
+  'Zacatecas',
 ]
 
 interface AddressCardProps {
@@ -56,29 +76,28 @@ interface AddressCardProps {
   onSetDefault?: (id: string, type: 'shipping' | 'billing') => void
 }
 
-export function AddressCard({ 
-  address, 
-  onEdit, 
-  onDelete,
-  onSetDefault,
-}: AddressCardProps) {
+export function AddressCard({ address, onEdit, onDelete, onSetDefault }: AddressCardProps) {
   return (
-    <Card className={cn(
-      'border-border bg-card transition-all',
-      (address.isDefaultShipping || address.isDefaultBilling) && 'border-primary/50'
-    )}>
+    <Card
+      className={cn(
+        'border-border bg-card transition-all',
+        (address.isDefaultShipping || address.isDefaultBilling) && 'border-primary/50',
+      )}
+    >
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <h3 className="font-sans font-semibold text-foreground">
-                {address.label}
-              </h3>
+              <h3 className="font-sans font-semibold text-foreground">{address.label}</h3>
               {address.isDefaultShipping && (
-                <Badge variant="secondary" className="text-xs">Envio</Badge>
+                <Badge variant="secondary" className="text-xs">
+                  Envio
+                </Badge>
               )}
               {address.isDefaultBilling && (
-                <Badge variant="secondary" className="text-xs">Facturacion</Badge>
+                <Badge variant="secondary" className="text-xs">
+                  Facturacion
+                </Badge>
               )}
             </div>
             <p className="font-serif text-sm text-foreground">
@@ -88,17 +107,13 @@ export function AddressCard({
               {address.street} {address.exteriorNumber}
               {address.interiorNumber && `, Int. ${address.interiorNumber}`}
             </p>
-            <p className="font-serif text-sm text-muted-foreground">
-              Col. {address.neighborhood}
-            </p>
+            <p className="font-serif text-sm text-muted-foreground">Col. {address.neighborhood}</p>
             <p className="font-serif text-sm text-muted-foreground">
               {address.city}, {address.state} CP {address.postalCode}
             </p>
-            <p className="font-serif text-sm text-muted-foreground">
-              Tel: {address.phone}
-            </p>
+            <p className="font-serif text-sm text-muted-foreground">Tel: {address.phone}</p>
           </div>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -122,7 +137,7 @@ export function AddressCard({
                   Usar para facturacion
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={() => onDelete?.(address.id)}
                 className="text-destructive focus:text-destructive"
               >
@@ -189,13 +204,12 @@ export function AddressDialog({
             {isEditing ? 'Editar direccion' : 'Agregar direccion'}
           </DialogTitle>
           <DialogDescription className="font-serif">
-            {isEditing 
+            {isEditing
               ? 'Actualiza la informacion de esta direccion'
-              : 'Ingresa los datos de tu nueva direccion de envio'
-            }
+              : 'Ingresa los datos de tu nueva direccion de envio'}
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Label */}
           <div className="space-y-2">
@@ -332,7 +346,7 @@ export function AddressDialog({
               <Checkbox
                 id="isDefaultShipping"
                 checked={formData.isDefaultShipping}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   setFormData({ ...formData, isDefaultShipping: !!checked })
                 }
               />
@@ -344,7 +358,7 @@ export function AddressDialog({
               <Checkbox
                 id="isDefaultBilling"
                 checked={formData.isDefaultBilling}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   setFormData({ ...formData, isDefaultBilling: !!checked })
                 }
               />
@@ -359,11 +373,7 @@ export function AddressDialog({
               Cancelar
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting
-                ? 'Guardando...'
-                : isEditing
-                  ? 'Guardar cambios'
-                  : 'Agregar direccion'}
+              {isSubmitting ? 'Guardando...' : isEditing ? 'Guardar cambios' : 'Agregar direccion'}
             </Button>
           </DialogFooter>
         </form>

@@ -9,8 +9,7 @@ const steps = [
   {
     number: '01',
     title: 'Elige tu prenda',
-    description:
-      'Filipinas, mandiles, pantalones y accesorios de nuestra colección profesional.',
+    description: 'Filipinas, mandiles, pantalones y accesorios de nuestra colección profesional.',
   },
   {
     number: '02',

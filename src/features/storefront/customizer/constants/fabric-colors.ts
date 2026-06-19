@@ -41,7 +41,9 @@ export function fabricColorsAsNamedColors(): NamedColor[] {
   return DEFAULT_FABRIC_COLORS.map(({ id, name, hex }) => ({ id, name, hex }))
 }
 
-export function groupFabricColors(colors: readonly FabricColor[]): Record<FabricColorGroup, FabricColor[]> {
+export function groupFabricColors(
+  colors: readonly FabricColor[],
+): Record<FabricColorGroup, FabricColor[]> {
   return FABRIC_COLOR_GROUPS.reduce(
     (acc, group) => {
       acc[group] = colors.filter((color) => color.group === group)

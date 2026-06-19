@@ -12,17 +12,17 @@ No incluye en v1: pickups, tracking público, generación automática al pagar. 
 
 Tras migración `skydropx_shipments`, cada guía guarda:
 
-| Campo | Uso |
-|-------|-----|
-| `provider` | `SKYDROPX` |
-| `providerShipmentId` | ID envío Skydropx |
-| `providerLabelId` | ID etiqueta (si aplica) |
-| `labelUrl` | URL PDF/ZPL para imprimir |
-| `labelFormat` | `PDF`, `ZPL`, `EPL` |
-| `quoteId` / `rateId` | Cotización y tarifa usadas |
-| `costCents` | Desde `ShippingRate.amountCents` (DB) |
-| `carrier`, `service`, `trackingNumber` | Respuesta Skydropx |
-| `rawResponseJson` | Solo servidor; no expuesto en GraphQL |
+| Campo                                  | Uso                                   |
+| -------------------------------------- | ------------------------------------- |
+| `provider`                             | `SKYDROPX`                            |
+| `providerShipmentId`                   | ID envío Skydropx                     |
+| `providerLabelId`                      | ID etiqueta (si aplica)               |
+| `labelUrl`                             | URL PDF/ZPL para imprimir             |
+| `labelFormat`                          | `PDF`, `ZPL`, `EPL`                   |
+| `quoteId` / `rateId`                   | Cotización y tarifa usadas            |
+| `costCents`                            | Desde `ShippingRate.amountCents` (DB) |
+| `carrier`, `service`, `trackingNumber` | Respuesta Skydropx                    |
+| `rawResponseJson`                      | Solo servidor; no expuesto en GraphQL |
 
 ## Query
 
@@ -58,9 +58,7 @@ query AdminShipment($orderNumber: String!) {
 
 ```graphql
 mutation CreateLabel {
-  adminCreateShippingLabel(
-    input: { orderNumber: "CR-20260520-0001", labelFormat: "PDF" }
-  ) {
+  adminCreateShippingLabel(input: { orderNumber: "CR-20260520-0001", labelFormat: "PDF" }) {
     trackingNumber
     labelUrl
     carrier
@@ -75,7 +73,7 @@ mutation CreateLabel {
 
 1. Orden existe y `paymentStatus` = `PAID`.
 2. `Order.status` ∈ `PAID`, `IN_PRODUCTION`, `READY_TO_SHIP`.
-3. No existe guía activa (`providerShipmentId` o `labelUrl`) → si existe: `CONFLICT` *"La guía ya fue generada."*
+3. No existe guía activa (`providerShipmentId` o `labelUrl`) → si existe: `CONFLICT` _"La guía ya fue generada."_
 4. `ShippingQuote` vinculada por `orderId`.
 5. Tarifa: `rateId` del input (debe pertenecer a la quote) o tarifa con `selectedAt` en checkout.
 6. Tarifa no expirada (`expiresAt`).
@@ -85,11 +83,11 @@ mutation CreateLabel {
 
 **Estado de orden tras crear guía:**
 
-| Modo | Condición | `Shipment.status` | `Order.status` | `fulfillmentStatus` |
-|------|-----------|-------------------|----------------|---------------------|
-| `mock` | Guía mock generada (incluye tracking) | `LABEL_CREATED` | `READY_TO_SHIP` | `PROCESSING` |
-| `live` | Hay `trackingNumber` | `IN_TRANSIT` | `SHIPPED` | `SHIPPED` |
-| `live` | Solo `labelUrl` | `LABEL_CREATED` | `READY_TO_SHIP` | `PROCESSING` |
+| Modo   | Condición                             | `Shipment.status` | `Order.status`  | `fulfillmentStatus` |
+| ------ | ------------------------------------- | ----------------- | --------------- | ------------------- |
+| `mock` | Guía mock generada (incluye tracking) | `LABEL_CREATED`   | `READY_TO_SHIP` | `PROCESSING`        |
+| `live` | Hay `trackingNumber`                  | `IN_TRANSIT`      | `SHIPPED`       | `SHIPPED`           |
+| `live` | Solo `labelUrl`                       | `LABEL_CREATED`   | `READY_TO_SHIP` | `PROCESSING`        |
 
 **Mock lifecycle:**
 
@@ -123,23 +121,23 @@ En transición a enviado/in transit, crea notificación USER `ORDER_SHIPPED`. En
 
 ## Validaciones de error
 
-| Caso | Código |
-|------|--------|
-| Sin sesión admin | `UNAUTHENTICATED` / `FORBIDDEN` |
-| Pedido no pagado | `BAD_REQUEST` |
-| Pedido cancelado / entregado | `BAD_REQUEST` |
-| Guía ya generada | `CONFLICT` |
-| Sin quote o sin tarifa seleccionada | `BAD_REQUEST` |
-| Tarifa expirada | `BAD_REQUEST` |
-| Error Skydropx | `SKYDROPX_API_ERROR` (mensaje amigable por status HTTP) |
-| Origen incompleto | `BAD_REQUEST` — configurar `SHIPPING_ORIGIN_*` |
-| Dirección incompleta | `BAD_REQUEST` |
+| Caso                                | Código                                                  |
+| ----------------------------------- | ------------------------------------------------------- |
+| Sin sesión admin                    | `UNAUTHENTICATED` / `FORBIDDEN`                         |
+| Pedido no pagado                    | `BAD_REQUEST`                                           |
+| Pedido cancelado / entregado        | `BAD_REQUEST`                                           |
+| Guía ya generada                    | `CONFLICT`                                              |
+| Sin quote o sin tarifa seleccionada | `BAD_REQUEST`                                           |
+| Tarifa expirada                     | `BAD_REQUEST`                                           |
+| Error Skydropx                      | `SKYDROPX_API_ERROR` (mensaje amigable por status HTTP) |
+| Origen incompleto                   | `BAD_REQUEST` — configurar `SHIPPING_ORIGIN_*`          |
+| Dirección incompleta                | `BAD_REQUEST`                                           |
 
 ### Debug
 
 - `SKYDROPX_DEBUG=true` — logs sanitizados en servidor (`skydropx.debug.ts`)
 - `pnpm tsx scripts/skydropx-create-label-smoke.ts <orderNumber>` — dry-run del payload
-- Ver `docs/skydropx.md` → sección *Debug de generación de guías*
+- Ver `docs/skydropx.md` → sección _Debug de generación de guías_
 
 ## Frontend UI
 
@@ -163,8 +161,8 @@ src/features/admin/shipping/
 
 ## Archivos
 
-| Área | Ruta |
-|------|------|
-| Service | `src/server/graphql/modules/admin-shipping/admin-shipping.service.ts` |
-| Resolver | `src/server/graphql/resolvers/admin-shipping.resolver.ts` |
-| Mappers Skydropx | `src/server/shipping/skydropx/skydropx.mappers.ts` |
+| Área             | Ruta                                                                  |
+| ---------------- | --------------------------------------------------------------------- |
+| Service          | `src/server/graphql/modules/admin-shipping/admin-shipping.service.ts` |
+| Resolver         | `src/server/graphql/resolvers/admin-shipping.resolver.ts`             |
+| Mappers Skydropx | `src/server/shipping/skydropx/skydropx.mappers.ts`                    |

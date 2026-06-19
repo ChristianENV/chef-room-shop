@@ -1,10 +1,4 @@
-import type {
-  AddressType,
-  Order,
-  OrderItem,
-  Payment,
-  PaymentMethod,
-} from '@prisma/client'
+import type { AddressType, Order, OrderItem, Payment, PaymentMethod } from '@prisma/client'
 
 export type CheckoutAddressInput = {
   firstName: string

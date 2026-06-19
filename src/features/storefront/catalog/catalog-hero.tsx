@@ -11,8 +11,8 @@ export function CatalogHero() {
           Catálogo Chef Room
         </h1>
         <p className="mx-auto mt-4 max-w-2xl font-serif text-lg text-muted-foreground">
-          Explora uniformes profesionales para chef y personalizalos con colores, 
-          bordados, logotipos y detalles unicos.
+          Explora uniformes profesionales para chef y personalizalos con colores, bordados,
+          logotipos y detalles unicos.
         </p>
         <Button size="lg" className="mt-6 gap-2">
           <Sparkles className="h-4 w-4" />

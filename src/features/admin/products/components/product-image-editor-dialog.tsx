@@ -3,13 +3,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import Cropper from 'react-easy-crop'
 import type { Area } from 'react-easy-crop'
-import {
-  Loader2,
-  RotateCcw,
-  RotateCw,
-  ZoomIn,
-  ZoomOut,
-} from 'lucide-react'
+import { Loader2, RotateCcw, RotateCw, ZoomIn, ZoomOut } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -117,9 +111,7 @@ function ProductImageEditorBody({
         previewUrl,
       })
     } catch (err) {
-      setApplyError(
-        err instanceof Error ? err.message : 'No pudimos procesar la imagen.',
-      )
+      setApplyError(err instanceof Error ? err.message : 'No pudimos procesar la imagen.')
     } finally {
       setIsEstimating(false)
     }
@@ -226,13 +218,7 @@ function ProductImageEditorBody({
             <RotateCw className="h-3.5 w-3.5" />
             +90°
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleReset}
-            disabled={isBusy}
-          >
+          <Button type="button" variant="ghost" size="sm" onClick={handleReset} disabled={isBusy}>
             Restablecer
           </Button>
         </div>

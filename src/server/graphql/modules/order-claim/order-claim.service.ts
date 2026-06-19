@@ -2,9 +2,7 @@ import { GraphQLError } from 'graphql'
 
 import { routes } from '@/src/config/routes'
 import type { GraphQLContext } from '../../context'
-import {
-  validateOrderClaimToken,
-} from '@/src/server/orders/order-claim-token'
+import { validateOrderClaimToken } from '@/src/server/orders/order-claim-token'
 import { linkGuestOrderToUser } from '@/src/server/orders/link-guest-order-to-user'
 
 import { mapOrderClaimPreview } from './order-claim.mappers'

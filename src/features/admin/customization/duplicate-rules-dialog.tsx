@@ -66,8 +66,8 @@ export function DuplicateRulesDialog({
           <DialogDescription className="font-serif">
             {sourceProduct ? (
               <>
-                Origen: <strong className="text-foreground">{sourceProduct.name}</strong>.
-                Se copiarán zonas, técnicas, precios y restricciones al producto destino.
+                Origen: <strong className="text-foreground">{sourceProduct.name}</strong>. Se
+                copiarán zonas, técnicas, precios y restricciones al producto destino.
               </>
             ) : (
               'Selecciona el producto destino.'
@@ -105,7 +105,11 @@ export function DuplicateRulesDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isDuplicating}>
+          <Button
+            variant="outline"
+            onClick={() => handleOpenChange(false)}
+            disabled={isDuplicating}
+          >
             Cancelar
           </Button>
           <Button

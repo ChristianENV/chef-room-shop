@@ -11,16 +11,20 @@ import {
   type RefObject,
 } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { ContactShadows, Environment, Float, Html, OrbitControls, RoundedBox } from '@react-three/drei'
+import {
+  ContactShadows,
+  Environment,
+  Float,
+  Html,
+  OrbitControls,
+  RoundedBox,
+} from '@react-three/drei'
 import * as THREE from 'three'
 import { useCustomizerStore } from '../store/customizer.store'
 import { getCustomizerModelForProduct } from '../3d/model-registry'
 import { GarmentModelLoader } from '../3d/garment-model'
 import { ModelCameraRig, type ModelReadyPayload } from '../3d/model-camera-rig'
-import {
-  Customizer3dDebugHud,
-  type Customizer3dDebugSnapshot,
-} from '../3d/customizer-3d-debug-hud'
+import { Customizer3dDebugHud, type Customizer3dDebugSnapshot } from '../3d/customizer-3d-debug-hud'
 import { ChefJacketSmokeViewport } from '../3d/chef-jacket-smoke-scene'
 import {
   isCustomizer3dSafeModeEnabled,
@@ -31,10 +35,7 @@ import {
 import { useIsAdminUser } from '@/src/features/storefront/hooks/use-is-admin-user'
 import { resolveModelSourceInfo } from '../3d/model-source'
 import { toSameOriginR2Url } from '@/src/lib/assets/same-origin-r2-url'
-import {
-  ViewportCaptureBridge,
-  type ViewportCaptureHandle,
-} from './viewport-capture-bridge'
+import { ViewportCaptureBridge, type ViewportCaptureHandle } from './viewport-capture-bridge'
 import { ViewportElementOverlay } from './viewport-element-overlay'
 
 /** Shown inside the <Canvas> while the GLB is downloading. */
@@ -51,8 +52,7 @@ function GlbLoadingFallback() {
 
 function JacketModel() {
   const ref = useRef<THREE.Group>(null)
-  const { baseColor, detailColor, viewAngle, sleeveStyle, captureInstant } =
-    useCustomizerStore()
+  const { baseColor, detailColor, viewAngle, sleeveStyle, captureInstant } = useCustomizerStore()
 
   useFrame(() => {
     if (!ref.current) return
@@ -61,11 +61,7 @@ function JacketModel() {
       ref.current.rotation.y = target
       return
     }
-    ref.current.rotation.y = THREE.MathUtils.lerp(
-      ref.current.rotation.y,
-      target,
-      0.06,
-    )
+    ref.current.rotation.y = THREE.MathUtils.lerp(ref.current.rotation.y, target, 0.06)
   })
 
   const baseMaterial = useMemo(
@@ -85,7 +81,12 @@ function JacketModel() {
         <RoundedBox args={[1.15, 1.5, 0.45]} radius={0.08} smoothness={4}>
           <primitive object={baseMaterial} attach="material" />
         </RoundedBox>
-        <RoundedBox args={[0.55, 0.18, 0.38]} radius={0.04} smoothness={4} position={[0, 0.82, 0.02]}>
+        <RoundedBox
+          args={[0.55, 0.18, 0.38]}
+          radius={0.04}
+          smoothness={4}
+          position={[0, 0.82, 0.02]}
+        >
           <primitive object={detailMaterial} attach="material" />
         </RoundedBox>
         <group position={[-0.7, 0.4, 0]} rotation={[0, 0, 0.35]}>
@@ -242,8 +243,8 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
   const [remoteModelFailed, setRemoteModelFailed] = useState(false)
   const [debugSnapshot, setDebugSnapshot] =
     useState<Customizer3dDebugSnapshot>(INITIAL_DEBUG_SNAPSHOT)
-  const [forceDebugMaterial, setForceDebugMaterial] = useState(
-    () => isCustomizerForceDebugMaterialEnabled(),
+  const [forceDebugMaterial, setForceDebugMaterial] = useState(() =>
+    isCustomizerForceDebugMaterialEnabled(),
   )
   const [safeRender, setSafeRender] = useState(() => isCustomizer3dSafeModeEnabled())
   const [cameraResetToken, setCameraResetToken] = useState(0)
@@ -251,7 +252,7 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
   const prevProductIdRef = useRef(product?.id)
   const heroImageRaw =
     product?.images.find((image) => image.isPrimary)?.url ?? product?.images[0]?.url ?? null
-  const heroImage = heroImageRaw ? toSameOriginR2Url(heroImageRaw) ?? heroImageRaw : null
+  const heroImage = heroImageRaw ? (toSameOriginR2Url(heroImageRaw) ?? heroImageRaw) : null
 
   useEffect(() => {
     const entering3D = prevViewModeRef.current !== '3D' && viewMode === '3D'
@@ -419,12 +420,7 @@ const Viewport3D = forwardRef<ViewportCaptureHandle, Viewport3DProps>(function V
         {!disableEnvironment && modelReady?.bounds.valid ? (
           <Environment preset="studio" environmentIntensity={0.25} />
         ) : null}
-        <OrbitControls
-          makeDefault
-          enablePan={false}
-          enableDamping
-          dampingFactor={0.05}
-        />
+        <OrbitControls makeDefault enablePan={false} enableDamping dampingFactor={0.05} />
       </Canvas>
     </div>
   )

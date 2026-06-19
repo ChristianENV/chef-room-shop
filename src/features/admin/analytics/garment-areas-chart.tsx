@@ -15,16 +15,14 @@ interface GarmentAreasChartProps {
 }
 
 export function GarmentAreasChart({ areas, className }: GarmentAreasChartProps) {
-  const maxCount = Math.max(...areas.map(a => a.count))
+  const maxCount = Math.max(...areas.map((a) => a.count))
 
   return (
     <div className={cn('space-y-3', className)}>
       {areas.map((area) => (
         <div key={area.name} className="space-y-1">
           <div className="flex items-center justify-between">
-            <span className="font-sans text-sm font-medium text-foreground">
-              {area.name}
-            </span>
+            <span className="font-sans text-sm font-medium text-foreground">{area.name}</span>
             <span className="font-mono text-xs text-muted-foreground">
               {area.count.toLocaleString()} ({area.percentage}%)
             </span>
@@ -62,12 +60,8 @@ export function CustomizationTypesChart({ types, className }: CustomizationTypes
           key={type.name}
           className="rounded-lg border border-border bg-secondary/30 p-4 text-center"
         >
-          <p className="font-sans text-2xl font-bold text-foreground">
-            {type.percentage}%
-          </p>
-          <p className="mt-1 font-sans text-sm font-medium text-muted-foreground">
-            {type.name}
-          </p>
+          <p className="font-sans text-2xl font-bold text-foreground">{type.percentage}%</p>
+          <p className="mt-1 font-sans text-sm font-medium text-muted-foreground">{type.name}</p>
           <p className="mt-0.5 font-mono text-xs text-muted-foreground">
             {type.count.toLocaleString()} usos
           </p>

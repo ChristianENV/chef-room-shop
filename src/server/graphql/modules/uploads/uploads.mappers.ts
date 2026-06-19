@@ -2,11 +2,7 @@ import type { ProductImage } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 
 import { R2StorageError } from '@/src/server/storage/r2'
-import type {
-  PresignedPutUrl,
-  R2ObjectKeys,
-  R2PublicUrls,
-} from '@/src/server/storage/r2'
+import type { PresignedPutUrl, R2ObjectKeys, R2PublicUrls } from '@/src/server/storage/r2'
 
 import type {
   ProductImageGql,

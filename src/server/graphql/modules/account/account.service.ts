@@ -1,16 +1,8 @@
-import {
-  AddressType,
-  OrderStatus,
-  ProductStatus,
-  type Prisma,
-} from '@prisma/client'
+import { AddressType, OrderStatus, ProductStatus, type Prisma } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 
 import type { GraphQLContext } from '../../context'
-import {
-  requireAuthenticatedAccount,
-  requireVerifiedEmailForOrderDetail,
-} from './account.auth'
+import { requireAuthenticatedAccount, requireVerifiedEmailForOrderDetail } from './account.auth'
 import {
   mapAddressInputToPrisma,
   mapAddressToGql,
@@ -196,13 +188,11 @@ export async function getMyAccountSummary(
     totalOrders,
     activeOrders,
     savedDesigns,
-    defaultShippingAddress: defaultShipping
-      ? mapAddressToGql(defaultShipping)
-      : null,
+    defaultShippingAddress: defaultShipping ? mapAddressToGql(defaultShipping) : null,
     recentOrders: recentOrders.map(mapOrderToGql),
     recentDesigns: recentDesigns.map((design) => {
       const slug = (design.configJson as { productSlug?: string }).productSlug
-      return mapDesignToGql(design, slug ? productMap.get(slug) ?? null : null)
+      return mapDesignToGql(design, slug ? (productMap.get(slug) ?? null) : null)
     }),
   }
 }
@@ -277,7 +267,7 @@ export async function getMyDesigns(
 
   return designs.map((design) => {
     const slug = (design.configJson as { productSlug?: string }).productSlug
-    return mapDesignToGql(design, slug ? productMap.get(slug) ?? null : null)
+    return mapDesignToGql(design, slug ? (productMap.get(slug) ?? null) : null)
   })
 }
 
@@ -307,8 +297,7 @@ export async function updateMyProfile(
 
   const firstName = data.firstName ?? undefined
   const lastName = data.lastName ?? undefined
-  const name =
-    [firstName, lastName].filter(Boolean).join(' ').trim() || undefined
+  const name = [firstName, lastName].filter(Boolean).join(' ').trim() || undefined
 
   const user = await context.prisma.user.update({
     where: { id: userId },

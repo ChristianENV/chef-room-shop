@@ -5,14 +5,8 @@ import { cookies, headers } from 'next/headers'
 
 import { prisma } from '@/src/server/db/prisma'
 
-import {
-  GUEST_SESSION_COOKIE_NAME,
-  GUEST_SESSION_TTL_DAYS,
-} from './guest-session.constants'
-import {
-  generateGuestSessionToken,
-  hashGuestSessionToken,
-} from './guest-session.crypto'
+import { GUEST_SESSION_COOKIE_NAME, GUEST_SESSION_TTL_DAYS } from './guest-session.constants'
+import { generateGuestSessionToken, hashGuestSessionToken } from './guest-session.crypto'
 
 export { generateGuestSessionToken, hashGuestSessionToken } from './guest-session.crypto'
 
@@ -72,10 +66,7 @@ export async function getActiveGuestSessionFromCookies(): Promise<GuestSession |
 /**
  * Sets the httpOnly guest session cookie.
  */
-export async function setGuestSessionCookie(
-  token: string,
-  expiresAt: Date,
-): Promise<void> {
+export async function setGuestSessionCookie(token: string, expiresAt: Date): Promise<void> {
   const cookieStore = await cookies()
   cookieStore.set(GUEST_SESSION_COOKIE_NAME, token, {
     httpOnly: true,

@@ -29,7 +29,9 @@ function PreviewThumb({
 }) {
   return (
     <div className="space-y-1">
-      <p className="font-serif text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="font-serif text-[11px] uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
       <div
         className="relative h-28 w-28 overflow-hidden rounded-lg border border-border bg-secondary"
         data-testid={testId}
@@ -108,7 +110,10 @@ export function CustomizationSnapshot({ item, className }: CustomizationSnapshot
   }
 
   return (
-    <Card className={cn('border-accent/30 bg-accent/5', className)} data-testid="admin-customization-snapshot">
+    <Card
+      className={cn('border-accent/30 bg-accent/5', className)}
+      data-testid="admin-customization-snapshot"
+    >
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 font-sans text-sm">
           <Palette className="h-4 w-4 text-accent" />
@@ -145,7 +150,9 @@ export function CustomizationSnapshot({ item, className }: CustomizationSnapshot
                       style={{ backgroundColor: customization.fabricColorHex }}
                     />
                   ) : null}
-                  <span className="font-sans text-sm text-foreground">{customization.fabricColor}</span>
+                  <span className="font-sans text-sm text-foreground">
+                    {customization.fabricColor}
+                  </span>
                 </div>
               </div>
               <div>
@@ -157,7 +164,9 @@ export function CustomizationSnapshot({ item, className }: CustomizationSnapshot
                       style={{ backgroundColor: customization.detailColorHex }}
                     />
                   ) : null}
-                  <span className="font-sans text-sm text-foreground">{customization.detailColor}</span>
+                  <span className="font-sans text-sm text-foreground">
+                    {customization.detailColor}
+                  </span>
                 </div>
               </div>
               <div>
@@ -219,7 +228,9 @@ export function CustomizationSnapshot({ item, className }: CustomizationSnapshot
                   {element.assetUrl ? (
                     <div className="sm:col-span-2">
                       <p className="font-serif text-xs text-muted-foreground">Asset</p>
-                      <p className="truncate font-mono text-xs text-foreground">{element.assetUrl}</p>
+                      <p className="truncate font-mono text-xs text-foreground">
+                        {element.assetUrl}
+                      </p>
                     </div>
                   ) : null}
                 </div>
@@ -231,7 +242,9 @@ export function CustomizationSnapshot({ item, className }: CustomizationSnapshot
         {customization.productionNotes ? (
           <div className="rounded-lg bg-warning/10 p-3">
             <p className="font-sans text-xs font-medium text-warning">Notas de producción</p>
-            <p className="mt-1 font-serif text-sm text-foreground">{customization.productionNotes}</p>
+            <p className="mt-1 font-serif text-sm text-foreground">
+              {customization.productionNotes}
+            </p>
           </div>
         ) : null}
 

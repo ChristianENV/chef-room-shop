@@ -2,11 +2,7 @@
 
 import { Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { formatPriceMxn } from '../lib/customizer-utils'
 import type { CustomizerPriceBreakdown } from '../pricing/customizer-pricing.types'
 

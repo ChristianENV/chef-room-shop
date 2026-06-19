@@ -28,10 +28,7 @@ function requirePrivateKey(): string {
 /**
  * Low-level Conekta REST call (server-only).
  */
-async function conektaFetch<T>(
-  path: string,
-  options: ConektaFetchOptions = {},
-): Promise<T> {
+async function conektaFetch<T>(path: string, options: ConektaFetchOptions = {}): Promise<T> {
   const { apiBaseUrl, apiVersion } = getConektaConfig()
   const privateKey = requirePrivateKey()
 
@@ -63,9 +60,8 @@ async function conektaFetch<T>(
       'details' in parsed &&
       Array.isArray((parsed as { details: unknown }).details)
         ? String(
-            (
-              (parsed as { details: Array<{ message?: string }> }).details[0]
-            )?.message ?? response.statusText,
+            (parsed as { details: Array<{ message?: string }> }).details[0]?.message ??
+              response.statusText,
           )
         : `Conekta API error (${response.status})`
     throw new ConektaApiError(message, response.status, parsed)
@@ -108,8 +104,7 @@ export type CreateConektaCheckoutForOrderResult = {
 export async function createConektaCheckoutForOrder(
   input: CreateConektaCheckoutForOrderInput,
 ): Promise<CreateConektaCheckoutForOrderResult> {
-  const allowed =
-    input.allowedPaymentMethods ?? (['card', 'cash', 'bank_transfer'] as const)
+  const allowed = input.allowedPaymentMethods ?? (['card', 'cash', 'bank_transfer'] as const)
 
   const body: ConektaCreateOrderRequest = {
     currency: input.currency.toUpperCase(),
@@ -158,17 +153,13 @@ export async function createConektaCheckoutForOrder(
 /**
  * Fetches a Conekta order by provider id (ord_*).
  */
-export async function getConektaOrder(
-  providerOrderId: string,
-): Promise<ConektaOrderResponse> {
+export async function getConektaOrder(providerOrderId: string): Promise<ConektaOrderResponse> {
   const trimmed = providerOrderId.trim()
   if (!trimmed.startsWith('ord_')) {
     throw new ConektaApiError('Id de orden Conekta inválido.', 400)
   }
 
-  const order = await conektaFetch<ConektaOrderResponse>(
-    `/orders/${encodeURIComponent(trimmed)}`,
-  )
+  const order = await conektaFetch<ConektaOrderResponse>(`/orders/${encodeURIComponent(trimmed)}`)
 
   return sanitizeConektaPayload(order) as ConektaOrderResponse
 }
@@ -213,9 +204,7 @@ export function mapConektaOrderResponseToPaymentStatus(
 /**
  * Parses a Conekta webhook JSON body.
  */
-export function parseConektaWebhookEvent(
-  rawBody: string,
-): ConektaWebhookPayload {
+export function parseConektaWebhookEvent(rawBody: string): ConektaWebhookPayload {
   try {
     return JSON.parse(rawBody) as ConektaWebhookPayload
   } catch {
@@ -251,12 +240,7 @@ export function mapConektaStatusToPaymentStatus(
 ): 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'AUTHORIZED' {
   const value = (statusOrEventType ?? '').toLowerCase()
 
-  if (
-    value.includes('paid') ||
-    value === 'paid' ||
-    value === 'successful' ||
-    value === 'success'
-  ) {
+  if (value.includes('paid') || value === 'paid' || value === 'successful' || value === 'success') {
     return 'PAID'
   }
 

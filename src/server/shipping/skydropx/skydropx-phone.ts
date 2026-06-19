@@ -20,9 +20,7 @@ export function normalizeMxPhoneForSkydropx(phone: string): string {
     return digits.slice(3)
   }
 
-  throw new SkydropxValidationError(
-    'El teléfono debe tener 10 dígitos para generar la guía.',
-  )
+  throw new SkydropxValidationError('El teléfono debe tener 10 dígitos para generar la guía.')
 }
 
 /**

@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-const CUSTOMIZER_SLUG =
-  process.env.E2E_CUSTOMIZER_SLUG ?? 'demo-filipina-executive-blanca'
+const CUSTOMIZER_SLUG = process.env.E2E_CUSTOMIZER_SLUG ?? 'demo-filipina-executive-blanca'
 
 test.describe('customizer right panel UX', () => {
   test.beforeEach(async ({ page }) => {
@@ -22,7 +21,10 @@ test.describe('customizer right panel UX', () => {
     await expect(page.getByTestId('customizer-properties-section')).toBeVisible()
 
     // Fabric colors now live in the left "Colores" category, not the right panel.
-    await page.getByRole('button', { name: /colores/i }).first().click()
+    await page
+      .getByRole('button', { name: /colores/i })
+      .first()
+      .click()
     await expect(page.getByTestId('customizer-fabric-colors-section')).toBeVisible()
     const swatches = page.getByTestId(/^customizer-fabric-color-swatch-/)
     await expect(swatches.first()).toBeVisible()

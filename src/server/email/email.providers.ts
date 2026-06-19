@@ -4,11 +4,7 @@ import { Resend } from 'resend'
 
 import { getEmailConfig, resolveActiveEmailProvider } from './email.config'
 import { EmailConfigError, EmailProviderError } from './email.errors'
-import type {
-  LogicalEmailProvider,
-  ProviderSendInput,
-  ProviderSendResult,
-} from './email.types'
+import type { LogicalEmailProvider, ProviderSendInput, ProviderSendResult } from './email.types'
 
 /**
  * Sends via the configured logical provider.

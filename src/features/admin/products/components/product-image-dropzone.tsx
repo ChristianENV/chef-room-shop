@@ -124,14 +124,10 @@ export function ProductImageDropzone({
         </div>
         <div>
           <p className="font-sans text-sm font-medium text-foreground">
-            {compact
-              ? 'Agregar más imágenes'
-              : 'Arrastra imágenes de producto aquí'}
+            {compact ? 'Agregar más imágenes' : 'Arrastra imágenes de producto aquí'}
           </p>
           <p className="mt-0.5 font-serif text-xs text-muted-foreground">
-            {compact
-              ? 'JPG, PNG o WebP'
-              : 'o busca archivos en tu dispositivo · JPG, PNG o WebP'}
+            {compact ? 'JPG, PNG o WebP' : 'o busca archivos en tu dispositivo · JPG, PNG o WebP'}
           </p>
           {!compact && remaining < maxFiles && (
             <p className="mt-1 font-serif text-xs text-muted-foreground">

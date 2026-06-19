@@ -33,30 +33,18 @@ type DesignByIdArgs = { designId: string }
 
 export const designsResolvers = {
   Query: {
-    designById: (
-      _parent: unknown,
-      args: DesignByIdArgs,
-      context: GraphQLContext,
-    ) => getDesignById(context, args.designId),
+    designById: (_parent: unknown, args: DesignByIdArgs, context: GraphQLContext) =>
+      getDesignById(context, args.designId),
   },
   Mutation: {
-    createDesignDraft: (
-      _parent: unknown,
-      args: CreateDesignDraftArgs,
-      context: GraphQLContext,
-    ) => createDesignDraft(context, args.input),
+    createDesignDraft: (_parent: unknown, args: CreateDesignDraftArgs, context: GraphQLContext) =>
+      createDesignDraft(context, args.input),
 
-    updateDesign: (
-      _parent: unknown,
-      args: UpdateDesignArgs,
-      context: GraphQLContext,
-    ) => updateDesign(context, args.input),
+    updateDesign: (_parent: unknown, args: UpdateDesignArgs, context: GraphQLContext) =>
+      updateDesign(context, args.input),
 
-    saveDesignPreview: (
-      _parent: unknown,
-      args: SaveDesignPreviewArgs,
-      context: GraphQLContext,
-    ) => saveDesignPreview(context, args.input),
+    saveDesignPreview: (_parent: unknown, args: SaveDesignPreviewArgs, context: GraphQLContext) =>
+      saveDesignPreview(context, args.input),
 
     createDesignPreviewUpload: (
       _parent: unknown,
@@ -82,10 +70,7 @@ export const designsResolvers = {
       context: GraphQLContext,
     ) => confirmDesignAssetUpload(context, args.input),
 
-    deleteDesignDraft: (
-      _parent: unknown,
-      args: DeleteDesignDraftArgs,
-      context: GraphQLContext,
-    ) => deleteDesignDraft(context, args.input),
+    deleteDesignDraft: (_parent: unknown, args: DeleteDesignDraftArgs, context: GraphQLContext) =>
+      deleteDesignDraft(context, args.input),
   },
 }

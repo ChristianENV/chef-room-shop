@@ -21,10 +21,7 @@ export function useCancelAdminOrderMutation() {
       cancelAdminOrder(orderNumber, reason),
     onSuccess: (order) => {
       void queryClient.invalidateQueries({ queryKey: adminOrdersQueryKeys.all })
-      void queryClient.setQueryData(
-        adminOrdersQueryKeys.detail(order.orderNumber),
-        order,
-      )
+      void queryClient.setQueryData(adminOrdersQueryKeys.detail(order.orderNumber), order)
     },
   })
 }

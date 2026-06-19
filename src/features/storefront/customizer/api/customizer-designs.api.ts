@@ -29,22 +29,15 @@ export type SaveDesignPreviewInput = {
   previewPublicId?: string | null
 }
 
-export async function createDesignDraft(
-  input: CreateDesignDraftInput,
-): Promise<AccountDesign> {
-  const data = await fetchGraphQL<
-    CreateDesignDraftData,
-    { input: CreateDesignDraftInput }
-  >({
+export async function createDesignDraft(input: CreateDesignDraftInput): Promise<AccountDesign> {
+  const data = await fetchGraphQL<CreateDesignDraftData, { input: CreateDesignDraftInput }>({
     query: CREATE_DESIGN_DRAFT_MUTATION,
     variables: { input },
   })
   return data.createDesignDraft
 }
 
-export async function updateDesign(
-  input: UpdateDesignInput,
-): Promise<AccountDesign> {
+export async function updateDesign(input: UpdateDesignInput): Promise<AccountDesign> {
   const data = await fetchGraphQL<UpdateDesignData, { input: UpdateDesignInput }>({
     query: UPDATE_DESIGN_MUTATION,
     variables: { input },
@@ -52,13 +45,8 @@ export async function updateDesign(
   return data.updateDesign
 }
 
-export async function saveDesignPreview(
-  input: SaveDesignPreviewInput,
-): Promise<AccountDesign> {
-  const data = await fetchGraphQL<
-    SaveDesignPreviewData,
-    { input: SaveDesignPreviewInput }
-  >({
+export async function saveDesignPreview(input: SaveDesignPreviewInput): Promise<AccountDesign> {
+  const data = await fetchGraphQL<SaveDesignPreviewData, { input: SaveDesignPreviewInput }>({
     query: SAVE_DESIGN_PREVIEW_MUTATION,
     variables: { input },
   })

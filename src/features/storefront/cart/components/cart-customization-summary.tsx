@@ -41,15 +41,9 @@ export function CartCustomizationSummary({
           ) : null}
           {summary.hasLogo && <li>Logo incluido</li>}
           {summary.hasEmbroidery && <li>Bordado</li>}
-          {summary.embroideredName && (
-            <li>&quot;{summary.embroideredName}&quot;</li>
-          )}
-          {summary.areas && summary.areas.length > 0 && (
-            <li>Áreas: {summary.areas.join(', ')}</li>
-          )}
-          {summary.lines && summary.lines.length > 0 && (
-            <li>Texto: {summary.lines.join(' · ')}</li>
-          )}
+          {summary.embroideredName && <li>&quot;{summary.embroideredName}&quot;</li>}
+          {summary.areas && summary.areas.length > 0 && <li>Áreas: {summary.areas.join(', ')}</li>}
+          {summary.lines && summary.lines.length > 0 && <li>Texto: {summary.lines.join(' · ')}</li>}
         </ul>
       )}
       {showEditLink && (

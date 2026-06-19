@@ -1,13 +1,6 @@
 'use client'
 
-import {
-  DollarSign,
-  Package,
-  Palette,
-  ShoppingCart,
-  TrendingUp,
-  Users,
-} from 'lucide-react'
+import { DollarSign, Package, Palette, ShoppingCart, TrendingUp, Users } from 'lucide-react'
 
 import { RecentDesigns } from '@/src/features/admin/designs/recent-designs'
 import { AdminPageConfig } from '@/src/features/admin/layout/admin-page-config'
@@ -47,9 +40,7 @@ export function AdminDashboardContent() {
     <AdminPageConfig notificationCount={metricsQuery.data?.pendingOrders}>
       <div className="space-y-6">
         <div>
-          <h1 className="font-sans text-2xl font-bold tracking-tight text-foreground">
-            Dashboard
-          </h1>
+          <h1 className="font-sans text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
           <p className="mt-1 font-serif text-muted-foreground">
             Bienvenido al panel de administracion de Chef Room
           </p>
@@ -115,10 +106,7 @@ export function AdminDashboardContent() {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
-          <AdminChartCard
-            title="Productos Mas Personalizados"
-            description="Top 5 este mes"
-          >
+          <AdminChartCard title="Productos Mas Personalizados" description="Top 5 este mes">
             <ChartPlaceholder height={200} type="bar" label="Por tipo de personalizacion" />
           </AdminChartCard>
           <AdminChartCard title="Colores Populares" description="Preferencias de clientes">

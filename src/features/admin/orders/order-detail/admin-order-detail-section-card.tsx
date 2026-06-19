@@ -24,13 +24,7 @@ export function AdminOrderDetailSectionCard({
   contentClassName,
 }: AdminOrderDetailSectionCardProps) {
   return (
-    <section
-      id={id}
-      className={cn(
-        'rounded-xl border border-border bg-card shadow-sm',
-        className,
-      )}
-    >
+    <section id={id} className={cn('rounded-xl border border-border bg-card shadow-sm', className)}>
       <div className="border-b border-border/80 px-5 py-4 sm:px-6">
         <div className="flex items-start gap-3">
           {Icon ? (

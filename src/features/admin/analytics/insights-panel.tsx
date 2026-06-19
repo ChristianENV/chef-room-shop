@@ -33,7 +33,7 @@ export function InsightsPanel({ insights, className }: InsightsPanelProps) {
               'rounded-lg border p-3',
               insight.type === 'positive' && 'border-success/30 bg-success/5',
               insight.type === 'neutral' && 'border-border bg-secondary/50',
-              insight.type === 'actionable' && 'border-warning/30 bg-warning/5'
+              insight.type === 'actionable' && 'border-warning/30 bg-warning/5',
             )}
           >
             <p className="font-serif text-sm text-foreground">{insight.text}</p>

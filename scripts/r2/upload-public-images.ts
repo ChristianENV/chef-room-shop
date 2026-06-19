@@ -297,8 +297,12 @@ async function main(): Promise<void> {
   const { mode, force } = parseArgs()
   const { candidates, excluded } = await collectCandidates()
 
-  console.log(`\nChef Room — R2 public images (${mode}${mode === 'upload' && force ? ', force' : ''})\n`)
-  console.log(`Found ${candidates.length} upload candidate(s), excluded ${excluded.length} file(s).\n`)
+  console.log(
+    `\nChef Room — R2 public images (${mode}${mode === 'upload' && force ? ', force' : ''})\n`,
+  )
+  console.log(
+    `Found ${candidates.length} upload candidate(s), excluded ${excluded.length} file(s).\n`,
+  )
 
   if (candidates.length === 0) {
     console.log('Nothing to upload.')

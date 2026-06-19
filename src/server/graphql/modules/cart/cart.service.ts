@@ -83,10 +83,7 @@ function activeCartWhere(owner: CartOwner): Prisma.CartWhereInput {
   }
 }
 
-async function loadCart(
-  context: GraphQLContext,
-  cartId: string,
-): Promise<CartWithRelations> {
+async function loadCart(context: GraphQLContext, cartId: string): Promise<CartWithRelations> {
   const cart = await context.prisma.cart.findUnique({
     where: { id: cartId },
     include: cartInclude,
@@ -182,8 +179,7 @@ async function assertCartItemOwnership(
 
   const cart = item.cart as CartWithRelations
   const matchesUser = owner.userId != null && cart.userId === owner.userId
-  const matchesGuest =
-    owner.guestSessionId != null && cart.guestSessionId === owner.guestSessionId
+  const matchesGuest = owner.guestSessionId != null && cart.guestSessionId === owner.guestSessionId
 
   if (!matchesUser && !matchesGuest) {
     throw cartError('No tienes permiso para modificar este artículo.', 'FORBIDDEN')
@@ -302,8 +298,7 @@ export async function addCartItem(
 
   let variant: (typeof product.variants)[number] | null = null
   if (parsed.productVariantId) {
-    variant =
-      product.variants.find((v) => v.id === parsed.productVariantId) ?? null
+    variant = product.variants.find((v) => v.id === parsed.productVariantId) ?? null
     if (!variant) {
       throw cartError('Variante no encontrada para este producto.', 'NOT_FOUND')
     }
@@ -334,8 +329,7 @@ export async function addCartItem(
 
   const lineKey = sameLineKey(parsed.productId, parsed.productVariantId, designId)
   const existingItem = cart.items.find(
-    (item) =>
-      sameLineKey(item.productId, item.productVariantId, item.designId) === lineKey,
+    (item) => sameLineKey(item.productId, item.productVariantId, item.designId) === lineKey,
   )
 
   if (existingItem) {
@@ -358,14 +352,10 @@ export async function addCartItem(
     } as CartItemWithRelations
 
     const productSnapshot = buildProductSnapshot(draftItem, designRow?.configJson)
-    const customizationSnapshot = buildCustomizationSnapshot(
-      designRow,
-      designRow?.configJson,
-      {
-        variant,
-        customizationPriceCents,
-      },
-    )
+    const customizationSnapshot = buildCustomizationSnapshot(designRow, designRow?.configJson, {
+      variant,
+      customizationPriceCents,
+    })
     const configRecord =
       designRow?.configJson &&
       typeof designRow.configJson === 'object' &&
@@ -459,10 +449,7 @@ export async function updateCartItemQuantity(
 /**
  * Removes a line item from the active cart.
  */
-export async function removeCartItem(
-  context: GraphQLContext,
-  itemId: string,
-): Promise<CartGql> {
+export async function removeCartItem(context: GraphQLContext, itemId: string): Promise<CartGql> {
   const parsedId = itemIdSchema.parse(itemId)
   const { cart } = await assertCartItemOwnership(context, parsedId)
 

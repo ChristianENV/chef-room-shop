@@ -60,7 +60,10 @@ export function SizeSection({ embedded = false }: { embedded?: boolean }) {
   }
 
   return (
-    <div className={embedded ? 'space-y-3 px-1 pb-2' : 'space-y-3 p-4'} data-testid="customizer-size-options">
+    <div
+      className={embedded ? 'space-y-3 px-1 pb-2' : 'space-y-3 p-4'}
+      data-testid="customizer-size-options"
+    >
       <div className="flex items-center justify-between">
         {!embedded ? (
           <div>
@@ -110,9 +113,7 @@ export function SizeSection({ embedded = false }: { embedded?: boolean }) {
       <div className="grid grid-cols-3 gap-2">
         {sizes.map((item) => {
           const disabled = isOutOfStock(item.id)
-          const selected = selectedSizeRow
-            ? selectedSizeRow.id === item.id
-            : size === item.name
+          const selected = selectedSizeRow ? selectedSizeRow.id === item.id : size === item.name
           return (
             <button
               key={item.id}
@@ -125,7 +126,8 @@ export function SizeSection({ embedded = false }: { embedded?: boolean }) {
                 selected
                   ? 'border-primary bg-primary text-primary-foreground'
                   : 'border-border bg-card text-foreground hover:border-primary/50',
-                disabled && 'cursor-not-allowed border-border/40 text-muted-foreground/40 line-through hover:border-border/40',
+                disabled &&
+                  'cursor-not-allowed border-border/40 text-muted-foreground/40 line-through hover:border-border/40',
               )}
             >
               {item.name}

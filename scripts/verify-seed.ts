@@ -3,16 +3,15 @@ import { createPrismaClient } from '../src/server/db/create-prisma'
 const prisma = createPrismaClient()
 
 async function main() {
-  const [roles, permissions, productTypes, sizes, colors, areas, options] =
-    await Promise.all([
-      prisma.role.count(),
-      prisma.permission.count(),
-      prisma.productType.count(),
-      prisma.size.count(),
-      prisma.color.count(),
-      prisma.customizationArea.count(),
-      prisma.customizationOption.count(),
-    ])
+  const [roles, permissions, productTypes, sizes, colors, areas, options] = await Promise.all([
+    prisma.role.count(),
+    prisma.permission.count(),
+    prisma.productType.count(),
+    prisma.size.count(),
+    prisma.color.count(),
+    prisma.customizationArea.count(),
+    prisma.customizationOption.count(),
+  ])
 
   console.log(
     JSON.stringify({
@@ -27,7 +26,6 @@ async function main() {
   )
 }
 
-main()
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+main().finally(async () => {
+  await prisma.$disconnect()
+})

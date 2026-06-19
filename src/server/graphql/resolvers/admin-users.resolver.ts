@@ -4,10 +4,7 @@ import type { AdminUsersListInput } from '../modules/admin-users/admin-users.typ
 
 export const adminUsersResolvers = {
   Query: {
-    adminUsers: (
-      _parent: unknown,
-      args: AdminUsersListInput,
-      context: GraphQLContext,
-    ) => getAdminUsers(context, args),
+    adminUsers: (_parent: unknown, args: AdminUsersListInput, context: GraphQLContext) =>
+      getAdminUsers(context, args),
   },
 }

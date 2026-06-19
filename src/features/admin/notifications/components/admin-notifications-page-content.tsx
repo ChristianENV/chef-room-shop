@@ -81,21 +81,19 @@ export function AdminNotificationsPageContent() {
         !notificationsQuery.isError &&
         notifications.length === 0 && <AdminNotificationListEmpty />}
 
-      {!notificationsQuery.isLoading &&
-        !notificationsQuery.isError &&
-        notifications.length > 0 && (
-          <ul className="space-y-3">
-            {notifications.map((notification) => (
-              <li key={notification.id}>
-                <AdminNotificationItem
-                  notification={notification}
-                  onSelect={handleSelect}
-                  variant="page"
-                />
-              </li>
-            ))}
-          </ul>
-        )}
+      {!notificationsQuery.isLoading && !notificationsQuery.isError && notifications.length > 0 && (
+        <ul className="space-y-3">
+          {notifications.map((notification) => (
+            <li key={notification.id}>
+              <AdminNotificationItem
+                notification={notification}
+                onSelect={handleSelect}
+                variant="page"
+              />
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

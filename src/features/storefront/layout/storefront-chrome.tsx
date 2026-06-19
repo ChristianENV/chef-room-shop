@@ -5,7 +5,13 @@ import { PublicNavbarSession } from './public-navbar-session'
 import { PublicFooter } from './public-footer'
 
 /** Routes that provide their own full-page chrome (auth, checkout, admin demo). */
-const CHROMELESS_PATH_PREFIXES = ['/login', '/register', '/checkout', '/customize', '/demo/admin'] as const
+const CHROMELESS_PATH_PREFIXES = [
+  '/login',
+  '/register',
+  '/checkout',
+  '/customize',
+  '/demo/admin',
+] as const
 
 /** Storefront routes that hide the newsletter block in the footer. */
 const FOOTER_NO_NEWSLETTER_PREFIXES = [
@@ -19,13 +25,13 @@ const FOOTER_NO_NEWSLETTER_PREFIXES = [
 
 function shouldHideChrome(pathname: string) {
   return CHROMELESS_PATH_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   )
 }
 
 function shouldHideNewsletter(pathname: string) {
   return FOOTER_NO_NEWSLETTER_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   )
 }
 

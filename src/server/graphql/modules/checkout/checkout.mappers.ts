@@ -109,8 +109,7 @@ export function mapOrderToCheckoutPayload(
     currency: order.currency,
     claimUrl: tracking?.claimUrl ?? null,
     accountOrderUrl:
-      tracking?.accountOrderUrl ??
-      (order.userId ? buildAccountOrderUrl(order.orderNumber) : null),
+      tracking?.accountOrderUrl ?? (order.userId ? buildAccountOrderUrl(order.orderNumber) : null),
   }
 }
 

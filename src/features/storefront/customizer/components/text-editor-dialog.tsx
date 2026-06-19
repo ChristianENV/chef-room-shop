@@ -52,10 +52,7 @@ export function TextEditorDialog({ open, layerId, mode, onClose }: TextEditorDia
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent
-        data-testid="customizer-text-editor-dialog"
-        className="max-w-md gap-5"
-      >
+      <DialogContent data-testid="customizer-text-editor-dialog" className="max-w-md gap-5">
         <DialogHeader>
           <DialogTitle>{mode === 'create' ? 'Agregar texto' : 'Editar texto'}</DialogTitle>
           <DialogDescription>

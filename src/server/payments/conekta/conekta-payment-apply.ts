@@ -133,8 +133,7 @@ export async function applyConektaPaymentStatusUpdate(
     }
   }
 
-  const shouldCreateAttempt =
-    params.forceAttempt === true || source === 'webhook' || statusChanged
+  const shouldCreateAttempt = params.forceAttempt === true || source === 'webhook' || statusChanged
 
   if (shouldCreateAttempt) {
     await tx.paymentAttempt.create({

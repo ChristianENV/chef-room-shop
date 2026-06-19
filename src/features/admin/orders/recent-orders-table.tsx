@@ -36,7 +36,10 @@ export interface AdminOrder {
   hasCustomization: boolean
 }
 
-const statusConfig: Record<AdminOrder['status'], { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+const statusConfig: Record<
+  AdminOrder['status'],
+  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
+> = {
   pendiente: { label: 'Pendiente', variant: 'outline' },
   pagado: { label: 'Pagado', variant: 'default' },
   'en-produccion': { label: 'En Produccion', variant: 'secondary' },
@@ -45,7 +48,10 @@ const statusConfig: Record<AdminOrder['status'], { label: string; variant: 'defa
   cancelado: { label: 'Cancelado', variant: 'destructive' },
 }
 
-const paymentStatusConfig: Record<AdminOrder['paymentStatus'], { label: string; className: string }> = {
+const paymentStatusConfig: Record<
+  AdminOrder['paymentStatus'],
+  { label: string; className: string }
+> = {
   pendiente: { label: 'Pendiente', className: 'text-warning' },
   completado: { label: 'Completado', className: 'text-success' },
   fallido: { label: 'Fallido', className: 'text-destructive' },
@@ -75,9 +81,7 @@ export function RecentOrdersTable({ orders, className }: RecentOrdersTableProps)
   return (
     <Card className={cn('border-border bg-card', className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="font-sans text-base font-semibold">
-          Órdenes Recientes
-        </CardTitle>
+        <CardTitle className="font-sans text-base font-semibold">Órdenes Recientes</CardTitle>
         <Button variant="outline" size="sm" asChild>
           <Link href={routes.adminOrders}>Ver todas</Link>
         </Button>
@@ -113,13 +117,9 @@ export function RecentOrdersTable({ orders, className }: RecentOrdersTableProps)
                 <TableRow key={order.id}>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-sans text-sm font-medium">
-                        {order.orderNumber}
-                      </span>
+                      <span className="font-sans text-sm font-medium">{order.orderNumber}</span>
                       {order.hasCustomization && (
-                        <span className="font-serif text-xs text-primary">
-                          Personalizado
-                        </span>
+                        <span className="font-serif text-xs text-primary">Personalizado</span>
                       )}
                     </div>
                   </TableCell>

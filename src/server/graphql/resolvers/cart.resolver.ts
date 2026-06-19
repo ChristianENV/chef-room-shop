@@ -6,10 +6,7 @@ import {
   removeCartItem,
   updateCartItemQuantity,
 } from '../modules/cart/cart.service'
-import type {
-  AddCartItemInput,
-  UpdateCartItemQuantityInput,
-} from '../modules/cart/cart.types'
+import type { AddCartItemInput, UpdateCartItemQuantityInput } from '../modules/cart/cart.types'
 
 type AddCartItemArgs = { input: AddCartItemInput }
 type UpdateCartItemQuantityArgs = { input: UpdateCartItemQuantityInput }
@@ -21,22 +18,15 @@ export const cartResolvers = {
       getOrCreateActiveCart(context),
   },
   Mutation: {
-    addCartItem: (
-      _parent: unknown,
-      args: AddCartItemArgs,
-      context: GraphQLContext,
-    ) => addCartItem(context, args.input),
+    addCartItem: (_parent: unknown, args: AddCartItemArgs, context: GraphQLContext) =>
+      addCartItem(context, args.input),
     updateCartItemQuantity: (
       _parent: unknown,
       args: UpdateCartItemQuantityArgs,
       context: GraphQLContext,
     ) => updateCartItemQuantity(context, args.input),
-    removeCartItem: (
-      _parent: unknown,
-      args: RemoveCartItemArgs,
-      context: GraphQLContext,
-    ) => removeCartItem(context, args.itemId),
-    clearCart: (_parent: unknown, _args: unknown, context: GraphQLContext) =>
-      clearCart(context),
+    removeCartItem: (_parent: unknown, args: RemoveCartItemArgs, context: GraphQLContext) =>
+      removeCartItem(context, args.itemId),
+    clearCart: (_parent: unknown, _args: unknown, context: GraphQLContext) => clearCart(context),
   },
 }

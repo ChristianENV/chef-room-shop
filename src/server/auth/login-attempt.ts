@@ -12,9 +12,7 @@ export type RecordLoginAttemptInput = {
 /**
  * Records a login or registration authentication attempt for audit/rate limiting.
  */
-export async function recordLoginAttempt(
-  input: RecordLoginAttemptInput,
-): Promise<void> {
+export async function recordLoginAttempt(input: RecordLoginAttemptInput): Promise<void> {
   await prisma.loginAttempt.create({
     data: {
       email: input.email.toLowerCase(),

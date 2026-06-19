@@ -65,8 +65,7 @@ export function AdminShipmentCard({
   const blockedReason = getCreateShippingLabelBlockedReason(order, shipment)
   const showMockSimulation = isMockTrackingNumber(shipment?.trackingNumber ?? null)
 
-  const isMutating =
-    createLabel.isPending || cancelLabel.isPending || refreshTracking.isPending
+  const isMutating = createLabel.isPending || cancelLabel.isPending || refreshTracking.isPending
 
   const notifySuccess = (message: string) => {
     setLocalMessage(message)
@@ -133,8 +132,7 @@ export function AdminShipmentCard({
   }
 
   const emptyMessage =
-    blockedReason ??
-    'Disponible cuando el pedido esté pagado y listo para envío.'
+    blockedReason ?? 'Disponible cuando el pedido esté pagado y listo para envío.'
 
   return (
     <div
@@ -152,9 +150,7 @@ export function AdminShipmentCard({
         Guía Skydropx
       </h3>
 
-      {localMessage ? (
-        <p className="mb-3 font-serif text-sm text-success">{localMessage}</p>
-      ) : null}
+      {localMessage ? <p className="mb-3 font-serif text-sm text-success">{localMessage}</p> : null}
 
       {shipmentQuery.isLoading ? <AdminShippingLoading /> : null}
 

@@ -111,8 +111,7 @@ export function OrderPaymentActions({
   }
 
   const hasRetryMessage = retryFeedback?.message
-  const showRetry =
-    resolvedActions.canRetryPayment && !isPaid
+  const showRetry = resolvedActions.canRetryPayment && !isPaid
   const showContinue =
     resolvedActions.canContinuePayment && Boolean(resolvedActions.paymentRedirectUrl)
   const showVerify = !isPaid && resolvedActions.canVerifyPayment
@@ -131,8 +130,7 @@ export function OrderPaymentActions({
     >
       {variant === 'detail' && showPendingBadge && (
         <p className="font-serif text-sm text-muted-foreground">
-          Estamos esperando confirmación de Conekta. Si acabas de pagar, puede tardar unos
-          minutos.
+          Estamos esperando confirmación de Conekta. Si acabas de pagar, puede tardar unos minutos.
         </p>
       )}
 
@@ -171,9 +169,7 @@ export function OrderPaymentActions({
               handleRetry()
             }}
           >
-            {retryMutation.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : null}
+            {retryMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             {variant === 'detail' &&
             (currentPaymentStatus === 'CANCELLED' || currentPaymentStatus === 'FAILED')
               ? 'Generar nuevo enlace de pago'

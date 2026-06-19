@@ -104,11 +104,11 @@ npx prisma studio
 
 ## Initial migration (DEV)
 
-| Item | Value |
-|------|--------|
-| Migration | `20260519204007_init` |
-| Tables | 37 application tables + `_prisma_migrations` |
-| Seed | Roles, permissions, catalog reference data |
+| Item      | Value                                        |
+| --------- | -------------------------------------------- |
+| Migration | `20260519204007_init`                        |
+| Tables    | 37 application tables + `_prisma_migrations` |
+| Seed      | Roles, permissions, catalog reference data   |
 
 ## Optional DEV admin user
 
@@ -125,8 +125,8 @@ Then run `npm run db:seed`. See [auth.md](./auth.md).
 
 ## Troubleshooting
 
-| Issue | Action |
-|-------|--------|
-| `Environment variable not found: DATABASE_URL` | Export `DATABASE_URL` or use `.env.local` in shell |
-| `P1001` / connection errors | Check Neon is awake, IP allowlist, `sslmode=require` |
-| Drift detected | `prisma migrate reset` **only in dev** (destructive) |
+| Issue                                          | Action                                               |
+| ---------------------------------------------- | ---------------------------------------------------- |
+| `Environment variable not found: DATABASE_URL` | Export `DATABASE_URL` or use `.env.local` in shell   |
+| `P1001` / connection errors                    | Check Neon is awake, IP allowlist, `sslmode=require` |
+| Drift detected                                 | `prisma migrate reset` **only in dev** (destructive) |

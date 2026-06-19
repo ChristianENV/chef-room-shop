@@ -14,10 +14,7 @@ export function useRefreshShippingQuoteMutation() {
   return useMutation({
     mutationFn: (id: string) => refreshShippingQuote(id),
     onSuccess: (payload) => {
-      queryClient.setQueryData(
-        shippingQueryKeys.quoteById(payload.quote.id),
-        payload.quote,
-      )
+      queryClient.setQueryData(shippingQueryKeys.quoteById(payload.quote.id), payload.quote)
       void queryClient.invalidateQueries({ queryKey: shippingQueryKeys.all })
     },
   })

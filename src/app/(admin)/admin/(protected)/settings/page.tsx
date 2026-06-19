@@ -1,10 +1,7 @@
 'use client'
 
 import { AdminPageConfig } from '@/src/features/admin/layout/admin-page-config'
-import {
-  AdminSettingsError,
-  AdminSettingsOverviewPanel,
-} from '@/src/features/admin/settings'
+import { AdminSettingsError, AdminSettingsOverviewPanel } from '@/src/features/admin/settings'
 import { useAdminSettingsOverviewQuery } from '@/src/features/admin/settings/api/use-admin-settings-overview-query'
 
 export default function AdminSettingsPage() {

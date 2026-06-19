@@ -29,10 +29,7 @@ interface AdminTopbarProps {
   adminUser?: AdminShellUser
 }
 
-export function AdminTopbar({
-  breadcrumb = [],
-  adminUser,
-}: AdminTopbarProps) {
+export function AdminTopbar({ breadcrumb = [], adminUser }: AdminTopbarProps) {
   const handleSignOut = useAdminSignOut()
 
   return (
@@ -79,12 +76,8 @@ export function AdminTopbar({
           <div className="flex items-center gap-2.5">
             <UserAvatar user={adminUser} size="sm" />
             <div className="hidden text-right sm:block">
-              <p className="font-sans text-sm font-medium leading-none">
-                {adminUser.name}
-              </p>
-              <p className="font-serif text-xs text-muted-foreground">
-                {adminUser.email}
-              </p>
+              <p className="font-sans text-sm font-medium leading-none">{adminUser.name}</p>
+              <p className="font-serif text-xs text-muted-foreground">{adminUser.email}</p>
             </div>
           </div>
         )}

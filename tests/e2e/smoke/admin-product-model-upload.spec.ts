@@ -20,13 +20,9 @@
 import path from 'node:path'
 import { type Page, expect, test } from '@playwright/test'
 import { loginAsAdmin } from '../helpers/admin-login'
-import {
-  mockProductModelUploadFlow,
-  MOCK_PUBLIC_URL,
-} from '../helpers/mock-product-model-upload'
+import { mockProductModelUploadFlow, MOCK_PUBLIC_URL } from '../helpers/mock-product-model-upload'
 
-const PRODUCT_SLUG =
-  process.env.E2E_PRODUCT_SLUG ?? 'demo-filipina-executive-blanca'
+const PRODUCT_SLUG = process.env.E2E_PRODUCT_SLUG ?? 'demo-filipina-executive-blanca'
 const GLB_FIXTURE = path.resolve(__dirname, '../../fixtures/models/minimal-valid.glb')
 
 /** Shared helper: log in, navigate to products, open the demo product's edit dialog. */
@@ -37,14 +33,22 @@ async function openDemoProductForm(page: Page) {
   await expect(page.getByTestId('admin-product-row').first()).toBeVisible({ timeout: 30_000 })
 
   // The `data-product-slug` attribute is on the row element itself.
-  const productRow = page.locator(`[data-testid="admin-product-row"][data-product-slug="${PRODUCT_SLUG}"]`)
+  const productRow = page.locator(
+    `[data-testid="admin-product-row"][data-product-slug="${PRODUCT_SLUG}"]`,
+  )
   await expect(productRow).toBeVisible({ timeout: 10_000 })
 
   // Open the actions kebab menu.
-  await productRow.getByRole('button').filter({ has: page.locator('svg') }).last().click()
+  await productRow
+    .getByRole('button')
+    .filter({ has: page.locator('svg') })
+    .last()
+    .click()
 
   // Click "Editar" — the attribute is on the menu item itself.
-  const editItem = page.locator(`[data-testid="admin-product-edit-button"][data-product-slug="${PRODUCT_SLUG}"]`)
+  const editItem = page.locator(
+    `[data-testid="admin-product-edit-button"][data-product-slug="${PRODUCT_SLUG}"]`,
+  )
   await expect(editItem).toBeVisible()
   await editItem.click()
 
@@ -76,7 +80,9 @@ test.describe('Admin product 3D model upload', () => {
     })
 
     // Filename is displayed.
-    await expect(page.getByTestId('admin-product-model-filename')).toContainText('minimal-valid.glb')
+    await expect(page.getByTestId('admin-product-model-filename')).toContainText(
+      'minimal-valid.glb',
+    )
 
     // R2 URL is linked.
     const urlLink = page.getByTestId('admin-product-model-url')

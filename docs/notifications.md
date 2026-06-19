@@ -6,17 +6,17 @@ Persistent in-app notifications for authenticated users and admins. Covers datab
 
 `Notification` rows are stored in the `notifications` table.
 
-| Field | Purpose |
-| --- | --- |
-| `userId` | Target user when the notification is user-specific |
-| `audience` | `USER` (storefront) or `ADMIN` (admin panel) |
-| `type` | Semantic category (`ORDER_CREATED`, `ADMIN_NEW_ORDER`, `SYSTEM`, …) |
-| `title` / `message` | Display copy |
-| `href` | Optional deep link |
-| `metadataJson` | Safe, non-sensitive context (order numbers, ids) |
-| `dedupeKey` | Optional unique key to prevent duplicate event notifications |
-| `readAt` | Set when the recipient marks the notification read |
-| `expiresAt` | Optional TTL; expired rows are hidden by default |
+| Field               | Purpose                                                             |
+| ------------------- | ------------------------------------------------------------------- |
+| `userId`            | Target user when the notification is user-specific                  |
+| `audience`          | `USER` (storefront) or `ADMIN` (admin panel)                        |
+| `type`              | Semantic category (`ORDER_CREATED`, `ADMIN_NEW_ORDER`, `SYSTEM`, …) |
+| `title` / `message` | Display copy                                                        |
+| `href`              | Optional deep link                                                  |
+| `metadataJson`      | Safe, non-sensitive context (order numbers, ids)                    |
+| `dedupeKey`         | Optional unique key to prevent duplicate event notifications        |
+| `readAt`            | Set when the recipient marks the notification read                  |
+| `expiresAt`         | Optional TTL; expired rows are hidden by default                    |
 
 Visibility rules:
 
@@ -126,10 +126,10 @@ Hook location: `finalizeCheckoutOrderSideEffects` in `src/server/graphql/modules
 
 Implementation: `src/server/notifications/notify-order-created.ts`
 
-| Audience | When | Type | Notes |
-| --- | --- | --- | --- |
-| `USER` | `order.userId` is set | `ORDER_CREATED` | Skipped for guest checkout (`userId` null) |
-| `ADMIN` | Always | `ADMIN_NEW_ORDER` | Broadcast (`userId: null`) |
+| Audience | When                  | Type              | Notes                                      |
+| -------- | --------------------- | ----------------- | ------------------------------------------ |
+| `USER`   | `order.userId` is set | `ORDER_CREATED`   | Skipped for guest checkout (`userId` null) |
+| `ADMIN`  | Always                | `ADMIN_NEW_ORDER` | Broadcast (`userId: null`)                 |
 
 Copy:
 
@@ -156,10 +156,10 @@ Implementation: `src/server/notifications/notify-payment-confirmed.ts`
 
 Notifications are created **only on transition** into `PaymentStatus.PAID` (`previousPaymentStatus !== PAID`). Repeated webhooks, manual verify clicks, or already-paid orders do not create new rows.
 
-| Audience | When | Type | Notes |
-| --- | --- | --- | --- |
-| `USER` | Transition to PAID and `order.userId` is set | `PAYMENT_CONFIRMED` | Skipped for guest orders |
-| `ADMIN` | Transition to PAID | `ADMIN_PAYMENT_RECEIVED` | Broadcast (`userId: null`) |
+| Audience | When                                         | Type                     | Notes                      |
+| -------- | -------------------------------------------- | ------------------------ | -------------------------- |
+| `USER`   | Transition to PAID and `order.userId` is set | `PAYMENT_CONFIRMED`      | Skipped for guest orders   |
+| `ADMIN`  | Transition to PAID                           | `ADMIN_PAYMENT_RECEIVED` | Broadcast (`userId: null`) |
 
 Copy:
 
@@ -186,9 +186,9 @@ Implementation: `src/server/notifications/notify-order-status-changed.ts`
 
 Notifications are created **only on transition** into `OrderStatus.IN_PRODUCTION` (`previousStatus !== IN_PRODUCTION`). Repeated saves or already-in-production orders do not create new rows.
 
-| Audience | When | Type | Notes |
-| --- | --- | --- | --- |
-| `USER` | Transition to `IN_PRODUCTION` and `order.userId` is set | `ORDER_IN_PRODUCTION` | Skipped for guest orders |
+| Audience | When                                                    | Type                  | Notes                    |
+| -------- | ------------------------------------------------------- | --------------------- | ------------------------ |
+| `USER`   | Transition to `IN_PRODUCTION` and `order.userId` is set | `ORDER_IN_PRODUCTION` | Skipped for guest orders |
 
 Copy:
 
@@ -211,9 +211,9 @@ Implementation: `src/server/notifications/notify-order-status-changed.ts`
 
 Notifications are created **only on transition** into `OrderStatus.READY_TO_SHIP` (`previousStatus !== READY_TO_SHIP`).
 
-| Audience | When | Type | Notes |
-| --- | --- | --- | --- |
-| `USER` | Transition to `READY_TO_SHIP` and `order.userId` is set | `ORDER_READY_TO_SHIP` | Skipped for guest orders |
+| Audience | When                                                    | Type                  | Notes                    |
+| -------- | ------------------------------------------------------- | --------------------- | ------------------------ |
+| `USER`   | Transition to `READY_TO_SHIP` and `order.userId` is set | `ORDER_READY_TO_SHIP` | Skipped for guest orders |
 
 Copy:
 
@@ -242,9 +242,9 @@ Notifications are created **only on transition** into shipped/in transit:
 
 Does **not** fire on mock/live label generation alone, tracking-number assignment only, or repeated same-status updates.
 
-| Audience | When | Type | Notes |
-| --- | --- | --- | --- |
-| `USER` | Shipped/in-transit transition and `order.userId` is set | `ORDER_SHIPPED` | Skipped for guest orders |
+| Audience | When                                                    | Type            | Notes                    |
+| -------- | ------------------------------------------------------- | --------------- | ------------------------ |
+| `USER`   | Shipped/in-transit transition and `order.userId` is set | `ORDER_SHIPPED` | Skipped for guest orders |
 
 Copy:
 
@@ -270,9 +270,9 @@ Notifications are created **only on transition** into delivered (`previous order
 
 Does **not** fire on label generation, `in_transit`, `out_for_delivery`, or repeated same-status updates.
 
-| Audience | When | Type | Notes |
-| --- | --- | --- | --- |
-| `USER` | Delivered transition and `order.userId` is set | `ORDER_DELIVERED` | Skipped for guest orders |
+| Audience | When                                           | Type              | Notes                    |
+| -------- | ---------------------------------------------- | ----------------- | ------------------------ |
+| `USER`   | Delivered transition and `order.userId` is set | `ORDER_DELIVERED` | Skipped for guest orders |
 
 Copy:
 

@@ -36,8 +36,7 @@ const MX_POSTAL_REGEX = /^\d{5}$/
 const POLL_INTERVAL_MS = 2500
 const MAX_POLL_ATTEMPTS = 12
 
-const SELECT_RATE_ERROR =
-  'No pudimos guardar esta tarifa. Intenta de nuevo.'
+const SELECT_RATE_ERROR = 'No pudimos guardar esta tarifa. Intenta de nuevo.'
 
 const VIEW_MODE_LABELS: Record<ShippingRateViewMode, string> = {
   highlights: 'Destacadas',
@@ -61,10 +60,7 @@ export type ShippingRateSelectorProps = {
   className?: string
 }
 
-function toSelection(
-  rate: ShippingRate,
-  quoteId: string,
-): SelectedShippingRateSummary {
+function toSelection(rate: ShippingRate, quoteId: string): SelectedShippingRateSummary {
   return {
     rateId: rate.id,
     quoteId,
@@ -130,10 +126,7 @@ export function ShippingRateSelector({
   const isSelecting = selectRate.isPending
   const isBusy = isQuoting || isSelecting
 
-  const rawRates = useMemo(
-    () => payload?.quote.rates ?? [],
-    [payload?.quote.rates],
-  )
+  const rawRates = useMemo(() => payload?.quote.rates ?? [], [payload?.quote.rates])
   const recommendedRate = payload?.recommendedRate ?? null
 
   const dedupedRates = useMemo(
@@ -142,12 +135,7 @@ export function ShippingRateSelector({
   )
 
   const highlights = useMemo(
-    () =>
-      buildShippingRateHighlights(
-        rawRates,
-        recommendedRate,
-        selectedRateId ?? null,
-      ),
+    () => buildShippingRateHighlights(rawRates, recommendedRate, selectedRateId ?? null),
     [rawRates, recommendedRate, selectedRateId],
   )
 
@@ -275,25 +263,14 @@ export function ShippingRateSelector({
     }, POLL_INTERVAL_MS)
 
     return () => window.clearInterval(timer)
-  }, [
-    applyPayload,
-    payload?.quote.id,
-    payload?.quote.isCompleted,
-    pollAttempts,
-    refreshQuote,
-  ])
+  }, [applyPayload, payload?.quote.id, payload?.quote.isCompleted, pollAttempts, refreshQuote])
 
   const showPollingMessage =
     Boolean(payload) && !payload?.quote.isCompleted && dedupedRates.length === 0
 
   const totalOtherCount = otherRatesBase.length
-  const hiddenOtherCount = Math.max(
-    0,
-    totalOtherCount - OTHER_RATES_PREVIEW_COUNT,
-  )
-  const visibleOtherRates = showOtherOptions
-    ? otherPaginated.visible
-    : otherRatesPreview
+  const hiddenOtherCount = Math.max(0, totalOtherCount - OTHER_RATES_PREVIEW_COUNT)
+  const visibleOtherRates = showOtherOptions ? otherPaginated.visible : otherRatesPreview
   const hasRates = dedupedRates.length > 0
 
   return (
@@ -301,9 +278,7 @@ export function ShippingRateSelector({
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           <Truck className="h-5 w-5 text-primary" />
-          <h2 className="font-sans text-lg font-semibold text-foreground">
-            Elige tu envío
-          </h2>
+          <h2 className="font-sans text-lg font-semibold text-foreground">Elige tu envío</h2>
         </div>
         {payload && (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-serif text-sm text-muted-foreground">
@@ -314,9 +289,7 @@ export function ShippingRateSelector({
                 {packageHint}
               </span>
             )}
-            {quoteExpiresLabel && (
-              <span>Tarifas vigentes hasta {quoteExpiresLabel}</span>
-            )}
+            {quoteExpiresLabel && <span>Tarifas vigentes hasta {quoteExpiresLabel}</span>}
           </div>
         )}
       </div>
@@ -324,16 +297,16 @@ export function ShippingRateSelector({
       {hasCustomization && (
         <div className="rounded-lg border border-warning/30 bg-warning/5 p-3">
           <p className="font-serif text-sm text-warning">
-            Tu pedido incluye productos personalizados. El tiempo de producción es
-            adicional al tiempo de envío mostrado por la paquetería.
+            Tu pedido incluye productos personalizados. El tiempo de producción es adicional al
+            tiempo de envío mostrado por la paquetería.
           </p>
         </div>
       )}
 
       {!payload && (
         <p className="font-serif text-sm text-muted-foreground">
-          Cotizamos el envío con el contenido actual de tu carrito. No necesitas
-          indicar peso ni medidas del paquete.
+          Cotizamos el envío con el contenido actual de tu carrito. No necesitas indicar peso ni
+          medidas del paquete.
         </p>
       )}
 
@@ -360,9 +333,7 @@ export function ShippingRateSelector({
         <ShippingQuoteError
           message={userError}
           onRetry={
-            canQuote && !skydropxUnavailable && !isSelecting
-              ? () => void handleQuote()
-              : undefined
+            canQuote && !skydropxUnavailable && !isSelecting ? () => void handleQuote() : undefined
           }
         />
       )}
@@ -448,25 +419,25 @@ export function ShippingRateSelector({
                 role="tablist"
                 aria-label="Filtrar tarifas de envío"
               >
-                {(
-                  ['all', 'cheapest', 'fastest', 'carrier'] as ShippingRateViewMode[]
-                ).map((mode) => (
-                  <Button
-                    key={mode}
-                    type="button"
-                    size="sm"
-                    variant={otherViewMode === mode ? 'default' : 'outline'}
-                    className="font-sans"
-                    role="tab"
-                    aria-selected={otherViewMode === mode}
-                    onClick={() => {
-                      setOtherViewMode(mode)
-                      setOtherVisibleCount(OTHER_RATES_PAGE_SIZE)
-                    }}
-                  >
-                    {VIEW_MODE_LABELS[mode]}
-                  </Button>
-                ))}
+                {(['all', 'cheapest', 'fastest', 'carrier'] as ShippingRateViewMode[]).map(
+                  (mode) => (
+                    <Button
+                      key={mode}
+                      type="button"
+                      size="sm"
+                      variant={otherViewMode === mode ? 'default' : 'outline'}
+                      className="font-sans"
+                      role="tab"
+                      aria-selected={otherViewMode === mode}
+                      onClick={() => {
+                        setOtherViewMode(mode)
+                        setOtherVisibleCount(OTHER_RATES_PAGE_SIZE)
+                      }}
+                    >
+                      {VIEW_MODE_LABELS[mode]}
+                    </Button>
+                  ),
+                )}
               </div>
 
               <div className="space-y-3">
@@ -487,9 +458,7 @@ export function ShippingRateSelector({
                   type="button"
                   variant="outline"
                   className="w-full font-sans"
-                  onClick={() =>
-                    setOtherVisibleCount((n) => n + OTHER_RATES_PAGE_SIZE)
-                  }
+                  onClick={() => setOtherVisibleCount((n) => n + OTHER_RATES_PAGE_SIZE)}
                 >
                   Mostrar más ({otherPaginated.remaining} restantes)
                 </Button>
@@ -500,9 +469,7 @@ export function ShippingRateSelector({
       )}
 
       <div className="rounded-lg bg-secondary/50 p-4">
-        <h3 className="font-sans text-sm font-semibold text-foreground">
-          Tiempos de producción
-        </h3>
+        <h3 className="font-sans text-sm font-semibold text-foreground">Tiempos de producción</h3>
         <ul className="mt-2 space-y-1 font-serif text-sm text-muted-foreground">
           <li>Productos estándar: 3–5 días hábiles</li>
           <li>Productos personalizados: 5–8 días hábiles adicionales</li>

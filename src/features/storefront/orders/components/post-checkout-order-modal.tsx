@@ -93,8 +93,7 @@ function getModalCopy(state: PaymentConfirmationUxState): { title: string; descr
     case 'confirming':
       return {
         title: 'Estamos confirmando tu pago',
-        description:
-          'Validamos la respuesta de Conekta. Esto puede tardar unos segundos.',
+        description: 'Validamos la respuesta de Conekta. Esto puede tardar unos segundos.',
       }
     case 'paid':
       return {
@@ -205,8 +204,7 @@ export function PostCheckoutOrderModal({
   const verifyEmailUrl = verifyEmail({ callbackUrl: postCheckoutCallback })
   const contactSupportUrl = `${routes.contact}?order=${encodeURIComponent(orderNumber)}`
   const displayOrderEmail =
-    maskedCustomerEmail ??
-    (order.customerEmail ? maskEmail(order.customerEmail) : undefined)
+    maskedCustomerEmail ?? (order.customerEmail ? maskEmail(order.customerEmail) : undefined)
 
   const handleLoginWithOrderEmail = useCallback(async () => {
     await signOut()
@@ -276,8 +274,7 @@ export function PostCheckoutOrderModal({
   }, [open, isPaid])
 
   const showProgress =
-    (confirmationState === 'loading' || confirmationState === 'confirming') &&
-    !isPaid
+    (confirmationState === 'loading' || confirmationState === 'confirming') && !isPaid
   const progressValue = Math.min(
     100,
     Math.round((elapsedMs / CHECKOUT_CONFIRMATION_VISUAL_MS) * 100),
@@ -304,8 +301,8 @@ export function PostCheckoutOrderModal({
               Crea tu cuenta para consultar y dar seguimiento a tu pedido
             </p>
             <p className="mt-1 font-serif text-sm text-muted-foreground">
-              Para guardar esta compra en tu cuenta y recibir actualizaciones, regístrate o
-              inicia sesión. Después volverás a este pedido automáticamente.
+              Para guardar esta compra en tu cuenta y recibir actualizaciones, regístrate o inicia
+              sesión. Después volverás a este pedido automáticamente.
             </p>
             {maskedCustomerEmail && (
               <p className="mt-2 font-serif text-xs text-muted-foreground">
@@ -375,9 +372,7 @@ export function PostCheckoutOrderModal({
               return
             }
 
-            setTransferError(
-              result.message ?? 'No pudimos enviar la solicitud de autorización.',
-            )
+            setTransferError(result.message ?? 'No pudimos enviar la solicitud de autorización.')
           },
           onError: () => {
             setTransferError('No pudimos enviar la solicitud de autorización. Intenta de nuevo.')
@@ -421,8 +416,8 @@ export function PostCheckoutOrderModal({
           </dl>
 
           <p className="font-serif text-xs leading-relaxed text-muted-foreground">
-            Tu pedido sigue disponible en esta página mientras el enlace de compra sea válido.
-            No aparecerá en Mis pedidos con la cuenta actual.
+            Tu pedido sigue disponible en esta página mientras el enlace de compra sea válido. No
+            aparecerá en Mis pedidos con la cuenta actual.
           </p>
 
           {transferSent ? (
@@ -505,8 +500,7 @@ export function PostCheckoutOrderModal({
           className="mt-4 space-y-3 rounded-lg border border-primary/20 bg-primary/5 p-4"
         >
           <p className="font-serif text-sm text-muted-foreground">
-            {claimMessage ??
-              'Verifica tu correo para guardar este pedido en tu cuenta.'}
+            {claimMessage ?? 'Verifica tu correo para guardar este pedido en tu cuenta.'}
           </p>
           <Button asChild variant="secondary" className="font-sans">
             <Link href={verifyEmailUrl}>Verificar correo</Link>
@@ -646,11 +640,7 @@ export function PostCheckoutOrderModal({
 
         {canDismiss && (isPaid || orderLinkedToAccount) && (
           <DialogFooter>
-            <Button
-              type="button"
-              className="font-sans"
-              onClick={() => onOpenChange?.(false)}
-            >
+            <Button type="button" className="font-sans" onClick={() => onOpenChange?.(false)}>
               Ver detalle del pedido
             </Button>
           </DialogFooter>

@@ -6,9 +6,7 @@ const DEFAULT_GARMENT_TYPE_SLUGS = ['chef-jacket', 'filipina', 'chef-jackets'] a
  * Picks the default customizable product for /customize.
  * Prefers an active chef-jacket (filipina), then any customizable product.
  */
-export function pickDefaultCustomizableProduct(
-  products: CatalogProduct[],
-): CatalogProduct | null {
+export function pickDefaultCustomizableProduct(products: CatalogProduct[]): CatalogProduct | null {
   const activeCustomizable = products.filter(
     (product) => product.isCustomizable && product.status === 'ACTIVE',
   )

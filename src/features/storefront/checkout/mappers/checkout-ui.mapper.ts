@@ -89,9 +89,7 @@ export function mapBffCartToCheckoutSummary(cart: Cart): CheckoutSummaryData {
       lineTotalPesos,
       imageUrl: getCartItemDisplayImage(item),
       isCustomized: Boolean(
-        item.designId ||
-          item.customizationPriceCents > 0 ||
-          getCartItemCustomizationSummary(item),
+        item.designId || item.customizationPriceCents > 0 || getCartItemCustomizationSummary(item),
       ),
     }
   })

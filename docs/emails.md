@@ -4,42 +4,42 @@ Server-only layer for order/payment notifications. Checkout and webhooks **never
 
 ## Environment
 
-| Variable | Default | Description |
-|----------|---------|---------------|
-| `EMAIL_PROVIDER` | `console` | `console` \| `resend` \| `mailtrap` |
-| `EMAIL_FROM` | `Chef Room <no-reply@chefroom.mx>` | Sender header |
-| `RESEND_API_KEY` | — | Required when `EMAIL_PROVIDER=resend` (prod) |
-| `MAILTRAP_TOKEN` | — | Mailtrap Sending API token (optional) |
+| Variable         | Default                            | Description                                  |
+| ---------------- | ---------------------------------- | -------------------------------------------- |
+| `EMAIL_PROVIDER` | `console`                          | `console` \| `resend` \| `mailtrap`          |
+| `EMAIL_FROM`     | `Chef Room <no-reply@chefroom.mx>` | Sender header                                |
+| `RESEND_API_KEY` | —                                  | Required when `EMAIL_PROVIDER=resend` (prod) |
+| `MAILTRAP_TOKEN` | —                                  | Mailtrap Sending API token (optional)        |
 
 **Build** passes without keys. Missing Resend key in **production** throws only when sending with `EMAIL_PROVIDER=resend`. In development, missing keys fall back to **console**.
 
 ## Providers
 
-| Logical | Prisma `EmailProvider` | Behavior |
-|---------|------------------------|----------|
-| `console` | `OTHER` | Logs to server console (`metadataJson.logicalProvider`) |
-| `resend` | `RESEND` | [Resend](https://resend.com) API |
-| `mailtrap` | `OTHER` | Mailtrap Sending API (`send.api.mailtrap.io`) |
+| Logical    | Prisma `EmailProvider` | Behavior                                                |
+| ---------- | ---------------------- | ------------------------------------------------------- |
+| `console`  | `OTHER`                | Logs to server console (`metadataJson.logicalProvider`) |
+| `resend`   | `RESEND`               | [Resend](https://resend.com) API                        |
+| `mailtrap` | `OTHER`                | Mailtrap Sending API (`send.api.mailtrap.io`)           |
 
 ## Templates (v1)
 
-| `templateKey` | Trigger | Subject pattern |
-|---------------|---------|-----------------|
-| `order_created` | After `createCheckoutOrder` (post-commit) | Recibimos tu pedido {orderNumber} |
-| `payment_confirmed` | Webhook paid | Pago confirmado para tu pedido {orderNumber} |
-| `payment_failed` | Webhook failed | No pudimos confirmar el pago… |
-| `payment_expired` | Webhook expired/cancelled | Tu referencia de pago expiró… |
-| `email_verification` | Better Auth `sendVerificationEmail` | Verifica tu correo en Chef Room |
+| `templateKey`        | Trigger                                   | Subject pattern                              |
+| -------------------- | ----------------------------------------- | -------------------------------------------- |
+| `order_created`      | After `createCheckoutOrder` (post-commit) | Recibimos tu pedido {orderNumber}            |
+| `payment_confirmed`  | Webhook paid                              | Pago confirmado para tu pedido {orderNumber} |
+| `payment_failed`     | Webhook failed                            | No pudimos confirmar el pago…                |
+| `payment_expired`    | Webhook expired/cancelled                 | Tu referencia de pago expiró…                |
+| `email_verification` | Better Auth `sendVerificationEmail`       | Verifica tu correo en Chef Room              |
 
 HTML uses brand color `#2B3280`, Spanish copy, minimal layout (no React Email).
 
 ### Tracking CTAs (order claim v1)
 
-| Context | CTA link | Copy |
-|---------|----------|------|
-| Guest (`claimUrl`) | `/claim-order?token=...` | Crea tu cuenta para consultar el estado y seguimiento de tu pedido. |
-| Authenticated (`accountOrderUrl`) | `/account/orders/[orderNumber]` | Consulta el estado de tu pedido desde tu cuenta. |
-| Payment retry | `checkoutSuccessUrl` | Completar / reintentar pago (sin email en URL) |
+| Context                           | CTA link                        | Copy                                                                |
+| --------------------------------- | ------------------------------- | ------------------------------------------------------------------- |
+| Guest (`claimUrl`)                | `/claim-order?token=...`        | Crea tu cuenta para consultar el estado y seguimiento de tu pedido. |
+| Authenticated (`accountOrderUrl`) | `/account/orders/[orderNumber]` | Consulta el estado de tu pedido desde tu cuenta.                    |
+| Payment retry                     | `checkoutSuccessUrl`            | Completar / reintentar pago (sin email en URL)                      |
 
 Helpers: `buildOrderClaimUrl`, `buildAccountOrderUrl`, `buildOrderEmailTrackingLinks` in `email.links.ts`. See `docs/order-claim.md`.
 

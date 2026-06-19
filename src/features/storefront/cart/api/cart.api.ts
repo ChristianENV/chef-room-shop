@@ -7,11 +7,7 @@ import {
   UPDATE_CART_ITEM_QUANTITY_MUTATION,
 } from '../graphql/cart.mutations'
 import { MY_CART_QUERY } from '../graphql/cart.queries'
-import type {
-  AddCartItemInput,
-  Cart,
-  UpdateCartItemQuantityInput,
-} from '../types/cart-bff.types'
+import type { AddCartItemInput, Cart, UpdateCartItemQuantityInput } from '../types/cart-bff.types'
 
 type MyCartData = { myCart: Cart }
 type AddCartItemData = { addCartItem: Cart }
@@ -41,9 +37,7 @@ export async function addCartItem(input: AddCartItemInput): Promise<Cart> {
 /**
  * Updates a cart line quantity (0 removes the line on the server).
  */
-export async function updateCartItemQuantity(
-  input: UpdateCartItemQuantityInput,
-): Promise<Cart> {
+export async function updateCartItemQuantity(input: UpdateCartItemQuantityInput): Promise<Cart> {
   const data = await fetchGraphQL<
     UpdateCartItemQuantityData,
     { input: UpdateCartItemQuantityInput }

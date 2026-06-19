@@ -41,8 +41,9 @@ export function DeleteProductDialog({
             <AlertDialogTitle className="font-sans">Eliminar producto</AlertDialogTitle>
           </div>
           <AlertDialogDescription className="font-serif">
-            Estas a punto de eliminar <strong className="font-sans text-foreground">{product.name}</strong>.
-            Esta accion no se puede deshacer y eliminara permanentemente el producto y todas sus variantes.
+            Estas a punto de eliminar{' '}
+            <strong className="font-sans text-foreground">{product.name}</strong>. Esta accion no se
+            puede deshacer y eliminara permanentemente el producto y todas sus variantes.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

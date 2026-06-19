@@ -70,9 +70,7 @@ export async function getMyOrders(params?: {
 /**
  * Fetches a single order by order number.
  */
-export async function getMyOrderByNumber(
-  orderNumber: string,
-): Promise<AccountOrder | null> {
+export async function getMyOrderByNumber(orderNumber: string): Promise<AccountOrder | null> {
   const data = await fetchGraphQL<MyOrderByNumberData, { orderNumber: string }>({
     query: MY_ORDER_BY_NUMBER_QUERY,
     variables: { orderNumber },
@@ -106,9 +104,7 @@ export async function getMyAddresses(): Promise<AccountAddress[]> {
 /**
  * Updates the authenticated user's profile.
  */
-export async function updateMyProfile(
-  input: UpdateMyProfileInput,
-): Promise<AccountUser> {
+export async function updateMyProfile(input: UpdateMyProfileInput): Promise<AccountUser> {
   const data = await fetchGraphQL<
     { updateMyProfile: AccountUser },
     { input: UpdateMyProfileInput }
@@ -122,13 +118,8 @@ export async function updateMyProfile(
 /**
  * Creates a new address for the authenticated user.
  */
-export async function createMyAddress(
-  input: MyAddressInput,
-): Promise<AccountAddress> {
-  const data = await fetchGraphQL<
-    { createMyAddress: AccountAddress },
-    { input: MyAddressInput }
-  >({
+export async function createMyAddress(input: MyAddressInput): Promise<AccountAddress> {
+  const data = await fetchGraphQL<{ createMyAddress: AccountAddress }, { input: MyAddressInput }>({
     query: CREATE_MY_ADDRESS_MUTATION,
     variables: { input },
   })
@@ -138,10 +129,7 @@ export async function createMyAddress(
 /**
  * Updates an address for the authenticated user.
  */
-export async function updateMyAddress(
-  id: string,
-  input: MyAddressInput,
-): Promise<AccountAddress> {
+export async function updateMyAddress(id: string, input: MyAddressInput): Promise<AccountAddress> {
   const data = await fetchGraphQL<
     { updateMyAddress: AccountAddress },
     { id: string; input: MyAddressInput }
@@ -166,10 +154,7 @@ export async function deleteMyAddress(id: string): Promise<boolean> {
 /**
  * Sets the default address for a type.
  */
-export async function setDefaultAddress(
-  id: string,
-  type: string,
-): Promise<AccountAddress> {
+export async function setDefaultAddress(id: string, type: string): Promise<AccountAddress> {
   const data = await fetchGraphQL<
     { setDefaultAddress: AccountAddress },
     { id: string; type: string }
@@ -194,10 +179,7 @@ type RetryMyOrderPaymentData = {
 export async function verifyMyOrderPayment(
   orderNumber: string,
 ): Promise<AccountPaymentStatusPayload> {
-  const data = await fetchGraphQL<
-    VerifyMyOrderPaymentData,
-    { orderNumber: string }
-  >({
+  const data = await fetchGraphQL<VerifyMyOrderPaymentData, { orderNumber: string }>({
     query: VERIFY_MY_ORDER_PAYMENT_MUTATION,
     variables: { orderNumber },
   })
@@ -210,10 +192,7 @@ export async function verifyMyOrderPayment(
 export async function retryMyOrderPayment(
   orderNumber: string,
 ): Promise<AccountPaymentStatusPayload> {
-  const data = await fetchGraphQL<
-    RetryMyOrderPaymentData,
-    { orderNumber: string }
-  >({
+  const data = await fetchGraphQL<RetryMyOrderPaymentData, { orderNumber: string }>({
     query: RETRY_MY_ORDER_PAYMENT_MUTATION,
     variables: { orderNumber },
   })

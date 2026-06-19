@@ -22,7 +22,10 @@ export interface ProductionItem {
   priority: 'normal' | 'urgente'
 }
 
-const productTypeIcons: Record<ProductionItem['productType'], React.ComponentType<{ className?: string }>> = {
+const productTypeIcons: Record<
+  ProductionItem['productType'],
+  React.ComponentType<{ className?: string }>
+> = {
   filipina: Shirt,
   mandil: Package,
   pantalon: Package,
@@ -50,9 +53,7 @@ export function ProductionQueue({ items, className }: ProductionQueueProps) {
   return (
     <Card className={cn('border-border bg-card', className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="font-sans text-base font-semibold">
-          Cola de Produccion
-        </CardTitle>
+        <CardTitle className="font-sans text-base font-semibold">Cola de Produccion</CardTitle>
         <Badge variant="secondary" className="font-sans">
           {items.length} items
         </Badge>
@@ -72,13 +73,13 @@ export function ProductionQueue({ items, className }: ProductionQueueProps) {
               key={item.id}
               className={cn(
                 'flex items-start gap-3 rounded-lg border border-border bg-secondary/30 p-3',
-                item.priority === 'urgente' && 'border-warning/50'
+                item.priority === 'urgente' && 'border-warning/50',
               )}
             >
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10">
                 <Icon className="h-5 w-5 text-primary" />
               </div>
-              
+
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-sans text-sm font-medium text-foreground truncate">
@@ -90,14 +91,12 @@ export function ProductionQueue({ items, className }: ProductionQueueProps) {
                     </Badge>
                   )}
                 </div>
-                
+
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="font-serif text-xs text-muted-foreground">
                     {item.orderNumber}
                   </span>
-                  <span className="font-serif text-xs text-muted-foreground">
-                    x{item.quantity}
-                  </span>
+                  <span className="font-serif text-xs text-muted-foreground">x{item.quantity}</span>
                   {item.customizationType !== 'ninguno' && (
                     <span className="flex items-center gap-1 font-serif text-xs text-primary">
                       <Palette className="h-3 w-3" />
@@ -106,7 +105,7 @@ export function ProductionQueue({ items, className }: ProductionQueueProps) {
                     </span>
                   )}
                 </div>
-                
+
                 <div className="mt-2 flex items-center justify-between">
                   <div className="flex items-center gap-1 text-muted-foreground">
                     <Clock className="h-3 w-3" />
@@ -114,7 +113,12 @@ export function ProductionQueue({ items, className }: ProductionQueueProps) {
                       Entrega: {formatDate(item.estimatedDelivery)}
                     </span>
                   </div>
-                  <span className={cn('rounded-full px-2 py-0.5 font-sans text-xs font-medium', status.className)}>
+                  <span
+                    className={cn(
+                      'rounded-full px-2 py-0.5 font-sans text-xs font-medium',
+                      status.className,
+                    )}
+                  >
                     {status.label}
                   </span>
                 </div>
@@ -122,7 +126,7 @@ export function ProductionQueue({ items, className }: ProductionQueueProps) {
             </div>
           )
         })}
-        
+
         <Button variant="outline" className="w-full font-sans" asChild>
           <Link href={routes.adminOrders}>Ver cola completa</Link>
         </Button>

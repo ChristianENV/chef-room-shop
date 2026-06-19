@@ -137,11 +137,7 @@ function ModalDetailsPanel({
   )
 }
 
-function ItemsPanel({
-  order,
-}: {
-  order: NonNullable<ReturnType<typeof mapAdminOrderToDetail>>
-}) {
+function ItemsPanel({ order }: { order: NonNullable<ReturnType<typeof mapAdminOrderToDetail>> }) {
   return (
     <>
       {order.items.map((item) => (
@@ -158,9 +154,7 @@ function ItemsPanel({
             </div>
             <p className="font-sans font-semibold">{formatCurrencyMXN(item.totalPrice)}</p>
           </div>
-          {item.hasCustomization ? (
-            <CustomizationSnapshot item={item} className="mt-4" />
-          ) : null}
+          {item.hasCustomization ? <CustomizationSnapshot item={item} className="mt-4" /> : null}
         </div>
       ))}
     </>

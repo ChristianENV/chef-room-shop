@@ -75,9 +75,7 @@ export default function VerifyEmailPage() {
   return (
     <AuthLayout>
       <Suspense
-        fallback={
-          <p className="py-12 text-center font-serif text-muted-foreground">Cargando...</p>
-        }
+        fallback={<p className="py-12 text-center font-serif text-muted-foreground">Cargando...</p>}
       >
         <VerifyEmailContent />
       </Suspense>

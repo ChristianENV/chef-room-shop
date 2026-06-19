@@ -2,7 +2,10 @@ import 'server-only'
 
 import { OrderEventType, type Order, type Prisma } from '@prisma/client'
 
-type OrderLinkInput = Pick<Order, 'id' | 'shippingAddressId' | 'billingAddressId' | 'guestSessionId'>
+type OrderLinkInput = Pick<
+  Order,
+  'id' | 'shippingAddressId' | 'billingAddressId' | 'guestSessionId'
+>
 
 /**
  * Links a guest order (and related addresses/session) to an authenticated user inside a transaction.
@@ -22,8 +25,8 @@ export async function linkGuestOrderToUser(
     data: { userId },
   })
 
-  const addressIds = [order.shippingAddressId, order.billingAddressId].filter(
-    (id): id is string => Boolean(id),
+  const addressIds = [order.shippingAddressId, order.billingAddressId].filter((id): id is string =>
+    Boolean(id),
   )
 
   if (addressIds.length > 0) {

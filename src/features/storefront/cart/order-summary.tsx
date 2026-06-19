@@ -8,9 +8,9 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
-import { 
-  CreditCard, 
-  Building2, 
+import {
+  CreditCard,
+  Building2,
   Banknote,
   Tag,
   Loader2,
@@ -18,13 +18,9 @@ import {
   X,
   ChevronDown,
   ChevronUp,
-  ShieldCheck
+  ShieldCheck,
 } from 'lucide-react'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 
 interface OrderSummaryProps {
   subtotal: number
@@ -38,29 +34,24 @@ interface OrderSummaryProps {
   className?: string
 }
 
-export function OrderSummary({ 
-  subtotal, 
-  customizationTotal, 
-  shipping, 
+export function OrderSummary({
+  subtotal,
+  customizationTotal,
+  shipping,
   discount,
   itemCount,
-  className 
+  className,
 }: OrderSummaryProps) {
   const [isOpen, setIsOpen] = useState(true)
   const total = subtotal + customizationTotal + shipping - (discount?.amount || 0)
 
   return (
-    <div className={cn(
-      'rounded-lg border border-border bg-card',
-      className
-    )}>
+    <div className={cn('rounded-lg border border-border bg-card', className)}>
       {/* Mobile Collapsible Header */}
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <button className="flex w-full items-center justify-between p-4 md:hidden">
-            <span className="font-sans font-semibold text-foreground">
-              Resumen del pedido
-            </span>
+            <span className="font-sans font-semibold text-foreground">Resumen del pedido</span>
             <div className="flex items-center gap-2">
               <span className="font-sans font-bold text-foreground">
                 {formatCurrencyMXN(total)}
@@ -87,9 +78,7 @@ export function OrderSummary({
                 <span className="text-muted-foreground">
                   Subtotal ({itemCount} {itemCount === 1 ? 'artículo' : 'artículos'})
                 </span>
-                <span className="font-sans text-foreground">
-                  {formatCurrencyMXN(subtotal)}
-                </span>
+                <span className="font-sans text-foreground">{formatCurrencyMXN(subtotal)}</span>
               </div>
 
               {customizationTotal > 0 && (
@@ -145,14 +134,12 @@ export function OrderSummary({
             </p>
 
             {/* Checkout CTA */}
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="mt-6 w-full bg-primary font-sans text-lg font-semibold hover:bg-primary/90"
               asChild
             >
-              <Link href={routes.checkout}>
-                Continuar al checkout
-              </Link>
+              <Link href={routes.checkout}>Continuar al checkout</Link>
             </Button>
 
             {/* Security Badge */}
@@ -187,11 +174,11 @@ function DiscountCodeInput() {
 
   const handleApply = async () => {
     if (!code.trim()) return
-    
+
     setIsLoading(true)
     // TODO: Integrate with TanStack Query mutation for applyDiscount
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
     // Mock: Accept "CHEF20" as valid code
     if (code.toUpperCase() === 'CHEF20') {
       setStatus('success')
@@ -223,7 +210,7 @@ function DiscountCodeInput() {
             className={cn(
               'font-sans uppercase',
               status === 'success' && 'border-success',
-              status === 'error' && 'border-destructive'
+              status === 'error' && 'border-destructive',
             )}
             disabled={isLoading || status === 'success'}
           />
@@ -243,28 +230,16 @@ function DiscountCodeInput() {
             <X className="h-4 w-4" />
           </Button>
         ) : (
-          <Button
-            variant="outline"
-            onClick={handleApply}
-            disabled={!code.trim() || isLoading}
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              'Aplicar'
-            )}
+          <Button variant="outline" onClick={handleApply} disabled={!code.trim() || isLoading}>
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Aplicar'}
           </Button>
         )}
       </div>
       {status === 'error' && (
-        <p className="mt-1.5 font-serif text-xs text-destructive">
-          Codigo invalido o expirado
-        </p>
+        <p className="mt-1.5 font-serif text-xs text-destructive">Codigo invalido o expirado</p>
       )}
       {status === 'success' && (
-        <p className="mt-1.5 font-serif text-xs text-success">
-          Descuento aplicado correctamente
-        </p>
+        <p className="mt-1.5 font-serif text-xs text-success">Descuento aplicado correctamente</p>
       )}
     </div>
   )

@@ -12,9 +12,7 @@ export type AdminUserWithRoles = Prisma.UserGetPayload<{
  * Maps a Prisma user to a safe admin GraphQL shape (no passwords, tokens, or sessions).
  */
 export function mapUserToAdminGql(user: AdminUserWithRoles): AdminUserGql {
-  const roles = user.roles
-    .map((userRole) => userRole.role.slug)
-    .sort((a, b) => a.localeCompare(b))
+  const roles = user.roles.map((userRole) => userRole.role.slug).sort((a, b) => a.localeCompare(b))
 
   return {
     id: user.id,

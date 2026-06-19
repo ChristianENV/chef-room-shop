@@ -68,9 +68,7 @@ export async function cancelAdminShippingLabel(
 /**
  * Refreshes tracking from Skydropx for an existing shipment.
  */
-export async function refreshAdminShipmentTracking(
-  orderNumber: string,
-): Promise<AdminShipment> {
+export async function refreshAdminShipmentTracking(orderNumber: string): Promise<AdminShipment> {
   const data = await fetchGraphQL<RefreshTrackingData, { orderNumber: string }>({
     query: ADMIN_REFRESH_SHIPMENT_TRACKING_MUTATION,
     variables: { orderNumber },

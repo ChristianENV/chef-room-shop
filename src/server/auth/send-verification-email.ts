@@ -12,9 +12,7 @@ type SendBetterAuthVerificationEmailInput = {
  * Sends the Better Auth email verification link via Chef Room EmailService.
  * Intentionally not awaited by Better Auth callback to reduce timing attacks.
  */
-export function sendBetterAuthVerificationEmail(
-  input: SendBetterAuthVerificationEmailInput,
-): void {
+export function sendBetterAuthVerificationEmail(input: SendBetterAuthVerificationEmailInput): void {
   void safeSendTransactionalEmail({
     to: input.to,
     templateKey: 'email_verification',

@@ -32,9 +32,7 @@ function DesignElementChip({
   return (
     <button
       type="button"
-      data-testid={
-        isSelected ? 'customizer-selected-element' : 'customizer-design-element'
-      }
+      data-testid={isSelected ? 'customizer-selected-element' : 'customizer-design-element'}
       aria-label={`Seleccionar ${layer.name}`}
       onClick={(event) => {
         event.stopPropagation()
@@ -83,9 +81,7 @@ function DesignElementChip({
 export function ViewportElementOverlay() {
   const { layers, selectedLayerId, selectLayer } = useCustomizerStore()
 
-  const editableLayers = layers.filter(
-    (layer) => isEditableElement(layer.type) && layer.visible,
-  )
+  const editableLayers = layers.filter((layer) => isEditableElement(layer.type) && layer.visible)
 
   if (editableLayers.length === 0) return null
 

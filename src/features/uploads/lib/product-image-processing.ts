@@ -39,12 +39,7 @@ export async function processProductImage(
   cropArea: CropArea,
   rotation: number,
 ): Promise<ProcessedProductImageMeta> {
-  const mainCanvas = await getCroppedRectCanvas(
-    imageSrc,
-    cropArea,
-    rotation,
-    PRODUCT_MAX_SIDE,
-  )
+  const mainCanvas = await getCroppedRectCanvas(imageSrc, cropArea, rotation, PRODUCT_MAX_SIDE)
   const thumbCanvas = await getCroppedRectCanvas(
     imageSrc,
     cropArea,

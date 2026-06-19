@@ -23,7 +23,9 @@ describe('toSameOriginR2Url', () => {
 describe('appendCustomizerModelCacheBust', () => {
   it('appends v query param to /r2 paths', () => {
     assert.match(
-      appendCustomizerModelCacheBust('/r2/public/images/models/customizer/chef-jacket/chef-jacket.gltf'),
+      appendCustomizerModelCacheBust(
+        '/r2/public/images/models/customizer/chef-jacket/chef-jacket.gltf',
+      ),
       /\?v=2$|&v=2$/,
     )
   })

@@ -6,11 +6,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { getR2Client } from './r2.client'
 import { PRESIGNED_PUT_TTL_SECONDS, STORED_CONTENT_TYPES, requireR2Config } from './r2.config'
 import { R2StorageError } from './r2.errors'
-import type {
-  CreatePresignedPutInput,
-  PresignedPutUrl,
-  R2ObjectKeys,
-} from './r2.types'
+import type { CreatePresignedPutInput, PresignedPutUrl, R2ObjectKeys } from './r2.types'
 
 /**
  * Creates a presigned PUT URL for a single object.

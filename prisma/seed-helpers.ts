@@ -20,9 +20,7 @@ export function slugify(input: string): string {
 
 /** Joins SKU segments with a demo prefix. */
 export function buildSku(parts: string[]): string {
-  return ['DEMO', ...parts.map((p) => p.toUpperCase().replace(/[^A-Z0-9]/g, ''))].join(
-    '-',
-  )
+  return ['DEMO', ...parts.map((p) => p.toUpperCase().replace(/[^A-Z0-9]/g, ''))].join('-')
 }
 
 /** Picks a random element from a non-empty array. */
@@ -32,10 +30,7 @@ export function randomFrom<T>(items: readonly T[]): T {
 }
 
 /** Throws when value is null or undefined. */
-export function getOrThrow<T>(
-  value: T | null | undefined,
-  message: string,
-): T {
+export function getOrThrow<T>(value: T | null | undefined, message: string): T {
   if (value === null || value === undefined) {
     throw new Error(message)
   }

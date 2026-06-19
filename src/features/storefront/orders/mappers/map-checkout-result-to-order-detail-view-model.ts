@@ -1,11 +1,13 @@
 import type { AccountOrder, AccountOrderItem } from '@/src/features/storefront/account/types'
-import type { CheckoutResult, PublicOrder, PublicOrderItem } from '@/src/features/storefront/checkout/types'
+import type {
+  CheckoutResult,
+  PublicOrder,
+  PublicOrderItem,
+} from '@/src/features/storefront/checkout/types'
 
 function mapPublicItemToAccountItem(item: PublicOrderItem): AccountOrderItem {
   const unitPriceCents =
-    item.quantity > 0
-      ? Math.round(item.totalPriceCents / item.quantity)
-      : item.totalPriceCents
+    item.quantity > 0 ? Math.round(item.totalPriceCents / item.quantity) : item.totalPriceCents
 
   return {
     id: item.id,
@@ -23,9 +25,7 @@ function mapPublicItemToAccountItem(item: PublicOrderItem): AccountOrderItem {
 /**
  * Maps token-scoped checkout result to the shared account order detail view model.
  */
-export function mapCheckoutResultToOrderDetailViewModel(
-  result: CheckoutResult,
-): AccountOrder {
+export function mapCheckoutResultToOrderDetailViewModel(result: CheckoutResult): AccountOrder {
   return {
     id: result.orderId,
     orderNumber: result.orderNumber,

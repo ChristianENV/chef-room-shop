@@ -32,8 +32,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: 'Uniformes para Restaurantes | Chef Room by Bedolla',
-    description:
-      'Uniformes corporativos para restaurantes, hoteles y escuelas de gastronomia.',
+    description: 'Uniformes corporativos para restaurantes, hoteles y escuelas de gastronomia.',
     type: 'website',
   },
   alternates: {
@@ -45,8 +44,7 @@ const benefits = [
   {
     icon: 'users',
     title: 'Pedidos para Equipos',
-    description:
-      'Descuentos progresivos desde 10 piezas. Mientras mas ordenas, mas ahorras.',
+    description: 'Descuentos progresivos desde 10 piezas. Mientras mas ordenas, mas ahorras.',
   },
   {
     icon: 'palette',
@@ -57,26 +55,22 @@ const benefits = [
   {
     icon: 'clock',
     title: 'Entrega Coordinada',
-    description:
-      'Produccion por lotes para entregar todo el pedido junto. Ideal para aperturas.',
+    description: 'Produccion por lotes para entregar todo el pedido junto. Ideal para aperturas.',
   },
   {
     icon: 'shield',
     title: 'Calidad Garantizada',
-    description:
-      'Reemplazo gratuito de prendas con defectos. Garantia de satisfaccion total.',
+    description: 'Reemplazo gratuito de prendas con defectos. Garantia de satisfaccion total.',
   },
   {
     icon: 'sparkles',
     title: 'Asesor Dedicado',
-    description:
-      'Un ejecutivo de cuenta te acompana desde el diseno hasta la entrega final.',
+    description: 'Un ejecutivo de cuenta te acompana desde el diseno hasta la entrega final.',
   },
   {
     icon: 'truck',
     title: 'Envio a Sucursales',
-    description:
-      'Enviamos a multiples direcciones. Ideal para cadenas con varias ubicaciones.',
+    description: 'Enviamos a multiples direcciones. Ideal para cadenas con varias ubicaciones.',
   },
 ]
 
@@ -90,15 +84,13 @@ const categories = [
   },
   {
     title: 'Mandiles con Logo',
-    description:
-      'Desde la cocina hasta el salon. Mandiles personalizados para todo el staff.',
+    description: 'Desde la cocina hasta el salon. Mandiles personalizados para todo el staff.',
     href: shopCategoryUrl('mandiles'),
     imagePlaceholder: 'Mandiles corporativos',
   },
   {
     title: 'Pantalones de Cocina',
-    description:
-      'Completa el uniforme con pantalones comodos y resistentes para largas jornadas.',
+    description: 'Completa el uniforme con pantalones comodos y resistentes para largas jornadas.',
     href: shopCategoryUrl('pantalones'),
     imagePlaceholder: 'Pantalones profesionales',
   },
@@ -207,10 +199,7 @@ export default function UniformesParaRestaurantesPage() {
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {segments.map((segment, index) => (
-              <div
-                key={index}
-                className="rounded-xl border border-border bg-card p-6"
-              >
+              <div key={index} className="rounded-xl border border-border bg-card p-6">
                 <h3 className="font-sans font-semibold text-foreground">{segment.name}</h3>
                 <p className="mt-2 font-serif text-sm text-muted-foreground">{segment.desc}</p>
                 <p className="mt-4 font-sans text-sm font-medium text-primary">
@@ -251,10 +240,7 @@ export default function UniformesParaRestaurantesPage() {
         </div>
       </section>
 
-      <FAQSection
-        title="Preguntas sobre Pedidos Corporativos"
-        faqs={faqs}
-      />
+      <FAQSection title="Preguntas sobre Pedidos Corporativos" faqs={faqs} />
 
       <InternalLinksBlock title="Explora nuestros productos" links={internalLinks} />
 

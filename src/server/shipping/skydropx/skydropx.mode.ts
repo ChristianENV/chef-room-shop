@@ -27,9 +27,7 @@ export function resolveSkydropxModeFromEnvironment(
 /**
  * @deprecated Prefer resolveSkydropxModeFromEnvironment. Kept for existing tests/callers.
  */
-export function resolveSkydropxMode(
-  input: SkydropxModeResolutionInput = {},
-): SkydropxMode {
+export function resolveSkydropxMode(input: SkydropxModeResolutionInput = {}): SkydropxMode {
   return resolveSkydropxModeFromEnvironment(input)
 }
 

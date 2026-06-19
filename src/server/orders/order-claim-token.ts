@@ -73,11 +73,21 @@ export async function validateOrderClaimToken(token: string): Promise<{
   }
 
   if (claimToken.usedAt) {
-    return { valid: false, reason: 'USED', order: claimToken.order, expiresAt: claimToken.expiresAt }
+    return {
+      valid: false,
+      reason: 'USED',
+      order: claimToken.order,
+      expiresAt: claimToken.expiresAt,
+    }
   }
 
   if (claimToken.expiresAt.getTime() < Date.now()) {
-    return { valid: false, reason: 'EXPIRED', order: claimToken.order, expiresAt: claimToken.expiresAt }
+    return {
+      valid: false,
+      reason: 'EXPIRED',
+      order: claimToken.order,
+      expiresAt: claimToken.expiresAt,
+    }
   }
 
   return {

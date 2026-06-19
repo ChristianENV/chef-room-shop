@@ -2,10 +2,7 @@ import { routes } from '@/src/config/routes'
 
 const ADMIN_ROLES = new Set(['ADMIN', 'SUPERADMIN'])
 
-export type PostAuthRedirectSource =
-  | 'storefront-login'
-  | 'storefront-register'
-  | 'admin-login'
+export type PostAuthRedirectSource = 'storefront-login' | 'storefront-register' | 'admin-login'
 
 /**
  * Returns true when `path` is a safe same-origin relative path (no open redirect).
@@ -35,11 +32,7 @@ export function getPostAuthRedirectPath(input: {
   const safeFallback = isSafeInternalRedirect(fallback) ? fallback!.trim() : null
 
   if (hasAdminRole(roles)) {
-    if (
-      source === 'admin-login' &&
-      safeFallback &&
-      safeFallback.startsWith('/admin')
-    ) {
+    if (source === 'admin-login' && safeFallback && safeFallback.startsWith('/admin')) {
       return safeFallback
     }
     return routes.adminDashboard

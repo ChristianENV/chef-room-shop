@@ -44,7 +44,15 @@ function buildTextTexture(
   return texture
 }
 
-export function TextDecal({ text, fontSize, textColor, fontFamily, opacity, zone, mesh }: TextDecalProps) {
+export function TextDecal({
+  text,
+  fontSize,
+  textColor,
+  fontFamily,
+  opacity,
+  zone,
+  mesh,
+}: TextDecalProps) {
   const texture = useMemo(
     () => buildTextTexture(text, fontSize, textColor, fontFamily),
     [text, fontSize, textColor, fontFamily],
@@ -54,12 +62,7 @@ export function TextDecal({ text, fontSize, textColor, fontFamily, opacity, zone
   const meshRef = useMemo<React.RefObject<THREE.Mesh>>(() => ({ current: mesh }), [mesh])
 
   return (
-    <Decal
-      mesh={meshRef}
-      position={zone.position}
-      rotation={zone.rotation}
-      scale={zone.scale}
-    >
+    <Decal mesh={meshRef} position={zone.position} rotation={zone.rotation} scale={zone.scale}>
       <meshBasicMaterial
         map={texture}
         transparent

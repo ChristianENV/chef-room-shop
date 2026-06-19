@@ -15,7 +15,9 @@ import type {
  * overwrites the previous file (no orphan objects). Cache busting is handled
  * via a version query param on the public URL, not the key.
  */
-export function buildAvatarObjectKeys(userId: string): Required<Pick<R2ObjectKeys, 'webp' | 'jpg'>> {
+export function buildAvatarObjectKeys(
+  userId: string,
+): Required<Pick<R2ObjectKeys, 'webp' | 'jpg'>> {
   const base = `users/${userId}/avatar`
   return {
     webp: `${base}/avatar.webp`,

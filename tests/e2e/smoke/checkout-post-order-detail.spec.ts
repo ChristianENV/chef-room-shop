@@ -33,9 +33,7 @@ test.describe('Checkout post-order detail flow', () => {
     })
 
     const token = getMockCheckoutToken()
-    await page.goto(
-      `/account/orders/${getMockOrderNumber()}?from=checkout&token=${token}`,
-    )
+    await page.goto(`/account/orders/${getMockOrderNumber()}?from=checkout&token=${token}`)
 
     await expect(page.getByTestId('account-order-detail-page')).toBeAttached()
     await expect(page.getByTestId('post-checkout-order-modal')).toBeVisible()
@@ -51,9 +49,7 @@ test.describe('Checkout post-order detail flow', () => {
     await mockCheckoutPostOrderFlow(page, { status: 'PAID', paymentStatus: 'PAID' })
 
     const token = getMockCheckoutToken()
-    await page.goto(
-      `/account/orders/${getMockOrderNumber()}?from=checkout&token=${token}`,
-    )
+    await page.goto(`/account/orders/${getMockOrderNumber()}?from=checkout&token=${token}`)
 
     const loginLink = page.getByTestId('post-checkout-login-button')
     await expect(loginLink).toBeVisible()
@@ -70,9 +66,7 @@ test.describe('Checkout post-order detail flow', () => {
     await mockCheckoutPostOrderFlow(page, { status: 'PAID', paymentStatus: 'PAID' })
 
     const token = getMockCheckoutToken()
-    await page.goto(
-      `/account/orders/${getMockOrderNumber()}?from=checkout&token=${token}`,
-    )
+    await page.goto(`/account/orders/${getMockOrderNumber()}?from=checkout&token=${token}`)
 
     const registerLink = page.getByTestId('post-checkout-create-account-button')
     const href = await registerLink.getAttribute('href')
@@ -93,18 +87,14 @@ test.describe('Checkout post-order detail flow', () => {
     })
 
     const token = getMockCheckoutToken()
-    await page.goto(
-      `/account/orders/${getMockOrderNumber()}?from=checkout&token=${token}`,
-    )
+    await page.goto(`/account/orders/${getMockOrderNumber()}?from=checkout&token=${token}`)
 
     await expect(page.getByTestId('post-checkout-payment-confirmed')).toBeVisible({
       timeout: 45_000,
     })
   })
 
-  test('payment timeout shows manual verify without auto Conekta redirect', async ({
-    page,
-  }) => {
+  test('payment timeout shows manual verify without auto Conekta redirect', async ({ page }) => {
     await mockCheckoutPostOrderFlow(page, {
       status: 'PENDING_PAYMENT',
       paymentStatus: 'PENDING',
@@ -112,9 +102,7 @@ test.describe('Checkout post-order detail flow', () => {
     })
 
     const token = getMockCheckoutToken()
-    await page.goto(
-      `/account/orders/${getMockOrderNumber()}?from=checkout&token=${token}`,
-    )
+    await page.goto(`/account/orders/${getMockOrderNumber()}?from=checkout&token=${token}`)
 
     await expect(page.getByTestId('post-checkout-payment-timeout')).toBeVisible({
       timeout: 45_000,

@@ -5,7 +5,9 @@ import { getActiveGuestSessionFromCookies } from '@/src/server/guest/guest-sessi
 import type { GraphQLContext } from '../../context'
 import type { OrderWithPaymentsAndItems } from './payments.types'
 
-function forbidden(message = 'No tienes permiso para iniciar el pago de este pedido.'): GraphQLError {
+function forbidden(
+  message = 'No tienes permiso para iniciar el pago de este pedido.',
+): GraphQLError {
   return new GraphQLError(message, { extensions: { code: 'FORBIDDEN' } })
 }
 
@@ -27,11 +29,7 @@ export async function assertCanStartConektaCheckout(
     if (order.userId && order.userId === user.id) return
 
     const guestSession = await getActiveGuestSessionFromCookies()
-    if (
-      guestSession &&
-      order.guestSessionId &&
-      order.guestSessionId === guestSession.id
-    ) {
+    if (guestSession && order.guestSessionId && order.guestSessionId === guestSession.id) {
       return
     }
 
@@ -59,8 +57,7 @@ export async function assertCanStartConektaCheckout(
 
 /** Orders that may start or restart Conekta hosted checkout. */
 export function assertOrderPendingPayment(order: OrderWithPaymentsAndItems): void {
-  const canCheckout =
-    order.status === 'PENDING_PAYMENT' || order.status === 'PAYMENT_FAILED'
+  const canCheckout = order.status === 'PENDING_PAYMENT' || order.status === 'PAYMENT_FAILED'
 
   if (!canCheckout) {
     throw new GraphQLError('Este pedido ya no admite un nuevo intento de pago.', {

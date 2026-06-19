@@ -1,5 +1,8 @@
 import type { SkydropxAddressInput } from './skydropx.types'
-import { truncateSkydropxReference, SKYDROPX_FURTHER_INFO_MAX_LENGTH } from './skydropx-field-limits'
+import {
+  truncateSkydropxReference,
+  SKYDROPX_FURTHER_INFO_MAX_LENGTH,
+} from './skydropx-field-limits'
 
 /**
  * Canonical label address (maps to Skydropx v1 address_from / address_to).

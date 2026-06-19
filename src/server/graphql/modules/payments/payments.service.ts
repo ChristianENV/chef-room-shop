@@ -17,11 +17,7 @@ import { sanitizeConektaPayload } from '@/src/server/payments/conekta/conekta.sa
 import { getAppBaseUrl } from '@/src/server/payments/app-url'
 
 import type { GraphQLContext } from '../../context'
-import {
-  assertCanStartConektaCheckout,
-  assertOrderPendingPayment,
-  notFound,
-} from './payments.auth'
+import { assertCanStartConektaCheckout, assertOrderPendingPayment, notFound } from './payments.auth'
 import {
   getCachedCheckoutFromAttempts,
   isPlaceholderProviderOrderId,
@@ -158,9 +154,7 @@ export async function startConektaCheckoutForOrder(
       shippingCents: order.shippingCents,
       successUrl,
       failureUrl,
-      allowedPaymentMethods: mapAllowedConektaMethods(
-        payment.method as PaymentMethod | null,
-      ),
+      allowedPaymentMethods: mapAllowedConektaMethods(payment.method as PaymentMethod | null),
       metadata: buildConektaMetadata(orderView),
     })
   } catch (error) {

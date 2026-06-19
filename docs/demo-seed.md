@@ -53,27 +53,27 @@ All accounts use password: **`12345678`** (do not use outside DEV).
 
 ### Admins
 
-| Email | Role | Name |
-|-------|------|------|
-| cnoriegava@gmail.com | SUPERADMIN | Christian Noriega |
-| cnoriegava+1@gmail.com | ADMIN | Admin Chef Room |
-| cnoriegava+2@gmail.com | ADMIN | Operaciones Chef Room |
-| cnoriegava+3@gmail.com | ADMIN | Ventas Chef Room |
-| cnoriegava+4@gmail.com | ADMIN | Producción Chef Room |
-| cnoriegava+5@gmail.com | ADMIN | Soporte Chef Room |
+| Email                  | Role       | Name                  |
+| ---------------------- | ---------- | --------------------- |
+| cnoriegava@gmail.com   | SUPERADMIN | Christian Noriega     |
+| cnoriegava+1@gmail.com | ADMIN      | Admin Chef Room       |
+| cnoriegava+2@gmail.com | ADMIN      | Operaciones Chef Room |
+| cnoriegava+3@gmail.com | ADMIN      | Ventas Chef Room      |
+| cnoriegava+4@gmail.com | ADMIN      | Producción Chef Room  |
+| cnoriegava+5@gmail.com | ADMIN      | Soporte Chef Room     |
 
 ### Customers (20)
 
-| Emails | Role |
-|--------|------|
+| Emails                                                           | Role     |
+| ---------------------------------------------------------------- | -------- |
 | `cliente.demo+1@chefroom.test` … `cliente.demo+20@chefroom.test` | CUSTOMER |
 
 ### Provider distribution
 
-| Users | Auth |
-|-------|------|
-| `cliente.demo+1` … `+8` | Email/password only |
-| `cliente.demo+9` … `+14` | Email/password + linked Google (`google-demo-user-{n}`) |
+| Users                     | Auth                                                        |
+| ------------------------- | ----------------------------------------------------------- |
+| `cliente.demo+1` … `+8`   | Email/password only                                         |
+| `cliente.demo+9` … `+14`  | Email/password + linked Google (`google-demo-user-{n}`)     |
 | `cliente.demo+15` … `+20` | Email/password + linked Facebook (`facebook-demo-user-{n}`) |
 
 Social rows are **metadata only** for QA listings; login always works with email + `12345678`.

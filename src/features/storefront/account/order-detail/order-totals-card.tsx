@@ -16,9 +16,7 @@ export function OrderTotalsCard({ order }: OrderTotalsCardProps) {
 
   const rows = [
     { label: 'Subtotal', cents: order.subtotalCents },
-    ...(customizationCents > 0
-      ? [{ label: 'Personalización', cents: customizationCents }]
-      : []),
+    ...(customizationCents > 0 ? [{ label: 'Personalización', cents: customizationCents }] : []),
     { label: 'Envío', cents: shippingCents },
     ...(discountCents > 0 ? [{ label: 'Descuento', cents: -discountCents }] : []),
     ...(taxCents > 0 ? [{ label: 'Impuestos', cents: taxCents }] : []),

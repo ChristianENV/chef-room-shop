@@ -31,23 +31,23 @@ export function TopToolbar({
     (saveStatus === 'saving'
       ? 'Guardando…'
       : saveStatus === 'error'
-      ? 'Error al guardar'
-      : isDirty
-      ? 'Cambios sin guardar'
-      : saveStatus === 'saved'
-      ? 'Guardado'
-      : 'Listo para diseñar')
+        ? 'Error al guardar'
+        : isDirty
+          ? 'Cambios sin guardar'
+          : saveStatus === 'saved'
+            ? 'Guardado'
+            : 'Listo para diseñar')
 
   const statusTone =
     saveStatus === 'error' || saveStatusLabel?.includes('Error')
       ? 'text-destructive'
       : saveStatusLabel?.includes('sin vista') || saveStatusLabel?.includes('no pudimos')
-      ? 'text-amber-600'
-      : isDirty && !isSaving
-      ? 'text-amber-600'
-      : saveStatus === 'saved' || saveStatusLabel?.includes('guardado')
-      ? 'text-emerald-600'
-      : 'text-muted-foreground'
+        ? 'text-amber-600'
+        : isDirty && !isSaving
+          ? 'text-amber-600'
+          : saveStatus === 'saved' || saveStatusLabel?.includes('guardado')
+            ? 'text-emerald-600'
+            : 'text-muted-foreground'
 
   return (
     <div className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between gap-2 px-4 py-3">
@@ -245,7 +245,9 @@ export function BottomActionBar({
             >
               <Minus className="size-3.5" />
             </button>
-            <span className="w-5 text-center text-xs font-semibold sm:w-6 sm:text-sm">{quantity}</span>
+            <span className="w-5 text-center text-xs font-semibold sm:w-6 sm:text-sm">
+              {quantity}
+            </span>
             <button
               type="button"
               title="Aumentar"

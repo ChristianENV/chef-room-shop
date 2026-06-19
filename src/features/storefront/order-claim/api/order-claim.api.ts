@@ -10,9 +10,7 @@ type ClaimOrderData = { claimOrder: OrderClaimPayload }
 /**
  * Fetches minimal preview for a claim token (no auth required).
  */
-export async function getOrderClaimPreview(
-  token: string,
-): Promise<OrderClaimPreview | null> {
+export async function getOrderClaimPreview(token: string): Promise<OrderClaimPreview | null> {
   const data = await fetchGraphQL<OrderClaimPreviewData, { token: string }>({
     query: ORDER_CLAIM_PREVIEW_QUERY,
     variables: { token },

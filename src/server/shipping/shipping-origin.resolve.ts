@@ -31,8 +31,7 @@ export function resolveShippingOriginFromEnv(): ShippingOriginConfig {
     street: process.env.SHIPPING_ORIGIN_STREET?.trim() || origin.street,
     extNumber: process.env.SHIPPING_ORIGIN_EXT_NUMBER?.trim() || origin.extNumber,
     intNumber: process.env.SHIPPING_ORIGIN_INT_NUMBER?.trim() || origin.intNumber,
-    neighborhood:
-      process.env.SHIPPING_ORIGIN_NEIGHBORHOOD?.trim() || origin.neighborhood,
+    neighborhood: process.env.SHIPPING_ORIGIN_NEIGHBORHOOD?.trim() || origin.neighborhood,
     city: process.env.SHIPPING_ORIGIN_CITY?.trim() || origin.city,
     state: process.env.SHIPPING_ORIGIN_STATE?.trim() || origin.state,
     country: process.env.SHIPPING_ORIGIN_COUNTRY?.trim() || SHIPPING_COUNTRY_MX,

@@ -10,10 +10,7 @@ import { checkoutQueryKeys } from '../api/checkout.query-keys'
 /**
  * Links a guest checkout order to the authenticated session user.
  */
-export function useClaimGuestOrderByCheckoutTokenMutation(
-  orderNumber: string,
-  token: string,
-) {
+export function useClaimGuestOrderByCheckoutTokenMutation(orderNumber: string, token: string) {
   const queryClient = useQueryClient()
   const normalizedOrderNumber = orderNumber.trim()
   const normalizedToken = token.trim()
@@ -23,8 +20,7 @@ export function useClaimGuestOrderByCheckoutTokenMutation(
       ...checkoutQueryKeys.orderByCheckoutToken(normalizedOrderNumber, normalizedToken),
       'claim',
     ],
-    mutationFn: () =>
-      claimGuestOrderByCheckoutToken(normalizedOrderNumber, normalizedToken),
+    mutationFn: () => claimGuestOrderByCheckoutToken(normalizedOrderNumber, normalizedToken),
     onSuccess: (result) => {
       if (
         result.success &&
@@ -38,10 +34,7 @@ export function useClaimGuestOrderByCheckoutTokenMutation(
       }
 
       void queryClient.invalidateQueries({
-        queryKey: checkoutQueryKeys.orderByCheckoutToken(
-          normalizedOrderNumber,
-          normalizedToken,
-        ),
+        queryKey: checkoutQueryKeys.orderByCheckoutToken(normalizedOrderNumber, normalizedToken),
       })
     },
   })

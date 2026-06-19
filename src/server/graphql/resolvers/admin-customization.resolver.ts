@@ -53,17 +53,11 @@ export const adminCustomizationResolvers = {
       context: GraphQLContext,
     ) => getAdminCustomizationOptions(context),
 
-    adminCustomizationProducts: (
-      _parent: unknown,
-      args: ProductsArgs,
-      context: GraphQLContext,
-    ) => getAdminCustomizationProducts(context, args),
+    adminCustomizationProducts: (_parent: unknown, args: ProductsArgs, context: GraphQLContext) =>
+      getAdminCustomizationProducts(context, args),
 
-    adminCustomizationRules: (
-      _parent: unknown,
-      args: RulesListArgs,
-      context: GraphQLContext,
-    ) => getAdminCustomizationRules(context, args),
+    adminCustomizationRules: (_parent: unknown, args: RulesListArgs, context: GraphQLContext) =>
+      getAdminCustomizationRules(context, args),
 
     adminCustomizationRulesByProduct: (
       _parent: unknown,
@@ -71,11 +65,8 @@ export const adminCustomizationResolvers = {
       context: GraphQLContext,
     ) => getAdminCustomizationRulesByProduct(context, args.productId),
 
-    adminCustomizationRuleById: (
-      _parent: unknown,
-      args: IdArgs,
-      context: GraphQLContext,
-    ) => getAdminCustomizationRuleById(context, args.id),
+    adminCustomizationRuleById: (_parent: unknown, args: IdArgs, context: GraphQLContext) =>
+      getAdminCustomizationRuleById(context, args.id),
 
     adminCustomizationPricingPreview: (
       _parent: unknown,
@@ -97,17 +88,11 @@ export const adminCustomizationResolvers = {
       context: GraphQLContext,
     ) => updateAdminCustomizationRule(context, args.id, args.input),
 
-    deleteAdminCustomizationRule: (
-      _parent: unknown,
-      args: IdArgs,
-      context: GraphQLContext,
-    ) => deleteAdminCustomizationRule(context, args.id),
+    deleteAdminCustomizationRule: (_parent: unknown, args: IdArgs, context: GraphQLContext) =>
+      deleteAdminCustomizationRule(context, args.id),
 
-    toggleAdminCustomizationRule: (
-      _parent: unknown,
-      args: ToggleArgs,
-      context: GraphQLContext,
-    ) => toggleAdminCustomizationRule(context, args.id, args.enabled),
+    toggleAdminCustomizationRule: (_parent: unknown, args: ToggleArgs, context: GraphQLContext) =>
+      toggleAdminCustomizationRule(context, args.id, args.enabled),
 
     duplicateCustomizationRulesToProduct: (
       _parent: unknown,

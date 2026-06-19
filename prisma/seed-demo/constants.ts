@@ -7,8 +7,7 @@ export const DEMO_ORDER_PREFIX = 'CR-2026-'
 
 export const DEMO_PRODUCT_SLUG_PREFIX = 'demo-'
 
-export const PLACEHOLDER_IMAGE_BASE =
-  'https://placehold.co/800x1000/e2e0db/2b3280/png'
+export const PLACEHOLDER_IMAGE_BASE = 'https://placehold.co/800x1000/e2e0db/2b3280/png'
 
 export const DEMO_USER_EMAIL_PATTERNS = [
   /^cnoriegava@gmail\.com$/i,

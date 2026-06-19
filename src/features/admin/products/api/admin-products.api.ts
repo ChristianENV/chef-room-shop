@@ -52,10 +52,7 @@ export async function getAdminProductById(id: string): Promise<AdminProduct | nu
 }
 
 export async function getAdminProductBySlug(slug: string): Promise<AdminProduct | null> {
-  const data = await fetchGraphQL<
-    { adminProductBySlug: AdminProduct | null },
-    { slug: string }
-  >({
+  const data = await fetchGraphQL<{ adminProductBySlug: AdminProduct | null }, { slug: string }>({
     query: ADMIN_PRODUCT_BY_SLUG_QUERY,
     variables: { slug },
   })
@@ -110,10 +107,7 @@ export async function duplicateAdminProduct(id: string): Promise<AdminProduct> {
   return data.duplicateAdminProduct
 }
 
-export async function updateAdminProductStatus(
-  id: string,
-  status: string,
-): Promise<AdminProduct> {
+export async function updateAdminProductStatus(id: string, status: string): Promise<AdminProduct> {
   const data = await fetchGraphQL<
     { updateAdminProductStatus: AdminProduct },
     { id: string; status: string }

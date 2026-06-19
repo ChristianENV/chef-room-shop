@@ -1,11 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
-import {
-  FulfillmentStatus,
-  OrderStatus,
-  ShipmentStatus,
-} from '@prisma/client'
+import { FulfillmentStatus, OrderStatus, ShipmentStatus } from '@prisma/client'
 
 import { deriveAdminLabelCreationStatuses } from '@/src/server/graphql/modules/admin-shipping/admin-shipping-label-status'
 
@@ -50,17 +46,13 @@ describe('deriveAdminLabelCreationStatuses', () => {
 describe('mock label provider data with admin status derivation', () => {
   it('returns tracking and label URL while staying non-shipped in mock mode', async () => {
     await import('./helpers/mock-server-only')
-    const { buildMockSkydropxShipmentResponse } = await import(
-      '@/src/server/shipping/skydropx/skydropx.mock-provider'
-    )
-    const { parseSkydropxShipmentResponse } = await import(
-      '@/src/server/shipping/skydropx/skydropx.mappers'
-    )
+    const { buildMockSkydropxShipmentResponse } =
+      await import('@/src/server/shipping/skydropx/skydropx.mock-provider')
+    const { parseSkydropxShipmentResponse } =
+      await import('@/src/server/shipping/skydropx/skydropx.mappers')
 
     const orderNumber = 'CR-2026-STATUS-001'
-    const parsed = parseSkydropxShipmentResponse(
-      buildMockSkydropxShipmentResponse({ orderNumber }),
-    )
+    const parsed = parseSkydropxShipmentResponse(buildMockSkydropxShipmentResponse({ orderNumber }))
     const statuses = deriveAdminLabelCreationStatuses({
       isMockMode: true,
       hasTracking: Boolean(parsed.trackingNumber?.trim()),

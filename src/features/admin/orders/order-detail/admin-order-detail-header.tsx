@@ -3,10 +3,7 @@
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
-import {
-  formatDateOnly,
-  mapStatusToBadgeVariant,
-} from '../mappers/admin-orders-ui.mapper'
+import { formatDateOnly, mapStatusToBadgeVariant } from '../mappers/admin-orders-ui.mapper'
 import type { AdminOrderDetailState } from './use-admin-order-detail'
 
 type AdminOrderDetailHeaderProps = {

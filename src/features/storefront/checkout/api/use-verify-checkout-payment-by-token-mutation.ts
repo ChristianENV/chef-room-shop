@@ -10,10 +10,7 @@ import { checkoutQueryKeys } from '../api/checkout.query-keys'
 /**
  * Token-scoped Conekta payment verification (same sync as verifyMyOrderPayment).
  */
-export function useVerifyCheckoutPaymentByTokenMutation(
-  orderNumber: string,
-  token: string,
-) {
+export function useVerifyCheckoutPaymentByTokenMutation(orderNumber: string, token: string) {
   const queryClient = useQueryClient()
   const normalizedOrderNumber = orderNumber.trim()
   const normalizedToken = token.trim()

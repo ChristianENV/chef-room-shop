@@ -44,8 +44,8 @@ export function AdminCancelLabelDialog({
         <DialogHeader>
           <DialogTitle className="font-sans">Cancelar guía</DialogTitle>
           <DialogDescription className="font-serif">
-            Esta acción intentará cancelar la guía en Skydropx. Si la guía ya fue
-            usada por la paquetería, podría no ser posible.
+            Esta acción intentará cancelar la guía en Skydropx. Si la guía ya fue usada por la
+            paquetería, podría no ser posible.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2 py-2">

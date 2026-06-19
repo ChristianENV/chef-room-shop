@@ -22,11 +22,41 @@ import {
 } from 'lucide-react'
 
 const mockRecentOrders = [
-  { id: 'ORD-001', customer: 'Juan Perez', total: '$2,847.00', status: 'processing', date: '15 Mar 2024' },
-  { id: 'ORD-002', customer: 'Maria Garcia', total: '$1,299.00', status: 'shipped', date: '14 Mar 2024' },
-  { id: 'ORD-003', customer: 'Carlos Lopez', total: '$899.00', status: 'delivered', date: '13 Mar 2024' },
-  { id: 'ORD-004', customer: 'Ana Martinez', total: '$3,499.00', status: 'processing', date: '12 Mar 2024' },
-  { id: 'ORD-005', customer: 'Roberto Diaz', total: '$449.00', status: 'delivered', date: '11 Mar 2024' },
+  {
+    id: 'ORD-001',
+    customer: 'Juan Perez',
+    total: '$2,847.00',
+    status: 'processing',
+    date: '15 Mar 2024',
+  },
+  {
+    id: 'ORD-002',
+    customer: 'Maria Garcia',
+    total: '$1,299.00',
+    status: 'shipped',
+    date: '14 Mar 2024',
+  },
+  {
+    id: 'ORD-003',
+    customer: 'Carlos Lopez',
+    total: '$899.00',
+    status: 'delivered',
+    date: '13 Mar 2024',
+  },
+  {
+    id: 'ORD-004',
+    customer: 'Ana Martinez',
+    total: '$3,499.00',
+    status: 'processing',
+    date: '12 Mar 2024',
+  },
+  {
+    id: 'ORD-005',
+    customer: 'Roberto Diaz',
+    total: '$449.00',
+    status: 'delivered',
+    date: '11 Mar 2024',
+  },
 ]
 
 const statusConfig = {
@@ -37,11 +67,7 @@ const statusConfig = {
 
 export default function AdminLayoutDemo() {
   return (
-    <AdminLayout
-      breadcrumb={[{ label: 'Dashboard' }]}
-      environment="DEV"
-      notificationCount={5}
-    >
+    <AdminLayout breadcrumb={[{ label: 'Dashboard' }]} environment="DEV" notificationCount={5}>
       <div className="space-y-6">
         {/* Page Header */}
         <div className="flex items-center justify-between">
@@ -172,11 +198,7 @@ export default function AdminLayoutDemo() {
               { label: 'Analiticas', icon: TrendingUp, color: 'bg-success' },
               { label: 'Ver Tienda', icon: Eye, color: 'bg-secondary' },
             ].map((action, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                className="h-auto flex-col gap-2 p-4"
-              >
+              <Button key={index} variant="outline" className="h-auto flex-col gap-2 p-4">
                 <div className={`rounded-lg p-2 ${action.color} text-white`}>
                   <action.icon className="h-5 w-5" />
                 </div>

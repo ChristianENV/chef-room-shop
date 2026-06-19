@@ -4,10 +4,7 @@ import { NotificationType, type Order, type PrismaClient } from '@prisma/client'
 
 import { routes } from '@/src/config/routes'
 
-import {
-  createAdminNotification,
-  createUserNotification,
-} from './notification.service'
+import { createAdminNotification, createUserNotification } from './notification.service'
 
 type OrderCreatedNotificationOrder = Pick<Order, 'id' | 'orderNumber' | 'userId'>
 

@@ -14,10 +14,7 @@ import {
   useMyUnreadNotificationCountQuery,
 } from '../api/use-my-unread-notification-count-query'
 import { NotificationItem } from './notification-item'
-import {
-  NotificationPageListEmpty,
-  NotificationPageListSkeleton,
-} from './notification-list-states'
+import { NotificationPageListEmpty, NotificationPageListSkeleton } from './notification-list-states'
 import { NotificationListError } from './notification-list-states'
 import type { Notification } from '../types'
 
@@ -95,31 +92,26 @@ export function NotificationsPageContent() {
       {notificationsQuery.isLoading && <NotificationPageListSkeleton />}
 
       {notificationsQuery.isError && (
-        <NotificationListError
-          variant="page"
-          onRetry={() => void notificationsQuery.refetch()}
-        />
+        <NotificationListError variant="page" onRetry={() => void notificationsQuery.refetch()} />
       )}
 
       {!notificationsQuery.isLoading &&
         !notificationsQuery.isError &&
         notifications.length === 0 && <NotificationPageListEmpty />}
 
-      {!notificationsQuery.isLoading &&
-        !notificationsQuery.isError &&
-        notifications.length > 0 && (
-          <ul className="space-y-3">
-            {notifications.map((notification) => (
-              <li key={notification.id}>
-                <NotificationItem
-                  notification={notification}
-                  onSelect={handleSelect}
-                  variant="page"
-                />
-              </li>
-            ))}
-          </ul>
-        )}
+      {!notificationsQuery.isLoading && !notificationsQuery.isError && notifications.length > 0 && (
+        <ul className="space-y-3">
+          {notifications.map((notification) => (
+            <li key={notification.id}>
+              <NotificationItem
+                notification={notification}
+                onSelect={handleSelect}
+                variant="page"
+              />
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

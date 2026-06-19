@@ -3,11 +3,7 @@
 import { useMemo, useState } from 'react'
 import { Check, ChevronDown, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 
@@ -86,7 +82,10 @@ export function AdminJsonViewer({
         >
           <span>{title}</span>
           <ChevronDown
-            className={cn('size-4 text-muted-foreground transition-transform', open && 'rotate-180')}
+            className={cn(
+              'size-4 text-muted-foreground transition-transform',
+              open && 'rotate-180',
+            )}
           />
         </button>
       </CollapsibleTrigger>

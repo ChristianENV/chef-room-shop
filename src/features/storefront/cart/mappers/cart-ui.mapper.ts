@@ -20,10 +20,7 @@ const DEFAULT_COLOR_HEX = '#E5E7EB'
 /**
  * Infers storefront cart category from product slug and type label.
  */
-function inferCartCategory(
-  slug: string,
-  productType: string | null,
-): CartPreviewCategory {
+function inferCartCategory(slug: string, productType: string | null): CartPreviewCategory {
   const hint = `${slug} ${productType ?? ''}`.toLowerCase()
   if (hint.includes('mandil') || hint.includes('apron')) return 'mandil'
   if (hint.includes('pantalon') || hint.includes('pants')) return 'pantalon'
@@ -128,9 +125,7 @@ export function mapBffCartItemToUiItem(item: CartItem): CartPreviewItem {
     : null
 
   const isCustomized =
-    Boolean(item.designId) ||
-    item.customizationPriceCents > 0 ||
-    Boolean(customization?.designId)
+    Boolean(item.designId) || item.customizationPriceCents > 0 || Boolean(customization?.designId)
 
   const customizationSummary = getCartItemCustomizationSummary(item)
   if (summaryLine && customizationSummary) {
@@ -152,9 +147,7 @@ export function mapBffCartItemToUiItem(item: CartItem): CartPreviewItem {
     quantity: item.quantity,
     unitPrice: centsToPesos(item.unitPriceCents),
     customizationPrice:
-      item.customizationPriceCents > 0
-        ? centsToPesos(item.customizationPriceCents)
-        : undefined,
+      item.customizationPriceCents > 0 ? centsToPesos(item.customizationPriceCents) : undefined,
     isCustomized,
     designId: item.designId ?? customization?.designId ?? undefined,
     designPreviewUrl: customization?.previewUrl ?? undefined,
@@ -206,7 +199,6 @@ export function mapBffCartToCartPage(cart: Cart): CartPageState {
  * Remaining MXN to free shipping for cart page promo (from BFF subtotals).
  */
 export function getCartPageFreeShippingRemaining(cart: Cart): number {
-  const partial =
-    centsToPesos(cart.subtotalCents) + centsToPesos(cart.customizationTotalCents)
+  const partial = centsToPesos(cart.subtotalCents) + centsToPesos(cart.customizationTotalCents)
   return getFreeShippingRemaining(partial)
 }

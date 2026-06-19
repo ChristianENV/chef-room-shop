@@ -1,9 +1,4 @@
-import {
-  FulfillmentStatus,
-  OrderStatus,
-  PaymentStatus,
-  ShipmentStatus,
-} from '@prisma/client'
+import { FulfillmentStatus, OrderStatus, PaymentStatus, ShipmentStatus } from '@prisma/client'
 import { z } from 'zod'
 
 const orderStatusValues = Object.values(OrderStatus) as [string, ...string[]]

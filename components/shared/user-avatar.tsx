@@ -26,12 +26,7 @@ export type UserAvatarProps = {
 /**
  * Profile avatar with OAuth image or initials fallback (Chef Room premium styling).
  */
-export function UserAvatar({
-  user,
-  size = 'md',
-  className,
-  decorative = false,
-}: UserAvatarProps) {
+export function UserAvatar({ user, size = 'md', className, decorative = false }: UserAvatarProps) {
   const displayName = getUserDisplayName(user)
   const initials = getUserInitials(user)
   const imageSrc = user?.image ?? user?.avatarUrl ?? undefined
@@ -47,12 +42,7 @@ export function UserAvatar({
       aria-label={decorative ? undefined : displayName}
     >
       {imageSrc ? (
-        <AvatarImage
-          key={imageSrc}
-          src={imageSrc}
-          alt={displayName}
-          className="object-cover"
-        />
+        <AvatarImage key={imageSrc} src={imageSrc} alt={displayName} className="object-cover" />
       ) : null}
       <AvatarFallback
         delayMs={imageSrc ? 600 : 0}

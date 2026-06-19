@@ -156,12 +156,9 @@ export const ProductImageUploader = forwardRef<
     }
   }, [])
 
-  const updateItem = useCallback(
-    (key: string, patch: Partial<ProductImageUploaderItem>) => {
-      setItems((prev) => prev.map((item) => (item.key === key ? { ...item, ...patch } : item)))
-    },
-    [],
-  )
+  const updateItem = useCallback((key: string, patch: Partial<ProductImageUploaderItem>) => {
+    setItems((prev) => prev.map((item) => (item.key === key ? { ...item, ...patch } : item)))
+  }, [])
 
   const persistReorder = useCallback(
     async (nextItems: ProductImageUploaderItem[]) => {
@@ -328,8 +325,7 @@ export const ProductImageUploader = forwardRef<
       } catch (err) {
         updateItem(item.key, {
           status: 'error',
-          errorMessage:
-            err instanceof Error ? err.message : 'No pudimos subir la imagen.',
+          errorMessage: err instanceof Error ? err.message : 'No pudimos subir la imagen.',
         })
         throw err
       }
@@ -371,9 +367,7 @@ export const ProductImageUploader = forwardRef<
             errorMessage: null,
           }
 
-          setItems((prev) =>
-            prev.map((item) => (item.key === ctx.itemKey ? patched : item)),
-          )
+          setItems((prev) => prev.map((item) => (item.key === ctx.itemKey ? patched : item)))
 
           if (productId) {
             await uploadSingleItem(patched, productId, sortOrder >= 0 ? sortOrder : 0)
@@ -470,10 +464,7 @@ export const ProductImageUploader = forwardRef<
   const showCreateHint = !productId
   const canAddMore = items.length < MAX_PRODUCT_IMAGES
 
-  const pendingCount = useMemo(
-    () => items.filter((i) => i.status === 'pending').length,
-    [items],
-  )
+  const pendingCount = useMemo(() => items.filter((i) => i.status === 'pending').length, [items])
 
   return (
     <div className="space-y-4">
@@ -495,8 +486,7 @@ export const ProductImageUploader = forwardRef<
       {showCreateHint && items.length === 0 && (
         <Alert variant="default" className="border-border bg-muted/30">
           <AlertDescription className="font-serif text-sm">
-            Puedes seleccionar imágenes ahora; se optimizarán y subirán cuando guardes el
-            producto.
+            Puedes seleccionar imágenes ahora; se optimizarán y subirán cuando guardes el producto.
           </AlertDescription>
         </Alert>
       )}
@@ -558,8 +548,8 @@ export const ProductImageUploader = forwardRef<
           <AlertDialogHeader>
             <AlertDialogTitle className="font-sans">Eliminar imagen</AlertDialogTitle>
             <AlertDialogDescription className="font-serif">
-              Esta acción quita la imagen del producto. Si era la principal, la siguiente pasará
-              a serlo.
+              Esta acción quita la imagen del producto. Si era la principal, la siguiente pasará a
+              serlo.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

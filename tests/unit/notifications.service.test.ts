@@ -173,11 +173,8 @@ describe('notifications service', { skip: !hasDatabase }, () => {
 
   it('user cannot read another user notifications', async () => {
     const { prisma } = await loadPrisma()
-    const {
-      createUserNotification,
-      getMyNotifications,
-      markNotificationRead,
-    } = await loadNotificationModules()
+    const { createUserNotification, getMyNotifications, markNotificationRead } =
+      await loadNotificationModules()
 
     const owner = await createUniqueTestUser(prisma, 'owner', cleanup)
     const other = await createUniqueTestUser(prisma, 'other', cleanup)
@@ -205,11 +202,8 @@ describe('notifications service', { skip: !hasDatabase }, () => {
 
   it('unread count works', async () => {
     const { prisma } = await loadPrisma()
-    const {
-      createUserNotification,
-      getMyUnreadNotificationCount,
-      markNotificationRead,
-    } = await loadNotificationModules()
+    const { createUserNotification, getMyUnreadNotificationCount, markNotificationRead } =
+      await loadNotificationModules()
 
     const user = await createUniqueTestUser(prisma, 'unread', cleanup)
 
@@ -260,11 +254,8 @@ describe('notifications service', { skip: !hasDatabase }, () => {
 
   it('mark all notifications read works', async () => {
     const { prisma } = await loadPrisma()
-    const {
-      createUserNotification,
-      getMyUnreadNotificationCount,
-      markAllNotificationsRead,
-    } = await loadNotificationModules()
+    const { createUserNotification, getMyUnreadNotificationCount, markAllNotificationsRead } =
+      await loadNotificationModules()
 
     const user = await createUniqueTestUser(prisma, 'read-all', cleanup)
 
@@ -319,11 +310,8 @@ describe('notifications service', { skip: !hasDatabase }, () => {
 
   it('customer cannot see admin audience notifications', async () => {
     const { prisma } = await loadPrisma()
-    const {
-      createAdminNotification,
-      createUserNotification,
-      getMyNotifications,
-    } = await loadNotificationModules()
+    const { createAdminNotification, createUserNotification, getMyNotifications } =
+      await loadNotificationModules()
 
     const customer = await createUniqueTestUser(prisma, 'customer', cleanup)
     const admin = await createUniqueTestUser(prisma, 'admin', cleanup)

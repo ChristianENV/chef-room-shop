@@ -25,12 +25,12 @@ Until those features call `getOrCreateGuestSession()`, visitors may have no cook
 
 After successful storefront **email** sign-in or sign-up, the UI calls `mergeCurrentGuestSessionAction()` (via `runPostAuthGuestMerge()`):
 
-| Entity | Behavior |
-|--------|----------|
-| **Designs** | `userId` set where `guestSessionId` matches and `userId` is null |
-| **Addresses** | `userId` set where `guestSessionId` matches and `userId` is null |
+| Entity            | Behavior                                                                                                                           |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Designs**       | `userId` set where `guestSessionId` matches and `userId` is null                                                                   |
+| **Addresses**     | `userId` set where `guestSessionId` matches and `userId` is null                                                                   |
 | **Cart (ACTIVE)** | Guest cart moved to user, or line items merged with dedupe on `productId` + `productVariantId` + `designId`; guest cart → `MERGED` |
-| **GuestSession** | `mergedToUserId` set; cookie cleared on success |
+| **GuestSession**  | `mergedToUserId` set; cookie cleared on success                                                                                    |
 
 Merge is **idempotent** for the same user. If the session was already merged to another user, merge returns `conflict: true` and does not move data.
 
@@ -38,11 +38,11 @@ Implementation: `src/server/guest/merge-guest-session.ts` (Prisma transaction + 
 
 ## What does NOT merge yet
 
-| Entity | Reason |
-|--------|--------|
-| **Orders** | No automatic order claiming until email verification and safe paid-order rules exist |
-| **Paid / in-production orders** | Avoid insecure merge of payment-bound records |
-| **OAuth-only first login** | Social redirect does not run form post-hooks; merge on next email login or future account callback |
+| Entity                          | Reason                                                                                             |
+| ------------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Orders**                      | No automatic order claiming until email verification and safe paid-order rules exist               |
+| **Paid / in-production orders** | Avoid insecure merge of payment-bound records                                                      |
+| **OAuth-only first login**      | Social redirect does not run form post-hooks; merge on next email login or future account callback |
 
 ## Orders rule (future)
 

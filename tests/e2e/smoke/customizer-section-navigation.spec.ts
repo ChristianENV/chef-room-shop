@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-const CUSTOMIZER_SLUG =
-  process.env.E2E_CUSTOMIZER_SLUG ?? 'demo-filipina-clasica'
+const CUSTOMIZER_SLUG = process.env.E2E_CUSTOMIZER_SLUG ?? 'demo-filipina-clasica'
 
 test.describe('customizer section navigation', () => {
   test.beforeEach(async ({ page }) => {

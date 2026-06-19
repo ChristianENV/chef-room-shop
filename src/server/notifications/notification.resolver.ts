@@ -28,11 +28,8 @@ type MarkAllNotificationsReadArgs = {
 
 export const notificationsResolvers = {
   Query: {
-    myNotifications: (
-      _parent: unknown,
-      args: MyNotificationsArgs,
-      context: GraphQLContext,
-    ) => getMyNotifications(context, args.input),
+    myNotifications: (_parent: unknown, args: MyNotificationsArgs, context: GraphQLContext) =>
+      getMyNotifications(context, args.input),
 
     myUnreadNotificationCount: (
       _parent: unknown,

@@ -47,9 +47,7 @@ function buildSearchWhere(search: string): Prisma.PaymentWhereInput {
   }
 }
 
-function buildListWhere(
-  filter: AdminPaymentsListInput['filter'],
-): Prisma.PaymentWhereInput {
+function buildListWhere(filter: AdminPaymentsListInput['filter']): Prisma.PaymentWhereInput {
   const and: Prisma.PaymentWhereInput[] = [{ order: { deletedAt: null } }]
 
   if (filter?.search?.trim()) {

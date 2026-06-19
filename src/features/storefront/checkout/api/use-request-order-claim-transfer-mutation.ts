@@ -8,10 +8,7 @@ import { checkoutQueryKeys } from '../api/checkout.query-keys'
 /**
  * Sends an authorization email to the original purchase email for cross-account order linking.
  */
-export function useRequestOrderClaimTransferMutation(
-  orderNumber: string,
-  checkoutToken: string,
-) {
+export function useRequestOrderClaimTransferMutation(orderNumber: string, checkoutToken: string) {
   const normalizedOrderNumber = orderNumber.trim()
   const normalizedToken = checkoutToken.trim()
 
@@ -20,7 +17,6 @@ export function useRequestOrderClaimTransferMutation(
       ...checkoutQueryKeys.orderByCheckoutToken(normalizedOrderNumber, normalizedToken),
       'request-transfer',
     ],
-    mutationFn: () =>
-      requestOrderClaimTransfer(normalizedOrderNumber, normalizedToken),
+    mutationFn: () => requestOrderClaimTransfer(normalizedOrderNumber, normalizedToken),
   })
 }

@@ -29,7 +29,7 @@ export function CatalogProductCard({
     <Card
       className={cn(
         'group relative overflow-hidden border-border bg-card transition-all duration-300 hover:shadow-xl',
-        className
+        className,
       )}
     >
       {/* Image Container */}
@@ -96,9 +96,7 @@ export function CatalogProductCard({
         <div className="mt-2 flex items-center gap-1">
           <Star className="h-4 w-4 fill-warning text-warning" />
           <span className="font-serif text-sm text-foreground">{product.rating}</span>
-          <span className="font-serif text-sm text-muted-foreground">
-            ({product.reviewCount})
-          </span>
+          <span className="font-serif text-sm text-muted-foreground">({product.reviewCount})</span>
         </div>
 
         {/* Price */}
@@ -145,20 +143,11 @@ export function CatalogProductCard({
 
         {/* Action Buttons */}
         <div className="mt-4 flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 font-sans text-xs"
-            onClick={onView}
-          >
+          <Button variant="outline" size="sm" className="flex-1 font-sans text-xs" onClick={onView}>
             Ver producto
           </Button>
           {product.customizable && (
-            <Button
-              size="sm"
-              className="flex-1 gap-1 font-sans text-xs"
-              onClick={onCustomize}
-            >
+            <Button size="sm" className="flex-1 gap-1 font-sans text-xs" onClick={onCustomize}>
               <Sparkles className="h-3 w-3" />
               Personalizar
             </Button>
@@ -207,10 +196,7 @@ export function CatalogSkeleton({ count = 8 }: CatalogSkeletonProps) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          className="overflow-hidden rounded-lg border border-border bg-card"
-        >
+        <div key={i} className="overflow-hidden rounded-lg border border-border bg-card">
           <Skeleton className="aspect-[4/5] w-full" />
           <div className="p-4">
             <Skeleton className="h-3 w-16" />

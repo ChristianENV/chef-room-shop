@@ -90,9 +90,7 @@ export function CustomizerExperience({ initialProductSlug }: CustomizerExperienc
 
   const designSlug = useMemo(
     () =>
-      loadedDesign
-        ? resolveDesignProductSlug(loadedDesign.configJson, loadedDesign.product)
-        : null,
+      loadedDesign ? resolveDesignProductSlug(loadedDesign.configJson, loadedDesign.product) : null,
     [loadedDesign],
   )
 
@@ -189,9 +187,7 @@ export function CustomizerExperience({ initialProductSlug }: CustomizerExperienc
   }
 
   if (customizableProducts.length === 0) {
-    return (
-      <CustomizerError message="No hay prendas personalizables disponibles en este momento." />
-    )
+    return <CustomizerError message="No hay prendas personalizables disponibles en este momento." />
   }
 
   if (initialProductSlug && !isProductLoading && !isProductError && !product) {
@@ -240,9 +236,7 @@ export function CustomizerExperience({ initialProductSlug }: CustomizerExperienc
   }
 
   if (!mappedProduct) {
-    return (
-      <CustomizerError message="No pudimos preparar esta prenda para personalizar." />
-    )
+    return <CustomizerError message="No pudimos preparar esta prenda para personalizar." />
   }
 
   return (
@@ -270,9 +264,7 @@ export function CustomizerExperience({ initialProductSlug }: CustomizerExperienc
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Seguir diseñando</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmSwitch}>
-              Cambiar prenda
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleConfirmSwitch}>Cambiar prenda</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

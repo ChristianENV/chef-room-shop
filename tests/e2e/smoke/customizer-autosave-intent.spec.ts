@@ -9,8 +9,7 @@ import {
   selectCustomizerFabricColor,
 } from '../helpers/select-customizer-variant'
 
-const CUSTOMIZER_SLUG =
-  process.env.E2E_CUSTOMIZER_SLUG ?? 'demo-filipina-clasica'
+const CUSTOMIZER_SLUG = process.env.E2E_CUSTOMIZER_SLUG ?? 'demo-filipina-clasica'
 const USE_PREVIEW_MOCK = shouldMockCustomizerPreviews()
 const DRAFT_KEY = 'chefroom.customizer.draft'
 
@@ -54,9 +53,12 @@ test.describe('customizer autosave intent', () => {
     await selectCustomizerFabricColor(page, 'chef-room-blue')
 
     await expect
-      .poll(async () => {
-        return page.evaluate((storageKey) => window.localStorage.getItem(storageKey), DRAFT_KEY)
-      }, { timeout: 10_000 })
+      .poll(
+        async () => {
+          return page.evaluate((storageKey) => window.localStorage.getItem(storageKey), DRAFT_KEY)
+        },
+        { timeout: 10_000 },
+      )
       .not.toBeNull()
 
     await expect(page.getByText('Guardado localmente')).toBeVisible({ timeout: 10_000 })

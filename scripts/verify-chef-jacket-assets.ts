@@ -40,9 +40,7 @@ async function main() {
   let failed = 0
   for (const result of results) {
     const mark = result.ok ? 'OK' : 'FAIL'
-    console.info(
-      `${mark} ${result.status} ${result.path} content-type=${result.contentType}`,
-    )
+    console.info(`${mark} ${result.status} ${result.path} content-type=${result.contentType}`)
     if (!result.ok) failed += 1
   }
 

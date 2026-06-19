@@ -44,12 +44,9 @@ export function buildAuth(database: PrismaClient) {
               name?: string
               picture?: string
             }) => ({
-              firstName:
-                profile.given_name ?? profile.name?.split(' ')[0] ?? undefined,
+              firstName: profile.given_name ?? profile.name?.split(' ')[0] ?? undefined,
               lastName:
-                profile.family_name ??
-                profile.name?.split(' ').slice(1).join(' ') ??
-                undefined,
+                profile.family_name ?? profile.name?.split(' ').slice(1).join(' ') ?? undefined,
               image: profile.picture,
             }),
           },

@@ -5,10 +5,7 @@ import { resolvePaymentActionsForOrder } from '@/src/features/storefront/account
 import { getPaymentStatusUi } from '@/src/features/storefront/checkout/lib/payment-status-ui'
 import { centsToPesos, formatCurrencyMXN } from '@/src/lib/formatters'
 import type { AccountOrder } from '../types'
-import {
-  getPaymentMethodLabel,
-  getPaymentStatusLabel,
-} from './order-detail.utils'
+import { getPaymentMethodLabel, getPaymentStatusLabel } from './order-detail.utils'
 
 type OrderPaymentCardProps = {
   order: AccountOrder

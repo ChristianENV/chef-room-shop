@@ -84,12 +84,7 @@ export function AdminOrderDetailPageView({
 
       <AdminOrderDetailHeader detail={detail} variant="page" />
 
-      <AdminOrderDetailBody
-        detail={detail}
-        variant="page"
-        initialTab={initialTab}
-        contentEnabled
-      />
+      <AdminOrderDetailBody detail={detail} variant="page" initialTab={initialTab} contentEnabled />
 
       <AdminOrderDetailCancelDialog detail={detail} />
     </div>

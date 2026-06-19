@@ -7,11 +7,7 @@ import { useSession } from '@/src/lib/auth/auth-client'
 
 import type { AvatarUploadVariables, UserAvatarPayload } from '../types'
 import { refreshUserAvatarCaches } from '../lib/avatar-cache'
-import {
-  confirmAvatarUpload,
-  createAvatarUpload,
-  putFileToR2,
-} from './uploads.api'
+import { confirmAvatarUpload, createAvatarUpload, putFileToR2 } from './uploads.api'
 import { uploadsMutationKeys } from './uploads.query-keys'
 
 export type AvatarUploadMutationOptions = {

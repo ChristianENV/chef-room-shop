@@ -13,14 +13,14 @@ All queries call `requireAdminGraphQL(context)`:
 
 ## Queries
 
-| Query | Default limit | Max limit |
-|-------|---------------|-----------|
-| `adminDashboardMetrics` | — | — |
-| `adminRecentOrders` | 8 | 50 |
-| `adminProductionQueue` | 8 | 50 |
-| `adminRecentDesigns` | 8 | 50 |
-| `adminRecentPayments` | 8 | 50 |
-| `adminTopProducts` | 5 | 20 |
+| Query                   | Default limit | Max limit |
+| ----------------------- | ------------- | --------- |
+| `adminDashboardMetrics` | —             | —         |
+| `adminRecentOrders`     | 8             | 50        |
+| `adminProductionQueue`  | 8             | 50        |
+| `adminRecentDesigns`    | 8             | 50        |
+| `adminRecentPayments`   | 8             | 50        |
+| `adminTopProducts`      | 5             | 20        |
 
 ### Metrics semantics
 
@@ -120,12 +120,12 @@ After `prisma db seed` (demo commerce):
 
 La página `src/app/(admin)/admin/(protected)/dashboard/page.tsx` usa `AdminDashboardContent` con:
 
-| Sección | Hook |
-|---------|------|
-| KPIs (6 tarjetas) | `useAdminDashboardMetricsQuery` |
-| Órdenes recientes | `useAdminRecentOrdersQuery(8)` |
+| Sección            | Hook                              |
+| ------------------ | --------------------------------- |
+| KPIs (6 tarjetas)  | `useAdminDashboardMetricsQuery`   |
+| Órdenes recientes  | `useAdminRecentOrdersQuery(8)`    |
 | Cola de producción | `useAdminProductionQueueQuery(8)` |
-| Diseños recientes | `useAdminRecentDesignsQuery(8)` |
+| Diseños recientes  | `useAdminRecentDesignsQuery(8)`   |
 
 Mapeo UI: `src/features/admin/dashboard/mappers/admin-dashboard-ui.mapper.ts`
 

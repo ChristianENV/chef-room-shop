@@ -49,8 +49,8 @@ export function BrandStorySection({ className }: BrandStorySectionProps) {
               prendas que resisten el ritmo de una cocina exigente.
             </p>
             <p className="mt-4 font-serif text-lg leading-relaxed text-primary-foreground/75">
-              Desde Puebla para todo México, más de una década vistiendo a los mejores equipos
-              del país.
+              Desde Puebla para todo México, más de una década vistiendo a los mejores equipos del
+              país.
             </p>
 
             <div className="mt-12 grid grid-cols-3 gap-6 border-t border-white/15 pt-10 sm:gap-8">

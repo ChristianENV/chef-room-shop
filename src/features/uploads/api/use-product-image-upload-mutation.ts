@@ -5,11 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminProductsQueryKeys } from '@/src/features/admin/products/api/admin-products.query-keys'
 
 import type { ProductImage, ProductImageUploadVariables } from '../types'
-import {
-  confirmProductImageUpload,
-  createProductImageUpload,
-  putFileToR2,
-} from './uploads.api'
+import { confirmProductImageUpload, createProductImageUpload, putFileToR2 } from './uploads.api'
 import { uploadsMutationKeys } from './uploads.query-keys'
 
 /**

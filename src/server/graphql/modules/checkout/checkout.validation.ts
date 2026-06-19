@@ -72,14 +72,9 @@ export const createCheckoutOrderInputSchema = z
     }
   })
 
-export type ParsedCreateCheckoutOrderInput = z.infer<
-  typeof createCheckoutOrderInputSchema
->
+export type ParsedCreateCheckoutOrderInput = z.infer<typeof createCheckoutOrderInputSchema>
 
-const PAYMENT_METHOD_MAP: Record<
-  ParsedCreateCheckoutOrderInput['paymentMethod'],
-  PaymentMethod
-> = {
+const PAYMENT_METHOD_MAP: Record<ParsedCreateCheckoutOrderInput['paymentMethod'], PaymentMethod> = {
   CARD: PaymentMethod.CARD,
   OXXO: PaymentMethod.OXXO,
   SPEI: PaymentMethod.SPEI,

@@ -16,16 +16,12 @@ export function useAdminCreateShippingLabelMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (input: AdminCreateShippingLabelInput) =>
-      createAdminShippingLabel(input),
+    mutationFn: (input: AdminCreateShippingLabelInput) => createAdminShippingLabel(input),
     onSuccess: (shipment) => {
       void queryClient.invalidateQueries({ queryKey: adminOrdersQueryKeys.all })
       void queryClient.invalidateQueries({ queryKey: adminShippingQueryKeys.all })
       void queryClient.invalidateQueries({ queryKey: adminDashboardQueryKeys.all })
-      void queryClient.setQueryData(
-        adminShippingQueryKeys.detail(shipment.orderNumber),
-        shipment,
-      )
+      void queryClient.setQueryData(adminShippingQueryKeys.detail(shipment.orderNumber), shipment)
     },
   })
 }

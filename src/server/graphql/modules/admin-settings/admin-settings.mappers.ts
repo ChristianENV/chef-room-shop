@@ -1,9 +1,6 @@
 import { CHEF_ROOM_LOGO_SRC } from '@/lib/brand'
 import { BRAND_VARS, BUSINESS_VARS } from '@/src/config/vars'
-import {
-  getEmailConfig,
-  resolveActiveEmailProvider,
-} from '@/src/server/email/email.config'
+import { getEmailConfig, resolveActiveEmailProvider } from '@/src/server/email/email.config'
 import { getAppBaseUrl } from '@/src/server/payments/app-url'
 import { getDefaultPackageConfig } from '@/src/server/shipping/shipping.config'
 import {
@@ -11,19 +8,12 @@ import {
   isSkydropxConfigured,
 } from '@/src/server/shipping/skydropx/skydropx.config'
 
-import {
-  resolveAdminDeploymentLabel,
-  resolveAdminEnvironmentLabel,
-} from './admin-settings.env'
+import { resolveAdminDeploymentLabel, resolveAdminEnvironmentLabel } from './admin-settings.env'
 import type { AdminSettingsOverviewGql } from './admin-settings.types'
 
 function hasBusinessAddress(): boolean {
   const { address } = BUSINESS_VARS
-  return Boolean(
-    address.formatted?.trim() ||
-      address.street?.trim() ||
-      address.postalCode?.trim(),
-  )
+  return Boolean(address.formatted?.trim() || address.street?.trim() || address.postalCode?.trim())
 }
 
 function emailCredentialsConfigured(

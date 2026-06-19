@@ -1,14 +1,20 @@
 'use client'
-import {
-  login as loginRoute,
-  routes,
-  verifyEmail as verifyEmailRoute,
-} from '@/src/config/routes'
+import { login as loginRoute, routes, verifyEmail as verifyEmailRoute } from '@/src/config/routes'
 
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Eye, EyeOff, Mail, Lock, User, Phone, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  User,
+  Phone,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,10 +26,7 @@ import { authClient, signUp } from '@/src/lib/auth/auth-client'
 import { buildSocialOAuthCallbackURL } from '@/src/lib/auth/oauth-callback-url'
 import { getAuthErrorMessage } from '@/src/lib/auth/auth-errors'
 import { registerSchema } from '@/src/lib/auth/auth-schemas'
-import {
-  ensureCustomerRoleAction,
-  getPostLoginRedirectAction,
-} from '@/src/server/auth/actions'
+import { ensureCustomerRoleAction, getPostLoginRedirectAction } from '@/src/server/auth/actions'
 import { runPostAuthGuestMerge } from '@/src/lib/auth/post-auth-guest-merge'
 
 interface RegisterFormData {
@@ -43,11 +46,7 @@ interface RegisterFormProps {
   googleEnabled?: boolean
 }
 
-export function RegisterForm({
-  className,
-  onSuccess,
-  googleEnabled = false,
-}: RegisterFormProps) {
+export function RegisterForm({ className, onSuccess, googleEnabled = false }: RegisterFormProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackFromQuery = searchParams.get('callbackUrl')
@@ -114,12 +113,7 @@ export function RegisterForm({
     })
 
     if (result.error) {
-      setError(
-        getAuthErrorMessage(
-          result.error,
-          'No se pudo crear la cuenta. Verifica los datos.',
-        ),
-      )
+      setError(getAuthErrorMessage(result.error, 'No se pudo crear la cuenta. Verifica los datos.'))
       setIsLoading(false)
       return
     }
@@ -138,9 +132,7 @@ export function RegisterForm({
 
       if (!emailVerified) {
         router.replace(
-          safeCallbackUrl
-            ? verifyEmailRoute({ callbackUrl: safeCallbackUrl })
-            : routes.verifyEmail,
+          safeCallbackUrl ? verifyEmailRoute({ callbackUrl: safeCallbackUrl }) : routes.verifyEmail,
         )
         router.refresh()
         return
@@ -173,15 +165,13 @@ export function RegisterForm({
         callbackURL: googleOAuthCallbackURL,
       })
     } catch (err) {
-      setError(
-        getAuthErrorMessage(err, 'No se pudo registrarse con Google.'),
-      )
+      setError(getAuthErrorMessage(err, 'No se pudo registrarse con Google.'))
       setIsGoogleLoading(false)
     }
   }
 
   const updateField = (field: keyof RegisterFormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
   // Success State
@@ -210,12 +200,8 @@ export function RegisterForm({
     <div className={cn('space-y-6', className)}>
       {/* Header */}
       <div className="space-y-2 text-center">
-        <h1 className="font-sans text-2xl font-bold text-foreground">
-          Crea tu cuenta
-        </h1>
-        <p className="font-serif text-muted-foreground">
-          Únete a Chef Room y diseña tus uniformes
-        </p>
+        <h1 className="font-sans text-2xl font-bold text-foreground">Crea tu cuenta</h1>
+        <p className="font-serif text-muted-foreground">Únete a Chef Room y diseña tus uniformes</p>
       </div>
 
       {/* Error Alert */}
@@ -349,7 +335,9 @@ export function RegisterForm({
               onChange={(e) => updateField('confirmPassword', e.target.value)}
               className={cn(
                 'pl-10 pr-10 font-serif',
-                formData.confirmPassword && formData.password !== formData.confirmPassword && 'border-destructive'
+                formData.confirmPassword &&
+                  formData.password !== formData.confirmPassword &&
+                  'border-destructive',
               )}
               disabled={isLoading || isGoogleLoading}
               autoComplete="new-password"
@@ -377,8 +365,8 @@ export function RegisterForm({
             disabled={isLoading || isGoogleLoading}
             className="mt-0.5"
           />
-          <Label 
-            htmlFor="terms" 
+          <Label
+            htmlFor="terms"
             className="font-serif text-sm text-muted-foreground cursor-pointer leading-snug"
           >
             Acepto los{' '}
@@ -402,8 +390,8 @@ export function RegisterForm({
             disabled={isLoading || isGoogleLoading}
             className="mt-0.5"
           />
-          <Label 
-            htmlFor="marketing" 
+          <Label
+            htmlFor="marketing"
             className="font-serif text-sm text-muted-foreground cursor-pointer leading-snug"
           >
             Quiero recibir ofertas exclusivas y novedades por correo
@@ -411,8 +399,8 @@ export function RegisterForm({
         </div>
 
         {/* Submit Button */}
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           className="w-full font-sans font-semibold"
           disabled={isLoading || isGoogleLoading}
         >
@@ -446,11 +434,7 @@ export function RegisterForm({
         className="w-full font-sans"
         onClick={handleGoogleRegister}
         disabled={isLoading || isGoogleLoading || !googleEnabled}
-        title={
-          !googleEnabled
-            ? 'Configura GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET'
-            : undefined
-        }
+        title={!googleEnabled ? 'Configura GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET' : undefined}
       >
         {isGoogleLoading ? (
           <>
@@ -486,11 +470,7 @@ export function RegisterForm({
       <p className="text-center font-serif text-sm text-muted-foreground">
         Ya tienes cuenta?{' '}
         <Link
-          href={
-            safeCallbackUrl
-              ? loginRoute({ callbackUrl: safeCallbackUrl })
-              : routes.login
-          }
+          href={safeCallbackUrl ? loginRoute({ callbackUrl: safeCallbackUrl }) : routes.login}
           className="font-sans font-medium text-accent hover:underline"
         >
           Iniciar sesión

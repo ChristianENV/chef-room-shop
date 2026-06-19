@@ -2,13 +2,7 @@
  * Guards demo seed execution — DEV/Neon only, never production.
  */
 
-const PROD_URL_MARKERS = [
-  'prod',
-  'production',
-  '/main',
-  'chefroom.com',
-  'chef-room.com',
-] as const
+const PROD_URL_MARKERS = ['prod', 'production', '/main', 'chefroom.com', 'chef-room.com'] as const
 
 /**
  * Validates environment before running demo seed. Exits process on failure.
@@ -27,9 +21,7 @@ export function assertDemoSeedEnvironment(): void {
   }
 
   if (process.env.ALLOW_DEMO_SEED !== 'true') {
-    console.error(
-      'Demo seed aborted: set ALLOW_DEMO_SEED="true" in .env.local to run.',
-    )
+    console.error('Demo seed aborted: set ALLOW_DEMO_SEED="true" in .env.local to run.')
     process.exit(1)
   }
 
@@ -44,9 +36,7 @@ export function assertDemoSeedEnvironment(): void {
   }
 
   if (!process.env.BETTER_AUTH_SECRET?.trim()) {
-    console.error(
-      'Demo seed aborted: BETTER_AUTH_SECRET is required for Better Auth sign-up.',
-    )
+    console.error('Demo seed aborted: BETTER_AUTH_SECRET is required for Better Auth sign-up.')
     process.exit(1)
   }
 

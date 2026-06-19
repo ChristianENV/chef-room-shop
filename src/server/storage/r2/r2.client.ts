@@ -1,10 +1,6 @@
 import 'server-only'
 
-import {
-  DeleteObjectCommand,
-  HeadObjectCommand,
-  S3Client,
-} from '@aws-sdk/client-s3'
+import { DeleteObjectCommand, HeadObjectCommand, S3Client } from '@aws-sdk/client-s3'
 
 import { requireR2Config } from './r2.config'
 import type { R2Config } from './r2.types'
@@ -47,9 +43,7 @@ export function getR2Client(): S3Client {
 export async function r2HeadObject(key: string): Promise<boolean> {
   const { bucketName } = requireR2Config()
   try {
-    await getR2Client().send(
-      new HeadObjectCommand({ Bucket: bucketName, Key: key }),
-    )
+    await getR2Client().send(new HeadObjectCommand({ Bucket: bucketName, Key: key }))
     return true
   } catch (error) {
     if (isNotFoundError(error)) {
@@ -65,9 +59,7 @@ export async function r2HeadObject(key: string): Promise<boolean> {
  */
 export async function r2DeleteObject(key: string): Promise<void> {
   const { bucketName } = requireR2Config()
-  await getR2Client().send(
-    new DeleteObjectCommand({ Bucket: bucketName, Key: key }),
-  )
+  await getR2Client().send(new DeleteObjectCommand({ Bucket: bucketName, Key: key }))
 }
 
 function isNotFoundError(error: unknown): boolean {

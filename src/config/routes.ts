@@ -43,8 +43,7 @@ export const routes = {
   adminDashboard: '/admin/dashboard',
   adminProducts: '/admin/products',
   adminOrders: '/admin/orders',
-  adminOrderDetail: (orderNumber: string) =>
-    `/admin/orders/${encodeURIComponent(orderNumber)}`,
+  adminOrderDetail: (orderNumber: string) => `/admin/orders/${encodeURIComponent(orderNumber)}`,
   adminCustomization: '/admin/customization',
   adminDesigns: '/admin/designs',
   adminUsers: '/admin/users',
@@ -85,10 +84,7 @@ export function purchaseCallbackByToken(token: string) {
 }
 
 /** Opens the customizer to edit a saved design (supports optional product slug). */
-export function customizeEditDesign(
-  designId: string,
-  productSlug?: string | null,
-): string {
+export function customizeEditDesign(designId: string, productSlug?: string | null): string {
   const base = productSlug ? routes.customizeProduct(productSlug) : routes.customize
   return appendQuery(base, { designId })
 }

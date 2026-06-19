@@ -20,10 +20,7 @@ export function OrderEventsCard({ order }: OrderEventsCardProps) {
       </h2>
       <ul className="mt-4 space-y-3">
         {order.events.map((event) => (
-          <li
-            key={event.id}
-            className="border-l-2 border-primary/20 pl-4 font-serif text-sm"
-          >
+          <li key={event.id} className="border-l-2 border-primary/20 pl-4 font-serif text-sm">
             <time className="text-xs text-muted-foreground">
               {new Date(event.createdAt).toLocaleString('es-MX', {
                 dateStyle: 'medium',

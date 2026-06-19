@@ -109,10 +109,7 @@ export function VerifyPaymentAction({
 
       {message && (
         <p
-          className={cn(
-            'font-serif text-sm',
-            isPaid ? 'text-success' : 'text-muted-foreground',
-          )}
+          className={cn('font-serif text-sm', isPaid ? 'text-success' : 'text-muted-foreground')}
           role="status"
         >
           {message}

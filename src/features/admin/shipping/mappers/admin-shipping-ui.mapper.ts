@@ -1,7 +1,4 @@
-import {
-  centsToPesos,
-  formatCurrencyMXN,
-} from '@/src/lib/formatters'
+import { centsToPesos, formatCurrencyMXN } from '@/src/lib/formatters'
 
 import type { AdminOrder } from '@/src/features/admin/orders/types'
 import type { StatusBadgeVariant } from '@/src/features/admin/orders/types/admin-orders-ui.types'
@@ -96,9 +93,7 @@ export function mapShipmentProviderToLabel(provider: string | null): string {
 function hasActiveSkydropxLabel(shipment: AdminShipment | null | undefined): boolean {
   if (!shipment) return false
   if (shipment.status.toUpperCase() === 'CANCELLED') return false
-  return Boolean(
-    shipment.providerShipmentId?.trim() || shipment.labelUrl?.trim(),
-  )
+  return Boolean(shipment.providerShipmentId?.trim() || shipment.labelUrl?.trim())
 }
 
 /**
@@ -121,13 +116,9 @@ export function mapAdminShipmentToUi(shipment: AdminShipment): AdminShipmentUi {
     labelUrl: shipment.labelUrl?.trim() || null,
     labelFormat: shipment.labelFormat?.trim() || null,
     costFormatted:
-      shipment.costCents != null
-        ? formatCurrencyMXN(centsToPesos(shipment.costCents))
-        : null,
+      shipment.costCents != null ? formatCurrencyMXN(centsToPesos(shipment.costCents)) : null,
     createdAtFormatted: formatDateTime(shipment.createdAt),
-    shippedAtFormatted: shipment.shippedAt
-      ? formatDateTime(shipment.shippedAt)
-      : null,
+    shippedAtFormatted: shipment.shippedAt ? formatDateTime(shipment.shippedAt) : null,
     hasActiveLabel: hasActiveSkydropxLabel(shipment),
     events: shipment.events.map((event) => ({
       id: event.id,
@@ -209,14 +200,10 @@ export function canCancelShippingLabel(shipment: AdminShipment | null | undefine
 export function canRefreshShipment(shipment: AdminShipment | null | undefined): boolean {
   if (!shipment) return false
   if (shipment.status.toUpperCase() === 'CANCELLED') return false
-  return Boolean(
-    shipment.trackingNumber?.trim() && shipment.carrier?.trim(),
-  )
+  return Boolean(shipment.trackingNumber?.trim() && shipment.carrier?.trim())
 }
 
-export function isMockTrackingNumber(
-  trackingNumber: string | null | undefined,
-): boolean {
+export function isMockTrackingNumber(trackingNumber: string | null | undefined): boolean {
   const value = trackingNumber?.trim() ?? ''
   return value.startsWith('CRMOCK-')
 }

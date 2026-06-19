@@ -17,12 +17,12 @@ Integrates Skydropx shipping quotes into `/checkout` (step **Envío**) without c
 
 ## Components
 
-| File | Role |
-|------|------|
-| `shipping-rate-selector.tsx` | Quote button, highlights, collapsible “otras opciones”, polling |
-| `shipping-rate-card.tsx` | Carrier, price, badges, accessible select state |
-| `lib/shipping-rate-ranking.ts` | Dedup, cheapest/fastest/recommended, sort/filter helpers |
-| `shipping-quote-{loading,error,empty}.tsx` | States |
+| File                                       | Role                                                            |
+| ------------------------------------------ | --------------------------------------------------------------- |
+| `shipping-rate-selector.tsx`               | Quote button, highlights, collapsible “otras opciones”, polling |
+| `shipping-rate-card.tsx`                   | Carrier, price, badges, accessible select state                 |
+| `lib/shipping-rate-ranking.ts`             | Dedup, cheapest/fastest/recommended, sort/filter helpers        |
+| `shipping-quote-{loading,error,empty}.tsx` | States                                                          |
 
 Checkout page: `src/app/(storefront)/checkout/page.tsx`  
 Session draft: `checkout-shipping-session.ts` (`quoteId`, `selectedRateId`, summary).
@@ -43,15 +43,15 @@ Allows skipping rate selection when Skydropx returns `SERVICE_UNAVAILABLE`. **Do
 
 ## Errors (Spanish)
 
-| Case | Message |
-|------|---------|
-| Skydropx off | La cotización de envío no está disponible en este momento. |
+| Case                     | Message                                                            |
+| ------------------------ | ------------------------------------------------------------------ |
+| Skydropx off             | La cotización de envío no está disponible en este momento.         |
 | Validation (422 / local) | Mensaje específico del BFF (CP, teléfono origen, referencia, etc.) |
-| API 5xx | No pudimos cotizar el envío en este momento. Intenta de nuevo. |
-| CP inválido | No pudimos cotizar ese destino. Revisa el código postal… |
-| No rates | No encontramos tarifas para este destino. |
-| Select rate failed | No pudimos guardar esta tarifa. Intenta de nuevo. |
-| No selection | Selecciona una opción de envío para continuar. |
+| API 5xx                  | No pudimos cotizar el envío en este momento. Intenta de nuevo.     |
+| CP inválido              | No pudimos cotizar ese destino. Revisa el código postal…           |
+| No rates                 | No encontramos tarifas para este destino.                          |
+| Select rate failed       | No pudimos guardar esta tarifa. Intenta de nuevo.                  |
+| No selection             | Selecciona una opción de envío para continuar.                     |
 
 ## Pending
 

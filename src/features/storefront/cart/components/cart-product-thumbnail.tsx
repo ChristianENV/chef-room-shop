@@ -38,10 +38,7 @@ export function CartProductThumbnail({
 
   return (
     <div
-      className={cn(
-        'relative overflow-hidden rounded-lg border border-border bg-muted',
-        className,
-      )}
+      className={cn('relative overflow-hidden rounded-lg border border-border bg-muted', className)}
     >
       {showImage ? (
         // eslint-disable-next-line @next/next/no-img-element

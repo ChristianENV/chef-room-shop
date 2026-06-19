@@ -19,26 +19,15 @@ async function loadNotifyModules() {
 
 describe('order status transition helpers', () => {
   it('detects transition into IN_PRODUCTION only', async () => {
-    const {
-      isOrderInProductionTransition,
-      isOrderReadyToShipTransition,
-    } = await loadNotifyModules()
+    const { isOrderInProductionTransition, isOrderReadyToShipTransition } =
+      await loadNotifyModules()
 
+    assert.equal(isOrderInProductionTransition(OrderStatus.IN_PRODUCTION, OrderStatus.PAID), true)
     assert.equal(
-      isOrderInProductionTransition(OrderStatus.IN_PRODUCTION, OrderStatus.PAID),
-      true,
-    )
-    assert.equal(
-      isOrderInProductionTransition(
-        OrderStatus.IN_PRODUCTION,
-        OrderStatus.IN_PRODUCTION,
-      ),
+      isOrderInProductionTransition(OrderStatus.IN_PRODUCTION, OrderStatus.IN_PRODUCTION),
       false,
     )
-    assert.equal(
-      isOrderInProductionTransition(OrderStatus.READY_TO_SHIP, OrderStatus.PAID),
-      false,
-    )
+    assert.equal(isOrderInProductionTransition(OrderStatus.READY_TO_SHIP, OrderStatus.PAID), false)
     assert.equal(isOrderReadyToShipTransition(OrderStatus.PAID, OrderStatus.PAID), false)
   })
 
@@ -46,17 +35,11 @@ describe('order status transition helpers', () => {
     const { isOrderReadyToShipTransition } = await loadNotifyModules()
 
     assert.equal(
-      isOrderReadyToShipTransition(
-        OrderStatus.READY_TO_SHIP,
-        OrderStatus.IN_PRODUCTION,
-      ),
+      isOrderReadyToShipTransition(OrderStatus.READY_TO_SHIP, OrderStatus.IN_PRODUCTION),
       true,
     )
     assert.equal(
-      isOrderReadyToShipTransition(
-        OrderStatus.READY_TO_SHIP,
-        OrderStatus.READY_TO_SHIP,
-      ),
+      isOrderReadyToShipTransition(OrderStatus.READY_TO_SHIP, OrderStatus.READY_TO_SHIP),
       false,
     )
     assert.equal(
@@ -124,10 +107,8 @@ describe('notifyOrderStatusChanged', { skip: !hasDatabase }, () => {
 
   async function trackNotificationsForOrder(orderId: string) {
     const { prisma } = await loadPrisma()
-    const {
-      buildOrderInProductionDedupeKey,
-      buildOrderReadyToShipDedupeKey,
-    } = await loadNotifyModules()
+    const { buildOrderInProductionDedupeKey, buildOrderReadyToShipDedupeKey } =
+      await loadNotifyModules()
 
     const notifications = await prisma.notification.findMany({
       where: {
@@ -143,10 +124,7 @@ describe('notifyOrderStatusChanged', { skip: !hasDatabase }, () => {
 
   it('creates ORDER_IN_PRODUCTION notification for authenticated order', async () => {
     const { prisma } = await loadPrisma()
-    const {
-      buildOrderInProductionDedupeKey,
-      notifyOrderStatusChanged,
-    } = await loadNotifyModules()
+    const { buildOrderInProductionDedupeKey, notifyOrderStatusChanged } = await loadNotifyModules()
 
     const user = await createUniqueTestUser(prisma, 'in-production', cleanup)
     const order = await createOrder({
@@ -185,10 +163,7 @@ describe('notifyOrderStatusChanged', { skip: !hasDatabase }, () => {
 
   it('creates ORDER_READY_TO_SHIP notification for authenticated order', async () => {
     const { prisma } = await loadPrisma()
-    const {
-      buildOrderReadyToShipDedupeKey,
-      notifyOrderStatusChanged,
-    } = await loadNotifyModules()
+    const { buildOrderReadyToShipDedupeKey, notifyOrderStatusChanged } = await loadNotifyModules()
 
     const user = await createUniqueTestUser(prisma, 'ready-to-ship', cleanup)
     const order = await createOrder({
@@ -300,10 +275,7 @@ describe('notifyOrderStatusChanged', { skip: !hasDatabase }, () => {
 
   it('does not create duplicate notifications when called twice', async () => {
     const { prisma } = await loadPrisma()
-    const {
-      buildOrderInProductionDedupeKey,
-      notifyOrderStatusChanged,
-    } = await loadNotifyModules()
+    const { buildOrderInProductionDedupeKey, notifyOrderStatusChanged } = await loadNotifyModules()
 
     const user = await createUniqueTestUser(prisma, 'dedupe-status', cleanup)
     const order = await createOrder({
@@ -327,9 +299,8 @@ describe('notifyOrderStatusChanged', { skip: !hasDatabase }, () => {
 
     const notifications = await trackNotificationsForOrder(order.id)
     assert.equal(
-      notifications.filter(
-        (row) => row.dedupeKey === buildOrderInProductionDedupeKey(order.id),
-      ).length,
+      notifications.filter((row) => row.dedupeKey === buildOrderInProductionDedupeKey(order.id))
+        .length,
       1,
     )
   })

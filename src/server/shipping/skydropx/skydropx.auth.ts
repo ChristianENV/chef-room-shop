@@ -104,8 +104,7 @@ export async function refreshSkydropxAccessToken(): Promise<string> {
     })
   }
 
-  const expiresAtMs =
-    Date.now() + Math.max(0, token.expires_in - EXPIRY_BUFFER_SECONDS) * 1000
+  const expiresAtMs = Date.now() + Math.max(0, token.expires_in - EXPIRY_BUFFER_SECONDS) * 1000
 
   cachedToken = {
     accessToken: token.access_token,

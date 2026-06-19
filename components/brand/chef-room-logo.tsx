@@ -53,7 +53,7 @@ export function ChefRoomLogo({
         heightClasses[resolvedSize],
         colorSchemeClasses(colorScheme),
         variant === 'vertical' && 'mx-auto object-center',
-        className
+        className,
       )}
     />
   )

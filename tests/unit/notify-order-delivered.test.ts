@@ -72,14 +72,10 @@ describe('notifyOrderDelivered', { skip: !hasDatabase }, () => {
     await cleanup.dispose()
   })
 
-  async function createShippedMockOrder(params: {
-    orderNumber: string
-    userId: string | null
-  }) {
+  async function createShippedMockOrder(params: { orderNumber: string; userId: string | null }) {
     const { prisma } = await loadPrisma()
-    const { buildMockTrackingNumber } = await import(
-      '@/src/server/shipping/skydropx/skydropx.mock-provider'
-    )
+    const { buildMockTrackingNumber } =
+      await import('@/src/server/shipping/skydropx/skydropx.mock-provider')
 
     if (params.userId) cleanup.trackUser(params.userId)
 
@@ -123,9 +119,8 @@ describe('notifyOrderDelivered', { skip: !hasDatabase }, () => {
     const orderNumber = `CR-MOCK-DELIVERED-${Date.now()}`
     const order = await createShippedMockOrder({ orderNumber, userId: user.id })
 
-    const { simulateMockShipmentTrackingStatus } = await import(
-      '@/src/server/shipping/skydropx/skydropx.mock-tracking'
-    )
+    const { simulateMockShipmentTrackingStatus } =
+      await import('@/src/server/shipping/skydropx/skydropx.mock-tracking')
     await simulateMockShipmentTrackingStatus(prisma, {
       orderNumber,
       status: 'delivered',
@@ -158,9 +153,8 @@ describe('notifyOrderDelivered', { skip: !hasDatabase }, () => {
     const orderNumber = `CR-MOCK-GUEST-DEL-${Date.now()}`
     const order = await createShippedMockOrder({ orderNumber, userId: null })
 
-    const { simulateMockShipmentTrackingStatus } = await import(
-      '@/src/server/shipping/skydropx/skydropx.mock-tracking'
-    )
+    const { simulateMockShipmentTrackingStatus } =
+      await import('@/src/server/shipping/skydropx/skydropx.mock-tracking')
     await simulateMockShipmentTrackingStatus(prisma, {
       orderNumber,
       status: 'delivered',
@@ -201,9 +195,8 @@ describe('notifyOrderDelivered', { skip: !hasDatabase }, () => {
     })
     orderIds.push(order.id)
 
-    const { buildMockTrackingNumber } = await import(
-      '@/src/server/shipping/skydropx/skydropx.mock-provider'
-    )
+    const { buildMockTrackingNumber } =
+      await import('@/src/server/shipping/skydropx/skydropx.mock-provider')
     await prisma.shipment.create({
       data: {
         orderId: order.id,
@@ -214,9 +207,8 @@ describe('notifyOrderDelivered', { skip: !hasDatabase }, () => {
       },
     })
 
-    const { simulateMockShipmentTrackingStatus } = await import(
-      '@/src/server/shipping/skydropx/skydropx.mock-tracking'
-    )
+    const { simulateMockShipmentTrackingStatus } =
+      await import('@/src/server/shipping/skydropx/skydropx.mock-tracking')
     await simulateMockShipmentTrackingStatus(prisma, {
       orderNumber,
       status: 'in_transit',
@@ -281,9 +273,8 @@ describe('notifyOrderDelivered', { skip: !hasDatabase }, () => {
   it('webhook and refresh style delivered transitions share dedupe key', async () => {
     const { prisma } = await loadPrisma()
     const { notifyOrderDelivered } = await loadNotifyModules()
-    const { buildShipmentLifecycleNotificationInput } = await import(
-      '@/src/server/shipping/skydropx/skydropx-shipment-status'
-    )
+    const { buildShipmentLifecycleNotificationInput } =
+      await import('@/src/server/shipping/skydropx/skydropx-shipment-status')
     const user = await createUniqueTestUser(prisma, 'delivered-shared-dedupe', cleanup)
     const order = await prisma.order.create({
       data: {
@@ -345,9 +336,8 @@ describe('notifyOrderDelivered', { skip: !hasDatabase }, () => {
 describe('webhook delivered mapping', () => {
   it('maps delivered package status to DELIVERED transition', async () => {
     await import('./helpers/mock-server-only')
-    const { mapSkydropxPackageStatusToTransition } = await import(
-      '@/src/server/shipping/skydropx/skydropx-shipment-status'
-    )
+    const { mapSkydropxPackageStatusToTransition } =
+      await import('@/src/server/shipping/skydropx/skydropx-shipment-status')
 
     const transition = mapSkydropxPackageStatusToTransition({
       packageStatus: 'delivered',
@@ -362,9 +352,8 @@ describe('webhook delivered mapping', () => {
 describe('refresh delivered mapping', () => {
   it('maps tracking refresh delivered response to DELIVERED transition', async () => {
     await import('./helpers/mock-server-only')
-    const { resolveRefreshTrackingTransition } = await import(
-      '@/src/server/shipping/skydropx/skydropx-shipment-status'
-    )
+    const { resolveRefreshTrackingTransition } =
+      await import('@/src/server/shipping/skydropx/skydropx-shipment-status')
 
     const transition = resolveRefreshTrackingTransition(
       ShipmentStatus.IN_TRANSIT,

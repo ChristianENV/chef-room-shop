@@ -128,9 +128,7 @@ function GarmentModelInner({
     )
 
     if (groups.body.length === 0 && process.env.NODE_ENV !== 'production') {
-      console.warn(
-        `[customizer-3d] No body materials assigned for "${modelConfig.id}".`,
-      )
+      console.warn(`[customizer-3d] No body materials assigned for "${modelConfig.id}".`)
     }
 
     return { tintGroups: groups, debugMaterialAppliedMeshCount: null }

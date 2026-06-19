@@ -19,17 +19,11 @@ type ConfirmProductImageArgs = { input: ConfirmProductImageUploadInput }
 
 export const uploadsResolvers = {
   Mutation: {
-    createAvatarUpload: (
-      _parent: unknown,
-      args: CreateAvatarArgs,
-      context: GraphQLContext,
-    ) => createAvatarUpload(context, args.input),
+    createAvatarUpload: (_parent: unknown, args: CreateAvatarArgs, context: GraphQLContext) =>
+      createAvatarUpload(context, args.input),
 
-    confirmAvatarUpload: (
-      _parent: unknown,
-      args: ConfirmAvatarArgs,
-      context: GraphQLContext,
-    ) => confirmAvatarUpload(context, args.input),
+    confirmAvatarUpload: (_parent: unknown, args: ConfirmAvatarArgs, context: GraphQLContext) =>
+      confirmAvatarUpload(context, args.input),
 
     createProductImageUpload: (
       _parent: unknown,

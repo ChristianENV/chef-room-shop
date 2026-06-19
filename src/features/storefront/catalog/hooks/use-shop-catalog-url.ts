@@ -49,9 +49,7 @@ export function useShopCatalogUrl({ setFilters }: UseShopCatalogUrlOptions) {
       if (pathname !== routes.shop || skipUrlSyncRef.current) return
       const target = shopUrlFromFilterState(nextFilters)
       const current =
-        searchParams.toString().length > 0
-          ? `${pathname}?${searchParams.toString()}`
-          : pathname
+        searchParams.toString().length > 0 ? `${pathname}?${searchParams.toString()}` : pathname
       if (target === current) return
       router.replace(target)
     },

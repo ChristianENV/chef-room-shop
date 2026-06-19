@@ -12,12 +12,12 @@ Chef Room uses **[Better Auth](https://www.better-auth.com/)** for identity: ema
 
 ## Tables owned by Better Auth
 
-| Prisma model | DB table | Purpose |
-|--------------|----------|---------|
-| `User` | `users` | Core user + Chef Room profile fields |
-| `Session` | `sessions` | Server sessions (opaque token) |
-| `Account` | `accounts` | Credential password + OAuth provider links |
-| `Verification` | `verifications` | Email verify, password reset, OAuth state |
+| Prisma model   | DB table        | Purpose                                    |
+| -------------- | --------------- | ------------------------------------------ |
+| `User`         | `users`         | Core user + Chef Room profile fields       |
+| `Session`      | `sessions`      | Server sessions (opaque token)             |
+| `Account`      | `accounts`      | Credential password + OAuth provider links |
+| `Verification` | `verifications` | Email verify, password reset, OAuth state  |
 
 Chef Room fields on `User`: `status`, `firstName`, `lastName`, `phone`, `marketingOptIn`, `lastLoginAt`, `deletedAt`. Profile photo uses Better Auth `image` (not `avatarUrl`).
 
@@ -25,25 +25,25 @@ Passwords are stored on `Account.password` (hashed by Better Auth), **not** on `
 
 ## Tables owned by Chef Room
 
-| Models | Purpose |
-|--------|---------|
-| `Role`, `Permission`, `UserRole`, `RolePermission` | RBAC (ADMIN, CUSTOMER, SUPERADMIN) |
-| `GuestSession` | Guest checkout / designs before register |
-| `LoginAttempt` | Optional audit of login attempts |
-| All catalog, cart, order, payment, shipment models | Business domain |
+| Models                                             | Purpose                                  |
+| -------------------------------------------------- | ---------------------------------------- |
+| `Role`, `Permission`, `UserRole`, `RolePermission` | RBAC (ADMIN, CUSTOMER, SUPERADMIN)       |
+| `GuestSession`                                     | Guest checkout / designs before register |
+| `LoginAttempt`                                     | Optional audit of login attempts         |
+| All catalog, cart, order, payment, shipment models | Business domain                          |
 
 ## Environment variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | Yes | Neon PostgreSQL (DEV for migrations) |
-| `BETTER_AUTH_SECRET` | Yes | Min 32 characters; session signing (generate with `openssl rand -base64 32`) |
-| `BETTER_AUTH_URL` | Yes | Public app URL — must match local/prod domain (e.g. `http://localhost:3000`) |
-| `NEXT_PUBLIC_APP_URL` | Recommended | Used by auth client + trusted origins |
-| `NEXT_PUBLIC_APP_URL` | Recommended | Used by auth client + trusted origins |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | For Google | Enables provider when both set |
-| `SEED_ADMIN_*` | Optional | DEV admin via `npm run db:seed` |
-| `ADMIN_AUTH_ENFORCE` | Optional | `true` = proxy requires session cookie on `/admin/*` |
+| Variable                                    | Required    | Description                                                                  |
+| ------------------------------------------- | ----------- | ---------------------------------------------------------------------------- |
+| `DATABASE_URL`                              | Yes         | Neon PostgreSQL (DEV for migrations)                                         |
+| `BETTER_AUTH_SECRET`                        | Yes         | Min 32 characters; session signing (generate with `openssl rand -base64 32`) |
+| `BETTER_AUTH_URL`                           | Yes         | Public app URL — must match local/prod domain (e.g. `http://localhost:3000`) |
+| `NEXT_PUBLIC_APP_URL`                       | Recommended | Used by auth client + trusted origins                                        |
+| `NEXT_PUBLIC_APP_URL`                       | Recommended | Used by auth client + trusted origins                                        |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | For Google  | Enables provider when both set                                               |
+| `SEED_ADMIN_*`                              | Optional    | DEV admin via `npm run db:seed`                                              |
+| `ADMIN_AUTH_ENFORCE`                        | Optional    | `true` = proxy requires session cookie on `/admin/*`                         |
 
 Generate secret (example):
 
@@ -72,11 +72,11 @@ Creates user via `auth.api.signUpEmail`, assigns role **ADMIN**, never prints th
 
 Better Auth envía verificación con nuestro `EmailService` (`templateKey: email_verification`).
 
-| Opción | Valor | Efecto |
-|--------|--------|--------|
-| `emailVerification.sendOnSignUp` | `true` | Correo al registrarse con email/password |
-| `emailVerification.autoSignInAfterVerification` | `true` | Sesión tras hacer clic en el enlace |
-| `emailAndPassword.requireEmailVerification` | **no** | Login permitido sin verificar; claim de pedidos **sí** exige verificación |
+| Opción                                          | Valor  | Efecto                                                                    |
+| ----------------------------------------------- | ------ | ------------------------------------------------------------------------- |
+| `emailVerification.sendOnSignUp`                | `true` | Correo al registrarse con email/password                                  |
+| `emailVerification.autoSignInAfterVerification` | `true` | Sesión tras hacer clic en el enlace                                       |
+| `emailAndPassword.requireEmailVerification`     | **no** | Login permitido sin verificar; claim de pedidos **sí** exige verificación |
 
 **Rutas**
 
@@ -92,10 +92,10 @@ Better Auth envía verificación con nuestro `EmailService` (`templateKey: email
 
 ## Endpoints
 
-| Path | Handler |
-|------|---------|
-| `/api/auth/*` | Better Auth (`toNextJsHandler`) |
-| `/api/graphql` | GraphQL Yoga (business only) |
+| Path           | Handler                         |
+| -------------- | ------------------------------- |
+| `/api/auth/*`  | Better Auth (`toNextJsHandler`) |
+| `/api/graphql` | GraphQL Yoga (business only)    |
 
 ### Manual test (no UI)
 
@@ -148,16 +148,16 @@ INSERT INTO user_roles (...)
 
 ## Code map
 
-| File | Role |
-|------|------|
-| `src/server/auth/build-auth.ts` | Better Auth config + `emailVerification` |
-| `src/server/auth/send-verification-email.ts` | Puente Better Auth → EmailService |
-| `src/app/(storefront)/verify-email/page.tsx` | Aviso post-registro |
-| `src/server/auth/better-auth.ts` | App singleton |
-| `src/lib/auth/auth-client.ts` | React client (future UI) |
-| `src/app/api/auth/[...all]/route.ts` | Route handler |
-| `src/server/auth/current-user.ts` | Session + RBAC → `CurrentUser` |
-| `src/server/auth/require-admin.ts` | Admin guards |
+| File                                         | Role                                     |
+| -------------------------------------------- | ---------------------------------------- |
+| `src/server/auth/build-auth.ts`              | Better Auth config + `emailVerification` |
+| `src/server/auth/send-verification-email.ts` | Puente Better Auth → EmailService        |
+| `src/app/(storefront)/verify-email/page.tsx` | Aviso post-registro                      |
+| `src/server/auth/better-auth.ts`             | App singleton                            |
+| `src/lib/auth/auth-client.ts`                | React client (future UI)                 |
+| `src/app/api/auth/[...all]/route.ts`         | Route handler                            |
+| `src/server/auth/current-user.ts`            | Session + RBAC → `CurrentUser`           |
+| `src/server/auth/require-admin.ts`           | Admin guards                             |
 
 ## Google OAuth
 
@@ -173,12 +173,12 @@ Storefront/admin login forms call `authClient.signIn.social({ provider: 'google'
 
 ## UI (storefront + admin)
 
-| Surface | Component | Behavior |
-|---------|-----------|----------|
-| `/login`, `/register` | `LoginForm`, `RegisterForm` | Better Auth email + Google |
-| Header | `PublicNavbarSession` | `useSession`, sign out |
-| `/admin/login` | `LoginForm variant="admin"` | RBAC check after login |
-| Admin shell | `requireAdminSession` | Server-side ADMIN/SUPERADMIN |
+| Surface               | Component                   | Behavior                     |
+| --------------------- | --------------------------- | ---------------------------- |
+| `/login`, `/register` | `LoginForm`, `RegisterForm` | Better Auth email + Google   |
+| Header                | `PublicNavbarSession`       | `useSession`, sign out       |
+| `/admin/login`        | `LoginForm variant="admin"` | RBAC check after login       |
+| Admin shell           | `requireAdminSession`       | Server-side ADMIN/SUPERADMIN |
 
 ### CUSTOMER role
 
@@ -201,10 +201,10 @@ Assigned automatically via `databaseHooks.user.create.after` in `build-auth.ts`,
 
 Centralizado en `src/server/auth/redirects.ts` (`getPostAuthRedirectPath`, `isSafeInternalRedirect`).
 
-| Rol | Después de login/register | Si visita `/login` o `/register` con sesión |
-|-----|---------------------------|---------------------------------------------|
-| CUSTOMER | `/` (landing) | Redirige a `/` |
-| ADMIN / SUPERADMIN | `/admin/dashboard` | Redirige a `/admin/dashboard` |
+| Rol                | Después de login/register | Si visita `/login` o `/register` con sesión |
+| ------------------ | ------------------------- | ------------------------------------------- |
+| CUSTOMER           | `/` (landing)             | Redirige a `/`                              |
+| ADMIN / SUPERADMIN | `/admin/dashboard`        | Redirige a `/admin/dashboard`               |
 
 Reglas adicionales:
 

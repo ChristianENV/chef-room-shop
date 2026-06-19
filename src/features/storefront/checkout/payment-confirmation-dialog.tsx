@@ -54,9 +54,7 @@ export function PaymentConfirmationDialog({
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
                 <Check className="h-8 w-8 text-success" />
               </div>
-              <DialogTitle className="font-sans text-xl">
-                Pago confirmado
-              </DialogTitle>
+              <DialogTitle className="font-sans text-xl">Pago confirmado</DialogTitle>
               <DialogDescription className="font-serif">
                 Tu pedido #{orderId} ha sido procesado exitosamente.
               </DialogDescription>
@@ -71,7 +69,8 @@ export function PaymentConfirmationDialog({
               </div>
 
               <p className="text-center font-serif text-sm text-muted-foreground">
-                Recibiras un correo de confirmacion a <strong>{customerEmail}</strong> con los detalles de tu pedido.
+                Recibiras un correo de confirmacion a <strong>{customerEmail}</strong> con los
+                detalles de tu pedido.
               </p>
 
               <div className="rounded-lg border border-border bg-card p-3">
@@ -100,9 +99,7 @@ export function PaymentConfirmationDialog({
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-[#E4002B]">
                 <Building2 className="h-8 w-8 text-white" />
               </div>
-              <DialogTitle className="font-sans text-xl">
-                Referencia de pago OXXO
-              </DialogTitle>
+              <DialogTitle className="font-sans text-xl">Referencia de pago OXXO</DialogTitle>
               <DialogDescription className="font-serif">
                 Pedido #{orderId} creado. Realiza el pago para iniciar la produccion.
               </DialogDescription>
@@ -117,18 +114,12 @@ export function PaymentConfirmationDialog({
               </div>
 
               <div className="rounded-lg border border-border bg-card p-4">
-                <p className="mb-2 font-serif text-sm text-muted-foreground">
-                  Referencia de pago:
-                </p>
+                <p className="mb-2 font-serif text-sm text-muted-foreground">Referencia de pago:</p>
                 <div className="flex items-center justify-between rounded-md bg-secondary px-3 py-2">
                   <code className="font-mono text-lg font-bold text-foreground">
                     {oxxoReference}
                   </code>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => copyToClipboard(oxxoReference)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => copyToClipboard(oxxoReference)}>
                     {copied ? (
                       <Check className="h-4 w-4 text-success" />
                     ) : (
@@ -168,9 +159,7 @@ export function PaymentConfirmationDialog({
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
                 <Banknote className="h-8 w-8 text-primary" />
               </div>
-              <DialogTitle className="font-sans text-xl">
-                Instrucciones SPEI
-              </DialogTitle>
+              <DialogTitle className="font-sans text-xl">Instrucciones SPEI</DialogTitle>
               <DialogDescription className="font-serif">
                 Pedido #{orderId} creado. Realiza la transferencia para iniciar la produccion.
               </DialogDescription>
@@ -190,16 +179,12 @@ export function PaymentConfirmationDialog({
                   <p className="font-sans font-medium text-foreground">{speiBank}</p>
                 </div>
                 <div>
-                  <p className="mb-1 font-serif text-xs text-muted-foreground">CLABE interbancaria</p>
+                  <p className="mb-1 font-serif text-xs text-muted-foreground">
+                    CLABE interbancaria
+                  </p>
                   <div className="flex items-center justify-between rounded-md bg-secondary px-3 py-2">
-                    <code className="font-mono text-sm font-bold text-foreground">
-                      {speiClabe}
-                    </code>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => copyToClipboard(speiClabe)}
-                    >
+                    <code className="font-mono text-sm font-bold text-foreground">{speiClabe}</code>
+                    <Button variant="ghost" size="sm" onClick={() => copyToClipboard(speiClabe)}>
                       {copied ? (
                         <Check className="h-4 w-4 text-success" />
                       ) : (

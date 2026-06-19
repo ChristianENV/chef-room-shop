@@ -5,10 +5,7 @@ import { PanelLeftClose } from 'lucide-react'
 import type { CatalogProduct } from '@/src/features/storefront/catalog/types'
 import { cn } from '@/lib/utils'
 import { useCustomizerStore } from '../store/customizer.store'
-import {
-  CUSTOMIZER_ADMIN_CATEGORY,
-  CUSTOMIZER_CATEGORIES,
-} from '../lib/customizer-categories'
+import { CUSTOMIZER_ADMIN_CATEGORY, CUSTOMIZER_CATEGORIES } from '../lib/customizer-categories'
 import type { CustomizerCategory, CustomizerCategoryItem } from '../lib/customizer-categories'
 import { useIsAdminUser } from '@/src/features/storefront/hooks/use-is-admin-user'
 import { CustomizerLeftRail } from './customizer-left-rail'

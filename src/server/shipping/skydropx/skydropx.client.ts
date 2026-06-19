@@ -245,9 +245,12 @@ export async function createSkydropxQuotation(
  * GET /api/v1/quotations/{id} — fetch quote and carrier rates.
  */
 export async function getSkydropxQuotation(id: string): Promise<SkydropxQuotationResponse> {
-  return skydropxRequest<SkydropxQuotationResponse>(`/api/v1/quotations/${encodeURIComponent(id)}`, {
-    operation: 'getQuotation',
-  })
+  return skydropxRequest<SkydropxQuotationResponse>(
+    `/api/v1/quotations/${encodeURIComponent(id)}`,
+    {
+      operation: 'getQuotation',
+    },
+  )
 }
 
 /**
@@ -263,8 +266,7 @@ export async function createSkydropxShipment(
     operation: 'createShipment',
     debugContext: {
       ...debugContext,
-      providerRateId:
-        debugContext?.providerRateId ?? input.shipment.rate_id,
+      providerRateId: debugContext?.providerRateId ?? input.shipment.rate_id,
     },
   })
 }
@@ -273,10 +275,9 @@ export async function createSkydropxShipment(
  * GET /api/v1/shipments/{id} — retrieve shipment details (label, tracking).
  */
 export async function getSkydropxShipment(id: string): Promise<SkydropxShipmentResponse> {
-  return skydropxRequest<SkydropxShipmentResponse>(
-    `/api/v1/shipments/${encodeURIComponent(id)}`,
-    { operation: 'getShipment' },
-  )
+  return skydropxRequest<SkydropxShipmentResponse>(`/api/v1/shipments/${encodeURIComponent(id)}`, {
+    operation: 'getShipment',
+  })
 }
 
 /**

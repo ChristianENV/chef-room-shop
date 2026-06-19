@@ -44,8 +44,8 @@ export function AdminCreateLabelDialog({
         <DialogHeader>
           <DialogTitle className="font-sans">Generar guía de envío</DialogTitle>
           <DialogDescription className="font-serif">
-            Se creará una guía con la tarifa seleccionada durante el checkout. Esta
-            acción puede descontar saldo en Skydropx.
+            Se creará una guía con la tarifa seleccionada durante el checkout. Esta acción puede
+            descontar saldo en Skydropx.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2 py-2">

@@ -70,8 +70,7 @@ export function buildRuleConfigJson(
   existing?: RuleConfigJson,
 ): Prisma.InputJsonValue {
   const prev = existing ?? {}
-  const basePriceCents =
-    input.basePriceCents ?? prev.priceCents ?? option.priceCents
+  const basePriceCents = input.basePriceCents ?? prev.priceCents ?? option.priceCents
   const pricePerCmCents = input.pricePerCmCents ?? prev.pricePerCmCents ?? null
   const maxWidthCm = input.maxWidthCm ?? prev.maxDimensionsCm?.width ?? null
   const maxHeightCm = input.maxHeightCm ?? prev.maxDimensionsCm?.height ?? null
@@ -79,9 +78,7 @@ export function buildRuleConfigJson(
   const prevFileTypes = parseAllowedFileTypes(prev.allowedFileTypes)
   const allowedFileTypes =
     input.allowedFileTypes ??
-    (prevFileTypes.length > 0
-      ? prevFileTypes
-      : defaultAllowedFileTypesForOption(option.slug))
+    (prevFileTypes.length > 0 ? prevFileTypes : defaultAllowedFileTypesForOption(option.slug))
 
   const config: RuleConfigJson = {
     priceCents: basePriceCents,
@@ -98,10 +95,7 @@ export function buildRuleConfigJson(
     extraProductionDays: input.extraProductionDays ?? prev.extraProductionDays,
     validationMessage: input.validationMessage ?? prev.validationMessage,
     notes: input.notes ?? prev.notes,
-    metadata:
-      input.metadataJson != null
-        ? input.metadataJson
-        : prev.metadata,
+    metadata: input.metadataJson != null ? input.metadataJson : prev.metadata,
   }
 
   return config as Prisma.InputJsonValue
@@ -110,9 +104,7 @@ export function buildRuleConfigJson(
 /**
  * Maps a customization area row to the admin GraphQL shape.
  */
-export function mapAdminCustomizationAreaToGql(
-  area: CustomizationArea,
-): AdminCustomizationAreaGql {
+export function mapAdminCustomizationAreaToGql(area: CustomizationArea): AdminCustomizationAreaGql {
   return {
     id: area.id,
     slug: area.slug,
@@ -158,9 +150,7 @@ export function mapAdminCustomizationProductToGql(
 /**
  * Maps a product customization rule with relations to the admin GraphQL shape.
  */
-export function mapAdminCustomizationRuleToGql(
-  rule: RuleWithRelations,
-): AdminCustomizationRuleGql {
+export function mapAdminCustomizationRuleToGql(rule: RuleWithRelations): AdminCustomizationRuleGql {
   const config = parseRuleConfig(rule.configJson)
   const basePriceCents = config.priceCents ?? rule.option.priceCents
 

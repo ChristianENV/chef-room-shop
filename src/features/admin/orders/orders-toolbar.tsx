@@ -53,20 +53,11 @@ export function OrdersToolbar({
           />
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled
-            title="Exportación CSV — próximamente"
-          >
+          <Button variant="outline" size="sm" disabled title="Exportación CSV — próximamente">
             <Download className="mr-2 h-4 w-4" />
             Exportar
           </Button>
-          <Button
-            size="sm"
-            disabled
-            title="Creación manual de órdenes — próximamente"
-          >
+          <Button size="sm" disabled title="Creación manual de órdenes — próximamente">
             <Plus className="mr-2 h-4 w-4" />
             Crear orden manual
           </Button>

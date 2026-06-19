@@ -10,11 +10,9 @@ The product detail page (`/products/[slug]`) adds **non-customized** lines via t
 
 ```graphql
 mutation {
-  addCartItem(input: {
-    productId: "..."
-    productVariantId: "..."
-    quantity: 1
-  }) { totalItems }
+  addCartItem(input: { productId: "...", productVariantId: "...", quantity: 1 }) {
+    totalItems
+  }
 }
 ```
 
@@ -23,7 +21,7 @@ mutation {
 
 ## Variant rules
 
-- Multiple variants: user must pick color + size; otherwise: *Selecciona una talla y color para continuar.*
+- Multiple variants: user must pick color + size; otherwise: _Selecciona una talla y color para continuar._
 - Single variant: auto-selected on load.
 - Sizes without stock for the selected color are disabled (`stockQty === 0`).
 - Quantity: 1–10 in UI (BFF allows up to 99).

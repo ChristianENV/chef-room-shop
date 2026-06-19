@@ -44,8 +44,8 @@ export function ColorSection({ embedded = false }: { embedded?: boolean }) {
       ) : null}
       {requiresVariant && fromBff.length === 0 ? (
         <p className="text-[11px] text-destructive/80">
-          Este producto no tiene colores configurados en catálogo. Contacta a ventas para
-          completar el catálogo.
+          Este producto no tiene colores configurados en catálogo. Contacta a ventas para completar
+          el catálogo.
         </p>
       ) : null}
     </div>

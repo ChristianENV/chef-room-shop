@@ -1,20 +1,15 @@
 'use client'
 
 import { Card, CardContent } from '@/components/ui/card'
-import {
-  Clock,
-  CreditCard,
-  Factory,
-  Package,
-  Truck,
-  CheckCircle,
-  XCircle,
-} from 'lucide-react'
+import { Clock, CreditCard, Factory, Package, Truck, CheckCircle, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import { AdminOrdersError } from './components/admin-orders-error'
 import { AdminOrdersStatusCardsSkeleton } from './components/admin-orders-loading'
-import type { AdminOrderStatusFilter, AdminOrdersStatusCardCounts } from './types/admin-orders-ui.types'
+import type {
+  AdminOrderStatusFilter,
+  AdminOrdersStatusCardCounts,
+} from './types/admin-orders-ui.types'
 
 interface StatusCardData {
   status: AdminOrderStatusFilter
@@ -34,13 +29,55 @@ interface OrdersStatusCardsProps {
 }
 
 const statusCards: Omit<StatusCardData, 'count'>[] = [
-  { status: 'pendiente-pago', label: 'Pendientes de pago', icon: Clock, color: 'text-warning', bgColor: 'bg-warning/10' },
-  { status: 'pagado', label: 'Pagadas', icon: CreditCard, color: 'text-success', bgColor: 'bg-success/10' },
-  { status: 'en-produccion', label: 'En producción', icon: Factory, color: 'text-accent', bgColor: 'bg-accent/10' },
-  { status: 'listo-envio', label: 'Listas para envío', icon: Package, color: 'text-primary', bgColor: 'bg-primary/10' },
-  { status: 'enviado', label: 'Enviadas', icon: Truck, color: 'text-muted-foreground', bgColor: 'bg-muted' },
-  { status: 'entregado', label: 'Entregadas', icon: CheckCircle, color: 'text-success', bgColor: 'bg-success/10' },
-  { status: 'cancelado', label: 'Canceladas', icon: XCircle, color: 'text-destructive', bgColor: 'bg-destructive/10' },
+  {
+    status: 'pendiente-pago',
+    label: 'Pendientes de pago',
+    icon: Clock,
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
+  },
+  {
+    status: 'pagado',
+    label: 'Pagadas',
+    icon: CreditCard,
+    color: 'text-success',
+    bgColor: 'bg-success/10',
+  },
+  {
+    status: 'en-produccion',
+    label: 'En producción',
+    icon: Factory,
+    color: 'text-accent',
+    bgColor: 'bg-accent/10',
+  },
+  {
+    status: 'listo-envio',
+    label: 'Listas para envío',
+    icon: Package,
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
+  },
+  {
+    status: 'enviado',
+    label: 'Enviadas',
+    icon: Truck,
+    color: 'text-muted-foreground',
+    bgColor: 'bg-muted',
+  },
+  {
+    status: 'entregado',
+    label: 'Entregadas',
+    icon: CheckCircle,
+    color: 'text-success',
+    bgColor: 'bg-success/10',
+  },
+  {
+    status: 'cancelado',
+    label: 'Canceladas',
+    icon: XCircle,
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10',
+  },
 ]
 
 export function OrdersStatusCards({

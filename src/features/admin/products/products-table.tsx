@@ -1,15 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import {
-  MoreHorizontal,
-  Eye,
-  Pencil,
-  Copy,
-  Archive,
-  Palette,
-  CheckCircle2,
-} from 'lucide-react'
+import { MoreHorizontal, Eye, Pencil, Copy, Archive, Palette, CheckCircle2 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -150,7 +142,9 @@ export function ProductsTable({
                   <span className="font-sans font-medium">{row.basePriceFormatted}</span>
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-center">
-                  <span className="font-sans text-sm text-muted-foreground">{row.variantCount}</span>
+                  <span className="font-sans text-sm text-muted-foreground">
+                    {row.variantCount}
+                  </span>
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-center">
                   {row.customizable ? (
@@ -217,9 +211,7 @@ export function ProductsTable({
                           Archivar
                         </DropdownMenuItem>
                       ) : (
-                        <DropdownMenuItem
-                          onClick={() => onStatusChange(row, 'ACTIVE')}
-                        >
+                        <DropdownMenuItem onClick={() => onStatusChange(row, 'ACTIVE')}>
                           <Eye className="mr-2 h-4 w-4" />
                           Reactivar
                         </DropdownMenuItem>

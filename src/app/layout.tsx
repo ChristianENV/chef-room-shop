@@ -52,11 +52,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html
-      lang="es"
-      className={`${outfit.variable} ${roboto.variable}`}
-      suppressHydrationWarning
-    >
+    <html lang="es" className={`${outfit.variable} ${roboto.variable}`} suppressHydrationWarning>
       <body className="font-serif antialiased" suppressHydrationWarning>
         <AppProviders>{children}</AppProviders>
         {process.env.NODE_ENV === 'production' && <Analytics />}

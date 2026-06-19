@@ -5,7 +5,10 @@ import { useRouter } from 'next/navigation'
 
 import { accountOrderDetail } from '@/src/config/routes'
 import { useClaimGuestOrderByCheckoutTokenMutation } from '@/src/features/storefront/checkout/api/use-claim-guest-order-by-checkout-token-mutation'
-import type { ClaimGuestOrderPayload, ClaimGuestOrderStatus } from '@/src/features/storefront/checkout/types'
+import type {
+  ClaimGuestOrderPayload,
+  ClaimGuestOrderStatus,
+} from '@/src/features/storefront/checkout/types'
 
 type UsePostCheckoutGuestOrderClaimOptions = {
   orderNumber: string
@@ -61,8 +64,8 @@ export function usePostCheckoutGuestOrderClaim({
 
   const orderLinkedToAccount = Boolean(
     claimMutation.data?.success &&
-      (claimMutation.data.status === 'CLAIMED' ||
-        claimMutation.data.status === 'ALREADY_CLAIMED_BY_USER'),
+    (claimMutation.data.status === 'CLAIMED' ||
+      claimMutation.data.status === 'ALREADY_CLAIMED_BY_USER'),
   )
 
   return {

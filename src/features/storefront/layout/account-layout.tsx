@@ -4,26 +4,12 @@ import type { ReactNode } from 'react'
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-  LogOut,
-  MapPin,
-  Menu,
-  Package,
-  Palette,
-  User,
-  Bell,
-} from 'lucide-react'
+import { LogOut, MapPin, Menu, Package, Palette, User, Bell } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { UserAvatar } from '@/components/shared/user-avatar'
 import { Button } from '@/components/ui/button'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { accountNav } from '@/src/config/navigation.storefront'
 import { useMeProfileQuery } from '@/src/features/storefront/account/api/use-me-profile-query'
 import { getUserDisplayName } from '@/src/lib/user/user-display'
@@ -87,15 +73,19 @@ function AccountSidebar({ className, onNavigate }: AccountSidebarProps) {
               'group flex items-center gap-3 rounded-lg px-3 py-3 transition-colors',
               isActive
                 ? 'bg-primary/10 text-primary'
-                : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
             )}
           >
             <Icon className={cn('h-5 w-5 flex-shrink-0', isActive && 'text-primary')} />
             <div className="min-w-0 flex-1">
-              <p className={cn('truncate font-sans text-sm font-medium', isActive && 'text-primary')}>
+              <p
+                className={cn('truncate font-sans text-sm font-medium', isActive && 'text-primary')}
+              >
                 {item.label}
               </p>
-              <p className="truncate font-serif text-xs text-muted-foreground">{item.description}</p>
+              <p className="truncate font-serif text-xs text-muted-foreground">
+                {item.description}
+              </p>
             </div>
           </Link>
         )
@@ -135,9 +125,7 @@ export function AccountLayout({
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const profileQuery = useMeProfileQuery()
   const sidebarUser = profileQuery.data
-  const sidebarDisplayName = sidebarUser
-    ? getUserDisplayName(sidebarUser)
-    : userName
+  const sidebarDisplayName = sidebarUser ? getUserDisplayName(sidebarUser) : userName
 
   return (
     <div className="flex flex-col">

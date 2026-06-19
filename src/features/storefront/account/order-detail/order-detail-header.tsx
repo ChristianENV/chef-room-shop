@@ -20,10 +20,7 @@ export function OrderDetailHeader({ orderNumber }: OrderDetailHeaderProps) {
         Mi cuenta
       </Link>
       <ChevronRight className="h-3.5 w-3.5 shrink-0" aria-hidden />
-      <Link
-        href={`${routes.account}/orders`}
-        className="transition-colors hover:text-primary"
-      >
+      <Link href={`${routes.account}/orders`} className="transition-colors hover:text-primary">
         Mis pedidos
       </Link>
       <ChevronRight className="h-3.5 w-3.5 shrink-0" aria-hidden />
