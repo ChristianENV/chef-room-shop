@@ -8,8 +8,13 @@ import {
   ShipmentStatus,
 } from '@prisma/client'
 
+import { safeNotifyOrderDelivered } from '@/src/server/notifications/notify-order-delivered'
+import { safeNotifyOrderShipped } from '@/src/server/notifications/notify-order-shipped'
+
 import { buildMockTrackingNumber } from './skydropx.mock-provider'
 import { isSkydropxMockMode } from './skydropx.mode'
+import { buildShipmentLifecycleNotificationInput } from './skydropx-shipment-status'
+import type { ShipmentStatusTransition } from './skydropx.webhook.types'
 
 export const MOCK_TRACKING_STATUSES = [
   'created',
@@ -53,7 +58,15 @@ export class MockTrackingSimulationError extends Error {
 }
 
 const shipmentWithOrderInclude = {
-  order: { select: { id: true, orderNumber: true, status: true } },
+  order: {
+    select: {
+      id: true,
+      orderNumber: true,
+      status: true,
+      userId: true,
+      fulfillmentStatus: true,
+    },
+  },
 } satisfies Prisma.ShipmentInclude
 
 type ShipmentWithOrder = Prisma.ShipmentGetPayload<{
@@ -201,6 +214,8 @@ export async function simulateMockShipmentTrackingStatus(
   const transition = mapMockTrackingStatusToTransition(status)
   const occurredAt = input.occurredAt ?? new Date()
   const shipment = await loadShipmentForSimulation(prisma, input)
+  const previousOrderStatus = shipment.order.status
+  const previousShipmentStatus = shipment.status
   const metadata = buildMockTrackingEventMetadata({
     order: shipment.order,
     shipment,
@@ -208,7 +223,7 @@ export async function simulateMockShipmentTrackingStatus(
     occurredAt,
   })
 
-  return prisma.$transaction(async (tx) => {
+  const updatedShipment = await prisma.$transaction(async (tx) => {
     const shipmentUpdate: Prisma.ShipmentUpdateInput = {
       status: transition.nextStatus,
       trackingNumber: metadata.trackingNumber,
@@ -220,7 +235,7 @@ export async function simulateMockShipmentTrackingStatus(
         : shipment.deliveredAt,
     }
 
-    const updatedShipment = await tx.shipment.update({
+    const nextShipment = await tx.shipment.update({
       where: { id: shipment.id },
       data: shipmentUpdate,
       include: shipmentWithOrderInclude,
@@ -247,6 +262,27 @@ export async function simulateMockShipmentTrackingStatus(
       })
     }
 
-    return updatedShipment
+    return nextShipment
   })
+
+  const notificationInput = buildShipmentLifecycleNotificationInput({
+    order: shipment.order,
+    previousOrderStatus,
+    previousShipmentStatus,
+    transition: {
+      nextStatus: transition.nextStatus,
+      orderStatus: transition.orderStatus as ShipmentStatusTransition['orderStatus'],
+      fulfillmentStatus:
+        transition.fulfillmentStatus as ShipmentStatusTransition['fulfillmentStatus'],
+      setShippedAt: transition.setShippedAt,
+      setDeliveredAt: transition.setDeliveredAt,
+    },
+    trackingNumber: metadata.trackingNumber,
+    carrier: metadata.carrierName,
+  })
+
+  void safeNotifyOrderShipped(prisma, notificationInput)
+  void safeNotifyOrderDelivered(prisma, notificationInput)
+
+  return updatedShipment
 }

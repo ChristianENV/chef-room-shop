@@ -35,6 +35,13 @@ import {
   mapOrderToSkydropxShipmentPayload,
   parseSkydropxShipmentResponse,
 } from '@/src/server/shipping/skydropx/skydropx.mappers'
+import {
+  buildShipmentLifecycleNotificationInput,
+  resolveOrderStatusAfterShipmentTransition,
+  resolveRefreshTrackingTransition,
+} from '@/src/server/shipping/skydropx/skydropx-shipment-status'
+import { safeNotifyOrderDelivered } from '@/src/server/notifications/notify-order-delivered'
+import { safeNotifyOrderShipped } from '@/src/server/notifications/notify-order-shipped'
 
 import { derivePaymentStatus } from '../admin-dashboard/admin-dashboard.mappers'
 import type { GraphQLContext } from '../../context'
@@ -616,10 +623,32 @@ export async function refreshAdminShipmentTracking(
 
   const parsedTracking = parseSkydropxShipmentResponse(skydropxRaw)
   const nextTracking = parsedTracking.trackingNumber ?? tracking
-  const nextStatus =
-    parsedTracking.trackingNumber && shipment.status === ShipmentStatus.LABEL_CREATED
-      ? ShipmentStatus.IN_TRANSIT
-      : shipment.status
+  const previousShipmentStatus = shipment.status
+  const transition = resolveRefreshTrackingTransition(
+    previousShipmentStatus,
+    skydropxRaw,
+    Boolean(nextTracking),
+  )
+  const nextStatus = transition?.nextStatus ?? previousShipmentStatus
+
+  const order = await context.prisma.order.findUniqueOrThrow({
+    where: { id: shipment.orderId },
+    select: {
+      id: true,
+      orderNumber: true,
+      userId: true,
+      status: true,
+      fulfillmentStatus: true,
+    },
+  })
+  const previousOrderStatus = order.status
+  const nextOrderStatuses = transition
+    ? resolveOrderStatusAfterShipmentTransition({
+        previousOrderStatus,
+        previousFulfillmentStatus: order.fulfillmentStatus,
+        transition,
+      })
+    : { orderStatus: previousOrderStatus, fulfillmentStatus: order.fulfillmentStatus }
 
   const updated = await context.prisma.$transaction(async (tx) => {
     const next = await tx.shipment.update({
@@ -628,7 +657,14 @@ export async function refreshAdminShipmentTracking(
         trackingNumber: nextTracking,
         status: nextStatus,
         labelUrl: parsedTracking.labelUrl ?? shipment.labelUrl,
-        shippedAt: shipment.shippedAt ?? (nextTracking ? new Date() : null),
+        shippedAt:
+          transition?.setShippedAt && !shipment.shippedAt
+            ? new Date()
+            : shipment.shippedAt ?? (nextTracking ? new Date() : null),
+        deliveredAt:
+          transition?.setDeliveredAt && !shipment.deliveredAt
+            ? new Date()
+            : shipment.deliveredAt,
       },
       include: shipmentInclude,
     })
@@ -645,8 +681,36 @@ export async function refreshAdminShipmentTracking(
       },
     })
 
+    if (
+      transition &&
+      (nextOrderStatuses.orderStatus !== previousOrderStatus ||
+        nextOrderStatuses.fulfillmentStatus !== order.fulfillmentStatus)
+    ) {
+      await tx.order.update({
+        where: { id: order.id },
+        data: {
+          status: nextOrderStatuses.orderStatus,
+          fulfillmentStatus: nextOrderStatuses.fulfillmentStatus,
+        },
+      })
+    }
+
     return next
   })
+
+  if (transition) {
+    const notificationInput = buildShipmentLifecycleNotificationInput({
+      order,
+      previousOrderStatus,
+      previousShipmentStatus,
+      transition,
+      trackingNumber: nextTracking,
+      carrier,
+    })
+
+    void safeNotifyOrderShipped(context.prisma, notificationInput)
+    void safeNotifyOrderDelivered(context.prisma, notificationInput)
+  }
 
   return mapShipmentToAdminGql(updated)
 }

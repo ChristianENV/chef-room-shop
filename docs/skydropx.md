@@ -71,13 +71,13 @@ mutation SimulateMockTracking {
 
 Supported `MockTrackingStatus` values:
 
-| Mock status | ShipmentStatus | OrderStatus (when updated) |
-|-------------|----------------|----------------------------|
-| `created` | `PENDING` | unchanged |
-| `label_generated` | `LABEL_CREATED` | unchanged |
-| `in_transit` | `IN_TRANSIT` | `SHIPPED` |
-| `delivered` | `DELIVERED` | `DELIVERED` |
-| `exception` | `FAILED` | unchanged |
+| Mock status | ShipmentStatus | OrderStatus (when updated) | Notification |
+|-------------|----------------|----------------------------|--------------|
+| `created` | `PENDING` | unchanged | — |
+| `label_generated` | `LABEL_CREATED` | unchanged | — |
+| `in_transit` | `IN_TRANSIT` | `SHIPPED` | `ORDER_SHIPPED` (authenticated only) |
+| `delivered` | `DELIVERED` | `DELIVERED` | `ORDER_DELIVERED` (authenticated only) |
+| `exception` | `FAILED` | unchanged | — |
 
 Implementation: `src/server/shipping/skydropx/skydropx.mock-tracking.ts` → `simulateMockShipmentTrackingStatus`.
 
@@ -87,7 +87,7 @@ Admin order detail shows a **Simulación mock** panel when the tracking number s
 
 Safe `ShipmentEvent.metadataJson` fields only: `orderId`, `orderNumber`, `trackingNumber`, `carrierName`, `trackingStatus`, `occurredAt`.
 
-**Notification hooks are not wired in this phase** — shipped/delivered in-app notifications will be added in a later branch.
+**Notification hooks:** `ORDER_SHIPPED` on shipped/in-transit transitions; `ORDER_DELIVERED` on delivered transitions. Guest orders are skipped. Dedupe keys: `order-shipped:{orderId}`, `order-delivered:{orderId}`.
 
 Limitations: mock mode is for local/dev/QA only. No webhook replay, no carrier API calls, no realtime push.
 
