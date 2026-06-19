@@ -52,12 +52,11 @@ SKYDROPX_MODE=mock
 
 ```txt
 Generate mock label → READY_TO_SHIP / LABEL_CREATED (tracking number present, not shipped yet)
-Simulate in_transit   → SHIPPED / IN_TRANSIT
-Simulate delivered    → DELIVERED
+Simulate in_transit   → SHIPPED / IN_TRANSIT → ORDER_SHIPPED
+Simulate delivered    → DELIVERED → ORDER_DELIVERED
 ```
 
 Mock labels include a tracking number for printing and QA, but admin label creation does **not** mark the order as shipped. Use `adminSimulateMockShipmentTrackingStatus` to advance the lifecycle. Checkout quotes still call live Skydropx unless you add separate mock support later. Cancel label, refresh tracking (live API), and webhooks are unchanged.
-
 ### Mock tracking simulation
 
 Requires `SKYDROPX_MODE=mock` and a shipment with mock tracking (`CRMOCK-*` or `mock-shipment-*` provider id).
@@ -79,13 +78,13 @@ mutation SimulateMockTracking {
 
 Supported `MockTrackingStatus` values:
 
-| Mock status | ShipmentStatus | OrderStatus (when updated) |
-|-------------|----------------|----------------------------|
-| `created` | `PENDING` | unchanged |
-| `label_generated` | `LABEL_CREATED` | unchanged |
-| `in_transit` | `IN_TRANSIT` | `SHIPPED` | Creates `ORDER_SHIPPED` USER notification (authenticated orders only) |
-| `delivered` | `DELIVERED` | `DELIVERED` | No in-app notification yet |
-| `exception` | `FAILED` | unchanged |
+| Mock status | ShipmentStatus | OrderStatus (when updated) | Notification |
+|-------------|----------------|----------------------------|--------------|
+| `created` | `PENDING` | unchanged | — |
+| `label_generated` | `LABEL_CREATED` | unchanged | — |
+| `in_transit` | `IN_TRANSIT` | `SHIPPED` | `ORDER_SHIPPED` (authenticated only) |
+| `delivered` | `DELIVERED` | `DELIVERED` | `ORDER_DELIVERED` (authenticated only) |
+| `exception` | `FAILED` | unchanged | — |
 
 Implementation: `src/server/shipping/skydropx/skydropx.mock-tracking.ts` → `simulateMockShipmentTrackingStatus`.
 
@@ -95,7 +94,7 @@ Admin order detail shows a **Simulación mock** panel when the tracking number s
 
 Safe `ShipmentEvent.metadataJson` fields only: `orderId`, `orderNumber`, `trackingNumber`, `carrierName`, `trackingStatus`, `occurredAt`.
 
-**Notification hooks are not wired in this phase** — `ORDER_SHIPPED` is created on shipped/in-transit transitions (mock `in_transit`, webhook, refresh tracking). `ORDER_DELIVERED` will be added in a later branch.
+**Notification hooks:** `ORDER_SHIPPED` on shipped/in-transit transitions; `ORDER_DELIVERED` on delivered transitions. Guest orders are skipped. Dedupe keys: `order-shipped:{orderId}`, `order-delivered:{orderId}`.
 
 Limitations: mock mode is for local/dev/QA only. No webhook replay, no carrier API calls, no realtime push.
 

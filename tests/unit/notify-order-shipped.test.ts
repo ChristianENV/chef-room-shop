@@ -1,11 +1,7 @@
 import assert from 'node:assert/strict'
 import { after, describe, it } from 'node:test'
 
-import {
-  NotificationType,
-  OrderStatus,
-  ShipmentStatus,
-} from '@prisma/client'
+import { NotificationType, OrderStatus, ShipmentStatus } from '@prisma/client'
 
 import {
   canRunNotificationDbTests,

@@ -15,25 +15,20 @@ import {
 import { buildOrderEmailTrackingLinks } from '@/src/server/email/email.links'
 import { safeSendTransactionalEmailOnce } from '@/src/server/email/email.service'
 import { createOrderClaimToken } from '@/src/server/orders/order-claim-token'
+import { safeNotifyOrderDelivered } from '@/src/server/notifications/notify-order-delivered'
 import { safeNotifyOrderShipped } from '@/src/server/notifications/notify-order-shipped'
 
 import { sanitizeSkydropxWebhookPayload } from './skydropx.sanitize'
+import {
+  mapSkydropxPackageStatusToTransition,
+  shouldApplyShipmentStatus,
+  buildShipmentLifecycleNotificationInput,
+} from './skydropx-shipment-status'
 import type {
   ParsedSkydropxWebhookEvent,
   ShipmentStatusTransition,
   SkydropxWebhookProcessResult,
 } from './skydropx.webhook.types'
-
-const SHIPMENT_STATUS_RANK: Record<ShipmentStatus, number> = {
-  PENDING: 0,
-  LABEL_CREATED: 1,
-  IN_TRANSIT: 2,
-  OUT_FOR_DELIVERY: 3,
-  DELIVERED: 4,
-  FAILED: 5,
-  RETURNED: 5,
-  CANCELLED: 5,
-}
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (value && typeof value === 'object' && !Array.isArray(value)) {
@@ -138,106 +133,10 @@ export function extractSkydropxWebhookEvent(payload: unknown): ParsedSkydropxWeb
 export function mapSkydropxWebhookToShipmentStatus(
   event: ParsedSkydropxWebhookEvent,
 ): ShipmentStatusTransition | null {
-  const statusKey = (event.packageStatus ?? '').toLowerCase()
-  const eventType = event.eventType.toLowerCase()
-
-  const matches = (...tokens: string[]): boolean =>
-    tokens.some(
-      (token) => eventType.includes(token) || statusKey === token || statusKey.includes(token),
-    )
-
-  if (matches('delivered', 'package.delivered', 'shipment.delivered')) {
-    return {
-      nextStatus: ShipmentStatus.DELIVERED,
-      orderStatus: OrderStatus.DELIVERED,
-      fulfillmentStatus: FulfillmentStatus.DELIVERED,
-      setDeliveredAt: true,
-    }
-  }
-
-  if (matches('cancelled', 'canceled', 'shipment.cancelled')) {
-    return {
-      nextStatus: ShipmentStatus.CANCELLED,
-      fulfillmentStatus: FulfillmentStatus.PROCESSING,
-    }
-  }
-
-  if (
-    matches(
-      'exception',
-      'failed_attempt',
-      'failed',
-      'shipment.exception',
-      'package.failed',
-    )
-  ) {
-    return {
-      nextStatus: ShipmentStatus.FAILED,
-      fulfillmentStatus: FulfillmentStatus.SHIPPED,
-    }
-  }
-
-  if (matches('returned', 'in_return', 'return')) {
-    return {
-      nextStatus: ShipmentStatus.RETURNED,
-      fulfillmentStatus: FulfillmentStatus.SHIPPED,
-    }
-  }
-
-  if (matches('out_for_delivery', 'last_mile', 'package.out_for_delivery')) {
-    return {
-      nextStatus: ShipmentStatus.OUT_FOR_DELIVERY,
-      orderStatus: OrderStatus.SHIPPED,
-      fulfillmentStatus: FulfillmentStatus.SHIPPED,
-      setShippedAt: true,
-    }
-  }
-
-  if (
-    matches(
-      'in_transit',
-      'picked_up',
-      'collected',
-      'shipment.status.updated',
-      'package.tracking.updated',
-      'package.in_transit',
-      'shipped',
-    )
-  ) {
-    return {
-      nextStatus: ShipmentStatus.IN_TRANSIT,
-      orderStatus: OrderStatus.SHIPPED,
-      fulfillmentStatus: FulfillmentStatus.SHIPPED,
-      setShippedAt: true,
-    }
-  }
-
-  if (
-    matches(
-      'created',
-      'label.generated',
-      'label_created',
-      'shipment.created',
-      'shipment.label.generated',
-      'ready_to_ship',
-    )
-  ) {
-    return {
-      nextStatus: ShipmentStatus.LABEL_CREATED,
-      fulfillmentStatus: FulfillmentStatus.PROCESSING,
-    }
-  }
-
-  if (statusKey) {
-    return {
-      nextStatus: ShipmentStatus.IN_TRANSIT,
-      orderStatus: OrderStatus.SHIPPED,
-      fulfillmentStatus: FulfillmentStatus.SHIPPED,
-      setShippedAt: true,
-    }
-  }
-
-  return null
+  return mapSkydropxPackageStatusToTransition({
+    packageStatus: event.packageStatus,
+    eventType: event.eventType,
+  })
 }
 
 /**
@@ -276,19 +175,6 @@ export function shouldSendDeliveredEmail(
     nextStatus === ShipmentStatus.DELIVERED &&
     previousStatus !== ShipmentStatus.DELIVERED
   )
-}
-
-function shouldApplyShipmentStatus(
-  current: ShipmentStatus,
-  next: ShipmentStatus,
-): boolean {
-  if (current === ShipmentStatus.DELIVERED) {
-    return next === ShipmentStatus.DELIVERED
-  }
-  if (current === ShipmentStatus.CANCELLED && next !== ShipmentStatus.CANCELLED) {
-    return false
-  }
-  return SHIPMENT_STATUS_RANK[next] >= SHIPMENT_STATUS_RANK[current]
 }
 
 function buildShipmentEventMessage(event: ParsedSkydropxWebhookEvent): string {
@@ -657,39 +543,17 @@ export async function processSkydropxWebhook(
     where: { id: shipment.id },
   })
 
-  let newOrderStatus = previousOrderStatus
-  const order = shipment.order
-
-  if (
-    transition.orderStatus === OrderStatus.DELIVERED &&
-    order.status !== OrderStatus.DELIVERED &&
-    order.status !== OrderStatus.CANCELLED &&
-    order.status !== OrderStatus.REFUNDED
-  ) {
-    newOrderStatus = OrderStatus.DELIVERED
-  } else if (
-    transition.orderStatus === OrderStatus.SHIPPED &&
-    order.status !== OrderStatus.DELIVERED &&
-    order.status !== OrderStatus.SHIPPED &&
-    order.status !== OrderStatus.CANCELLED &&
-    order.status !== OrderStatus.REFUNDED
-  ) {
-    newOrderStatus = OrderStatus.SHIPPED
-  }
-
-  void safeNotifyOrderShipped(prisma, {
-    order: {
-      id: order.id,
-      orderNumber: order.orderNumber,
-      userId: order.userId,
-    },
+  const notificationInput = buildShipmentLifecycleNotificationInput({
+    order: shipment.order,
     previousOrderStatus,
-    newOrderStatus,
     previousShipmentStatus: previousStatus,
-    newShipmentStatus: nextStatus,
+    transition,
     trackingNumber: updatedShipment.trackingNumber,
     carrier: updatedShipment.carrier,
   })
+
+  void safeNotifyOrderShipped(prisma, notificationInput)
+  void safeNotifyOrderDelivered(prisma, notificationInput)
 
   void sendShippingNotificationEmails(prisma, {
     order: shipment.order,

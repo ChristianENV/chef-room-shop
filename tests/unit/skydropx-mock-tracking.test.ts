@@ -3,7 +3,6 @@ import { after, describe, it } from 'node:test'
 
 import {
   FulfillmentStatus,
-  NotificationType,
   OrderStatus,
   RoleSlug,
   ShipmentStatus,
@@ -113,7 +112,10 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
       await prisma.notification.deleteMany({
         where: {
           dedupeKey: {
-            in: cleanup.orderIds.map((orderId) => `order-shipped:${orderId}`),
+            in: cleanup.orderIds.flatMap((orderId) => [
+              `order-shipped:${orderId}`,
+              `order-delivered:${orderId}`,
+            ]),
           },
         },
       })
@@ -310,7 +312,7 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
     )
   })
 
-  it('does not create ORDER_SHIPPED on delivered simulation', async () => {
+  it('does not create USER notifications for guest delivered simulation', async () => {
     setSkydropxMode('mock')
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus } = await loadMockTrackingModules()
@@ -324,8 +326,10 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
 
     const notification = await prisma.notification.findFirst({
       where: {
-        type: NotificationType.ORDER_SHIPPED,
-        dedupeKey: `order-shipped:${order.id}`,
+        OR: [
+          { dedupeKey: `order-shipped:${order.id}` },
+          { dedupeKey: `order-delivered:${order.id}` },
+        ],
       },
     })
     assert.equal(notification, null)

@@ -332,6 +332,26 @@ export function parseSkydropxShipmentResponse(raw: unknown): MappedShipmentData 
   }
 }
 
+/**
+ * Reads package/shipment status from a Skydropx tracking or shipment response.
+ */
+export function readSkydropxPackageStatus(raw: unknown): string | null {
+  const shipment = extractShipmentNode(raw)
+  const fromShipment = readString(shipment, 'status')
+  if (fromShipment) return fromShipment
+
+  const packages = shipment.packages
+  if (Array.isArray(packages)) {
+    for (const entry of packages) {
+      const pkg = asRecord(entry)
+      const status = pkg ? readString(pkg, 'status') : null
+      if (status) return status
+    }
+  }
+
+  return null
+}
+
 /** @deprecated Use parseSkydropxShipmentResponse */
 export function mapSkydropxShipmentToShipmentData(raw: unknown): MappedShipmentData {
   return parseSkydropxShipmentResponse(raw)

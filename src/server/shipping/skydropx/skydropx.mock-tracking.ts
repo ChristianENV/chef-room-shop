@@ -8,10 +8,13 @@ import {
   ShipmentStatus,
 } from '@prisma/client'
 
+import { safeNotifyOrderDelivered } from '@/src/server/notifications/notify-order-delivered'
 import { safeNotifyOrderShipped } from '@/src/server/notifications/notify-order-shipped'
 
 import { buildMockTrackingNumber } from './skydropx.mock-provider'
 import { isSkydropxMockMode } from './skydropx.mode'
+import { buildShipmentLifecycleNotificationInput } from './skydropx-shipment-status'
+import type { ShipmentStatusTransition } from './skydropx.webhook.types'
 
 export const MOCK_TRACKING_STATUSES = [
   'created',
@@ -55,7 +58,15 @@ export class MockTrackingSimulationError extends Error {
 }
 
 const shipmentWithOrderInclude = {
-  order: { select: { id: true, orderNumber: true, status: true, userId: true } },
+  order: {
+    select: {
+      id: true,
+      orderNumber: true,
+      status: true,
+      userId: true,
+      fulfillmentStatus: true,
+    },
+  },
 } satisfies Prisma.ShipmentInclude
 
 type ShipmentWithOrder = Prisma.ShipmentGetPayload<{
@@ -254,19 +265,24 @@ export async function simulateMockShipmentTrackingStatus(
     return nextShipment
   })
 
-  void safeNotifyOrderShipped(prisma, {
-    order: {
-      id: shipment.order.id,
-      orderNumber: shipment.order.orderNumber,
-      userId: shipment.order.userId,
-    },
+  const notificationInput = buildShipmentLifecycleNotificationInput({
+    order: shipment.order,
     previousOrderStatus,
-    newOrderStatus: transition.orderStatus ?? previousOrderStatus,
     previousShipmentStatus,
-    newShipmentStatus: transition.nextStatus,
+    transition: {
+      nextStatus: transition.nextStatus,
+      orderStatus: transition.orderStatus as ShipmentStatusTransition['orderStatus'],
+      fulfillmentStatus:
+        transition.fulfillmentStatus as ShipmentStatusTransition['fulfillmentStatus'],
+      setShippedAt: transition.setShippedAt,
+      setDeliveredAt: transition.setDeliveredAt,
+    },
     trackingNumber: metadata.trackingNumber,
     carrier: metadata.carrierName,
   })
+
+  void safeNotifyOrderShipped(prisma, notificationInput)
+  void safeNotifyOrderDelivered(prisma, notificationInput)
 
   return updatedShipment
 }

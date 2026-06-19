@@ -230,8 +230,8 @@ Error handling: `safeNotifyOrderStatusChanged` logs failures and never throws, s
 Hook locations, called after successful shipment/order status persistence:
 
 - `skydropx.mock-tracking.ts` → `simulateMockShipmentTrackingStatus` (mock `in_transit`)
-- `skydropx.webhook-processor.ts` → `processSkydropxWebhook` (Skydropx `in_transit` / shipped events)
-- `admin-shipping.service.ts` → `refreshAdminShipmentTracking` (shipment `LABEL_CREATED` → `IN_TRANSIT`)
+- `skydropx.webhook-processor.ts` → `processSkydropxWebhook` (Skydropx shipped/in-transit events)
+- `admin-shipping.service.ts` → `refreshAdminShipmentTracking` (shipment advances to in transit)
 
 Implementation: `src/server/notifications/notify-order-shipped.ts`
 
@@ -256,6 +256,42 @@ Dedupe key: `order-shipped:{orderId}`
 
 Error handling: `safeNotifyOrderShipped` logs failures and never throws, so tracking/status updates are not blocked.
 
+### `ORDER_DELIVERED`
+
+Hook locations, called after successful shipment/order status persistence:
+
+- `skydropx.mock-tracking.ts` → `simulateMockShipmentTrackingStatus` (mock `delivered`)
+- `skydropx.webhook-processor.ts` → `processSkydropxWebhook` (Skydropx delivered events)
+- `admin-shipping.service.ts` → `refreshAdminShipmentTracking` (tracking API reports delivered)
+
+Implementation: `src/server/notifications/notify-order-delivered.ts`
+
+Notifications are created **only on transition** into delivered (`previous order/shipment status !== DELIVERED`).
+
+Does **not** fire on label generation, `in_transit`, `out_for_delivery`, or repeated same-status updates.
+
+| Audience | When | Type | Notes |
+| --- | --- | --- | --- |
+| `USER` | Delivered transition and `order.userId` is set | `ORDER_DELIVERED` | Skipped for guest orders |
+
+Copy:
+
+- User: title `Tu pedido fue entregado`, message `Tu pedido {orderNumber} fue entregado.`, href `/account/orders/{orderNumber}`
+
+Metadata allowed: `{ orderId, orderNumber, trackingNumber, carrier, status }` only.
+
+Dedupe key: `order-delivered:{orderId}` — shared across webhook and refresh paths so duplicate processing creates one row.
+
+Mock testing flow:
+
+```txt
+Generate mock label → READY_TO_SHIP
+Simulate in_transit   → ORDER_SHIPPED
+Simulate delivered    → ORDER_DELIVERED
+```
+
+Error handling: `safeNotifyOrderDelivered` logs failures and never throws, so tracking/status updates are not blocked.
+
 No admin notifications, emails, or realtime delivery are part of this phase.
 
 ## v1 limitations
@@ -263,7 +299,7 @@ No admin notifications, emails, or realtime delivery are part of this phase.
 - No WebSockets, SSE, or push notifications (polling/refetch in UI)
 - Simple `first` pagination only (no cursor/`after`)
 - Metadata is filtered server-side for obvious sensitive keys but is not a full PII scrubber
-- Payment pending/failed, delivered, and other commerce events are not hooked yet
+- Payment pending/failed and other commerce events are not hooked yet
 
 ## Future phases
 

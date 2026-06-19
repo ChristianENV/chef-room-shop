@@ -116,7 +116,7 @@ Input: `{ orderNumber, trackingStatus }` donde `trackingStatus` ∈ `created | l
 
 Persiste `Shipment.status`, `shippedAt`/`deliveredAt` cuando aplica, y actualiza `Order.status` / `fulfillmentStatus` igual que el webhook mapper (p. ej. `in_transit` → `SHIPPED`, `delivered` → `DELIVERED`).
 
-En transición a enviado/in transit, crea notificación USER `ORDER_SHIPPED` (solo pedidos autenticados). Ver `docs/notifications.md`.
+En transición a enviado/in transit, crea notificación USER `ORDER_SHIPPED`. En transición a entregado, crea `ORDER_DELIVERED`. Solo pedidos autenticados; dedupe por `orderId`. Ver `docs/notifications.md`.
 
 ## Validaciones de error
 
