@@ -25,7 +25,6 @@ import { VARS, BUSINESS_VARS, SHIPPING_VARS } from '@/src/config/vars'
 
 | Category | Examples |
 |----------|----------|
-| App environment | `APP_ENV` (`local`, `np`, `prod`) — see [Skydropx mock mode](./skydropx.md#mock-mode-localnp) |
 | Database | `DATABASE_URL` |
 | Auth | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_*` |
 | Payments | `CONEKTA_PRIVATE_KEY`, `NEXT_PUBLIC_CONEKTA_PUBLIC_KEY` |
@@ -76,9 +75,6 @@ SKYDROPX_DEFAULT_CONSIGNMENT_NOTE="53102400"
 SKYDROPX_DEFAULT_PACKAGE_TYPE="4G"
 # Teléfono: 10 dígitos MX (sin +52). Ej: 9981234567, no +529981234567
 # SHIPPING_ORIGIN_NAME, SHIPPING_ORIGIN_COMPANY optional overrides
-
-# App environment (local | np | prod). Drives Skydropx mock vs live — see docs/skydropx.md
-# APP_ENV=local
 ```
 
 Defaults in `SHIPPING_VARS.origin` (`vars.ts`) only set city/state/CP — **admin label generation requires** full origin via env before calling Skydropx.

@@ -21,18 +21,35 @@ function canRunDbIntegrationTests(): boolean {
 
 const hasDatabase = canRunDbIntegrationTests()
 
-const ORIGINAL_APP_ENV = process.env.APP_ENV
+const ORIGINAL_NODE_ENV = process.env.NODE_ENV
+const ORIGINAL_VERCEL_ENV = process.env.VERCEL_ENV
 
-function setAppEnv(appEnv: 'local' | 'np' | 'prod' | undefined): void {
-  if (appEnv === undefined) {
-    delete process.env.APP_ENV
+function setDeploymentEnv(params: {
+  nodeEnv?: string
+  vercelEnv?: string | null
+}): void {
+  const env = process.env as Record<string, string | undefined>
+
+  if (params.nodeEnv === undefined) {
+    delete env.NODE_ENV
   } else {
-    process.env.APP_ENV = appEnv
+    env.NODE_ENV = params.nodeEnv
+  }
+
+  if (params.vercelEnv === undefined) {
+    // leave unchanged
+  } else if (params.vercelEnv === null) {
+    delete env.VERCEL_ENV
+  } else {
+    env.VERCEL_ENV = params.vercelEnv
   }
 }
 
 after(() => {
-  setAppEnv(ORIGINAL_APP_ENV as 'local' | 'np' | 'prod' | undefined)
+  setDeploymentEnv({
+    nodeEnv: ORIGINAL_NODE_ENV,
+    vercelEnv: ORIGINAL_VERCEL_ENV ?? null,
+  })
 })
 
 async function loadMockTrackingModules() {
@@ -105,7 +122,10 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   }
 
   after(async () => {
-    setAppEnv(ORIGINAL_APP_ENV as 'local' | 'np' | 'prod' | undefined)
+    setDeploymentEnv({
+      nodeEnv: ORIGINAL_NODE_ENV,
+      vercelEnv: ORIGINAL_VERCEL_ENV ?? null,
+    })
     const { prisma } = await loadPrisma()
 
     if (cleanup.orderIds.length > 0) {
@@ -174,7 +194,7 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   }
 
   it('updates shipment and order on delivered in mock mode', async () => {
-    setAppEnv('local')
+    setDeploymentEnv({ nodeEnv: 'development', vercelEnv: null })
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus } = await loadMockTrackingModules()
     const orderNumber = `CR-MOCK-TRACK-DEL-${Date.now()}`
@@ -197,7 +217,7 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   })
 
   it('updates shipment and order on in_transit in mock mode', async () => {
-    setAppEnv('local')
+    setDeploymentEnv({ nodeEnv: 'development', vercelEnv: null })
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus } = await loadMockTrackingModules()
     const orderNumber = `CR-MOCK-TRACK-TRANSIT-${Date.now()}`
@@ -251,7 +271,7 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   })
 
   it('blocks simulation in live mode', async () => {
-    setAppEnv('prod')
+    setDeploymentEnv({ nodeEnv: 'production', vercelEnv: 'production' })
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus, MockTrackingSimulationError } =
       await loadMockTrackingModules()
@@ -269,7 +289,7 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   })
 
   it('fails when shipment is not mock', async () => {
-    setAppEnv('local')
+    setDeploymentEnv({ nodeEnv: 'development', vercelEnv: null })
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus, MockTrackingSimulationError } =
       await loadMockTrackingModules()
@@ -313,7 +333,7 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   })
 
   it('does not create USER notifications for guest delivered simulation', async () => {
-    setAppEnv('local')
+    setDeploymentEnv({ nodeEnv: 'development', vercelEnv: null })
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus } = await loadMockTrackingModules()
     const orderNumber = `CR-MOCK-TRACK-NOTIF-${Date.now()}`

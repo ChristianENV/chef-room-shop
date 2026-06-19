@@ -80,7 +80,7 @@ mutation CreateLabel {
 5. Tarifa: `rateId` del input (debe pertenecer a la quote) o tarifa con `selectedAt` en checkout.
 6. Tarifa no expirada (`expiresAt`).
 7. Validación de origen (`SHIPPING_ORIGIN_*`), dirección (colonia en `Address.label`, número en `line2`) y `providerQuoteId`.
-8. `createShippingProvider().createShipment()` → live Skydropx or mock provider (from `APP_ENV`: local/np → mock, prod → live)
+8. `createShippingProvider().createShipment()` → live Skydropx or mock provider (local/np → mock, prod → live; see `docs/skydropx.md`)
 9. Transacción Prisma: `Shipment`, `ShipmentEvent`, `OrderEvent`, actualización de orden.
 
 **Estado de orden tras crear guía:**

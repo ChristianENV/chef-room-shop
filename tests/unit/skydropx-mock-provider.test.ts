@@ -22,7 +22,7 @@ describe('resolveSkydropxModeFromEnvironment', () => {
   it('local resolves to mock', async () => {
     const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
     assert.equal(
-      resolveSkydropxModeFromEnvironment({ appEnv: 'local', nodeEnv: 'development' }),
+      resolveSkydropxModeFromEnvironment({ nodeEnv: 'development' }),
       'mock',
     )
   })
@@ -30,7 +30,10 @@ describe('resolveSkydropxModeFromEnvironment', () => {
   it('np resolves to mock', async () => {
     const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
     assert.equal(
-      resolveSkydropxModeFromEnvironment({ appEnv: 'np', nodeEnv: 'development' }),
+      resolveSkydropxModeFromEnvironment({
+        nodeEnv: 'production',
+        vercelEnv: 'preview',
+      }),
       'mock',
     )
   })
@@ -38,7 +41,10 @@ describe('resolveSkydropxModeFromEnvironment', () => {
   it('prod resolves to live', async () => {
     const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
     assert.equal(
-      resolveSkydropxModeFromEnvironment({ appEnv: 'prod', nodeEnv: 'development' }),
+      resolveSkydropxModeFromEnvironment({
+        nodeEnv: 'production',
+        vercelEnv: 'production',
+      }),
       'live',
     )
   })
@@ -47,20 +53,17 @@ describe('resolveSkydropxModeFromEnvironment', () => {
     const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
     assert.equal(
       resolveSkydropxModeFromEnvironment({
-        appEnv: 'local',
         nodeEnv: 'production',
+        vercelEnv: 'production',
       }),
       'live',
     )
   })
 
-  it('unknown APP_ENV fails safe to live', async () => {
+  it('NODE_ENV=production without staging signals fails safe to live', async () => {
     const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
     assert.equal(
-      resolveSkydropxModeFromEnvironment({
-        appEnv: 'unknown-env',
-        nodeEnv: 'development',
-      }),
+      resolveSkydropxModeFromEnvironment({ nodeEnv: 'production' }),
       'live',
     )
   })

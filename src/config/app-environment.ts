@@ -1,56 +1,21 @@
 export type AppEnvironment = 'local' | 'np' | 'prod'
 
 export type AppEnvironmentResolutionInput = {
-  appEnv?: string | null
   nodeEnv?: string | null
   vercelEnv?: string | null
   railwayEnvironment?: string | null
 }
 
-export class AppEnvironmentConfigError extends Error {
-  readonly name = 'AppEnvironmentConfigError'
-
-  constructor(message: string) {
-    super(message)
-  }
-}
-
-const APP_ENV_ALIASES: Record<string, AppEnvironment> = {
-  local: 'local',
-  dev: 'local',
-  development: 'local',
-  np: 'np',
-  staging: 'np',
-  stage: 'np',
-  preview: 'np',
-  nonprod: 'np',
-  prod: 'prod',
-  production: 'prod',
-}
-
-function parseAppEnv(raw: string): AppEnvironment | null {
-  const value = raw.trim().toLowerCase()
-  return APP_ENV_ALIASES[value] ?? null
-}
-
 /**
- * Resolves the Chef Room deployment environment (local / np / prod).
- * Prefer explicit `APP_ENV`; otherwise infer from platform signals.
+ * Resolves Chef Room deployment tier (local / np / prod) from existing env signals.
+ *
+ * - Local: `NODE_ENV=development` or `test` (typical `.env.local`)
+ * - NP: platform preview/staging signals (`VERCEL_ENV=preview`, Railway np/staging, …)
+ * - Prod: platform production signals, or `NODE_ENV=production` when no staging signal
  */
 export function resolveAppEnvironment(
   input: AppEnvironmentResolutionInput = {},
 ): AppEnvironment {
-  const explicitRaw = input.appEnv ?? process.env.APP_ENV
-  if (explicitRaw?.trim()) {
-    const parsed = parseAppEnv(explicitRaw)
-    if (!parsed) {
-      throw new AppEnvironmentConfigError(
-        `Invalid APP_ENV "${explicitRaw.trim()}". Expected local, np, or prod.`,
-      )
-    }
-    return parsed
-  }
-
   const vercel = (input.vercelEnv ?? process.env.VERCEL_ENV)?.trim().toLowerCase()
   if (vercel === 'production') return 'prod'
   if (vercel === 'preview') return 'np'

@@ -20,28 +20,22 @@ Missing credentials **do not** break `npm run build`. Live mode throws `Skydropx
 
 ## Mock mode (local / np)
 
-Skydropx behavior is derived from the app environment (`APP_ENV`), not a separate shipping mode variable:
+Skydropx behavior is derived from existing deployment env signals — no extra shipping mode variable:
 
-| `APP_ENV` | Skydropx mode |
-|-----------|---------------|
-| `local` | mock |
-| `np` | mock |
-| `prod` | live |
+| Environment | Signals | Skydropx mode |
+|-------------|---------|---------------|
+| **local** | `NODE_ENV=development` (your `.env.local`) | mock |
+| **np** | `VERCEL_ENV=preview`, Railway np/staging, … | mock |
+| **prod** | `VERCEL_ENV=production`, Railway production, or `NODE_ENV=production` without staging signals | live |
 
-Set explicitly when needed:
-
-```env
-APP_ENV=local
-```
-
-If `APP_ENV` is unset, the server infers from platform signals (`VERCEL_ENV`, `RAILWAY_ENVIRONMENT`, `NODE_ENV`). Local development defaults to `local`.
+Local development with `NODE_ENV="development"` already enables mock Skydropx — nothing else to set.
 
 | Mode | When | Behavior |
 |------|------|----------|
 | `live` | `prod`, or production runtime signals | Real Skydropx PRO API (`skydropx.client.ts`) |
 | `mock` | `local`, `np` (non-production) | Deterministic label data; **no HTTP calls** to Skydropx |
 
-**Production safety:** Production always uses live Skydropx. Mock shipping is not available in prod. Production runtime signals (`NODE_ENV=production`, `VERCEL_ENV=production`, etc.) always force live mode even if `APP_ENV` is misconfigured.
+**Production safety:** Production always uses live Skydropx. Mock shipping is not available in prod. Production platform signals (`VERCEL_ENV=production`, Railway production, or `NODE_ENV=production` without preview/staging signals) always resolve to live mode.
 
 **Provider boundary:** `createShippingProvider()` in `skydropx.provider.ts` selects live vs mock for admin label creation (`createAdminShippingLabel`).
 
@@ -68,7 +62,7 @@ Simulate delivered    → DELIVERED → ORDER_DELIVERED
 Mock labels include a tracking number for printing and QA, but admin label creation does **not** mark the order as shipped. Use `adminSimulateMockShipmentTrackingStatus` to advance the lifecycle. Checkout quotes still call live Skydropx unless you add separate mock support later. Cancel label, refresh tracking (live API), and webhooks are unchanged.
 ### Mock tracking simulation
 
-Requires a mock-mode environment (`APP_ENV=local` or `np`) and a shipment with mock tracking (`CRMOCK-*` or `mock-shipment-*` provider id).
+Requires a mock-mode environment (local `NODE_ENV=development`, or np preview/staging) and a shipment with mock tracking (`CRMOCK-*` or `mock-shipment-*` provider id).
 
 GraphQL mutation (admin only):
 
