@@ -1,0 +1,37 @@
+name: Validate PR Target
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate-pr-target:
+    name: validate-pr-target
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR target branch
+        run: |
+          base="${{ github.base_ref }}"
+          head="${{ github.head_ref }}"
+
+          if [ "$base" = "dev" ]; then
+            echo "PR targets dev — allowed."
+            exit 0
+          fi
+
+          if [ "$base" = "main" ]; then
+            if [ "$head" = "dev" ]; then
+              echo "Release PR dev → main — allowed."
+              exit 0
+            fi
+            echo "::error::PRs into main are only allowed from dev. Please retarget this PR to dev."
+            exit 1
+          fi
+
+          echo "::error::Unsupported PR target. PRs should target dev, except the release PR dev -> main."
+          exit 1

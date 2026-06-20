@@ -2,7 +2,7 @@
 
 Design document for Chef Room’s GitHub branch, CI, and release process.
 
-**Status:** PR quality CI is implemented (`.github/workflows/ci-pr.yml`). Branch protection, release PR automation, and deploy workflows are still manual / not in repo.
+**Status:** PR quality CI (`.github/workflows/ci-pr.yml`) and PR target validation (`.github/workflows/validate-pr-target.yml`) are implemented. Branch protection, release PR automation, and deploy workflows are still manual / not in repo.
 
 ---
 
@@ -84,7 +84,27 @@ Document hotfix policy before enabling; not part of the default flow.
 
 ## Required checks
 
-GitHub Actions workflow **PR Quality Checks** (`.github/workflows/ci-pr.yml`) runs on pull requests targeting `dev` and `main`.
+GitHub Actions workflows run on pull requests targeting `dev` and `main`.
+
+### PR target validation
+
+**Workflow:** Validate PR Target (`.github/workflows/validate-pr-target.yml`)  
+**Job:** `validate-pr-target`
+
+| Rule                                              | Result                   |
+| ------------------------------------------------- | ------------------------ |
+| Base `dev` (any feature/bugfix/chore head branch) | Pass                     |
+| Base `main`, head `dev` (release PR)              | Pass                     |
+| Base `main`, head not `dev`                       | Fail — retarget to `dev` |
+| Any other base                                    | Fail                     |
+
+Normal PRs must target **`dev`**. The only PR allowed into **`main`** is the release PR **`dev` → `main`**.
+
+Configure branch protection to require **`validate-pr-target`** on **`main`** (recommended). Optionally require it on **`dev`** as well.
+
+### PR quality checks
+
+**Workflow:** PR Quality Checks (`.github/workflows/ci-pr.yml`)
 
 Configure branch protection manually in GitHub to require these status checks:
 
@@ -100,13 +120,15 @@ Playwright E2E (`pnpm run test:e2e:smoke`) is intentionally **not** required yet
 
 ### PRs to `dev`
 
+Require **`validate-pr-target`** (optional but recommended) plus the quality jobs below.
+
 ### PRs to `main` (release PR)
 
-Same quality checks as `dev`, plus:
+Same quality checks as `dev`, plus **`validate-pr-target`** (required — enforces head = `dev`, base = `main`).
 
-| Check                   | Purpose                                                                                                    |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------- |
-| **Validate release PR** | Ensures head = `dev`, base = `main`, not a feature branch; optional: require release label or version bump |
+| Check                    | Purpose                                                                 |
+| ------------------------ | ----------------------------------------------------------------------- |
+| **`validate-pr-target`** | Implemented — blocks direct feature/bugfix/chore/hotfix PRs into `main` |
 
 ### Optional (not required initially)
 
@@ -118,7 +140,9 @@ Same quality checks as `dev`, plus:
 
 ---
 
-## CI workflow (implemented)
+## CI workflows (implemented)
+
+### PR Quality Checks
 
 **Workflow file:** `.github/workflows/ci-pr.yml`  
 **Workflow name:** PR Quality Checks
@@ -139,7 +163,23 @@ Same quality checks as `dev`, plus:
 | `test`      | `pnpm db:generate` → `pnpm test`            |
 | `build`     | `pnpm db:generate` → `pnpm exec next build` |
 
-CI does **not** run migrations, Playwright, or release PR validation. No production secrets are hardcoded; DB-backed tests skip when `DATABASE_URL` is unset.
+CI does **not** run migrations or Playwright. No production secrets are hardcoded; DB-backed tests skip when `DATABASE_URL` is unset.
+
+### Validate PR Target
+
+**Workflow file:** `.github/workflows/validate-pr-target.yml`  
+**Workflow name:** Validate PR Target
+
+**Triggers:** `pull_request` → branches `dev`, `main`
+
+**Permissions:** `contents: read` only
+
+**Job:** `validate-pr-target` — validates `github.base_ref` and `github.head_ref`:
+
+- `base=dev` → pass
+- `base=main` and `head=dev` → pass (release PR)
+- `base=main` and `head≠dev` → fail with retarget message
+- otherwise → fail with unsupported target message
 
 Separate workflows (later):
 
@@ -151,7 +191,7 @@ Separate workflows (later):
 
 ## Branch protection (configure manually in GitHub)
 
-Configure in **Settings → Branches → Branch protection rules**. Require the **PR Quality Checks** jobs: `format`, `lint`, `typecheck`, `test`, `build`.
+Configure in **Settings → Branches → Branch protection rules**. Require **PR Quality Checks** jobs: `format`, `lint`, `typecheck`, `test`, `build`. Require **`validate-pr-target`** on **`main`**; optionally on **`dev`** too.
 
 ### `main`
 
@@ -231,7 +271,7 @@ The repo does not pin Node via `.nvmrc`, `.node-version`, or `package.json` `eng
 
 | Area                      | State                                                  |
 | ------------------------- | ------------------------------------------------------ |
-| `.github/workflows/`      | **Added** — `ci-pr.yml` (PR Quality Checks)            |
+| `.github/workflows/`      | **Added** — `ci-pr.yml`, `validate-pr-target.yml`      |
 | `format` / `format:check` | **Added** — Prettier 3.x; baseline applied             |
 | `test`                    | **Added** — alias to `test:unit` (no Playwright in CI) |
 | Release PR automation     | **Not implemented**                                    |
@@ -243,6 +283,7 @@ The repo does not pin Node via `.nvmrc`, `.node-version`, or `package.json` `eng
 ## Future improvements
 
 - [x] GitHub Actions quality workflow on PRs to `dev` and `main` (`ci-pr.yml`)
+- [x] PR target validation on PRs to `dev` and `main` (`validate-pr-target.yml`)
 - [ ] Auto-create/update release PR (`dev` → `main`) on push to `dev`
 - [ ] Automatic changelog (release-please, semantic-release, or custom Action)
 - [ ] Semantic version labels on PRs (`major` / `minor` / `patch`)
