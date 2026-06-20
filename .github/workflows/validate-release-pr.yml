@@ -1,0 +1,28 @@
+name: Validate Release PR
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate-release-pr:
+    name: validate-release-pr
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate release PR shape
+        run: |
+          base="${{ github.base_ref }}"
+          head="${{ github.head_ref }}"
+
+          if [ "$base" = "main" ] && [ "$head" = "dev" ]; then
+            echo "Release PR dev → main — allowed."
+            exit 0
+          fi
+
+          echo "::error::Production releases must use the accumulated release PR from dev to main."
+          echo "::error::This PR has base=$base and head=$head."
+          exit 1

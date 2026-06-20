@@ -2,7 +2,7 @@
 
 Design document for Chef Room’s GitHub branch, CI, and release process.
 
-**Status:** PR quality CI, PR target validation, and accumulated release PR automation are implemented. Branch protection, tag/version automation, and deploy workflows are still manual / not in repo.
+**Status:** PR quality CI, PR/release validation, and accumulated release PR automation are implemented. Branch protection, tag/version automation, and deploy workflows are still manual / not in repo.
 
 ---
 
@@ -125,11 +125,14 @@ Require **`validate-pr-target`** (optional but recommended) plus the quality job
 
 ### PRs to `main` (release PR)
 
-Same quality checks as `dev`, plus **`validate-pr-target`** (required — enforces head = `dev`, base = `main`).
+Same quality checks as `dev`, plus release validation:
 
-| Check                    | Purpose                                                                 |
-| ------------------------ | ----------------------------------------------------------------------- |
-| **`validate-pr-target`** | Implemented — blocks direct feature/bugfix/chore/hotfix PRs into `main` |
+| Check                     | Purpose                                                                  |
+| ------------------------- | ------------------------------------------------------------------------ |
+| **`validate-pr-target`**  | Blocks direct feature/bugfix/chore/hotfix PRs into `main`                |
+| **`validate-release-pr`** | **Required on `main` only** — passes only for accumulated `dev` → `main` |
+
+Configure branch protection on **`main`** to require **`validate-release-pr`**. It does not run quality checks (those stay in `ci-pr.yml`).
 
 ### Optional (not required initially)
 
@@ -202,6 +205,17 @@ CI does **not** run migrations or Playwright. No production secrets are hardcode
 
 Does **not** auto-merge, approve, create tags, publish releases, or deploy. The release PR must still be reviewed and merged manually.
 
+### Validate Release PR
+
+**Workflow file:** `.github/workflows/validate-release-pr.yml`  
+**Workflow name:** Validate Release PR
+
+**Triggers:** `pull_request` → branch `main` only
+
+**Permissions:** `contents: read` only
+
+**Job:** `validate-release-pr` — passes only when `base=main` and `head=dev`. Blocks any direct feature/bugfix/chore PR into `main`. Does not duplicate quality checks from `ci-pr.yml`. Does not merge, tag, or publish releases.
+
 Separate workflows (later):
 
 - **Deploy NP** — on push to `dev` (hosting-specific).
@@ -211,7 +225,7 @@ Separate workflows (later):
 
 ## Branch protection (configure manually in GitHub)
 
-Configure in **Settings → Branches → Branch protection rules**. Require **PR Quality Checks** jobs: `format`, `lint`, `typecheck`, `test`, `build`. Require **`validate-pr-target`** on **`main`**; optionally on **`dev`** too.
+Configure in **Settings → Branches → Branch protection rules**. Require **PR Quality Checks** jobs: `format`, `lint`, `typecheck`, `test`, `build`. Require **`validate-pr-target`** and **`validate-release-pr`** on **`main`**; optionally require **`validate-pr-target`** on **`dev`** too.
 
 ### `main`
 
@@ -289,14 +303,14 @@ The repo does not pin Node via `.nvmrc`, `.node-version`, or `package.json` `eng
 
 ## Current repo gaps (audit summary)
 
-| Area                      | State                                                                      |
-| ------------------------- | -------------------------------------------------------------------------- |
-| `.github/workflows/`      | **Added** — `ci-pr.yml`, `validate-pr-target.yml`, `create-release-pr.yml` |
-| `format` / `format:check` | **Added** — Prettier 3.x; baseline applied                                 |
-| `test`                    | **Added** — alias to `test:unit` (no Playwright in CI)                     |
-| Release PR automation     | **Added** — `create-release-pr.yml` (create/update only)                   |
-| Deploy workflows          | **Not in repo** (likely Vercel/Railway dashboard)                          |
-| Release / branch docs     | **This document**                                                          |
+| Area                      | State                                                                                                 |
+| ------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `.github/workflows/`      | **Added** — `ci-pr.yml`, `validate-pr-target.yml`, `validate-release-pr.yml`, `create-release-pr.yml` |
+| `format` / `format:check` | **Added** — Prettier 3.x; baseline applied                                                            |
+| `test`                    | **Added** — alias to `test:unit` (no Playwright in CI)                                                |
+| Release PR automation     | **Added** — `create-release-pr.yml` (create/update only)                                              |
+| Deploy workflows          | **Not in repo** (likely Vercel/Railway dashboard)                                                     |
+| Release / branch docs     | **This document**                                                                                     |
 
 ---
 
@@ -305,6 +319,7 @@ The repo does not pin Node via `.nvmrc`, `.node-version`, or `package.json` `eng
 - [x] GitHub Actions quality workflow on PRs to `dev` and `main` (`ci-pr.yml`)
 - [x] PR target validation on PRs to `dev` and `main` (`validate-pr-target.yml`)
 - [x] Auto-create/update release PR (`dev` → `main`) on push to `dev` (`create-release-pr.yml`)
+- [x] Production release PR validation on PRs to `main` (`validate-release-pr.yml`)
 - [ ] Automatic changelog (release-please, semantic-release, or custom Action)
 - [ ] Semantic version labels on PRs (`major` / `minor` / `patch`)
 - [ ] Require Playwright smoke once login E2E has stable CI auth (see `docs/qa-e2e.md`)
