@@ -217,6 +217,8 @@ Notes:
 
 - `pnpm test` is an alias for `pnpm test:unit` only — it does **not** run Playwright (`pnpm run test:e2e:smoke` is separate and optional).
 - Prettier formatting baseline is applied; `pnpm format:check` is a required CI gate.
+- `.gitattributes` enforces LF line endings repo-wide so `format:check` stays consistent on Windows and GitHub Actions.
+- `next-env.d.ts` is auto-updated by Next.js during `next build`; if `format:check` fails locally after a build, restore it with `git checkout -- next-env.d.ts` (CI `format` job does not run build).
 - `pnpm run build` already runs Prisma generate; `db:generate` is listed for parity with CI steps that typecheck before build.
 
 ### Node.js version
