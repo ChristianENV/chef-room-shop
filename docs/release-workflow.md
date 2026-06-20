@@ -2,7 +2,7 @@
 
 Design document for Chef Room’s GitHub branch, CI, and release process.
 
-**Status:** PR quality CI, PR/release validation, and accumulated release PR automation are implemented. Branch protection, tag/version automation, and deploy workflows are still manual / not in repo.
+**Status:** PR quality CI, PR/release validation, accumulated release PR automation, and production tag automation are implemented. Branch protection and deploy workflows are still manual / not in repo.
 
 ---
 
@@ -58,7 +58,7 @@ feature / bugfix / chore branches
   → release PR dev → main (auto-created or auto-updated)
   → required checks pass (including release PR validation)
   → merge release PR
-  → create git tag (version)
+  → create git tag (automated on merge)
   → deploy to chefroom.mx
 ```
 
@@ -67,9 +67,10 @@ feature / bugfix / chore branches
 - **Purpose:** batch everything currently on `dev` that should go to production.
 - **Automation:** workflow **Create Release PR** (`.github/workflows/create-release-pr.yml`) opens or updates a single open PR (`head: dev`, `base: main`) when `dev` is pushed and is ahead of `main`. It does **not** merge, tag, deploy, or approve.
 - **Title (automated):** `Release: dev to main`
-- **Manual merge:** review and merge the release PR after required checks pass; tags are created separately after merge.
-- **Merge strategy:** merge commit or squash per team preference; tag **after** merge on `main`.
-- **Version tag:** create only after release PR merges (e.g. `v0.2.0`). Tag triggers or precedes production deploy, depending on hosting setup.
+- **Manual merge:** review and merge the release PR after required checks pass; an annotated semver tag is created automatically on merge (see **Tag Production Release** below).
+- **Optional bump labels on the release PR:** `release:minor`, `release:major` (default bump is patch; `release:major` wins if both are present).
+- **Merge strategy:** merge commit or squash per team preference; tag is created on `main` after merge.
+- **Version tag:** first production tag defaults to `v0.1.0` (or `v1.0.0` with `release:major` when no prior tag exists). Does not create GitHub Releases yet.
 
 ### Hotfixes (future)
 
@@ -216,6 +217,29 @@ Does **not** auto-merge, approve, create tags, publish releases, or deploy. The 
 
 **Job:** `validate-release-pr` — passes only when `base=main` and `head=dev`. Blocks any direct feature/bugfix/chore PR into `main`. Does not duplicate quality checks from `ci-pr.yml`. Does not merge, tag, or publish releases.
 
+### Tag Production Release
+
+**Workflow file:** `.github/workflows/tag-production-release.yml`  
+**Workflow name:** Tag Production Release
+
+**Triggers:** `pull_request` → branch `main`, type `closed`
+
+**Permissions:** `contents: write`, `pull-requests: read`
+
+**Job:** `tag-production-release`
+
+**Behavior:**
+
+1. If the PR was closed without merge, log and exit successfully (no tag).
+2. If merged but not `dev` → `main`, fail (possible branch protection bypass).
+3. Check out `main` at `fetch-depth: 0`.
+4. If the merge commit on `main` already has a semver tag (`vX.Y.Z`), log and exit successfully (rerun-safe).
+5. Find the latest semver tag matching `v[0-9]+.[0-9]+.[0-9]+`; if none, next tag is `v0.1.0` (or `v1.0.0` with `release:major`).
+6. Bump: default **patch**; `release:minor` → minor; `release:major` → major (`release:major` wins if both labels exist).
+7. Fail if the calculated tag already exists; otherwise create an annotated tag and push to `origin`.
+
+Creates **git tags only** — no GitHub Release, changelog, deploy, or auto-merge.
+
 Separate workflows (later):
 
 - **Deploy NP** — on push to `dev` (hosting-specific).
@@ -266,11 +290,25 @@ Unit tests load `.env.local` via dotenv in helpers when present; CI should injec
 ## Versioning and tags
 
 1. Merge release PR to `main`.
-2. Create annotated tag on `main`: `git tag -a vX.Y.Z -m "Release X.Y.Z"`.
-3. Push tag: `git push origin vX.Y.Z`.
-4. Production deploy runs from tag or `main` (match hosting config).
+2. **Tag Production Release** workflow creates the next annotated semver tag on `main` automatically.
+3. Production deploy runs from tag or `main` (match hosting config — deploy workflow not in repo yet).
 
-**Initial version:** `package.json` is `0.1.0`. Align first production tag with team semver policy.
+**Tag format:** `vMAJOR.MINOR.PATCH` (e.g. `v0.1.0`, `v0.1.1`, `v0.2.0`, `v1.0.0`).
+
+**First tag:** `v0.1.0` when no prior semver tag exists (unless `release:major` on the merged PR → `v1.0.0`).
+
+**Bump rules on merged release PR:**
+
+| Label / default  | Bump  | Example (latest `v0.1.0`) |
+| ---------------- | ----- | ------------------------- |
+| (default)        | patch | `v0.1.1`                  |
+| `release:minor`  | minor | `v0.2.0`                  |
+| `release:major`  | major | `v1.0.0`                  |
+| both major+minor | major | major wins                |
+
+**Initial version:** `package.json` is `0.1.0`. First git tag defaults to `v0.1.0` per workflow policy.
+
+Does **not** create GitHub Releases or changelogs yet.
 
 ---
 
@@ -303,14 +341,15 @@ The repo does not pin Node via `.nvmrc`, `.node-version`, or `package.json` `eng
 
 ## Current repo gaps (audit summary)
 
-| Area                      | State                                                                                                 |
-| ------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `.github/workflows/`      | **Added** — `ci-pr.yml`, `validate-pr-target.yml`, `validate-release-pr.yml`, `create-release-pr.yml` |
-| `format` / `format:check` | **Added** — Prettier 3.x; baseline applied                                                            |
-| `test`                    | **Added** — alias to `test:unit` (no Playwright in CI)                                                |
-| Release PR automation     | **Added** — `create-release-pr.yml` (create/update only)                                              |
-| Deploy workflows          | **Not in repo** (likely Vercel/Railway dashboard)                                                     |
-| Release / branch docs     | **This document**                                                                                     |
+| Area                      | State                                                          |
+| ------------------------- | -------------------------------------------------------------- |
+| `.github/workflows/`      | **Added** — quality, validation, release PR, and tag workflows |
+| Tag automation            | **Added** — `tag-production-release.yml` (tags only)           |
+| `format` / `format:check` | **Added** — Prettier 3.x; baseline applied                     |
+| `test`                    | **Added** — alias to `test:unit` (no Playwright in CI)         |
+| Release PR automation     | **Added** — `create-release-pr.yml` (create/update only)       |
+| Deploy workflows          | **Not in repo** (likely Vercel/Railway dashboard)              |
+| Release / branch docs     | **This document**                                              |
 
 ---
 
@@ -321,7 +360,7 @@ The repo does not pin Node via `.nvmrc`, `.node-version`, or `package.json` `eng
 - [x] Auto-create/update release PR (`dev` → `main`) on push to `dev` (`create-release-pr.yml`)
 - [x] Production release PR validation on PRs to `main` (`validate-release-pr.yml`)
 - [ ] Automatic changelog (release-please, semantic-release, or custom Action)
-- [ ] Semantic version labels on PRs (`major` / `minor` / `patch`)
+- [x] Production semver tags on merged release PR (`tag-production-release.yml`; labels `release:minor`, `release:major`; default patch)
 - [ ] Require Playwright smoke once login E2E has stable CI auth (see `docs/qa-e2e.md`)
 - [x] One-time Prettier baseline (`pnpm format`) before gating PRs on `format:check`
 - [ ] Pin Node version (`.nvmrc` / `engines`) after confirming hosting runtime

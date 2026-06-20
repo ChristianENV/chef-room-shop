@@ -1,0 +1,111 @@
+name: Tag Production Release
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  tag-production-release:
+    name: tag-production-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip if pull request was not merged
+        if: github.event.pull_request.merged != true
+        run: |
+          echo "PR #${{ github.event.pull_request.number }} was closed without merge. No tag created."
+
+      - name: Validate merged release PR
+        if: github.event.pull_request.merged == true
+        run: |
+          base="${{ github.event.pull_request.base.ref }}"
+          head="${{ github.event.pull_request.head.ref }}"
+
+          if [ "$base" != "main" ] || [ "$head" != "dev" ]; then
+            echo "::error::Merged PR #${{ github.event.pull_request.number }} is not dev -> main (base=$base, head=$head). Branch protection may have been bypassed."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        if: github.event.pull_request.merged == true
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Create and push production release tag
+        if: github.event.pull_request.merged == true
+        env:
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git fetch --tags origin
+
+          TARGET_SHA="$(git rev-parse HEAD)"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+
+          EXISTING_ON_COMMIT="$(git tag --points-at "$TARGET_SHA" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1 || true)"
+          if [ -n "$EXISTING_ON_COMMIT" ]; then
+            echo "Merged PR #$PR_NUMBER"
+            echo "Commit $TARGET_SHA already tagged as $EXISTING_ON_COMMIT. Skipping tag creation."
+            exit 0
+          fi
+
+          LATEST="$(git tag -l 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1 || true)"
+
+          bump_type="patch"
+          if echo ",${PR_LABELS}," | grep -q ',release:major,'; then
+            bump_type="major"
+          elif echo ",${PR_LABELS}," | grep -q ',release:minor,'; then
+            bump_type="minor"
+          fi
+
+          if [ -z "$LATEST" ]; then
+            if [ "$bump_type" = "major" ]; then
+              NEXT_TAG="v1.0.0"
+            else
+              NEXT_TAG="v0.1.0"
+            fi
+          else
+            version="${LATEST#v}"
+            major="${version%%.*}"
+            rest="${version#*.}"
+            minor="${rest%%.*}"
+            patch="${rest#*.}"
+
+            if [ "$bump_type" = "major" ]; then
+              NEXT_TAG="v$((major + 1)).0.0"
+            elif [ "$bump_type" = "minor" ]; then
+              NEXT_TAG="v${major}.$((minor + 1)).0"
+            else
+              NEXT_TAG="v${major}.${minor}.$((patch + 1))"
+            fi
+          fi
+
+          if git rev-parse "refs/tags/${NEXT_TAG}" >/dev/null 2>&1; then
+            echo "::error::Tag ${NEXT_TAG} already exists locally."
+            exit 1
+          fi
+
+          if git ls-remote --exit-code --tags origin "refs/tags/${NEXT_TAG}" >/dev/null 2>&1; then
+            echo "::error::Tag ${NEXT_TAG} already exists on origin."
+            exit 1
+          fi
+
+          echo "Merged PR #$PR_NUMBER"
+          echo "Latest tag: ${LATEST:-none}"
+          echo "Bump type: $bump_type"
+          echo "Next tag: $NEXT_TAG"
+          echo "Target commit SHA: $TARGET_SHA"
+
+          git tag -a "$NEXT_TAG" -m "Release $NEXT_TAG"
+          git push origin "$NEXT_TAG"
