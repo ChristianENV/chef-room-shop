@@ -2,7 +2,7 @@
 
 Design document for Chef Room’s GitHub branch, CI, and release process.
 
-**Status:** PR quality CI (`.github/workflows/ci-pr.yml`) and PR target validation (`.github/workflows/validate-pr-target.yml`) are implemented. Branch protection, release PR automation, and deploy workflows are still manual / not in repo.
+**Status:** PR quality CI, PR target validation, and accumulated release PR automation are implemented. Branch protection, tag/version automation, and deploy workflows are still manual / not in repo.
 
 ---
 
@@ -65,8 +65,9 @@ feature / bugfix / chore branches
 ### Release PR (`dev` → `main`)
 
 - **Purpose:** batch everything currently on `dev` that should go to production.
-- **Title convention (recommended):** `Release YYYY-MM-DD` or `Release vX.Y.Z`.
-- **Body:** summary of changes since last production release; link to merged PRs or changelog (manual for now).
+- **Automation:** workflow **Create Release PR** (`.github/workflows/create-release-pr.yml`) opens or updates a single open PR (`head: dev`, `base: main`) when `dev` is pushed and is ahead of `main`. It does **not** merge, tag, deploy, or approve.
+- **Title (automated):** `Release: dev to main`
+- **Manual merge:** review and merge the release PR after required checks pass; tags are created separately after merge.
 - **Merge strategy:** merge commit or squash per team preference; tag **after** merge on `main`.
 - **Version tag:** create only after release PR merges (e.g. `v0.2.0`). Tag triggers or precedes production deploy, depending on hosting setup.
 
@@ -181,11 +182,30 @@ CI does **not** run migrations or Playwright. No production secrets are hardcode
 - `base=main` and `head≠dev` → fail with retarget message
 - otherwise → fail with unsupported target message
 
+### Create Release PR
+
+**Workflow file:** `.github/workflows/create-release-pr.yml`  
+**Workflow name:** Create Release PR
+
+**Triggers:** `push` → branch `dev`; `workflow_dispatch` (manual)
+
+**Permissions:** `contents: read`, `pull-requests: write`
+
+**Job:** `create-release-pr`
+
+**Behavior:**
+
+1. Fetch `origin/main` and `origin/dev`.
+2. If `dev` is not ahead of `main`, exit successfully (no PR needed).
+3. If an open PR already exists with `base: main` and `head: dev`, update its title and body.
+4. Otherwise create one new PR with `head: dev` and `base: main`.
+
+Does **not** auto-merge, approve, create tags, publish releases, or deploy. The release PR must still be reviewed and merged manually.
+
 Separate workflows (later):
 
 - **Deploy NP** — on push to `dev` (hosting-specific).
 - **Deploy production** — on tag push or push to `main` (hosting-specific).
-- **Release PR bot** — on push to `dev`, open/update PR `dev` → `main` (e.g. GitHub Action or Renovate-style bot).
 
 ---
 
@@ -269,14 +289,14 @@ The repo does not pin Node via `.nvmrc`, `.node-version`, or `package.json` `eng
 
 ## Current repo gaps (audit summary)
 
-| Area                      | State                                                  |
-| ------------------------- | ------------------------------------------------------ |
-| `.github/workflows/`      | **Added** — `ci-pr.yml`, `validate-pr-target.yml`      |
-| `format` / `format:check` | **Added** — Prettier 3.x; baseline applied             |
-| `test`                    | **Added** — alias to `test:unit` (no Playwright in CI) |
-| Release PR automation     | **Not implemented**                                    |
-| Deploy workflows          | **Not in repo** (likely Vercel/Railway dashboard)      |
-| Release / branch docs     | **This document**                                      |
+| Area                      | State                                                                      |
+| ------------------------- | -------------------------------------------------------------------------- |
+| `.github/workflows/`      | **Added** — `ci-pr.yml`, `validate-pr-target.yml`, `create-release-pr.yml` |
+| `format` / `format:check` | **Added** — Prettier 3.x; baseline applied                                 |
+| `test`                    | **Added** — alias to `test:unit` (no Playwright in CI)                     |
+| Release PR automation     | **Added** — `create-release-pr.yml` (create/update only)                   |
+| Deploy workflows          | **Not in repo** (likely Vercel/Railway dashboard)                          |
+| Release / branch docs     | **This document**                                                          |
 
 ---
 
@@ -284,7 +304,7 @@ The repo does not pin Node via `.nvmrc`, `.node-version`, or `package.json` `eng
 
 - [x] GitHub Actions quality workflow on PRs to `dev` and `main` (`ci-pr.yml`)
 - [x] PR target validation on PRs to `dev` and `main` (`validate-pr-target.yml`)
-- [ ] Auto-create/update release PR (`dev` → `main`) on push to `dev`
+- [x] Auto-create/update release PR (`dev` → `main`) on push to `dev` (`create-release-pr.yml`)
 - [ ] Automatic changelog (release-please, semantic-release, or custom Action)
 - [ ] Semantic version labels on PRs (`major` / `minor` / `patch`)
 - [ ] Require Playwright smoke once login E2E has stable CI auth (see `docs/qa-e2e.md`)
