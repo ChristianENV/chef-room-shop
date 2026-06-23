@@ -25,7 +25,6 @@ const floatPositions = [
 ] as const
 
 export function HeroSection() {
-
   return (
     <section className="relative overflow-hidden bg-background">
       <div
@@ -55,8 +54,8 @@ export function HeroSection() {
             </h1>
 
             <p className="mt-8 max-w-lg font-serif text-lg leading-relaxed text-muted-foreground md:text-xl">
-              Diseña uniformes profesionales con colores, bordados, logotipos y detalles
-              pensados para tu estilo de cocina. Producción con acabados premium.
+              Diseña uniformes profesionales con colores, bordados, logotipos y detalles pensados
+              para tu estilo de cocina. Producción con acabados premium.
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -123,7 +122,6 @@ export function HeroSection() {
                     className="absolute inset-0 !aspect-auto"
                     imageClassName="!p-0"
                   />
-
                 </div>
               </div>
 
@@ -138,7 +136,9 @@ export function HeroSection() {
                       <feat.icon className="size-4 text-primary" aria-hidden />
                     </div>
                     <div>
-                      <p className="font-sans text-xs font-semibold text-foreground">{feat.label}</p>
+                      <p className="font-sans text-xs font-semibold text-foreground">
+                        {feat.label}
+                      </p>
                       <p className="font-serif text-[11px] text-muted-foreground">{feat.detail}</p>
                     </div>
                   </div>

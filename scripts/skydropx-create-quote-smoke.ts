@@ -46,8 +46,7 @@ async function main(): Promise<void> {
     await import('../src/server/shipping/skydropx/skydropx-address')
   const { sanitizeSkydropxDebugPayload } =
     await import('../src/server/shipping/skydropx/skydropx.sanitize')
-  const { getPackageForCartItems } =
-    await import('../src/server/shipping/shipping-package.shared')
+  const { getPackageForCartItems } = await import('../src/server/shipping/shipping-package.shared')
 
   console.log('--- Destination input ---')
   console.log(JSON.stringify({ postalCode, city, state, country: 'MX' }, null, 2))
@@ -114,8 +113,7 @@ async function main(): Promise<void> {
 
   const clientId = process.env.SKYDROPX_CLIENT_ID?.trim()
   const clientSecret = process.env.SKYDROPX_CLIENT_SECRET?.trim()
-  const apiBase =
-    process.env.SKYDROPX_API_BASE_URL?.trim() || 'https://api-pro.skydropx.com'
+  const apiBase = process.env.SKYDROPX_API_BASE_URL?.trim() || 'https://api-pro.skydropx.com'
 
   if (!clientId || !clientSecret) {
     console.error('Skydropx credentials not configured.')

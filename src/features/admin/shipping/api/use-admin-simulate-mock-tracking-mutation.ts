@@ -22,10 +22,7 @@ export function useAdminSimulateMockShipmentTrackingMutation() {
       void queryClient.invalidateQueries({ queryKey: adminOrdersQueryKeys.all })
       void queryClient.invalidateQueries({ queryKey: adminShippingQueryKeys.all })
       void queryClient.invalidateQueries({ queryKey: adminDashboardQueryKeys.all })
-      void queryClient.setQueryData(
-        adminShippingQueryKeys.detail(shipment.orderNumber),
-        shipment,
-      )
+      void queryClient.setQueryData(adminShippingQueryKeys.detail(shipment.orderNumber), shipment)
     },
   })
 }

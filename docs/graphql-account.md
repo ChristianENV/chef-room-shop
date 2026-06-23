@@ -11,23 +11,23 @@ Authenticated account operations at `POST /api/graphql`. Requires a valid **Bett
 
 ## Queries
 
-| Query | Description |
-|-------|-------------|
-| `meProfile` | User profile + roles |
-| `myAccountSummary` | Dashboard counts + recent orders/designs |
-| `myOrders(limit, offset)` | Order list with items, payments, shipments, events |
-| `myOrderByNumber(orderNumber)` | Single order or `null` |
-| `myDesigns(limit, offset, status)` | Saved designs + optional product |
-| `myAddresses` | Shipping/billing addresses |
+| Query                              | Description                                        |
+| ---------------------------------- | -------------------------------------------------- |
+| `meProfile`                        | User profile + roles                               |
+| `myAccountSummary`                 | Dashboard counts + recent orders/designs           |
+| `myOrders(limit, offset)`          | Order list with items, payments, shipments, events |
+| `myOrderByNumber(orderNumber)`     | Single order or `null`                             |
+| `myDesigns(limit, offset, status)` | Saved designs + optional product                   |
+| `myAddresses`                      | Shipping/billing addresses                         |
 
 ## Mutations
 
-| Mutation | Description |
-|----------|-------------|
-| `updateMyProfile` | firstName, lastName, phone, marketingOptIn only |
-| `createMyAddress` | New address |
-| `updateMyAddress` | Update owned address |
-| `deleteMyAddress` | Soft delete |
+| Mutation            | Description                                      |
+| ------------------- | ------------------------------------------------ |
+| `updateMyProfile`   | firstName, lastName, phone, marketingOptIn only  |
+| `createMyAddress`   | New address                                      |
+| `updateMyAddress`   | Update owned address                             |
+| `deleteMyAddress`   | Soft delete                                      |
 | `setDefaultAddress` | Default for type (`SHIPPING`, `BILLING`, `BOTH`) |
 
 ## Smoke examples
@@ -55,9 +55,21 @@ query MyOrders {
     status
     paymentStatus
     totalCents
-    items { name quantity totalPriceCents }
-    payments { method status amountCents }
-    shipments { carrier trackingNumber status }
+    items {
+      name
+      quantity
+      totalPriceCents
+    }
+    payments {
+      method
+      status
+      amountCents
+    }
+    shipments {
+      carrier
+      trackingNumber
+      status
+    }
   }
 }
 ```
@@ -72,7 +84,10 @@ query MyDesigns {
     status
     previewUrl
     finalPriceCents
-    product { name slug }
+    product {
+      name
+      slug
+    }
   }
 }
 ```
@@ -100,10 +115,10 @@ query MyAddresses {
 
 ### Demo users (seed)
 
-| User | Password |
-|------|----------|
+| User                           | Password   |
+| ------------------------------ | ---------- |
 | `cliente.demo+1@chefroom.test` | `12345678` |
-| `cnoriegava+2@gmail.com` | `12345678` |
+| `cnoriegava+2@gmail.com`       | `12345678` |
 
 ## Frontend (prepared, UI not wired)
 

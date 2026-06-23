@@ -11,9 +11,7 @@ type AdminOrderDetailPageProps = {
   searchParams: Promise<{ tab?: string }>
 }
 
-function parseInitialTab(
-  tab: string | undefined,
-): 'details' | 'items' | 'timeline' | 'production' {
+function parseInitialTab(tab: string | undefined): 'details' | 'items' | 'timeline' | 'production' {
   if (tab === 'items' || tab === 'timeline' || tab === 'production') return tab
   return 'details'
 }
@@ -32,10 +30,7 @@ export default function AdminOrderDetailPage({ params, searchParams }: AdminOrde
         { label: decodedOrderNumber },
       ]}
     >
-      <AdminOrderDetailPageView
-        orderNumber={decodedOrderNumber}
-        initialTab={initialTab}
-      />
+      <AdminOrderDetailPageView orderNumber={decodedOrderNumber} initialTab={initialTab} />
     </AdminPageConfig>
   )
 }

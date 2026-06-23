@@ -19,11 +19,7 @@ export function useMyNotificationsQuery(
   input?: MyNotificationsInput,
   options: NotificationsQueryOptions = {},
 ) {
-  const {
-    enabled = true,
-    refetchInterval = false,
-    refetchOnMount,
-  } = options
+  const { enabled = true, refetchInterval = false, refetchOnMount } = options
 
   return useQuery({
     queryKey: notificationsQueryKeys.list(input ?? {}),

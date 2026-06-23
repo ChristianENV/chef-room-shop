@@ -13,15 +13,10 @@ import type { GuestMergeResult } from '@/src/server/guest/guest-merge.types'
 
 import { auth } from './better-auth'
 import { getCurrentUser } from './current-user'
-import {
-  getPostAuthRedirectPath,
-  type PostAuthRedirectSource,
-} from './redirects'
+import { getPostAuthRedirectPath, type PostAuthRedirectSource } from './redirects'
 import { ensureCustomerRole, userHasAdminAccess } from './roles'
 
-type ActionResult =
-  | { ok: true }
-  | { ok: false; message: string }
+type ActionResult = { ok: true } | { ok: false; message: string }
 
 /**
  * Assigns CUSTOMER role to the current session user (post sign-up / OAuth).

@@ -12,19 +12,13 @@ import {
   type Prisma,
 } from '@prisma/client'
 import { mapAddressInputToPrisma } from '../account/account.mappers'
-import {
-  buildCustomizationSnapshot,
-  buildProductSnapshot,
-} from '../cart/cart.mappers'
+import { buildCustomizationSnapshot, buildProductSnapshot } from '../cart/cart.mappers'
 import type { CartConfigSnapshotJson, CartItemWithRelations } from '../cart/cart.types'
 import type { GraphQLContext } from '../../context'
 import { getActiveCartForCheckout, resolveCheckoutOwner } from './checkout.auth'
 import { enrichProductSnapshotWithConfig } from '@/src/lib/customization/build-customization-snapshot'
 import { resolveCheckoutShippingRate } from './checkout-shipping'
-import {
-  mapOrderToCheckoutPayload,
-  mapOrderToPublicOrder,
-} from './checkout.mappers'
+import { mapOrderToCheckoutPayload, mapOrderToPublicOrder } from './checkout.mappers'
 import { generateOrderNumberWithRetry } from './order-number'
 import type {
   CheckoutOrderPayloadGql,
@@ -32,13 +26,8 @@ import type {
   CreateCheckoutOrderInput,
   PublicOrderGql,
 } from './checkout.types'
-import {
-  createCheckoutOrderInputSchema,
-  toPaymentMethod,
-} from './checkout.validation'
-import {
-  buildOrderEmailTrackingLinks,
-} from '@/src/server/email/email.links'
+import { createCheckoutOrderInputSchema, toPaymentMethod } from './checkout.validation'
+import { buildOrderEmailTrackingLinks } from '@/src/server/email/email.links'
 import { safeSendTransactionalEmail } from '@/src/server/email/email.service'
 import { createOrderClaimToken } from '@/src/server/orders/order-claim-token'
 import { safeNotifyOrderCreated } from '@/src/server/notifications/notify-order-created'
@@ -54,8 +43,7 @@ function parseConfigSnapshot(value: unknown): CartConfigSnapshotJson {
         ? (record.productSnapshot as CartConfigSnapshotJson['productSnapshot'])
         : undefined,
     customizationSnapshot:
-      record.customizationSnapshot &&
-      typeof record.customizationSnapshot === 'object'
+      record.customizationSnapshot && typeof record.customizationSnapshot === 'object'
         ? (record.customizationSnapshot as CartConfigSnapshotJson['customizationSnapshot'])
         : undefined,
   }
@@ -97,9 +85,7 @@ export function computeCheckoutTotalsFromCartItems(
   }
 }
 
-function buildOrderProductSnapshot(
-  item: CartItemWithRelations,
-): Prisma.InputJsonValue {
+function buildOrderProductSnapshot(item: CartItemWithRelations): Prisma.InputJsonValue {
   const parsed = parseConfigSnapshot(item.configSnapshotJson)
   const fromConfig = parsed.productSnapshot
   if (fromConfig) {
@@ -111,9 +97,7 @@ function buildOrderProductSnapshot(
   return buildProductSnapshot(item, item.design?.configJson) as Prisma.InputJsonValue
 }
 
-function buildOrderDesignSnapshot(
-  item: CartItemWithRelations,
-): Prisma.InputJsonValue | undefined {
+function buildOrderDesignSnapshot(item: CartItemWithRelations): Prisma.InputJsonValue | undefined {
   const fromConfig = parseConfigSnapshot(item.configSnapshotJson).customizationSnapshot
   if (fromConfig) {
     return fromConfig as Prisma.InputJsonValue

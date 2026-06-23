@@ -73,9 +73,7 @@ type ShipmentWithOrder = Prisma.ShipmentGetPayload<{
   include: typeof shipmentWithOrderInclude
 }>
 
-export function isMockTrackingNumber(
-  trackingNumber: string | null | undefined,
-): boolean {
+export function isMockTrackingNumber(trackingNumber: string | null | undefined): boolean {
   const value = trackingNumber?.trim() ?? ''
   return value.startsWith('CRMOCK-')
 }
@@ -153,8 +151,7 @@ function buildMockTrackingEventMetadata(params: {
     orderId: params.order.id,
     orderNumber: params.order.orderNumber,
     trackingNumber:
-      params.shipment.trackingNumber?.trim() ||
-      buildMockTrackingNumber(params.order.orderNumber),
+      params.shipment.trackingNumber?.trim() || buildMockTrackingNumber(params.order.orderNumber),
     carrierName: params.shipment.carrier,
     trackingStatus: params.status,
     occurredAt: params.occurredAt.toISOString(),
@@ -227,11 +224,9 @@ export async function simulateMockShipmentTrackingStatus(
     const shipmentUpdate: Prisma.ShipmentUpdateInput = {
       status: transition.nextStatus,
       trackingNumber: metadata.trackingNumber,
-      shippedAt: transition.setShippedAt
-        ? shipment.shippedAt ?? occurredAt
-        : shipment.shippedAt,
+      shippedAt: transition.setShippedAt ? (shipment.shippedAt ?? occurredAt) : shipment.shippedAt,
       deliveredAt: transition.setDeliveredAt
-        ? shipment.deliveredAt ?? occurredAt
+        ? (shipment.deliveredAt ?? occurredAt)
         : shipment.deliveredAt,
     }
 

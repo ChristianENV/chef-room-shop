@@ -27,7 +27,11 @@ export const shopCatalogNavLink: NavLink = {
 
 /** Shop categories for navbar dropdown and mobile accordion */
 export const shopDropdownChildren: NavLink[] = [
-  { label: 'Filipinas', href: shopCategoryUrl('filipinas'), testId: 'storefront-nav-shop-filipinas' },
+  {
+    label: 'Filipinas',
+    href: shopCategoryUrl('filipinas'),
+    testId: 'storefront-nav-shop-filipinas',
+  },
   { label: 'Mandiles', href: shopCategoryUrl('mandiles'), testId: 'storefront-nav-shop-mandiles' },
   {
     label: 'Pantalones',

@@ -26,21 +26,23 @@ export function BrandSection() {
               {/* Logo on Dark */}
               <div className="flex flex-col items-center gap-3 rounded-lg border border-border bg-card p-6">
                 <ChefRoomLogo variant="horizontal" colorScheme="light" size="lg" />
-                <span className="font-mono text-xs text-muted-foreground">Horizontal / Fondo Oscuro</span>
+                <span className="font-mono text-xs text-muted-foreground">
+                  Horizontal / Fondo Oscuro
+                </span>
               </div>
-              
+
               {/* Logo on Primary */}
               <div className="flex flex-col items-center gap-3 rounded-lg bg-primary p-6">
                 <ChefRoomLogo variant="horizontal" colorScheme="light" size="lg" />
                 <span className="font-mono text-xs text-white/70">Horizontal / Fondo Primario</span>
               </div>
-              
+
               {/* Vertical Logo */}
               <div className="flex flex-col items-center gap-3 rounded-lg border border-border bg-secondary p-6">
                 <ChefRoomLogo variant="vertical" colorScheme="light" />
                 <span className="font-mono text-xs text-muted-foreground">Vertical</span>
               </div>
-              
+
               {/* Symbol Only */}
               <div className="flex flex-col items-center gap-3 rounded-lg border border-border bg-muted p-6">
                 <ChefRoomLogo variant="wordmark" colorScheme="auto" size="xl" />
@@ -97,7 +99,7 @@ export function BrandSection() {
                   <li>• Usar variante apropiada para cada fondo</li>
                 </ul>
               </div>
-              
+
               {/* Don'ts */}
               <div className="rounded-lg border border-chef-error/30 bg-chef-error/5 p-4">
                 <div className="mb-3 flex items-center gap-2 text-chef-error">

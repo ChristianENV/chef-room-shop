@@ -36,9 +36,7 @@ export function findSizeByLabel(
   return sizes.find((size) => size.name.trim().toUpperCase() === target) ?? null
 }
 
-function pickBestVariant(
-  candidates: CustomizerProductVariant[],
-): CustomizerProductVariant | null {
+function pickBestVariant(candidates: CustomizerProductVariant[]): CustomizerProductVariant | null {
   if (candidates.length === 0) return null
   return (
     candidates.find((variant) => variant.isActive && variant.stockQty > 0) ??
@@ -80,9 +78,7 @@ export function resolveCustomizerVariant(
   }
 
   if (sizeId) {
-    const bySize = pickBestVariant(
-      product.variants.filter((variant) => variant.sizeId === sizeId),
-    )
+    const bySize = pickBestVariant(product.variants.filter((variant) => variant.sizeId === sizeId))
     if (bySize) return bySize
   }
 
@@ -101,15 +97,13 @@ export type CustomizerCartVariantFailureReason =
   | 'no_matching_variant'
   | 'out_of_stock'
 
-export const CUSTOMIZER_CART_VARIANT_MESSAGES: Record<
-  CustomizerCartVariantFailureReason,
-  string
-> = {
-  missing_color: 'Selecciona un color del catálogo para continuar.',
-  missing_size: 'Selecciona una talla para continuar.',
-  no_matching_variant: 'Esta combinación de talla y color no está disponible.',
-  out_of_stock: 'La variante seleccionada no tiene stock disponible.',
-}
+export const CUSTOMIZER_CART_VARIANT_MESSAGES: Record<CustomizerCartVariantFailureReason, string> =
+  {
+    missing_color: 'Selecciona un color del catálogo para continuar.',
+    missing_size: 'Selecciona una talla para continuar.',
+    no_matching_variant: 'Esta combinación de talla y color no está disponible.',
+    out_of_stock: 'La variante seleccionada no tiene stock disponible.',
+  }
 
 export type CustomizerCartVariantValidation =
   | {
@@ -146,9 +140,7 @@ export function validateCustomizerCartVariant(
   }
 
   const variant = pickBestVariant(
-    product.variants.filter(
-      (row) => row.colorId === color.id && row.sizeId === size.id,
-    ),
+    product.variants.filter((row) => row.colorId === color.id && row.sizeId === size.id),
   )
 
   if (!variant) {

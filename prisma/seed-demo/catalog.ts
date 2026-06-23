@@ -2,10 +2,7 @@ import { PrismaClient, ProductStatus } from '@prisma/client'
 import type { Prisma } from '@prisma/client'
 
 import { buildSku, cents, getOrThrow } from '../seed-helpers'
-import {
-  DEMO_PRODUCT_SLUG_PREFIX,
-  PLACEHOLDER_IMAGE_BASE,
-} from './constants'
+import { DEMO_PRODUCT_SLUG_PREFIX, PLACEHOLDER_IMAGE_BASE } from './constants'
 
 type ProductSeed = {
   slug: string
@@ -130,8 +127,20 @@ const RULE_SPECS: {
   { areaSlug: 'chest', optionSlug: 'logo', priceCents: 24900, maxWidthCm: 8, maxHeightCm: 8 },
   { areaSlug: 'chest', optionSlug: 'text', priceCents: 14900, maxWidthCm: 8, maxHeightCm: 8 },
   { areaSlug: 'back', optionSlug: 'logo', priceCents: 34900, maxWidthCm: 20, maxHeightCm: 20 },
-  { areaSlug: 'left-sleeve', optionSlug: 'embroidery', priceCents: 19900, maxWidthCm: 6, maxHeightCm: 6 },
-  { areaSlug: 'right-sleeve', optionSlug: 'embroidery', priceCents: 19900, maxWidthCm: 6, maxHeightCm: 6 },
+  {
+    areaSlug: 'left-sleeve',
+    optionSlug: 'embroidery',
+    priceCents: 19900,
+    maxWidthCm: 6,
+    maxHeightCm: 6,
+  },
+  {
+    areaSlug: 'right-sleeve',
+    optionSlug: 'embroidery',
+    priceCents: 19900,
+    maxWidthCm: 6,
+    maxHeightCm: 6,
+  },
   { areaSlug: 'pocket', optionSlug: 'patch', priceCents: 17900, maxWidthCm: 7, maxHeightCm: 7 },
 ]
 
@@ -149,9 +158,7 @@ export type SeededCatalogResult = {
 /**
  * Seeds demo products, images, variants, and customization rules.
  */
-export async function seedDemoCatalog(
-  prisma: PrismaClient,
-): Promise<SeededCatalogResult> {
+export async function seedDemoCatalog(prisma: PrismaClient): Promise<SeededCatalogResult> {
   const productIdsBySlug = new Map<string, string>()
   const variantIdsBySku = new Map<string, string>()
   let variantCount = 0
@@ -263,8 +270,7 @@ export async function seedDemoCatalog(
     for (const colorSlug of colorsForProduct) {
       for (const sizeSlug of VARIANT_SIZE_SLUGS) {
         const sku = buildSku([productCode, colorSlug, sizeSlug])
-        const priceModifier =
-          sizeSlug === 'l' ? 5000 : sizeSlug === 's' ? -2000 : 0
+        const priceModifier = sizeSlug === 'l' ? 5000 : sizeSlug === 's' ? -2000 : 0
 
         const variant = await prisma.productVariant.upsert({
           where: { sku },

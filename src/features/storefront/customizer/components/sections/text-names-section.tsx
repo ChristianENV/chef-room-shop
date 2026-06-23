@@ -112,7 +112,8 @@ export function TextNamesSection({ embedded = false }: { embedded?: boolean }) {
       ) : null}
 
       <p className="text-[11px] text-muted-foreground/70">
-        Solo bordado. {estimatedPrice.hint ?? 'Cada elemento bordado se suma al total en tiempo real.'}
+        Solo bordado.{' '}
+        {estimatedPrice.hint ?? 'Cada elemento bordado se suma al total en tiempo real.'}
       </p>
 
       <TextEditorDialog

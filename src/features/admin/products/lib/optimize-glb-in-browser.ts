@@ -90,7 +90,10 @@ export async function optimizeGlbInBrowser(
         ok: false,
         error: `El modelo optimizado sigue pesando ${mb} MB (límite: ${MAX_GLB_OPTIMIZED_BYTES / 1024 / 1024} MB). Reduce texturas o polígonos offline con: pnpm glb:optimize`,
         originalSizeBytes,
-        fallbackBlob: originalSizeBytes <= RECOMMENDED_GLB_BYTES ? new Blob([buffer], { type: 'model/gltf-binary' }) : undefined,
+        fallbackBlob:
+          originalSizeBytes <= RECOMMENDED_GLB_BYTES
+            ? new Blob([buffer], { type: 'model/gltf-binary' })
+            : undefined,
       }
     }
 

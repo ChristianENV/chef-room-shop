@@ -36,10 +36,7 @@ describe('isBoundsReadyForFit', () => {
   it('rejects tiny container sizes', () => {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.5, 0.4))
     const bounds = getSafeModelBounds(mesh)
-    assert.equal(
-      isBoundsReadyForFit(bounds, { width: MIN_FIT_CONTAINER_PX, height: 600 }),
-      false,
-    )
+    assert.equal(isBoundsReadyForFit(bounds, { width: MIN_FIT_CONTAINER_PX, height: 600 }), false)
   })
 })
 

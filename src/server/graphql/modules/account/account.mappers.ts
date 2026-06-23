@@ -106,8 +106,7 @@ export function mapAddressInputToPrisma(input: {
   postalCode: string
   references?: string | null
 }) {
-  const fullName =
-    [input.firstName, input.lastName].filter(Boolean).join(' ').trim() || 'Cliente'
+  const fullName = [input.firstName, input.lastName].filter(Boolean).join(' ').trim() || 'Cliente'
 
   return {
     fullName,
@@ -192,9 +191,7 @@ function derivePaymentStatus(order: OrderWithRelations): string {
   return order.status
 }
 
-function mapPaymentToGql(
-  payment: Payment & { attempts?: PaymentAttempt[] },
-): AccountPaymentGql {
+function mapPaymentToGql(payment: Payment & { attempts?: PaymentAttempt[] }): AccountPaymentGql {
   const cashDetails = getCashPaymentDetailsFromAttempts(payment.attempts ?? [])
 
   return {
@@ -282,10 +279,7 @@ export function mapDesignToGql(
     configJson: design.configJson,
     createdAt: design.createdAt.toISOString(),
     updatedAt: design.updatedAt.toISOString(),
-    purchasedAt:
-      design.status === DesignStatus.PURCHASED
-        ? design.updatedAt.toISOString()
-        : null,
+    purchasedAt: design.status === DesignStatus.PURCHASED ? design.updatedAt.toISOString() : null,
     product,
   }
 }

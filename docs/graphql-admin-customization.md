@@ -8,10 +8,10 @@ Todas las operaciones usan `requireAdminGraphQL` (mismo guard que admin-dashboar
 
 ## Modelo Prisma (sin cambios en v1)
 
-| Modelo | Campos relevantes |
-|--------|-------------------|
-| `CustomizationArea` | `slug`, `nameEs`, `nameEn`, `sortOrder` |
-| `CustomizationOption` | `slug`, `nameEs`, `priceCents` |
+| Modelo                     | Campos relevantes                                            |
+| -------------------------- | ------------------------------------------------------------ |
+| `CustomizationArea`        | `slug`, `nameEs`, `nameEn`, `sortOrder`                      |
+| `CustomizationOption`      | `slug`, `nameEs`, `priceCents`                               |
 | `ProductCustomizationRule` | `productId`, `areaId`, `optionId`, `isEnabled`, `configJson` |
 
 **No hay** `deletedAt` en reglas: el delete admin es borrado físico. Unicidad: `(productId, areaId, optionId)`.
@@ -30,36 +30,36 @@ Los campos de negocio viven en `configJson` (compatible con seed y catalog BFF):
   "extraProductionDays": 0,
   "validationMessage": "...",
   "notes": "...",
-  "metadata": { }
+  "metadata": {}
 }
 ```
 
-| GraphQL | Origen |
-|---------|--------|
-| `enabled` | `isEnabled` |
-| `basePriceCents` | `configJson.priceCents` o fallback `option.priceCents` |
-| `maxWidthCm` / `maxHeightCm` | `configJson.maxDimensionsCm` |
-| `pricePerCmCents` | `configJson.pricePerCmCents` |
-| `allowedFileTypes` | `configJson.allowedFileTypes` |
-| `validationMessage` / `notes` | `configJson` |
-| `metadataJson` | `configJson.metadata` |
-| `area.description` | `area.nameEn` |
-| `area.isActive` / `option.isActive` | siempre `true` (no hay columna en BD) |
-| `option.pricePerCmCents` (catálogo base) | `null`; por regla viene de `configJson` |
+| GraphQL                                  | Origen                                                 |
+| ---------------------------------------- | ------------------------------------------------------ |
+| `enabled`                                | `isEnabled`                                            |
+| `basePriceCents`                         | `configJson.priceCents` o fallback `option.priceCents` |
+| `maxWidthCm` / `maxHeightCm`             | `configJson.maxDimensionsCm`                           |
+| `pricePerCmCents`                        | `configJson.pricePerCmCents`                           |
+| `allowedFileTypes`                       | `configJson.allowedFileTypes`                          |
+| `validationMessage` / `notes`            | `configJson`                                           |
+| `metadataJson`                           | `configJson.metadata`                                  |
+| `area.description`                       | `area.nameEn`                                          |
+| `area.isActive` / `option.isActive`      | siempre `true` (no hay columna en BD)                  |
+| `option.pricePerCmCents` (catálogo base) | `null`; por regla viene de `configJson`                |
 
 Áreas y opciones se leen del **seed** (`prisma/seed.ts`); v1 no expone CRUD de áreas/opciones.
 
 ## Queries
 
-| Query | Descripción |
-|-------|-------------|
-| `adminCustomizationAreas` | Áreas ordenadas por `sortOrder` |
-| `adminCustomizationOptions` | Opciones (técnicas) |
-| `adminCustomizationProducts` | Productos no archivados; filtros `search`, `customizable` |
-| `adminCustomizationRules` | Lista paginada con filtros |
-| `adminCustomizationRulesByProduct` | Reglas de un producto |
-| `adminCustomizationRuleById` | Detalle por UUID |
-| `adminCustomizationPricingPreview` | Preview v1 de precio |
+| Query                              | Descripción                                               |
+| ---------------------------------- | --------------------------------------------------------- |
+| `adminCustomizationAreas`          | Áreas ordenadas por `sortOrder`                           |
+| `adminCustomizationOptions`        | Opciones (técnicas)                                       |
+| `adminCustomizationProducts`       | Productos no archivados; filtros `search`, `customizable` |
+| `adminCustomizationRules`          | Lista paginada con filtros                                |
+| `adminCustomizationRulesByProduct` | Reglas de un producto                                     |
+| `adminCustomizationRuleById`       | Detalle por UUID                                          |
+| `adminCustomizationPricingPreview` | Preview v1 de precio                                      |
 
 ### Filtros de reglas
 
@@ -80,9 +80,18 @@ query AdminCustomizationRulesList {
       id
       enabled
       basePriceCents
-      product { name slug }
-      area { slug name }
-      option { slug name }
+      product {
+        name
+        slug
+      }
+      area {
+        slug
+        name
+      }
+      option {
+        slug
+        name
+      }
     }
   }
 }
@@ -90,29 +99,29 @@ query AdminCustomizationRulesList {
 
 ## Mutations
 
-| Mutation | Descripción |
-|----------|-------------|
-| `createAdminCustomizationRule` | Crea regla; evita duplicado `(product, area, option)` |
-| `updateAdminCustomizationRule` | Actualiza regla y `configJson` |
-| `deleteAdminCustomizationRule` | Borrado físico + AuditLog DELETE |
-| `toggleAdminCustomizationRule` | Cambia `isEnabled` |
-| `duplicateCustomizationRulesToProduct` | Copia reglas entre productos |
+| Mutation                               | Descripción                                           |
+| -------------------------------------- | ----------------------------------------------------- |
+| `createAdminCustomizationRule`         | Crea regla; evita duplicado `(product, area, option)` |
+| `updateAdminCustomizationRule`         | Actualiza regla y `configJson`                        |
+| `deleteAdminCustomizationRule`         | Borrado físico + AuditLog DELETE                      |
+| `toggleAdminCustomizationRule`         | Cambia `isEnabled`                                    |
+| `duplicateCustomizationRulesToProduct` | Copia reglas entre productos                          |
 
 ### Duplicar reglas
 
 ```graphql
 mutation DuplicateRules {
   duplicateCustomizationRulesToProduct(
-    input: {
-      fromProductId: "..."
-      toProductId: "..."
-      overwriteExisting: false
-    }
+    input: { fromProductId: "...", toProductId: "...", overwriteExisting: false }
   ) {
     id
     productId
-    area { slug }
-    option { slug }
+    area {
+      slug
+    }
+    option {
+      slug
+    }
   }
 }
 ```
@@ -125,13 +134,7 @@ mutation DuplicateRules {
 ```graphql
 query Preview {
   adminCustomizationPricingPreview(
-    input: {
-      productId: "..."
-      areaId: "..."
-      optionId: "..."
-      widthCm: 8
-      heightCm: 8
-    }
+    input: { productId: "...", areaId: "...", optionId: "...", widthCm: 8, heightCm: 8 }
   ) {
     basePriceCents
     sizeFactorCents
@@ -153,11 +156,11 @@ Requiere regla existente para la terna producto/área/opción.
 
 ## UI conectada (`/admin/customization`)
 
-| Capa | Ruta |
-|------|------|
-| Página | `src/app/(admin)/admin/(protected)/customization/page.tsx` |
-| Mapper | `src/features/admin/customization/mappers/admin-customization-ui.mapper.ts` |
-| Docs UI | `docs/admin-customization-ui.md` |
+| Capa    | Ruta                                                                        |
+| ------- | --------------------------------------------------------------------------- |
+| Página  | `src/app/(admin)/admin/(protected)/customization/page.tsx`                  |
+| Mapper  | `src/features/admin/customization/mappers/admin-customization-ui.mapper.ts` |
+| Docs UI | `docs/admin-customization-ui.md`                                            |
 
 ### Hooks en UI
 

@@ -69,10 +69,7 @@ function ClaimOrderContent() {
   if (!token) {
     return (
       <ClaimOrderShell>
-        <ClaimErrorState
-          title="Enlace no válido"
-          description="Este enlace ya no es válido."
-        />
+        <ClaimErrorState title="Enlace no válido" description="Este enlace ya no es válido." />
       </ClaimOrderShell>
     )
   }
@@ -106,9 +103,7 @@ function ClaimOrderContent() {
       <ClaimOrderShell>
         <div className="rounded-lg border border-border bg-card p-6 md:p-8 text-center">
           <Package className="mx-auto h-10 w-10 text-primary" />
-          <h1 className="mt-4 font-sans text-xl font-bold text-foreground">
-            Pedido ya vinculado
-          </h1>
+          <h1 className="mt-4 font-sans text-xl font-bold text-foreground">Pedido ya vinculado</h1>
           <p className="mt-2 font-serif text-muted-foreground">
             El pedido <strong>{preview.orderNumber}</strong> ya está asociado a una cuenta.
           </p>
@@ -136,10 +131,7 @@ function ClaimOrderContent() {
             cuenta.
           </p>
           <div className="mt-6 space-y-3">
-            <VerifyEmailResend
-              callbackURL={callbackUrl}
-              email={session?.user?.email}
-            />
+            <VerifyEmailResend callbackURL={callbackUrl} email={session?.user?.email} />
             <Button asChild variant="outline" className="font-sans">
               <Link href={`${routes.verifyEmail}?callbackUrl=${encodeURIComponent(callbackUrl)}`}>
                 Ir a verificación de correo
@@ -219,7 +211,7 @@ function ClaimOrderContent() {
           <AlertDescription className="font-serif">
             {emailMismatch
               ? 'Iniciaste sesión con un correo diferente al del pedido.'
-              : claimResult.message ?? 'No pudimos vincular tu pedido.'}
+              : (claimResult.message ?? 'No pudimos vincular tu pedido.')}
           </AlertDescription>
         </Alert>
         <p className="font-serif text-sm text-muted-foreground">
@@ -276,13 +268,7 @@ function ClaimOrderShell({ children }: { children: React.ReactNode }) {
   )
 }
 
-function ClaimErrorState({
-  title,
-  description,
-}: {
-  title: string
-  description: string
-}) {
+function ClaimErrorState({ title, description }: { title: string; description: string }) {
   return (
     <div className="rounded-lg border border-border bg-card p-6 text-center">
       <AlertCircle className="mx-auto h-10 w-10 text-muted-foreground" />

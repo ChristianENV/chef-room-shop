@@ -20,7 +20,10 @@ export interface RecentDesign {
   createdAt: string
 }
 
-const statusConfig: Record<RecentDesign['status'], { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
+const statusConfig: Record<
+  RecentDesign['status'],
+  { label: string; variant: 'default' | 'secondary' | 'outline' }
+> = {
   borrador: { label: 'Borrador', variant: 'outline' },
   'en-carrito': { label: 'En Carrito', variant: 'secondary' },
   comprado: { label: 'Comprado', variant: 'default' },
@@ -51,9 +54,7 @@ export function RecentDesigns({ designs, className }: RecentDesignsProps) {
   return (
     <Card className={cn('border-border bg-card', className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="font-sans text-base font-semibold">
-          Diseños Recientes
-        </CardTitle>
+        <CardTitle className="font-sans text-base font-semibold">Diseños Recientes</CardTitle>
         <Button variant="outline" size="sm" asChild>
           <Link href={routes.adminDesigns}>Ver todos</Link>
         </Button>
@@ -64,55 +65,50 @@ export function RecentDesigns({ designs, className }: RecentDesignsProps) {
             No hay diseños recientes por ahora.
           </p>
         ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {designs.map((design) => {
-            const status = statusConfig[design.status]
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {designs.map((design) => {
+              const status = statusConfig[design.status]
 
-            return (
-              <div
-                key={design.id}
-                className="group overflow-hidden rounded-lg border border-border bg-secondary/30 transition-colors hover:border-primary/50"
-              >
-                {/* Preview Image Placeholder */}
-                <div className="relative aspect-square bg-muted">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="mx-auto mb-2 h-12 w-12 rounded-lg bg-primary/10" />
-                      <p className="font-sans text-xs text-muted-foreground">
-                        Preview
-                      </p>
+              return (
+                <div
+                  key={design.id}
+                  className="group overflow-hidden rounded-lg border border-border bg-secondary/30 transition-colors hover:border-primary/50"
+                >
+                  {/* Preview Image Placeholder */}
+                  <div className="relative aspect-square bg-muted">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="mx-auto mb-2 h-12 w-12 rounded-lg bg-primary/10" />
+                        <p className="font-sans text-xs text-muted-foreground">Preview</p>
+                      </div>
+                    </div>
+                    <Badge variant={status.variant} className="absolute right-2 top-2 font-sans">
+                      {status.label}
+                    </Badge>
+                  </div>
+
+                  {/* Info */}
+                  <div className="p-3">
+                    <p className="font-sans text-sm font-medium text-foreground truncate">
+                      {design.productName}
+                    </p>
+                    <p className="mt-0.5 font-serif text-xs text-muted-foreground truncate">
+                      {design.userName}
+                    </p>
+
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="font-sans text-sm font-semibold text-primary">
+                        {formatCurrency(design.estimatedValue)}
+                      </span>
+                      <span className="font-serif text-xs text-muted-foreground">
+                        {formatDate(design.createdAt)}
+                      </span>
                     </div>
                   </div>
-                  <Badge 
-                    variant={status.variant} 
-                    className="absolute right-2 top-2 font-sans"
-                  >
-                    {status.label}
-                  </Badge>
                 </div>
-
-                {/* Info */}
-                <div className="p-3">
-                  <p className="font-sans text-sm font-medium text-foreground truncate">
-                    {design.productName}
-                  </p>
-                  <p className="mt-0.5 font-serif text-xs text-muted-foreground truncate">
-                    {design.userName}
-                  </p>
-                  
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="font-sans text-sm font-semibold text-primary">
-                      {formatCurrency(design.estimatedValue)}
-                    </span>
-                    <span className="font-serif text-xs text-muted-foreground">
-                      {formatDate(design.createdAt)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
         )}
       </CardContent>
     </Card>

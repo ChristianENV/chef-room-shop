@@ -13,21 +13,21 @@ Operación de pedidos en `/admin/orders` conectada al BFF GraphQL (v1).
 
 ## Rutas
 
-| Ruta | Uso |
-|------|-----|
-| `/admin/orders` | Listado + dialog de detalle |
+| Ruta                          | Uso                                                  |
+| ----------------------------- | ---------------------------------------------------- |
+| `/admin/orders`               | Listado + dialog de detalle                          |
 | `/admin/orders/[orderNumber]` | Vista operativa completa (`routes.adminOrderDetail`) |
 
 Desde el dialog: **Abrir página completa** → navega a la ruta dedicada.
 
 ## Patrón UX: Dialogs vs Drawers
 
-| Caso | Componente |
-|------|------------|
-| Lectura / detalle denso (orden, producto, regla) | `Dialog` (ancho `max-w-5xl` / `max-w-6xl`, scroll interno) |
-| Confirmaciones destructivas (cancelar orden, archivar, cancelar guía) | `AlertDialog` |
-| Navegación mobile del admin | `Sheet` (sidebar) — no cambiar |
-| Popovers / dropdowns de tabla | Sin cambio |
+| Caso                                                                  | Componente                                                 |
+| --------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Lectura / detalle denso (orden, producto, regla)                      | `Dialog` (ancho `max-w-5xl` / `max-w-6xl`, scroll interno) |
+| Confirmaciones destructivas (cancelar orden, archivar, cancelar guía) | `AlertDialog`                                              |
+| Navegación mobile del admin                                           | `Sheet` (sidebar) — no cambiar                             |
+| Popovers / dropdowns de tabla                                         | Sin cambio                                                 |
 
 Los drawers laterales ya no se usan para detalle de orden.
 
@@ -41,15 +41,15 @@ Los drawers laterales ya no se usan para detalle de orden.
 
 ## Estados visibles
 
-| BFF | Etiqueta UI |
-|-----|-------------|
-| PENDING_PAYMENT | Pendiente de pago |
-| PAID | Pagada |
-| IN_PRODUCTION | En producción |
-| READY_TO_SHIP | Lista para envío |
-| SHIPPED | Enviada |
-| DELIVERED | Entregada |
-| CANCELLED / REFUNDED | Cancelada |
+| BFF                  | Etiqueta UI       |
+| -------------------- | ----------------- |
+| PENDING_PAYMENT      | Pendiente de pago |
+| PAID                 | Pagada            |
+| IN_PRODUCTION        | En producción     |
+| READY_TO_SHIP        | Lista para envío  |
+| SHIPPED              | Enviada           |
+| DELIVERED            | Entregada         |
+| CANCELLED / REFUNDED | Cancelada         |
 
 ## Acciones y reglas
 
@@ -71,25 +71,25 @@ Los drawers laterales ya no se usan para detalle de orden.
 
 ## Hooks de envío (dialog / página)
 
-| Hook | Uso |
-|------|-----|
-| `useAdminShipmentByOrderNumberQuery` | Carga guía Skydropx |
-| `useAdminCreateShippingLabelMutation` | Generar guía |
+| Hook                                      | Uso                 |
+| ----------------------------------------- | ------------------- |
+| `useAdminShipmentByOrderNumberQuery`      | Carga guía Skydropx |
+| `useAdminCreateShippingLabelMutation`     | Generar guía        |
 | `useAdminRefreshShipmentTrackingMutation` | Actualizar tracking |
-| `useAdminCancelShippingLabelMutation` | Cancelar guía |
+| `useAdminCancelShippingLabelMutation`     | Cancelar guía       |
 
 Ver `docs/admin-shipping-ui.md`.
 
 ## data-testid
 
-| ID | Ubicación |
-|----|-----------|
-| `admin-orders-table` | Tabla de órdenes |
-| `admin-order-detail-dialog` | Dialog de detalle |
-| `admin-order-detail-full-page-link` | Enlace a página completa |
-| `admin-order-detail-page` | Página `/admin/orders/[orderNumber]` |
-| `admin-shipping-card` | Sección guía Skydropx |
-| `admin-create-label-button` | Generar guía |
+| ID                                  | Ubicación                            |
+| ----------------------------------- | ------------------------------------ |
+| `admin-orders-table`                | Tabla de órdenes                     |
+| `admin-order-detail-dialog`         | Dialog de detalle                    |
+| `admin-order-detail-full-page-link` | Enlace a página completa             |
+| `admin-order-detail-page`           | Página `/admin/orders/[orderNumber]` |
+| `admin-shipping-card`               | Sección guía Skydropx                |
+| `admin-create-label-button`         | Generar guía                         |
 
 ## Archivos clave
 

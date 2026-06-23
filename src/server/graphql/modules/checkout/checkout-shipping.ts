@@ -21,10 +21,7 @@ function checkoutShippingError(message: string, code: string): GraphQLError {
   return new GraphQLError(message, { extensions: { code } })
 }
 
-function quoteBelongsToOwner(
-  quote: ShippingQuote,
-  owner: CheckoutOwner,
-): boolean {
+function quoteBelongsToOwner(quote: ShippingQuote, owner: CheckoutOwner): boolean {
   if (owner.userId) {
     return quote.userId === owner.userId
   }
@@ -47,10 +44,7 @@ export async function resolveCheckoutShippingRate(
     if (isCheckoutShippingOptionalOnServer()) {
       return null
     }
-    throw checkoutShippingError(
-      'Selecciona una opción de envío para continuar.',
-      'BAD_REQUEST',
-    )
+    throw checkoutShippingError('Selecciona una opción de envío para continuar.', 'BAD_REQUEST')
   }
 
   const rate = await context.prisma.shippingRate.findUnique({
@@ -65,24 +59,15 @@ export async function resolveCheckoutShippingRate(
   const { quote } = rate
 
   if (!quote.cartId || quote.cartId !== cartId) {
-    throw checkoutShippingError(
-      'No tienes acceso a esta tarifa de envío.',
-      'FORBIDDEN',
-    )
+    throw checkoutShippingError('No tienes acceso a esta tarifa de envío.', 'FORBIDDEN')
   }
 
   if (!quoteBelongsToOwner(quote, owner)) {
-    throw checkoutShippingError(
-      'No tienes acceso a esta tarifa de envío.',
-      'FORBIDDEN',
-    )
+    throw checkoutShippingError('No tienes acceso a esta tarifa de envío.', 'FORBIDDEN')
   }
 
   if (rate.expiresAt && rate.expiresAt <= new Date()) {
-    throw checkoutShippingError(
-      'La tarifa de envío expiró. Cotiza nuevamente.',
-      'BAD_REQUEST',
-    )
+    throw checkoutShippingError('La tarifa de envío expiró. Cotiza nuevamente.', 'BAD_REQUEST')
   }
 
   const now = new Date()

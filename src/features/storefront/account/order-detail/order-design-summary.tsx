@@ -39,10 +39,7 @@ export function OrderDesignSummary({ design }: OrderDesignSummaryProps) {
           </div>
         )}
         <div className="min-w-0 flex-1 space-y-2">
-          <Badge
-            variant="outline"
-            className="border-primary/30 font-sans text-xs text-primary"
-          >
+          <Badge variant="outline" className="border-primary/30 font-sans text-xs text-primary">
             Personalizado
           </Badge>
           {details.length > 0 ? (

@@ -6,11 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Bell } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { routes } from '@/src/config/routes'
 import { useMarkAllNotificationsReadMutation } from '@/src/features/notifications/api/use-mark-all-notifications-read-mutation'
 import { useMarkNotificationReadMutation } from '@/src/features/notifications/api/use-mark-notification-read-mutation'
@@ -56,7 +52,8 @@ export function AdminNotificationPopover() {
   const unreadCount = unreadQuery.data ?? 0
   const notifications = notificationsQuery.data?.nodes ?? []
   const showLoading =
-    open && (notificationsQuery.isLoading || (notificationsQuery.isFetching && notifications.length === 0))
+    open &&
+    (notificationsQuery.isLoading || (notificationsQuery.isFetching && notifications.length === 0))
 
   const handleSelect = (notification: Notification) => {
     if (!notification.readAt) {
@@ -101,9 +98,7 @@ export function AdminNotificationPopover() {
         <div className="border-b border-border px-4 py-3">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="font-sans text-base font-semibold text-foreground">
-                Notificaciones
-              </h2>
+              <h2 className="font-sans text-base font-semibold text-foreground">Notificaciones</h2>
               <p className="mt-0.5 font-serif text-xs text-muted-foreground">
                 Avisos operativos del panel
               </p>
@@ -151,7 +146,12 @@ export function AdminNotificationPopover() {
           >
             Marcar todas como leídas
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 px-2 font-sans text-xs text-primary" asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2 font-sans text-xs text-primary"
+            asChild
+          >
             <Link
               href={routes.adminNotifications}
               onClick={() => setOpen(false)}

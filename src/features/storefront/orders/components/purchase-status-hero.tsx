@@ -33,8 +33,7 @@ function getPurchaseHeroCopy(state: PaymentConfirmationUxState): {
     case 'confirming':
       return {
         title: 'Estamos confirmando tu pago',
-        description:
-          'Validamos la respuesta de Conekta. Esto puede tardar unos segundos.',
+        description: 'Validamos la respuesta de Conekta. Esto puede tardar unos segundos.',
         testId: 'purchase-confirmation-loading',
       }
     case 'paid':
@@ -47,8 +46,7 @@ function getPurchaseHeroCopy(state: PaymentConfirmationUxState): {
     case 'failed':
       return {
         title: 'Tu pago no fue aprobado',
-        description:
-          'No pudimos confirmar el pago. Puedes reintentar o contactar a soporte.',
+        description: 'No pudimos confirmar el pago. Puedes reintentar o contactar a soporte.',
         testId: 'purchase-payment-failed',
       }
     case 'pendingAfterTimeout':
@@ -86,10 +84,11 @@ export function PurchaseStatusHero({
 }: PurchaseStatusHeroProps) {
   const tone = getOrderStatusTone(order.status)
   const copy = getPurchaseHeroCopy(confirmationState)
-  const dateLabel = new Date(order.placedAt ?? order.createdAt).toLocaleDateString(
-    'es-MX',
-    { day: 'numeric', month: 'long', year: 'numeric' },
-  )
+  const dateLabel = new Date(order.placedAt ?? order.createdAt).toLocaleDateString('es-MX', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
   const hasCustomization = orderHasCustomization(order)
   const showProgress =
     (confirmationState === 'loading' || confirmationState === 'confirming') &&

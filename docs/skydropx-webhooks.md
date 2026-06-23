@@ -20,8 +20,8 @@ Configura esta URL en Skydropx PRO (solicitud a [hola@skydropx.com](mailto:hola@
 
 Variable de entorno:
 
-| Variable | Uso |
-|----------|-----|
+| Variable                  | Uso                                             |
+| ------------------------- | ----------------------------------------------- |
 | `SKYDROPX_WEBHOOK_SECRET` | HMAC SHA-512, Bearer, header o query `?secret=` |
 
 Modos soportados (cualquiera válido si el secret coincide):
@@ -31,10 +31,10 @@ Modos soportados (cualquiera válido si el secret coincide):
 3. **Header:** `x-skydropx-webhook-secret`, `x-webhook-secret`
 4. **Query (dev/smoke):** `?secret=<secret>`
 
-| Entorno | Sin secret |
-|---------|------------|
+| Entorno     | Sin secret                 |
+| ----------- | -------------------------- |
 | Development | Acepta con warning en logs |
-| Production | Responde `401` |
+| Production  | Responde `401`             |
 
 ## Formato de payload (JSON:API)
 
@@ -82,15 +82,15 @@ Si no hay shipment local:
 
 ## Mapeo de estados
 
-| Skydropx / evento | `ShipmentStatus` | Order |
-|-------------------|------------------|-------|
-| created, label | `LABEL_CREATED` | fulfillment `PROCESSING` |
-| in_transit, tracking.updated | `IN_TRANSIT` | `SHIPPED` |
-| out_for_delivery, last_mile | `OUT_FOR_DELIVERY` | `SHIPPED` |
-| delivered | `DELIVERED` | `DELIVERED` |
-| cancelled | `CANCELLED` | — |
-| exception, failed | `FAILED` | — |
-| in_return | `RETURNED` | — |
+| Skydropx / evento            | `ShipmentStatus`   | Order                    |
+| ---------------------------- | ------------------ | ------------------------ |
+| created, label               | `LABEL_CREATED`    | fulfillment `PROCESSING` |
+| in_transit, tracking.updated | `IN_TRANSIT`       | `SHIPPED`                |
+| out_for_delivery, last_mile  | `OUT_FOR_DELIVERY` | `SHIPPED`                |
+| delivered                    | `DELIVERED`        | `DELIVERED`              |
+| cancelled                    | `CANCELLED`        | —                        |
+| exception, failed            | `FAILED`           | —                        |
+| in_return                    | `RETURNED`         | —                        |
 
 No se degradan estados (ej. `DELIVERED` no vuelve a `IN_TRANSIT`).
 
@@ -105,10 +105,10 @@ Por evento aplicable (transacción Prisma):
 
 ## Emails
 
-| Template | Cuándo | Idempotencia |
-|----------|--------|--------------|
-| `shipping_update` | Primera vez `IN_TRANSIT` / `OUT_FOR_DELIVERY` | `dedupeKey: shipped` |
-| `delivered` | Primera vez `DELIVERED` | `dedupeKey: delivered` |
+| Template          | Cuándo                                        | Idempotencia           |
+| ----------------- | --------------------------------------------- | ---------------------- |
+| `shipping_update` | Primera vez `IN_TRANSIT` / `OUT_FOR_DELIVERY` | `dedupeKey: shipped`   |
+| `delivered`       | Primera vez `DELIVERED`                       | `dedupeKey: delivered` |
 
 - Fallo de email **no** bloquea el webhook.
 - Links: cuenta (`accountOrderUrl`) o claim (`claimUrl`) para invitados.
@@ -145,9 +145,9 @@ npx tsx scripts/skydropx-webhook-smoke.ts delivered <providerShipmentId> <tracki
 
 ## Archivos
 
-| Archivo | Rol |
-|---------|-----|
-| `src/app/api/webhooks/skydropx/route.ts` | HTTP handler |
-| `src/server/shipping/skydropx/skydropx.webhook-verify.ts` | Auth |
-| `src/server/shipping/skydropx/skydropx.webhook-processor.ts` | Lógica |
-| `src/server/shipping/skydropx/skydropx.sanitize.ts` | Sanitización |
+| Archivo                                                      | Rol          |
+| ------------------------------------------------------------ | ------------ |
+| `src/app/api/webhooks/skydropx/route.ts`                     | HTTP handler |
+| `src/server/shipping/skydropx/skydropx.webhook-verify.ts`    | Auth         |
+| `src/server/shipping/skydropx/skydropx.webhook-processor.ts` | Lógica       |
+| `src/server/shipping/skydropx/skydropx.sanitize.ts`          | Sanitización |

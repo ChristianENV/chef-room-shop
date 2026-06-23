@@ -82,9 +82,7 @@ async function createProductAuditLog(
       action,
       entityType: 'Product',
       entityId: productId,
-      metadataJson: metadata
-        ? (metadata as Prisma.InputJsonValue)
-        : undefined,
+      metadataJson: metadata ? (metadata as Prisma.InputJsonValue) : undefined,
     },
   })
 }
@@ -401,7 +399,7 @@ export async function updateAdminProductStatus(
           nextStatus === ProductStatus.ACTIVE
             ? null
             : nextStatus === ProductStatus.ARCHIVED
-              ? existing.deletedAt ?? new Date()
+              ? (existing.deletedAt ?? new Date())
               : existing.deletedAt,
       },
       include: productInclude,
@@ -582,11 +580,7 @@ export async function upsertAdminProductVariant(
       include: { color: true, size: true },
     })
 
-    return mapAdminProductVariantToGql(
-      variant,
-      product.basePriceCents,
-      parsed.variantName,
-    )
+    return mapAdminProductVariantToGql(variant, product.basePriceCents, parsed.variantName)
   }
 
   if (!parsed.colorId || !parsed.sizeId) {
@@ -619,16 +613,9 @@ export async function upsertAdminProductVariant(
       include: { color: true, size: true },
     })
 
-    return mapAdminProductVariantToGql(
-      variant,
-      product.basePriceCents,
-      parsed.variantName,
-    )
+    return mapAdminProductVariantToGql(variant, product.basePriceCents, parsed.variantName)
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2002'
-    ) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       throw conflictError('Ya existe una variante con este color y talla.')
     }
     throw error

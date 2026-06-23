@@ -2,14 +2,8 @@
 
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
-import {
-  ProductImageDisplay,
-  ProductImageThumbnail,
-} from '@/components/shared/product-image'
-import {
-  getProductMainImageUrl,
-  getVisibleProductImages,
-} from '@/src/lib/product/product-images'
+import { ProductImageDisplay, ProductImageThumbnail } from '@/components/shared/product-image'
+import { getProductMainImageUrl, getVisibleProductImages } from '@/src/lib/product/product-images'
 import { Badge } from '@/components/ui/badge'
 import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react'
 import type { ProductImage } from '@/lib/types'
@@ -25,12 +19,7 @@ interface ProductGalleryProps {
   className?: string
 }
 
-export function ProductGallery({
-  images,
-  productName,
-  badges,
-  className,
-}: ProductGalleryProps) {
+export function ProductGallery({ images, productName, badges, className }: ProductGalleryProps) {
   const visibleImages = useMemo(() => getVisibleProductImages(images), [images])
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [viewMode, setViewMode] = useState<'front' | 'back'>('front')

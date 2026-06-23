@@ -14,10 +14,7 @@ export function useToggleAdminCustomizationRuleMutation() {
     mutationFn: ({ id, enabled }: Variables) => toggleAdminCustomizationRule(id, enabled),
     onSuccess: (rule) => {
       void queryClient.invalidateQueries({ queryKey: adminCustomizationQueryKeys.all })
-      void queryClient.setQueryData(
-        adminCustomizationQueryKeys.ruleDetail(rule.id),
-        rule,
-      )
+      void queryClient.setQueryData(adminCustomizationQueryKeys.ruleDetail(rule.id), rule)
       void queryClient.invalidateQueries({
         queryKey: adminCustomizationQueryKeys.rulesByProduct(rule.productId),
       })

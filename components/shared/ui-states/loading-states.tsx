@@ -32,10 +32,10 @@ interface ProductGridSkeletonProps {
   className?: string
 }
 
-export function ProductGridSkeleton({ 
-  count = 8, 
+export function ProductGridSkeleton({
+  count = 8,
   columns = 4,
-  className 
+  className,
 }: ProductGridSkeletonProps) {
   const colsClass = {
     2: 'grid-cols-1 sm:grid-cols-2',
@@ -65,7 +65,7 @@ export function ProductDetailSkeleton({ className }: { className?: string }) {
           ))}
         </div>
       </div>
-      
+
       {/* Info */}
       <div className="space-y-6">
         <div>
@@ -76,15 +76,15 @@ export function ProductDetailSkeleton({ className }: { className?: string }) {
             <Skeleton className="h-4 w-16" />
           </div>
         </div>
-        
+
         <Skeleton className="h-8 w-32" />
-        
+
         <div className="space-y-2">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-5/6" />
           <Skeleton className="h-4 w-4/6" />
         </div>
-        
+
         {/* Colors */}
         <div>
           <Skeleton className="h-4 w-16 mb-2" />
@@ -94,7 +94,7 @@ export function ProductDetailSkeleton({ className }: { className?: string }) {
             ))}
           </div>
         </div>
-        
+
         {/* Sizes */}
         <div>
           <Skeleton className="h-4 w-16 mb-2" />
@@ -104,7 +104,7 @@ export function ProductDetailSkeleton({ className }: { className?: string }) {
             ))}
           </div>
         </div>
-        
+
         {/* CTAs */}
         <div className="flex gap-4">
           <Skeleton className="h-12 flex-1 rounded-md" />
@@ -138,7 +138,7 @@ export function CartSkeleton({ className }: { className?: string }) {
           </Card>
         ))}
       </div>
-      
+
       {/* Summary */}
       <Card className="h-fit border-border bg-card">
         <CardContent className="space-y-4 p-6">
@@ -184,7 +184,7 @@ export function CheckoutSkeleton({ className }: { className?: string }) {
             </div>
           ))}
         </div>
-        
+
         {/* Contact */}
         <Card className="border-border bg-card">
           <CardContent className="space-y-4 p-6">
@@ -195,7 +195,7 @@ export function CheckoutSkeleton({ className }: { className?: string }) {
             </div>
           </CardContent>
         </Card>
-        
+
         {/* Address */}
         <Card className="border-border bg-card">
           <CardContent className="space-y-4 p-6">
@@ -208,7 +208,7 @@ export function CheckoutSkeleton({ className }: { className?: string }) {
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Summary */}
       <div className="lg:col-span-2">
         <Card className="sticky top-4 border-border bg-card">
@@ -267,7 +267,7 @@ export function CustomizerSkeleton({ className }: { className?: string }) {
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Controls Panel */}
       <div className="space-y-4">
         <Card className="border-border bg-card">
@@ -280,7 +280,7 @@ export function CustomizerSkeleton({ className }: { className?: string }) {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border-border bg-card">
           <CardContent className="space-y-4 p-4">
             <Skeleton className="h-5 w-40" />
@@ -291,7 +291,7 @@ export function CustomizerSkeleton({ className }: { className?: string }) {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border-border bg-card">
           <CardContent className="space-y-4 p-4">
             <Skeleton className="h-5 w-24" />
@@ -299,7 +299,7 @@ export function CustomizerSkeleton({ className }: { className?: string }) {
             <Skeleton className="h-20 w-full rounded-md" />
           </CardContent>
         </Card>
-        
+
         <Skeleton className="h-12 w-full rounded-md" />
       </div>
     </div>
@@ -313,11 +313,7 @@ interface AdminTableSkeletonProps {
   className?: string
 }
 
-export function AdminTableSkeleton({ 
-  rows = 5, 
-  columns = 6,
-  className 
-}: AdminTableSkeletonProps) {
+export function AdminTableSkeleton({ rows = 5, columns = 6, className }: AdminTableSkeletonProps) {
   return (
     <Card className={cn('border-border bg-card', className)}>
       <div className="overflow-hidden">
@@ -325,27 +321,29 @@ export function AdminTableSkeleton({
         <div className="flex items-center gap-4 border-b border-border bg-secondary/50 px-4 py-3">
           <Skeleton className="h-4 w-4" />
           {Array.from({ length: columns }).map((_, i) => (
-            <Skeleton 
-              key={i} 
-              className="h-4" 
+            <Skeleton
+              key={i}
+              className="h-4"
               style={{ width: `${TABLE_SKELETON_WIDTHS[i % TABLE_SKELETON_WIDTHS.length]}px` }}
             />
           ))}
         </div>
-        
+
         {/* Rows */}
         {Array.from({ length: rows }).map((_, rowIndex) => (
-          <div 
-            key={rowIndex} 
+          <div
+            key={rowIndex}
             className="flex items-center gap-4 border-b border-border px-4 py-3 last:border-0"
           >
             <Skeleton className="h-4 w-4" />
             <Skeleton className="h-10 w-10 rounded-md" />
             {Array.from({ length: columns - 1 }).map((_, colIndex) => (
-              <Skeleton 
-                key={colIndex} 
-                className="h-4" 
-                style={{ width: `${TABLE_SKELETON_WIDTHS[(rowIndex + colIndex) % TABLE_SKELETON_WIDTHS.length]}px` }}
+              <Skeleton
+                key={colIndex}
+                className="h-4"
+                style={{
+                  width: `${TABLE_SKELETON_WIDTHS[(rowIndex + colIndex) % TABLE_SKELETON_WIDTHS.length]}px`,
+                }}
               />
             ))}
           </div>
@@ -374,12 +372,12 @@ export function DashboardMetricSkeleton({ className }: { className?: string }) {
 }
 
 // Dashboard Metrics Grid Skeleton
-export function DashboardMetricsGridSkeleton({ 
+export function DashboardMetricsGridSkeleton({
   count = 4,
-  className 
-}: { 
+  className,
+}: {
   count?: number
-  className?: string 
+  className?: string
 }) {
   return (
     <div className={cn('grid gap-4 sm:grid-cols-2 lg:grid-cols-4', className)}>

@@ -116,12 +116,10 @@ export function Customizer3dDebugHud({
         {snapshot.visibleMeshCount ?? '—'}
       </p>
       <p className="truncate">
-        <span className="text-white/50">materials</span>{' '}
-        {snapshot.materialNames?.join(', ') || '—'}
+        <span className="text-white/50">materials</span> {snapshot.materialNames?.join(', ') || '—'}
       </p>
       <p className="truncate">
-        <span className="text-white/50">matTypes</span>{' '}
-        {snapshot.materialTypes?.join(', ') || '—'}
+        <span className="text-white/50">matTypes</span> {snapshot.materialTypes?.join(', ') || '—'}
       </p>
       <p>
         <span className="text-white/50">firstMesh</span> vis=
@@ -134,8 +132,8 @@ export function Customizer3dDebugHud({
         {formatVec3(snapshot.firstMeshWorldScale)}
       </p>
       <p>
-        <span className="text-white/50">forceDebug</span>{' '}
-        {String(snapshot.forceDebugMaterial)} applied=
+        <span className="text-white/50">forceDebug</span> {String(snapshot.forceDebugMaterial)}{' '}
+        applied=
         {snapshot.debugMaterialAppliedMeshCount ?? '—'}
       </p>
       <p>

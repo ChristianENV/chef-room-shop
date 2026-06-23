@@ -126,13 +126,13 @@ editor visual (Figma/Canva), manteniendo la identidad Chef Room
 
 ### Datos: BFF vs fallback
 
-| Dato | Fuente principal (BFF) | Fallback |
-| --- | --- | --- |
-| Colores | `product.colors` (variantes de catálogo) | `FALLBACK_COLORS` (Blanco, Negro, Gris, Azul `#2B3280`, Rojo, Verde, Naranja) |
-| Tallas | `product.sizes` + stock por variante | `FALLBACK_SIZES` (XS–XXL) |
-| Personalización | `customizationRulesByProduct` (zonas, opciones, precio, disponibilidad) | `FALLBACK_PERSONALIZATION_ZONES` (marcado TODO BFF) |
-| Manga/Cuello/Botones | — (estilo local del store) | constantes locales |
-| Precio | `product.basePriceCents` (siempre MXN) | — |
+| Dato                 | Fuente principal (BFF)                                                  | Fallback                                                                      |
+| -------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Colores              | `product.colors` (variantes de catálogo)                                | `FALLBACK_COLORS` (Blanco, Negro, Gris, Azul `#2B3280`, Rojo, Verde, Naranja) |
+| Tallas               | `product.sizes` + stock por variante                                    | `FALLBACK_SIZES` (XS–XXL)                                                     |
+| Personalización      | `customizationRulesByProduct` (zonas, opciones, precio, disponibilidad) | `FALLBACK_PERSONALIZATION_ZONES` (marcado TODO BFF)                           |
+| Manga/Cuello/Botones | — (estilo local del store)                                              | constantes locales                                                            |
+| Precio               | `product.basePriceCents` (siempre MXN)                                  | —                                                                             |
 
 ### Elementos del diseño y propiedades
 

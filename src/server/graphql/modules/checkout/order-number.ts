@@ -33,9 +33,7 @@ export async function generateOrderNumber(prisma: OrderNumberDb): Promise<string
 /**
  * Generates an order number, retrying on unique constraint collisions.
  */
-export async function generateOrderNumberWithRetry(
-  prisma: OrderNumberDb,
-): Promise<string> {
+export async function generateOrderNumberWithRetry(prisma: OrderNumberDb): Promise<string> {
   let candidate = await generateOrderNumber(prisma)
 
   for (let attempt = 0; attempt < MAX_GENERATION_ATTEMPTS; attempt += 1) {

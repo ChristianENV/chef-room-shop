@@ -2,12 +2,7 @@ import type { ShippingRate } from '../types'
 
 export type ShippingRateBadge = 'recommended' | 'cheapest' | 'fastest' | 'selected'
 
-export type ShippingRateViewMode =
-  | 'highlights'
-  | 'all'
-  | 'cheapest'
-  | 'fastest'
-  | 'carrier'
+export type ShippingRateViewMode = 'highlights' | 'all' | 'cheapest' | 'fastest' | 'carrier'
 
 export type ShippingRateHighlightContext = {
   rate: ShippingRate
@@ -119,8 +114,7 @@ function computeBalancedRecommended(rates: ShippingRate[]): ShippingRate | null 
 
   for (const rate of rates) {
     const normalizedPrice = (rate.amountCents - minPrice) / priceSpan
-    const normalizedDays =
-      ((rate.estimatedDays ?? maxDays) - minDays) / daysSpan
+    const normalizedDays = ((rate.estimatedDays ?? maxDays) - minDays) / daysSpan
     const score = normalizedPrice * 0.65 + normalizedDays * 0.35
     if (score < bestScore) {
       bestScore = score
@@ -180,9 +174,7 @@ export function sortShippingRates(
     case 'all':
     case 'highlights':
     default:
-      return copy.sort(
-        (a, b) => balancedSortScore(a, rates) - balancedSortScore(b, rates),
-      )
+      return copy.sort((a, b) => balancedSortScore(a, rates) - balancedSortScore(b, rates))
   }
 }
 
@@ -218,8 +210,7 @@ function mergeHighlightCards(
   }
 
   const order = [recommended?.id, cheapest?.id, fastest?.id].filter(
-    (id, index, arr): id is string =>
-      Boolean(id) && arr.indexOf(id) === index,
+    (id, index, arr): id is string => Boolean(id) && arr.indexOf(id) === index,
   )
 
   const cards: ShippingRateHighlightContext[] = []
@@ -304,7 +295,10 @@ export function formatQuoteExpiresAt(expiresAt: string | null): string | null {
 const OTHER_RATES_PREVIEW_COUNT = 3
 const OTHER_RATES_PAGE_SIZE = 8
 
-export function paginateOtherRates(rates: ShippingRate[], visibleCount: number): {
+export function paginateOtherRates(
+  rates: ShippingRate[],
+  visibleCount: number,
+): {
   visible: ShippingRate[]
   hasMore: boolean
   remaining: number

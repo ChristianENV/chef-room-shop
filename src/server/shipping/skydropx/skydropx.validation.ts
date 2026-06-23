@@ -1,10 +1,7 @@
 import type { Address, ShippingQuote, ShippingRate } from '@prisma/client'
 
 import type { PackageDimensions } from '../shipping-package.shared'
-import {
-  resolveShippingOriginFromEnv,
-  type ShippingOriginConfig,
-} from '../shipping-origin.resolve'
+import { resolveShippingOriginFromEnv, type ShippingOriginConfig } from '../shipping-origin.resolve'
 import type { SkydropxLabelAddress } from './skydropx-address'
 import { truncateSkydropxReference } from './skydropx-field-limits'
 import { normalizeMxPhoneForSkydropx } from './skydropx-phone'
@@ -53,7 +50,12 @@ export function parseAddressLine2(line2: string | null | undefined): {
 
 function assertMxCountry(country: string, fieldLabel = 'país'): void {
   const normalized = country.trim().toUpperCase()
-  if (normalized !== 'MX' && normalized !== 'MEX' && normalized !== 'MÉXICO' && normalized !== 'MEXICO') {
+  if (
+    normalized !== 'MX' &&
+    normalized !== 'MEX' &&
+    normalized !== 'MÉXICO' &&
+    normalized !== 'MEXICO'
+  ) {
     throw new SkydropxValidationError(`El ${fieldLabel} debe ser MX para envíos nacionales.`)
   }
 }
@@ -208,9 +210,7 @@ export function validateOrderShippingAddressForSkydropx(
     company: address.fullName.trim(),
     phone,
     email,
-    ...(intNumber?.trim()
-      ? { further_information: `Int. ${intNumber.trim()}`.slice(0, 70) }
-      : {}),
+    ...(intNumber?.trim() ? { further_information: `Int. ${intNumber.trim()}`.slice(0, 70) } : {}),
   }
 }
 
@@ -243,9 +243,7 @@ export function validateQuotationDestination(
   if (isBlank(input.state)) missing.push('estado')
 
   if (missing.length > 0) {
-    throw new SkydropxValidationError(
-      `No pudimos cotizar el envío. Faltan: ${missing.join(', ')}.`,
-    )
+    throw new SkydropxValidationError(`No pudimos cotizar el envío. Faltan: ${missing.join(', ')}.`)
   }
 
   let postalCode: string

@@ -32,7 +32,7 @@ export function ProductPageSkeleton() {
           <Skeleton className="h-4 w-32" />
           <Skeleton className="h-8 w-40" />
           <Skeleton className="h-16 w-full" />
-          
+
           {/* Colors */}
           <div className="space-y-2">
             <Skeleton className="h-4 w-16" />
@@ -73,9 +73,7 @@ export function ProductNotFound({ className }: ProductNotFoundProps) {
       <div className="rounded-full bg-secondary p-6">
         <Search className="h-12 w-12 text-muted-foreground" />
       </div>
-      <h1 className="mt-6 font-sans text-2xl font-bold text-foreground">
-        Producto no encontrado
-      </h1>
+      <h1 className="mt-6 font-sans text-2xl font-bold text-foreground">Producto no encontrado</h1>
       <p className="mt-2 max-w-md font-serif text-muted-foreground">
         El producto que buscas no existe o ha sido removido de nuestro catalogo.
       </p>

@@ -42,10 +42,7 @@ export function CartItemCard({
   return (
     <div
       data-testid="cart-item-card"
-      className={cn(
-        'rounded-lg border border-border bg-card p-4 md:p-6',
-        className,
-      )}
+      className={cn('rounded-lg border border-border bg-card p-4 md:p-6', className)}
     >
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="relative flex-shrink-0">
@@ -97,7 +94,10 @@ export function CartItemCard({
               <span className="font-sans font-medium text-foreground">{item.size}</span>
             </span>
             <span className="text-border">|</span>
-            <span className="flex items-center gap-1.5" data-testid="cart-item-selected-fabric-color">
+            <span
+              className="flex items-center gap-1.5"
+              data-testid="cart-item-selected-fabric-color"
+            >
               <span className="font-serif">Tela:</span>
               <span className="flex items-center gap-1">
                 <span
@@ -105,15 +105,16 @@ export function CartItemCard({
                   style={{ backgroundColor: item.colorHex }}
                   aria-hidden
                 />
-                <span className="font-sans font-medium text-foreground">
-                  {item.colorName}
-                </span>
+                <span className="font-sans font-medium text-foreground">{item.colorName}</span>
               </span>
             </span>
             {item.detailColorName ? (
               <>
                 <span className="text-border">|</span>
-                <span className="flex items-center gap-1.5" data-testid="cart-item-selected-detail-color">
+                <span
+                  className="flex items-center gap-1.5"
+                  data-testid="cart-item-selected-detail-color"
+                >
                   <span className="font-serif">Detalle:</span>
                   <span className="flex items-center gap-1">
                     {item.detailColorHex ? (
@@ -155,9 +156,7 @@ export function CartItemCard({
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
-                <span className="w-10 text-center font-sans font-medium">
-                  {item.quantity}
-                </span>
+                <span className="w-10 text-center font-sans font-medium">{item.quantity}</span>
                 <Button
                   variant="ghost"
                   size="icon"

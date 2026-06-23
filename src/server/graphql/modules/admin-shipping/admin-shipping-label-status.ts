@@ -1,8 +1,4 @@
-import {
-  FulfillmentStatus,
-  OrderStatus,
-  ShipmentStatus,
-} from '@prisma/client'
+import { FulfillmentStatus, OrderStatus, ShipmentStatus } from '@prisma/client'
 
 export type AdminLabelCreationStatuses = {
   shipmentStatus: ShipmentStatus

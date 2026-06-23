@@ -23,10 +23,11 @@ type OrderStatusHeroProps = {
  */
 export function OrderStatusHero({ order }: OrderStatusHeroProps) {
   const tone = getOrderStatusTone(order.status)
-  const dateLabel = new Date(order.placedAt ?? order.createdAt).toLocaleDateString(
-    'es-MX',
-    { day: 'numeric', month: 'long', year: 'numeric' },
-  )
+  const dateLabel = new Date(order.placedAt ?? order.createdAt).toLocaleDateString('es-MX', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
   const hasCustomization = orderHasCustomization(order)
 
   return (

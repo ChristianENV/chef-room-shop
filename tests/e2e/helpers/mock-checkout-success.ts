@@ -8,15 +8,16 @@ export type MockCheckoutResultOptions = {
   paymentStatus?: string
   canViewDetails?: boolean
   viewerEmailMatchesOrder?: boolean
-  claimStatus?: 'CLAIMED' | 'ALREADY_CLAIMED_BY_USER' | 'EMAIL_VERIFICATION_REQUIRED' | 'EMAIL_MISMATCH'
+  claimStatus?:
+    | 'CLAIMED'
+    | 'ALREADY_CLAIMED_BY_USER'
+    | 'EMAIL_VERIFICATION_REQUIRED'
+    | 'EMAIL_MISMATCH'
   pollSequence?: Array<{ status: string; paymentStatus: string }>
   verifySequence?: Array<{ status: string; paymentStatus: string }>
 }
 
-function buildOrderPayload(overrides: {
-  status: string
-  paymentStatus: string
-}) {
+function buildOrderPayload(overrides: { status: string; paymentStatus: string }) {
   return {
     id: 'order-e2e-1',
     orderNumber: MOCK_ORDER_NUMBER,
@@ -139,18 +140,14 @@ export async function mockCheckoutPostOrderFlow(
   page: Page,
   options: MockCheckoutResultOptions = {},
 ): Promise<void> {
-  const sequence =
-    options.pollSequence ??
-    [
-      {
-        status: options.status ?? 'PENDING_PAYMENT',
-        paymentStatus: options.paymentStatus ?? 'PENDING',
-      },
-    ]
+  const sequence = options.pollSequence ?? [
+    {
+      status: options.status ?? 'PENDING_PAYMENT',
+      paymentStatus: options.paymentStatus ?? 'PENDING',
+    },
+  ]
 
-  const verifySequence =
-    options.verifySequence ??
-    sequence
+  const verifySequence = options.verifySequence ?? sequence
 
   let checkoutCallIndex = 0
   let orderCallIndex = 0
@@ -235,8 +232,7 @@ export async function mockCheckoutPostOrderFlow(
 
     if (query.includes('mutation ClaimGuestOrderByCheckoutToken')) {
       const claimStatus = options.claimStatus ?? 'CLAIMED'
-      const claimSuccess =
-        claimStatus === 'CLAIMED' || claimStatus === 'ALREADY_CLAIMED_BY_USER'
+      const claimSuccess = claimStatus === 'CLAIMED' || claimStatus === 'ALREADY_CLAIMED_BY_USER'
 
       await route.fulfill({
         status: 200,

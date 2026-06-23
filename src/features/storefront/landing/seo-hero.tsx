@@ -30,7 +30,9 @@ export function SeoHero({
   className,
 }: SeoHeroProps) {
   return (
-    <section className={cn('relative overflow-hidden bg-primary px-4 py-16 md:px-6 md:py-24', className)}>
+    <section
+      className={cn('relative overflow-hidden bg-primary px-4 py-16 md:px-6 md:py-24', className)}
+    >
       <div className="absolute inset-0 opacity-10">
         <div
           className="absolute inset-0"
@@ -51,7 +53,11 @@ export function SeoHero({
           {description}
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-          <Button asChild size="lg" className="bg-white font-sans font-semibold text-primary hover:bg-white/90">
+          <Button
+            asChild
+            size="lg"
+            className="bg-white font-sans font-semibold text-primary hover:bg-white/90"
+          >
             <Link href={primaryCta.href}>
               {primaryCta.label}
               <ArrowRight className="ml-2 h-4 w-4" />

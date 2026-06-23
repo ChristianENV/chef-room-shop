@@ -34,12 +34,7 @@ function LogoDecalInner({ assetUrl, opacity, rotation, zone, mesh }: LogoDecalPr
   const meshRef = useMemo<React.RefObject<THREE.Mesh>>(() => ({ current: mesh }), [mesh])
 
   return (
-    <Decal
-      mesh={meshRef}
-      position={zone.position}
-      rotation={euler}
-      scale={zone.scale}
-    >
+    <Decal mesh={meshRef} position={zone.position} rotation={euler} scale={zone.scale}>
       <meshBasicMaterial
         map={texture}
         transparent

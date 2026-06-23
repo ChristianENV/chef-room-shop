@@ -3,12 +3,12 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { 
-  ChefRoomLogo, 
-  ProductCard, 
+import {
+  ChefRoomLogo,
+  ProductCard,
   TrustBadgesRow,
   CTAButtonGroup,
-  FeatureCard
+  FeatureCard,
 } from '@/components/brand'
 import { MOCK_PRODUCTS } from '@/lib/mock-data'
 import { routes } from '@/src/config/routes'
@@ -32,18 +32,30 @@ export function HomepagePreviewSection() {
             <header className="border-b border-border bg-card px-4 py-4 md:px-6">
               <div className="mx-auto flex max-w-6xl items-center justify-between">
                 <ChefRoomLogo variant="horizontal" colorScheme="light" size="md" />
-                
+
                 <nav className="hidden items-center gap-6 md:flex">
-                  <Link href={routes.chefJackets} className="font-sans text-sm font-medium text-foreground hover:text-accent">
+                  <Link
+                    href={routes.chefJackets}
+                    className="font-sans text-sm font-medium text-foreground hover:text-accent"
+                  >
                     Filipinas
                   </Link>
-                  <Link href={routes.aprons} className="font-sans text-sm font-medium text-muted-foreground hover:text-accent">
+                  <Link
+                    href={routes.aprons}
+                    className="font-sans text-sm font-medium text-muted-foreground hover:text-accent"
+                  >
                     Mandiles
                   </Link>
-                  <Link href={routes.pants} className="font-sans text-sm font-medium text-muted-foreground hover:text-accent">
+                  <Link
+                    href={routes.pants}
+                    className="font-sans text-sm font-medium text-muted-foreground hover:text-accent"
+                  >
                     Pantalones
                   </Link>
-                  <Link href={routes.shop} className="font-sans text-sm font-medium text-muted-foreground hover:text-accent">
+                  <Link
+                    href={routes.shop}
+                    className="font-sans text-sm font-medium text-muted-foreground hover:text-accent"
+                  >
                     Tienda
                   </Link>
                 </nav>
@@ -73,15 +85,19 @@ export function HomepagePreviewSection() {
                     Tu cocina te define, tu uniforme te distingue
                   </h1>
                   <p className="mt-4 font-serif text-lg text-white/80 max-w-lg text-pretty">
-                    Uniformes de chef personalizables de la más alta calidad. 
-                    Diseña el tuyo y destaca en tu cocina.
+                    Uniformes de chef personalizables de la más alta calidad. Diseña el tuyo y
+                    destaca en tu cocina.
                   </p>
                   <div className="mt-8 flex flex-wrap gap-4">
                     <Button size="lg" className="bg-white text-chef-deep-navy hover:bg-white/90">
                       <Edit3 className="mr-2 h-5 w-5" />
                       Personalizar Ahora
                     </Button>
-                    <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="border-white/30 text-white hover:bg-white/10"
+                    >
                       Ver Colección
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
@@ -139,8 +155,8 @@ export function HomepagePreviewSection() {
                       Diseña tu uniforme perfecto
                     </h2>
                     <p className="mt-4 font-serif text-lg text-white/80 text-pretty">
-                      Nuestro personalizador te permite agregar tu nombre, logo o diseño 
-                      único a cualquier prenda. Visualiza el resultado en tiempo real.
+                      Nuestro personalizador te permite agregar tu nombre, logo o diseño único a
+                      cualquier prenda. Visualiza el resultado en tiempo real.
                     </p>
                     <div className="mt-8">
                       <Button size="lg" className="bg-white text-primary hover:bg-white/90">

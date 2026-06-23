@@ -5,7 +5,10 @@ import {
   CUSTOMIZER_PRICING_LABELS,
   CUSTOMIZER_PRICING_RULES_VERSION,
 } from './customizer-pricing.constants'
-import type { CustomizerPriceBreakdown, CustomizerPriceBreakdownItem } from './customizer-pricing.types'
+import type {
+  CustomizerPriceBreakdown,
+  CustomizerPriceBreakdownItem,
+} from './customizer-pricing.types'
 
 export type CustomizerPricingElement = {
   id: string
@@ -144,7 +147,9 @@ function logoAmountCents(
   }
 }
 
-export function calculateCustomizerPrice(input: CalculateCustomizerPriceInput): CustomizerPriceBreakdown {
+export function calculateCustomizerPrice(
+  input: CalculateCustomizerPriceInput,
+): CustomizerPriceBreakdown {
   const basePriceCents = Math.max(0, input.basePriceCents)
   const elements = toPricingElements(input)
   const chestAssets = chestLogoAssetKeys(elements)

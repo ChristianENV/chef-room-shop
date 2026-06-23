@@ -7,8 +7,7 @@ import { CustomizerLoading } from '@/src/features/storefront/customizer/componen
 
 export default function CustomizeProductPage() {
   const params = useParams()
-  const productSlug =
-    typeof params.productSlug === 'string' ? params.productSlug : null
+  const productSlug = typeof params.productSlug === 'string' ? params.productSlug : null
 
   return (
     <Suspense fallback={<CustomizerLoading />}>

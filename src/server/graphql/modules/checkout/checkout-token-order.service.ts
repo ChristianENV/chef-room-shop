@@ -34,10 +34,7 @@ export type CheckoutOrderDetailAccessGql = {
   maskedCustomerEmail: string
 }
 
-function viewerEmailMatchesOrder(
-  context: GraphQLContext,
-  orderEmail: string,
-): boolean {
+function viewerEmailMatchesOrder(context: GraphQLContext, orderEmail: string): boolean {
   const viewerEmail = context.currentUser?.email?.trim().toLowerCase()
   if (!viewerEmail) return false
   return viewerEmail === orderEmail.trim().toLowerCase()
@@ -107,9 +104,7 @@ export async function getOrderByCheckoutToken(
   )
 
   return {
-    order: mapOrderToGql(
-      order as Parameters<typeof mapOrderToGql>[0],
-    ),
+    order: mapOrderToGql(order as Parameters<typeof mapOrderToGql>[0]),
     returnTokenValid,
     tokenExpired,
     viewerEmailMatchesOrder: viewerEmailMatchesOrder(context, order.customerEmail),

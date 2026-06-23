@@ -15,23 +15,20 @@ interface FunnelChartProps {
 }
 
 export function FunnelChart({ steps, className }: FunnelChartProps) {
-  const maxValue = Math.max(...steps.map(s => s.value))
+  const maxValue = Math.max(...steps.map((s) => s.value))
 
   return (
     <div className={cn('space-y-3', className)}>
       {steps.map((step, index) => {
         const percentage = (step.value / maxValue) * 100
-        const conversionFromPrev = index > 0 
-          ? ((step.value / steps[index - 1].value) * 100).toFixed(1)
-          : null
+        const conversionFromPrev =
+          index > 0 ? ((step.value / steps[index - 1].value) * 100).toFixed(1) : null
 
         return (
           <div key={step.label} className="space-y-1">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="font-sans text-sm font-medium text-foreground">
-                  {step.label}
-                </span>
+                <span className="font-sans text-sm font-medium text-foreground">{step.label}</span>
                 {conversionFromPrev && (
                   <span className="font-mono text-xs text-muted-foreground">
                     ({conversionFromPrev}%)

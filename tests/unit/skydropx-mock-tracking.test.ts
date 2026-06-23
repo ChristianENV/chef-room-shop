@@ -1,12 +1,7 @@
 import assert from 'node:assert/strict'
 import { after, describe, it } from 'node:test'
 
-import {
-  FulfillmentStatus,
-  OrderStatus,
-  RoleSlug,
-  ShipmentStatus,
-} from '@prisma/client'
+import { FulfillmentStatus, OrderStatus, RoleSlug, ShipmentStatus } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 
 import type { CurrentUser } from '@/src/server/auth/types'
@@ -24,10 +19,7 @@ const hasDatabase = canRunDbIntegrationTests()
 const ORIGINAL_NODE_ENV = process.env.NODE_ENV
 const ORIGINAL_VERCEL_ENV = process.env.VERCEL_ENV
 
-function setDeploymentEnv(params: {
-  nodeEnv?: string
-  vercelEnv?: string | null
-}): void {
+function setDeploymentEnv(params: { nodeEnv?: string; vercelEnv?: string | null }): void {
   const env = process.env as Record<string, string | undefined>
 
   if (params.nodeEnv === undefined) {
@@ -155,9 +147,8 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
 
   async function createMockShipmentOrder(orderNumber: string) {
     const { prisma } = await loadPrisma()
-    const { buildMockTrackingNumber } = await import(
-      '@/src/server/shipping/skydropx/skydropx.mock-provider'
-    )
+    const { buildMockTrackingNumber } =
+      await import('@/src/server/shipping/skydropx/skydropx.mock-provider')
 
     const order = await prisma.order.create({
       data: {
@@ -239,9 +230,8 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
     })
     cleanup.orderIds.push(order.id)
 
-    const { buildMockTrackingNumber } = await import(
-      '@/src/server/shipping/skydropx/skydropx.mock-provider'
-    )
+    const { buildMockTrackingNumber } =
+      await import('@/src/server/shipping/skydropx/skydropx.mock-provider')
 
     await prisma.shipment.create({
       data: {
@@ -371,9 +361,7 @@ describe('adminSimulateMockShipmentTrackingStatus auth', () => {
           trackingStatus: 'in_transit',
         }),
       (error: unknown) => {
-        return (
-          error instanceof GraphQLError && error.extensions?.code === 'FORBIDDEN'
-        )
+        return error instanceof GraphQLError && error.extensions?.code === 'FORBIDDEN'
       },
     )
   })

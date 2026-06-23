@@ -53,7 +53,10 @@ export function AdminShipmentsToolbar({
           value={statusFilter}
           onValueChange={(value) => onStatusFilterChange(value as AdminShipmentStatusFilter)}
         >
-          <SelectTrigger className="w-[220px] font-sans" data-testid="admin-shipments-status-filter">
+          <SelectTrigger
+            className="w-[220px] font-sans"
+            data-testid="admin-shipments-status-filter"
+          >
             <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>

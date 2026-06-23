@@ -24,10 +24,7 @@ export function SavedDesignsSection({ embedded = false }: { embedded?: boolean }
     { enabled: isAuthenticated },
   )
 
-  const recentDesigns = useMemo(
-    () => remoteDesigns.map(mapAccountDesignToUi),
-    [remoteDesigns],
-  )
+  const recentDesigns = useMemo(() => remoteDesigns.map(mapAccountDesignToUi), [remoteDesigns])
 
   const localDraftSummary = useMemo(() => {
     if (isAuthenticated || !hasLocalDraft) return null

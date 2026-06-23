@@ -7,11 +7,7 @@ import { cn } from '@/lib/utils'
 import { routes } from '@/src/config/routes'
 
 import { LandingMediaImage } from './components/landing-media-image'
-import {
-  LandingReveal,
-  LandingStagger,
-  LandingStaggerItem,
-} from './components/landing-reveal'
+import { LandingReveal, LandingStagger, LandingStaggerItem } from './components/landing-reveal'
 import { SectionHeader } from './components/section-header'
 import { LANDING_MEDIA, type LandingMediaKey } from './lib/landing-media'
 
@@ -88,11 +84,7 @@ function CategoryCard({ cat }: { cat: LandingCategory }) {
           overlay="none"
           className="absolute inset-0 h-full w-full !aspect-auto"
           imageClassName="transition-transform duration-700 group-hover:scale-[1.04]"
-          sizes={
-            isFeatured
-              ? '(max-width: 1024px) 100vw, 50vw'
-              : '(max-width: 1024px) 100vw, 28vw'
-          }
+          sizes={isFeatured ? '(max-width: 1024px) 100vw, 50vw' : '(max-width: 1024px) 100vw, 28vw'}
         />
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[38%] bg-gradient-to-t from-[#0c0f24]/90 via-[#0c0f24]/15 to-transparent lg:h-[32%]" />
@@ -105,7 +97,12 @@ function CategoryCard({ cat }: { cat: LandingCategory }) {
         </div>
       </div>
 
-      <div className={cn('relative z-10 bg-card/95 p-5 backdrop-blur-sm md:p-6', isFeatured && 'md:p-7')}>
+      <div
+        className={cn(
+          'relative z-10 bg-card/95 p-5 backdrop-blur-sm md:p-6',
+          isFeatured && 'md:p-7',
+        )}
+      >
         <p className="font-serif text-xs tracking-[0.2em] uppercase text-muted-foreground">
           {cat.subtitle}
         </p>

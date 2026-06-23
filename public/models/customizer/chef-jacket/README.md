@@ -4,31 +4,31 @@ Modelo temporal de filipina (CLO → glTF) para validar el customizador antes de
 
 ## Archivos
 
-| Archivo | Uso |
-|---------|-----|
-| `chef-jacket.gltf` | Entrada del loader (rutas relativas al `.bin` y texturas) |
-| `chef-jacket.bin` | Geometría binaria |
-| `chef-jacket-diffuse.png` | Base color |
-| `chef-jacket-normal.png` | Normal map |
-| `chef-jacket-metallicroughness.png` | Metallic + roughness |
-| `chef-jacket-displacement.png` | No referenciado en el glTF actual (reserva) |
+| Archivo                             | Uso                                                       |
+| ----------------------------------- | --------------------------------------------------------- |
+| `chef-jacket.gltf`                  | Entrada del loader (rutas relativas al `.bin` y texturas) |
+| `chef-jacket.bin`                   | Geometría binaria                                         |
+| `chef-jacket-diffuse.png`           | Base color                                                |
+| `chef-jacket-normal.png`            | Normal map                                                |
+| `chef-jacket-metallicroughness.png` | Metallic + roughness                                      |
+| `chef-jacket-displacement.png`      | No referenciado en el glTF actual (reserva)               |
 
 URL pública: `/models/customizer/chef-jacket/chef-jacket.gltf`
 
 ## Materiales detectados (inspección glTF)
 
-| Material | Rol en customizador |
-|----------|---------------------|
-| `FABRIC 1_2333` | **body** — `baseColor` |
+| Material              | Rol en customizador         |
+| --------------------- | --------------------------- |
+| `FABRIC 1_2333`       | **body** — `baseColor`      |
 | `Default Button_2335` | **buttons** — `detailColor` |
 
 No hay material separado de vivos/cuello/puños en este export; `detailColor` no tinta tela extra.
 
 ## Meshes
 
-| Mesh | Material |
-|------|----------|
-| `Cloth_mesh` | FABRIC 1_2333 |
+| Mesh             | Material            |
+| ---------------- | ------------------- |
+| `Cloth_mesh`     | FABRIC 1_2333       |
 | `Button_*` (×10) | Default Button_2335 |
 
 ## Pendientes para el modelador final

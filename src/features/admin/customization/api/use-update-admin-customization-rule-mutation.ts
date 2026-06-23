@@ -15,10 +15,7 @@ export function useUpdateAdminCustomizationRuleMutation() {
     mutationFn: ({ id, input }: Variables) => updateAdminCustomizationRule(id, input),
     onSuccess: (rule) => {
       void queryClient.invalidateQueries({ queryKey: adminCustomizationQueryKeys.all })
-      void queryClient.setQueryData(
-        adminCustomizationQueryKeys.ruleDetail(rule.id),
-        rule,
-      )
+      void queryClient.setQueryData(adminCustomizationQueryKeys.ruleDetail(rule.id), rule)
       void queryClient.invalidateQueries({
         queryKey: adminCustomizationQueryKeys.rulesByProduct(rule.productId),
       })

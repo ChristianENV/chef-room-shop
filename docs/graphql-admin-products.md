@@ -8,11 +8,11 @@ Todas las operaciones usan `requireAdminGraphQL` (mismo guard que admin-dashboar
 
 ## Queries
 
-| Query | Descripción |
-|-------|-------------|
-| `adminProducts` | Lista paginada con filtros |
-| `adminProductById` | Detalle por UUID |
-| `adminProductBySlug` | Detalle por slug |
+| Query                     | Descripción                              |
+| ------------------------- | ---------------------------------------- |
+| `adminProducts`           | Lista paginada con filtros               |
+| `adminProductById`        | Detalle por UUID                         |
+| `adminProductBySlug`      | Detalle por slug                         |
 | `adminProductFormOptions` | Tipos, colores y tallas para formularios |
 
 ### Ejemplo listado
@@ -27,8 +27,14 @@ query AdminProductsList {
       name
       status
       basePriceCents
-      productType { slug name }
-      variants { sku priceCents }
+      productType {
+        slug
+        name
+      }
+      variants {
+        sku
+        priceCents
+      }
     }
   }
 }
@@ -46,17 +52,17 @@ Orden default: `updatedAt desc`. Límite default 20, máx 100.
 
 ## Mutations
 
-| Mutation | Descripción |
-|----------|-------------|
-| `createAdminProduct` | Crea producto + AuditLog CREATE |
-| `updateAdminProduct` | Actualiza campos + AuditLog UPDATE |
-| `archiveAdminProduct` | `status: ARCHIVED` + `deletedAt: now` |
-| `duplicateAdminProduct` | Copia producto, imágenes, variantes y reglas de personalización |
-| `updateAdminProductStatus` | Solo cambia status; ACTIVE limpia `deletedAt` |
-| `upsertAdminProductVariant` | Crea/actualiza variante |
-| `deleteAdminProductVariant` | Soft delete (`deletedAt`) |
-| `upsertAdminProductImage` | URL placeholder (sin Cloudinary) |
-| `deleteAdminProductImage` | Borra imagen; reasigna primary |
+| Mutation                    | Descripción                                                     |
+| --------------------------- | --------------------------------------------------------------- |
+| `createAdminProduct`        | Crea producto + AuditLog CREATE                                 |
+| `updateAdminProduct`        | Actualiza campos + AuditLog UPDATE                              |
+| `archiveAdminProduct`       | `status: ARCHIVED` + `deletedAt: now`                           |
+| `duplicateAdminProduct`     | Copia producto, imágenes, variantes y reglas de personalización |
+| `updateAdminProductStatus`  | Solo cambia status; ACTIVE limpia `deletedAt`                   |
+| `upsertAdminProductVariant` | Crea/actualiza variante                                         |
+| `deleteAdminProductVariant` | Soft delete (`deletedAt`)                                       |
+| `upsertAdminProductImage`   | URL placeholder (sin Cloudinary)                                |
+| `deleteAdminProductImage`   | Borra imagen; reasigna primary                                  |
 
 ## Reglas de slug
 
@@ -91,11 +97,11 @@ Orden default: `updatedAt desc`. Límite default 20, máx 100.
 
 La pantalla admin de productos ya consume el BFF (sin `lib/mock-data`).
 
-| Capa | Ruta |
-|------|------|
-| Página | `src/app/(admin)/admin/(protected)/products/page.tsx` |
-| Mapper | `src/features/admin/products/mappers/admin-products-ui.mapper.ts` |
-| Docs UI | `docs/admin-products-ui.md` |
+| Capa    | Ruta                                                              |
+| ------- | ----------------------------------------------------------------- |
+| Página  | `src/app/(admin)/admin/(protected)/products/page.tsx`             |
+| Mapper  | `src/features/admin/products/mappers/admin-products-ui.mapper.ts` |
+| Docs UI | `docs/admin-products-ui.md`                                       |
 
 ### Hooks en UI
 
@@ -150,4 +156,3 @@ El confirm desactiva modelos anteriores del producto y activa el nuevo.
 El delete hace soft delete y borra de R2 (best-effort).
 
 AdminProduct ahora incluye: model3d: AdminProductModel3d
-

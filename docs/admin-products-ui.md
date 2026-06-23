@@ -14,33 +14,33 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
 
 ## Patrón UX: Dialogs vs Drawers
 
-| Caso | Componente |
-|------|------------|
-| Formulario crear/editar producto | `ProductFormDialog` |
-| Confirmación archivar | `AlertDialog` |
-| Navegación mobile admin | `Sheet` — sin cambio |
+| Caso                             | Componente           |
+| -------------------------------- | -------------------- |
+| Formulario crear/editar producto | `ProductFormDialog`  |
+| Confirmación archivar            | `AlertDialog`        |
+| Navegación mobile admin          | `Sheet` — sin cambio |
 
 ## Archivos clave
 
-| Área | Ruta |
-|------|------|
-| Página | `src/app/(admin)/admin/(protected)/products/page.tsx` |
-| Mapper UI | `src/features/admin/products/mappers/admin-products-ui.mapper.ts` |
-| Tipos UI | `src/features/admin/products/types/admin-products-ui.types.ts` |
-| Hooks | `src/features/admin/products/api/*` |
+| Área                     | Ruta                                                                    |
+| ------------------------ | ----------------------------------------------------------------------- |
+| Página                   | `src/app/(admin)/admin/(protected)/products/page.tsx`                   |
+| Mapper UI                | `src/features/admin/products/mappers/admin-products-ui.mapper.ts`       |
+| Tipos UI                 | `src/features/admin/products/types/admin-products-ui.types.ts`          |
+| Hooks                    | `src/features/admin/products/api/*`                                     |
 | Tabla / toolbar / dialog | `src/features/admin/products/products-*.tsx`, `product-form-dialog.tsx` |
-| Imágenes R2 | `src/features/admin/products/components/product-image-*.tsx` |
+| Imágenes R2              | `src/features/admin/products/components/product-image-*.tsx`            |
 
 ## ProductImageUploader
 
-| Archivo | Rol |
-|---------|-----|
-| `product-image-uploader.tsx` | Orquestador: cola, upload, reorder, delete |
-| `product-image-dropzone.tsx` | Drag & drop + file picker (sin cámara) |
-| `product-image-grid.tsx` | Grid sortable (`@dnd-kit`) |
-| `product-image-sortable-card.tsx` | Preview, estados, editar/eliminar |
-| `product-image-editor-dialog.tsx` | Crop libre, presets 1:1 / 4:5, zoom, rotación |
-| `uploads/lib/product-image-processing.ts` | WebP/JPG max 1600px + thumb 400px |
+| Archivo                                   | Rol                                           |
+| ----------------------------------------- | --------------------------------------------- |
+| `product-image-uploader.tsx`              | Orquestador: cola, upload, reorder, delete    |
+| `product-image-dropzone.tsx`              | Drag & drop + file picker (sin cámara)        |
+| `product-image-grid.tsx`                  | Grid sortable (`@dnd-kit`)                    |
+| `product-image-sortable-card.tsx`         | Preview, estados, editar/eliminar             |
+| `product-image-editor-dialog.tsx`         | Crop libre, presets 1:1 / 4:5, zoom, rotación |
+| `uploads/lib/product-image-processing.ts` | WebP/JPG max 1600px + thumb 400px             |
 
 **Crear:** seleccionar imágenes → previews locales → al guardar producto, batch upload R2.
 
@@ -68,8 +68,8 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
 
 ## data-testid
 
-| ID | Ubicación |
-|----|-----------|
+| ID                          | Ubicación           |
+| --------------------------- | ------------------- |
 | `admin-product-form-dialog` | Dialog crear/editar |
 
 ## Limitaciones (v1)
@@ -111,11 +111,11 @@ Solo se acepta `.glb`. Flujo desde **Admin → Editar Producto → pestaña Gene
 
 ### Límites de tamaño
 
-| Límite | Valor |
-|---|---|
-| Tamaño original máximo | 120 MB |
-| Tamaño optimizado máximo | 25 MB |
-| Tamaño recomendado | < 12 MB |
+| Límite                   | Valor   |
+| ------------------------ | ------- |
+| Tamaño original máximo   | 120 MB  |
+| Tamaño optimizado máximo | 25 MB   |
+| Tamaño recomendado       | < 12 MB |
 
 ### Optimización offline
 
@@ -177,8 +177,14 @@ Verificar que el objeto existe y que `Content-Type` es `model/gltf-binary`.
 # Storefront
 query ProductModelSmoke {
   productBySlug(slug: "demo-filipina-executive-blanca") {
-    id name
-    model3d { id url sizeBytes compressionRatio }
+    id
+    name
+    model3d {
+      id
+      url
+      sizeBytes
+      compressionRatio
+    }
   }
 }
 
@@ -186,19 +192,24 @@ query ProductModelSmoke {
 query AdminProductModelSmoke {
   adminProductBySlug(slug: "demo-filipina-executive-blanca") {
     id
-    model3d { id url originalSizeBytes sizeBytes compressionRatio }
+    model3d {
+      id
+      url
+      originalSizeBytes
+      sizeBytes
+      compressionRatio
+    }
   }
 }
 ```
 
 **6. Errores comunes**
 
-| Error | Causa probable | Solución |
-|---|---|---|
-| "Solo se permiten archivos .glb" | Archivo con extensión incorrecta | Subir un `.glb` válido |
-| "El archivo no es un GLB válido" | Magic bytes incorrectos (ZIP, FBX, etc.) | Exportar correctamente desde el modelador |
-| "El modelo sigue siendo demasiado pesado" | Optimizado > 25 MB | Reducir polígonos/texturas; usar `pnpm glb:optimize` offline |
-| "Optimización fallida" | `gltf-transform` o Meshopt no disponible en el navegador | Usar `pnpm glb:optimize` offline y subir el resultado |
-| R2 CORS error al cargar en customizador | Bucket sin regla CORS para GET | Agregar regla CORS (ver `docs/uploads-r2.md`) |
-| "Presigned URL expirada" | Más de 10 min entre `create` y `PUT` | Reintentar la subida completa |
-
+| Error                                     | Causa probable                                           | Solución                                                     |
+| ----------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------ |
+| "Solo se permiten archivos .glb"          | Archivo con extensión incorrecta                         | Subir un `.glb` válido                                       |
+| "El archivo no es un GLB válido"          | Magic bytes incorrectos (ZIP, FBX, etc.)                 | Exportar correctamente desde el modelador                    |
+| "El modelo sigue siendo demasiado pesado" | Optimizado > 25 MB                                       | Reducir polígonos/texturas; usar `pnpm glb:optimize` offline |
+| "Optimización fallida"                    | `gltf-transform` o Meshopt no disponible en el navegador | Usar `pnpm glb:optimize` offline y subir el resultado        |
+| R2 CORS error al cargar en customizador   | Bucket sin regla CORS para GET                           | Agregar regla CORS (ver `docs/uploads-r2.md`)                |
+| "Presigned URL expirada"                  | Más de 10 min entre `create` y `PUT`                     | Reintentar la subida completa                                |

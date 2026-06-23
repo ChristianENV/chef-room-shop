@@ -81,8 +81,7 @@ export function CheckoutSuccessActions({
   const paidRedirectProgress =
     paidRedirectSecondsLeft !== null
       ? Math.round(
-          ((PAID_ORDER_REDIRECT_SECONDS - paidRedirectSecondsLeft) /
-            PAID_ORDER_REDIRECT_SECONDS) *
+          ((PAID_ORDER_REDIRECT_SECONDS - paidRedirectSecondsLeft) / PAID_ORDER_REDIRECT_SECONDS) *
             100,
         )
       : 0
@@ -95,9 +94,7 @@ export function CheckoutSuccessActions({
           role="status"
           aria-live="polite"
         >
-          <p className="font-sans text-sm font-medium text-foreground">
-            Pago confirmado
-          </p>
+          <p className="font-sans text-sm font-medium text-foreground">Pago confirmado</p>
           <p className="mt-1 font-serif text-sm text-muted-foreground">
             Te llevamos a tu pedido en{' '}
             <span className="font-sans font-semibold text-foreground">
@@ -165,8 +162,10 @@ export function CheckoutSuccessActions({
       )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        {showViewOrder && orderDetailHref && canViewDetails && (
-          actions.disableViewOrder ? (
+        {showViewOrder &&
+          orderDetailHref &&
+          canViewDetails &&
+          (actions.disableViewOrder ? (
             <Button disabled className="font-sans">
               Ver pedido
             </Button>
@@ -184,11 +183,12 @@ export function CheckoutSuccessActions({
                 )}
               </Link>
             </Button>
-          )
-        )}
+          ))}
 
-        {!isAuthenticated && !canViewDetails && onGuestDetailsClick && (
-          actions.disableViewOrder ? (
+        {!isAuthenticated &&
+          !canViewDetails &&
+          onGuestDetailsClick &&
+          (actions.disableViewOrder ? (
             <Button disabled className="font-sans">
               Ver detalle del pedido
             </Button>
@@ -209,8 +209,7 @@ export function CheckoutSuccessActions({
                 </Badge>
               )}
             </Button>
-          )
-        )}
+          ))}
 
         {!isAuthenticated && (
           <>

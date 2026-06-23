@@ -31,8 +31,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: 'Filipinas Personalizadas | Chef Room by Bedolla',
-    description:
-      'Filipinas con bordado de nombre y logo. Personalizacion profesional para chefs.',
+    description: 'Filipinas con bordado de nombre y logo. Personalizacion profesional para chefs.',
     type: 'website',
   },
   alternates: {
@@ -56,14 +55,12 @@ const benefits = [
   {
     icon: 'clock',
     title: 'Listo en 5 Dias',
-    description:
-      'Produccion rapida de filipinas bordadas. Recibe tu pedido en 5-7 dias habiles.',
+    description: 'Produccion rapida de filipinas bordadas. Recibe tu pedido en 5-7 dias habiles.',
   },
   {
     icon: 'shield',
     title: 'Colores que Duran',
-    description:
-      'Hilos de bordado resistentes a decoloracion. Mas de 15 colores disponibles.',
+    description: 'Hilos de bordado resistentes a decoloracion. Mas de 15 colores disponibles.',
   },
 ]
 
@@ -127,9 +124,9 @@ export default function FilipinasPersonalizadasPage() {
                 Tu Nombre, Tu Identidad
               </h2>
               <p className="mt-4 font-serif text-lg text-muted-foreground">
-                El bordado personalizado transforma una filipina comun en una prenda unica.
-                Ya sea tu nombre, el logo de tu restaurante o un diseno especial, cada puntada
-                refleja tu profesionalismo.
+                El bordado personalizado transforma una filipina comun en una prenda unica. Ya sea
+                tu nombre, el logo de tu restaurante o un diseno especial, cada puntada refleja tu
+                profesionalismo.
               </p>
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 {[

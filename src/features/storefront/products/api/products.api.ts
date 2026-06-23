@@ -29,10 +29,7 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
 export async function getCustomizationRulesByProduct(
   productId: string,
 ): Promise<ProductCustomizationRule[]> {
-  const data = await fetchGraphQL<
-    CustomizationRulesByProductQueryData,
-    { productId: string }
-  >({
+  const data = await fetchGraphQL<CustomizationRulesByProductQueryData, { productId: string }>({
     query: CUSTOMIZATION_RULES_BY_PRODUCT_QUERY,
     variables: { productId },
   })

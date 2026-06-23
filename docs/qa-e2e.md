@@ -128,11 +128,11 @@ pnpm exec playwright test tests/e2e/smoke/admin-product-model-upload.spec.ts
 
 ### Variables útiles (modelo 3D)
 
-| Variable | Defecto | Descripción |
-|---|---|---|
-| `E2E_ADMIN_EMAIL` | `cnoriegava+1@gmail.com` | Email del usuario admin para login |
-| `E2E_ADMIN_PASSWORD` | `12345678` | Contraseña del admin |
-| `E2E_PRODUCT_SLUG` | `demo-filipina-executive-blanca` | Slug del producto demo a editar |
+| Variable             | Defecto                          | Descripción                        |
+| -------------------- | -------------------------------- | ---------------------------------- |
+| `E2E_ADMIN_EMAIL`    | `cnoriegava+1@gmail.com`         | Email del usuario admin para login |
+| `E2E_ADMIN_PASSWORD` | `12345678`                       | Contraseña del admin               |
+| `E2E_PRODUCT_SLUG`   | `demo-filipina-executive-blanca` | Slug del producto demo a editar    |
 
 ### Fixture GLB
 
@@ -144,11 +144,11 @@ pnpm exec playwright test tests/e2e/smoke/admin-product-model-upload.spec.ts
 
 El helper `tests/e2e/helpers/mock-product-model-upload.ts` intercepta:
 
-| URL / operación | Mock |
-|---|---|
-| `POST /api/graphql` con `createAdminProductModelUpload` | Devuelve `uploadId`, `presignedUrl` falsa |
-| `PUT https://mock-r2.example.com/**` | Devuelve 200 OK |
-| `POST /api/graphql` con `confirmAdminProductModelUpload` | Devuelve asset con `status: ACTIVE` |
+| URL / operación                                          | Mock                                      |
+| -------------------------------------------------------- | ----------------------------------------- |
+| `POST /api/graphql` con `createAdminProductModelUpload`  | Devuelve `uploadId`, `presignedUrl` falsa |
+| `PUT https://mock-r2.example.com/**`                     | Devuelve 200 OK                           |
+| `POST /api/graphql` con `confirmAdminProductModelUpload` | Devuelve asset con `status: ACTIVE`       |
 
 No se requiere R2 real ni credenciales para correr este smoke.
 

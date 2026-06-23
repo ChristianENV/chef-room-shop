@@ -80,11 +80,11 @@ Flujo al **Guardar diseño** (manual):
 
 ### Almacenamiento (sin migración Prisma)
 
-| Vista | Campo principal |
-| --- | --- |
-| Frontal | `Design.previewUrl` + `Design.previewPublicId` |
-| Trasera | `DesignAsset` (`type: PREVIEW`, `sortOrder: 10`) |
-| Ambas | `configJson.previews.front` / `configJson.previews.back` |
+| Vista   | Campo principal                                          |
+| ------- | -------------------------------------------------------- |
+| Frontal | `Design.previewUrl` + `Design.previewPublicId`           |
+| Trasera | `DesignAsset` (`type: PREVIEW`, `sortOrder: 10`)         |
+| Ambas   | `configJson.previews.front` / `configJson.previews.back` |
 
 Keys R2:
 
@@ -129,4 +129,3 @@ En backend (`cart.service.ts`):
 - `pnpm run typecheck`: OK
 - `pnpm exec next build`: OK
 - `pnpm run lint`: falla por error preexistente fuera del scope (`checkout/lib/use-paid-order-redirect-countdown.ts`)
-

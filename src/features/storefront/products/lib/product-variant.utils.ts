@@ -11,9 +11,7 @@ export function findVariantByColorAndSize(
   const normalizedSize = sizeName.trim().toUpperCase()
   return variants.find(
     (variant) =>
-      variant.isActive &&
-      variant.colorSlug === colorSlug &&
-      variant.sizeName === normalizedSize,
+      variant.isActive && variant.colorSlug === colorSlug && variant.sizeName === normalizedSize,
   )
 }
 
@@ -36,11 +34,7 @@ export function getAvailableSizesForColor(
 ): string[] {
   const sizes = new Set<string>()
   for (const variant of variants) {
-    if (
-      variant.isActive &&
-      variant.colorSlug === colorSlug &&
-      variant.stockQty > 0
-    ) {
+    if (variant.isActive && variant.colorSlug === colorSlug && variant.stockQty > 0) {
       sizes.add(variant.sizeName)
     }
   }

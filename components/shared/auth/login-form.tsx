@@ -59,9 +59,7 @@ export function LoginForm({
     callbackFromQuery?.startsWith('/') && !callbackFromQuery.startsWith('//')
       ? callbackFromQuery
       : null
-  const oauthCallbackURL = isAdminVariant
-    ? routes.adminDashboard
-    : safeCallbackUrl ?? routes.home
+  const oauthCallbackURL = isAdminVariant ? routes.adminDashboard : (safeCallbackUrl ?? routes.home)
   const googleOAuthCallbackURL = buildSocialOAuthCallbackURL({
     callbackUrl: isAdminVariant ? routes.adminDashboard : safeCallbackUrl,
     source: isAdminVariant ? 'admin-login' : 'storefront-login',
@@ -88,12 +86,7 @@ export function LoginForm({
     })
 
     if (result.error) {
-      setError(
-        getAuthErrorMessage(
-          result.error,
-          'Correo o contraseña incorrectos.',
-        ),
-      )
+      setError(getAuthErrorMessage(result.error, 'Correo o contraseña incorrectos.'))
       setIsLoading(false)
       return
     }
@@ -139,18 +132,14 @@ export function LoginForm({
         callbackURL: googleOAuthCallbackURL,
       })
     } catch (err) {
-      setError(
-        getAuthErrorMessage(err, 'No se pudo iniciar sesión con Google.'),
-      )
+      setError(getAuthErrorMessage(err, 'No se pudo iniciar sesión con Google.'))
       setIsGoogleLoading(false)
     }
   }
 
   const handleForgotPassword = (e: React.MouseEvent) => {
     e.preventDefault()
-    setForgotMessage(
-      'La recuperación de contraseña estará disponible pronto.',
-    )
+    setForgotMessage('La recuperación de contraseña estará disponible pronto.')
   }
 
   const busy = isLoading || isGoogleLoading
@@ -169,10 +158,7 @@ export function LoginForm({
       </div>
 
       {error && (
-        <Alert
-          variant="destructive"
-          className="border-destructive/50 bg-destructive/10"
-        >
+        <Alert variant="destructive" className="border-destructive/50 bg-destructive/10">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="font-serif">{error}</AlertDescription>
         </Alert>
@@ -180,9 +166,7 @@ export function LoginForm({
 
       {forgotMessage && (
         <Alert className="border-border bg-muted/50">
-          <AlertDescription className="font-serif">
-            {forgotMessage}
-          </AlertDescription>
+          <AlertDescription className="font-serif">{forgotMessage}</AlertDescription>
         </Alert>
       )}
 
@@ -237,11 +221,7 @@ export function LoginForm({
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               tabIndex={-1}
             >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
         </div>
@@ -261,11 +241,7 @@ export function LoginForm({
           </Label>
         </div>
 
-        <Button
-          type="submit"
-          className="w-full font-sans font-semibold"
-          disabled={busy}
-        >
+        <Button type="submit" className="w-full font-sans font-semibold" disabled={busy}>
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -333,9 +309,7 @@ export function LoginForm({
           ¿No tienes cuenta?{' '}
           <Link
             href={
-              safeCallbackUrl
-                ? registerRoute({ callbackUrl: safeCallbackUrl })
-                : routes.register
+              safeCallbackUrl ? registerRoute({ callbackUrl: safeCallbackUrl }) : routes.register
             }
             className="font-sans font-medium text-accent hover:underline"
           >

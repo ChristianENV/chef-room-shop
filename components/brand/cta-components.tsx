@@ -25,14 +25,14 @@ interface CTAButtonGroupProps {
   className?: string
 }
 
-export function CTAButtonGroup({ 
-  primaryLabel, 
+export function CTAButtonGroup({
+  primaryLabel,
   primaryOnClick,
   secondaryLabel,
   secondaryOnClick,
   align = 'left',
   size = 'default',
-  className 
+  className,
 }: CTAButtonGroupProps) {
   const alignClasses = {
     left: 'justify-start',
@@ -68,18 +68,18 @@ interface FeatureCardProps {
   className?: string
 }
 
-export function FeatureCard({ 
+export function FeatureCard({
   feature,
-  icon, 
-  title: titleProp, 
+  icon,
+  title: titleProp,
   description: descProp,
   variant = 'default',
-  className 
+  className,
 }: FeatureCardProps) {
   // Support both individual props and feature object
   const title = feature?.title ?? titleProp ?? ''
   const description = feature?.description ?? descProp ?? ''
-  
+
   // Get icon - either from prop, from feature string, or default
   let iconElement: ReactNode = icon
   if (!iconElement && feature?.icon) {
@@ -178,10 +178,7 @@ export function TrustBadge({ variant = 'shipping', className }: TrustBadgeProps)
 // Trust Badges Row
 export function TrustBadgesRow({ className }: { className?: string }) {
   return (
-    <div className={cn(
-      'grid grid-cols-2 gap-4 md:grid-cols-4',
-      className
-    )}>
+    <div className={cn('grid grid-cols-2 gap-4 md:grid-cols-4', className)}>
       <TrustBadge variant="shipping" />
       <TrustBadge variant="secure" />
       <TrustBadge variant="returns" />

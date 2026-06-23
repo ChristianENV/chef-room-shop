@@ -56,12 +56,9 @@ function resolveComparePrice(product: CatalogProduct): string | undefined {
 /**
  * Maps a catalog BFF product to the landing featured card UI model.
  */
-export function mapCatalogProductToFeaturedCard(
-  product: CatalogProduct,
-): FeaturedProductCardUi {
+export function mapCatalogProductToFeaturedCard(product: CatalogProduct): FeaturedProductCardUi {
   const pricePesos = centsToPesos(product.basePriceCents)
-  const priceLabel =
-    product.basePriceCents > 0 ? formatCurrencyMXN(pricePesos) : 'Consultar precio'
+  const priceLabel = product.basePriceCents > 0 ? formatCurrencyMXN(pricePesos) : 'Consultar precio'
 
   return {
     id: product.id,

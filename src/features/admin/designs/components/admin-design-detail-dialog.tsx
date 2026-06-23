@@ -30,7 +30,9 @@ type AdminDesignDetailDialogProps = {
 function PreviewImage({ url, label }: { url?: string | null; label: string }) {
   return (
     <div className="space-y-1">
-      <p className="font-serif text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="font-serif text-[11px] uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
       <div className="relative h-36 w-36 overflow-hidden rounded-lg border border-border bg-secondary">
         {url ? (
           <Image src={url} alt={label} fill className="object-cover" unoptimized />
@@ -56,7 +58,10 @@ export function AdminDesignDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto" data-testid="admin-design-detail-dialog">
+      <DialogContent
+        className="max-h-[90vh] max-w-3xl overflow-y-auto"
+        data-testid="admin-design-detail-dialog"
+      >
         <DialogHeader>
           <DialogTitle className="font-sans">
             {design ? `Diseño ${design.shortId}` : 'Detalle del diseño'}
@@ -78,7 +83,9 @@ export function AdminDesignDetailDialog({
           <div className="space-y-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="font-sans text-lg font-semibold text-foreground">{design.productName}</p>
+                <p className="font-sans text-lg font-semibold text-foreground">
+                  {design.productName}
+                </p>
                 {design.name ? (
                   <p className="font-serif text-sm text-muted-foreground">{design.name}</p>
                 ) : null}
@@ -99,10 +106,12 @@ export function AdminDesignDetailDialog({
                   <p className="font-sans text-sm font-medium text-foreground">
                     {design.ownerType === 'GUEST'
                       ? 'Invitado'
-                      : design.customerName ?? design.customerEmail ?? 'Cliente'}
+                      : (design.customerName ?? design.customerEmail ?? 'Cliente')}
                   </p>
                   {design.customerEmail ? (
-                    <p className="font-mono text-xs text-muted-foreground">{design.customerEmail}</p>
+                    <p className="font-mono text-xs text-muted-foreground">
+                      {design.customerEmail}
+                    </p>
                   ) : null}
                 </div>
                 {design.finalPriceCents != null ? (
@@ -138,7 +147,9 @@ export function AdminDesignDetailDialog({
 
             {summary ? (
               <div className="space-y-4 rounded-lg border border-border bg-card/40 p-4">
-                <p className="font-sans text-sm font-medium text-foreground">Resumen de personalización</p>
+                <p className="font-sans text-sm font-medium text-foreground">
+                  Resumen de personalización
+                </p>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <p className="font-serif text-xs text-muted-foreground">Talla</p>
@@ -206,7 +217,9 @@ export function AdminDesignDetailDialog({
                           {element.text ? (
                             <div>
                               <p className="font-serif text-xs text-muted-foreground">Texto</p>
-                              <p className="font-sans font-medium text-foreground">{element.text}</p>
+                              <p className="font-sans font-medium text-foreground">
+                                {element.text}
+                              </p>
                             </div>
                           ) : null}
                         </div>

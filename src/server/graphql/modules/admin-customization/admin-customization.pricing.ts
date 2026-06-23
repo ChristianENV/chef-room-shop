@@ -14,8 +14,7 @@ export type CustomizationPricingPreviewParams = {
 export function calculateCustomizationPricingPreview(
   params: CustomizationPricingPreviewParams,
 ): AdminCustomizationPricingPreviewGql {
-  const { basePriceCents, pricePerCmCents, widthCm, heightCm, extraProductionDays } =
-    params
+  const { basePriceCents, pricePerCmCents, widthCm, heightCm, extraProductionDays } = params
 
   const areaCm2 = widthCm > 0 && heightCm > 0 ? widthCm * heightCm : 0
   const sizeFactorCents = Math.round(areaCm2 * pricePerCmCents)

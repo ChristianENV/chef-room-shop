@@ -7,12 +7,7 @@ import { ChevronDown, Menu, ShoppingBag, User, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { UserAvatar } from '@/components/shared/user-avatar'
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import {
   Accordion,
   AccordionContent,
@@ -62,8 +57,7 @@ const NAV_LINK_ACTIVE = 'bg-white/[0.08] text-white'
 const ICON_BTN =
   'h-9 w-9 text-white/80 hover:bg-white/[0.08] hover:text-white focus-visible:ring-white/30'
 
-const DROPDOWN_PANEL =
-  'border border-white/10 bg-[#181B36] text-white shadow-xl shadow-black/30'
+const DROPDOWN_PANEL = 'border border-white/10 bg-[#181B36] text-white shadow-xl shadow-black/30'
 
 function CartBadge({ count }: { count: number }) {
   if (count === 0) return null
@@ -94,8 +88,7 @@ function AccountMenu({
   customerTier?: string | null
   triggerClassName?: string
 }) {
-  const accountLabel =
-    isLoggedIn && user ? getUserDisplayName(user) : 'Mi cuenta'
+  const accountLabel = isLoggedIn && user ? getUserDisplayName(user) : 'Mi cuenta'
 
   return (
     <DropdownMenu>
@@ -221,13 +214,7 @@ function MobileNavLink({
   )
 }
 
-function MobileMenuSection({
-  title,
-  children,
-}: {
-  title: string
-  children: ReactNode
-}) {
+function MobileMenuSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="space-y-2">
       <p className="px-4 font-sans text-[10px] font-semibold tracking-[0.22em] uppercase text-white/40">
@@ -267,9 +254,7 @@ function PublicHeaderInner({
   const shopActive =
     pathname === routes.shop ||
     isShopNavHrefActive(pathname, searchParams, shopCatalogNavLink.href) ||
-    shopDropdownChildren.some((child) =>
-      isShopNavHrefActive(pathname, searchParams, child.href),
-    )
+    shopDropdownChildren.some((child) => isShopNavHrefActive(pathname, searchParams, child.href))
 
   return (
     <header
@@ -286,10 +271,7 @@ function PublicHeaderInner({
             <ChefRoomLogo variant="horizontal" colorScheme="light" size="md" priority />
           </Link>
 
-          <nav
-            className="hidden items-center gap-0.5 lg:flex"
-            aria-label="Navegación principal"
-          >
+          <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Navegación principal">
             <DropdownMenu>
               <DropdownMenuTrigger
                 className={cn(
@@ -304,10 +286,7 @@ function PublicHeaderInner({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className={cn('w-52', DROPDOWN_PANEL)}>
                 <DropdownMenuItem asChild className="focus:bg-white/10 focus:text-white">
-                  <Link
-                    href={shopCatalogNavLink.href}
-                    data-testid={shopCatalogNavLink.testId}
-                  >
+                  <Link href={shopCatalogNavLink.href} data-testid={shopCatalogNavLink.testId}>
                     {shopCatalogNavLink.label}
                   </Link>
                 </DropdownMenuItem>
@@ -352,10 +331,7 @@ function PublicHeaderInner({
 
           <div className="hidden items-center gap-1 lg:flex">
             <div className="mr-1 flex items-center gap-0.5 border-r border-white/10 pr-2">
-              <ThemeToggle
-                className={ICON_BTN}
-                data-testid="storefront-theme-toggle"
-              />
+              <ThemeToggle className={ICON_BTN} data-testid="storefront-theme-toggle" />
               <NotificationPopover isLoggedIn={isLoggedIn} triggerClassName={ICON_BTN} />
               <AccountMenu
                 isLoggedIn={isLoggedIn}
@@ -364,10 +340,7 @@ function PublicHeaderInner({
                 user={user}
                 customerTier={customerTier}
               />
-              <CartPopover
-                triggerClassName={ICON_BTN}
-                triggerTestId="storefront-cart-link"
-              />
+              <CartPopover triggerClassName={ICON_BTN} triggerTestId="storefront-cart-link" />
             </div>
 
             <Button
@@ -381,10 +354,7 @@ function PublicHeaderInner({
           </div>
 
           <div className="flex items-center gap-0.5 lg:hidden">
-            <ThemeToggle
-              className={ICON_BTN}
-              data-testid="storefront-theme-toggle"
-            />
+            <ThemeToggle className={ICON_BTN} data-testid="storefront-theme-toggle" />
 
             <Button variant="ghost" size="icon" className={cn('relative', ICON_BTN)} asChild>
               <Link href={routes.cart} data-testid="storefront-cart-link">
@@ -607,9 +577,7 @@ function PublicHeaderWithSearchParams(props: PublicHeaderProps) {
 
 export function PublicHeader(props: PublicHeaderProps) {
   return (
-    <Suspense
-      fallback={<PublicHeaderInner {...props} searchParams={EMPTY_SEARCH_PARAMS} />}
-    >
+    <Suspense fallback={<PublicHeaderInner {...props} searchParams={EMPTY_SEARCH_PARAMS} />}>
       <PublicHeaderWithSearchParams {...props} />
     </Suspense>
   )

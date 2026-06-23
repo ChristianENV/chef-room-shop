@@ -56,18 +56,14 @@ function CardSkeleton() {
   )
 }
 
-export function AdminSettingsOverviewPanel({
-  settings,
-  loading,
-}: AdminSettingsOverviewPanelProps) {
+export function AdminSettingsOverviewPanel({ settings, loading }: AdminSettingsOverviewPanelProps) {
   if (loading || !settings) {
     return <SettingsSkeleton />
   }
 
   const notifications = settings.notifications
   const providerMismatch =
-    notifications.configuredProvider.toLowerCase() !==
-    notifications.activeProvider.toLowerCase()
+    notifications.configuredProvider.toLowerCase() !== notifications.activeProvider.toLowerCase()
 
   return (
     <div className="space-y-6" data-testid="admin-settings-overview">
@@ -252,10 +248,7 @@ export function AdminSettingsOverviewPanel({
             value={<span className="font-mono text-xs">{settings.environment.nodeEnv}</span>}
           />
           {settings.environment.deploymentLabel ? (
-            <AdminSettingsField
-              label="Despliegue"
-              value={settings.environment.deploymentLabel}
-            />
+            <AdminSettingsField label="Despliegue" value={settings.environment.deploymentLabel} />
           ) : null}
         </dl>
       </AdminSettingsSection>

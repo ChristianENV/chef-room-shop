@@ -3,10 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { describe, it } from 'node:test'
 
-const MODEL_DIR = path.join(
-  process.cwd(),
-  'public/models/customizer/chef-jacket',
-)
+const MODEL_DIR = path.join(process.cwd(), 'public/models/customizer/chef-jacket')
 
 describe('chef-jacket glTF bundle references', () => {
   it('references exist on disk with exact filenames', () => {

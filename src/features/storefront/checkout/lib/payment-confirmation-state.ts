@@ -37,9 +37,7 @@ function isPaid(orderStatus: string, paymentStatus: string): boolean {
 
 function isFailed(orderStatus: string, paymentStatus: string): boolean {
   return (
-    paymentStatus === 'FAILED' ||
-    paymentStatus === 'DECLINED' ||
-    orderStatus === 'PAYMENT_FAILED'
+    paymentStatus === 'FAILED' || paymentStatus === 'DECLINED' || orderStatus === 'PAYMENT_FAILED'
   )
 }
 
@@ -48,10 +46,7 @@ function isExpired(paymentStatus: string): boolean {
 }
 
 function isCancelled(orderStatus: string, paymentStatus: string): boolean {
-  return (
-    paymentStatus === 'CANCELLED' ||
-    orderStatus === 'CANCELLED'
-  )
+  return paymentStatus === 'CANCELLED' || orderStatus === 'CANCELLED'
 }
 
 function isConfirming(orderStatus: string, paymentStatus: string): boolean {
@@ -126,8 +121,7 @@ export function getPaymentConfirmationCopy(
     case 'confirming':
       return {
         title: 'Confirmando tu pago',
-        description:
-          'Estamos validando la respuesta de Conekta. Esto puede tardar unos segundos.',
+        description: 'Estamos validando la respuesta de Conekta. Esto puede tardar unos segundos.',
         note: 'No cierres esta página mientras confirmamos el estado.',
         badgeLabel: 'Confirmando',
         tone: 'pending',
@@ -135,8 +129,7 @@ export function getPaymentConfirmationCopy(
     case 'paid':
       return {
         title: 'Pago confirmado',
-        description:
-          'Tu pedido fue recibido correctamente y comenzará el proceso de preparación.',
+        description: 'Tu pedido fue recibido correctamente y comenzará el proceso de preparación.',
         badgeLabel: 'Pagado',
         tone: 'success',
       }
@@ -159,8 +152,7 @@ export function getPaymentConfirmationCopy(
     case 'cancelled':
       return {
         title: 'Pago cancelado',
-        description:
-          'La operación fue cancelada. Puedes generar un nuevo intento de pago.',
+        description: 'La operación fue cancelada. Puedes generar un nuevo intento de pago.',
         badgeLabel: 'Cancelado',
         tone: 'error',
       }
@@ -246,10 +238,7 @@ export function getPaymentConfirmationActions(
 /**
  * User-facing message after manual verify refetch on success page.
  */
-export function getVerifyAgainResultMessage(
-  orderStatus: string,
-  paymentStatus: string,
-): string {
+export function getVerifyAgainResultMessage(orderStatus: string, paymentStatus: string): string {
   if (isPaid(normalizeStatus(orderStatus), normalizeStatus(paymentStatus))) {
     return 'Pago confirmado.'
   }

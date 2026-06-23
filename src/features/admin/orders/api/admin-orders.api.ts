@@ -57,9 +57,7 @@ export async function getAdminOrders(
 /**
  * Fetches a single order by order number for admin detail views.
  */
-export async function getAdminOrderByNumber(
-  orderNumber: string,
-): Promise<AdminOrder | null> {
+export async function getAdminOrderByNumber(orderNumber: string): Promise<AdminOrder | null> {
   const data = await fetchGraphQL<AdminOrderDetailData, { orderNumber: string }>({
     query: ADMIN_ORDER_BY_NUMBER_QUERY,
     variables: { orderNumber },
@@ -80,9 +78,7 @@ export async function getAdminOrderStatusSummary(): Promise<AdminOrderStatusSumm
 /**
  * Fetches orders in the production pipeline.
  */
-export async function getAdminOrderProductionQueue(
-  limit?: number,
-): Promise<AdminOrder[]> {
+export async function getAdminOrderProductionQueue(limit?: number): Promise<AdminOrder[]> {
   const data = await fetchGraphQL<ProductionQueueData, { limit?: number }>({
     query: ADMIN_ORDER_PRODUCTION_QUEUE_QUERY,
     variables: { limit },
@@ -122,9 +118,7 @@ export async function updateAdminOrderStatus(
 /**
  * Moves a paid order into production.
  */
-export async function moveAdminOrderToProduction(
-  orderNumber: string,
-): Promise<AdminOrder> {
+export async function moveAdminOrderToProduction(orderNumber: string): Promise<AdminOrder> {
   const data = await fetchGraphQL<
     { moveAdminOrderToProduction: AdminOrder },
     { orderNumber: string }
@@ -138,9 +132,7 @@ export async function moveAdminOrderToProduction(
 /**
  * Marks an order as ready to ship.
  */
-export async function markAdminOrderReadyToShip(
-  orderNumber: string,
-): Promise<AdminOrder> {
+export async function markAdminOrderReadyToShip(orderNumber: string): Promise<AdminOrder> {
   const data = await fetchGraphQL<
     { markAdminOrderReadyToShip: AdminOrder },
     { orderNumber: string }
@@ -187,9 +179,7 @@ export async function cancelAdminOrder(
 /**
  * Adds an internal note to an order.
  */
-export async function addAdminOrderNote(
-  input: AddAdminOrderNoteInput,
-): Promise<AdminOrder> {
+export async function addAdminOrderNote(input: AddAdminOrderNoteInput): Promise<AdminOrder> {
   const data = await fetchGraphQL<
     { addAdminOrderNote: AdminOrder },
     { input: AddAdminOrderNoteInput }

@@ -73,9 +73,7 @@ export function AuthorizeTransferForm({ token, preview }: AuthorizeTransferFormP
         className="rounded-lg border border-success/30 bg-success/10 p-6 text-center"
       >
         <CheckCircle2 className="mx-auto h-10 w-10 text-success" aria-hidden />
-        <h1 className="mt-4 font-sans text-xl font-bold text-foreground">
-          Vinculación autorizada
-        </h1>
+        <h1 className="mt-4 font-sans text-xl font-bold text-foreground">Vinculación autorizada</h1>
         <p className="mt-2 font-serif text-sm text-muted-foreground">{result.message}</p>
         <p className="mt-2 font-serif text-sm text-muted-foreground">
           Pedido <strong>{result.orderNumber}</strong>

@@ -8,7 +8,9 @@ import type { ProductsQueryParams } from './catalog-query.types'
 /**
  * Maps UI sort option to BFF sort fields (client-only sorts return undefined).
  */
-export function mapSortToQuery(sortBy: SortOption): Pick<ProductsQueryParams, 'sortField' | 'sortDirection'> {
+export function mapSortToQuery(
+  sortBy: SortOption,
+): Pick<ProductsQueryParams, 'sortField' | 'sortDirection'> {
   switch (sortBy) {
     case 'price-asc':
       return { sortField: 'price', sortDirection: 'asc' }
@@ -34,8 +36,7 @@ export function buildProductsQueryParams(
   const sort = mapSortToQuery(sortBy)
 
   return {
-    productTypeSlug:
-      filters.categories.length === 1 ? filters.categories[0] : undefined,
+    productTypeSlug: filters.categories.length === 1 ? filters.categories[0] : undefined,
     colorSlug: filters.colors.length === 1 ? filters.colors[0] : undefined,
     sizeSlug: filters.sizes.length === 1 ? filters.sizes[0] : undefined,
     isCustomizable: filters.customizable === true ? true : undefined,
@@ -64,9 +65,7 @@ export function applyClientFilters(
   }
 
   if (filters.colors.length > 1) {
-    result = result.filter((p) =>
-      p.colors.some((color) => filters.colors.includes(color.id)),
-    )
+    result = result.filter((p) => p.colors.some((color) => filters.colors.includes(color.id)))
   }
 
   if (filters.sizes.length > 1) {

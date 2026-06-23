@@ -68,9 +68,7 @@ async function createRuleAuditLog(
       action,
       entityType: 'ProductCustomizationRule',
       entityId: ruleId,
-      metadataJson: metadata
-        ? (metadata as Prisma.InputJsonValue)
-        : undefined,
+      metadataJson: metadata ? (metadata as Prisma.InputJsonValue) : undefined,
     },
   })
 }
@@ -125,10 +123,7 @@ async function assertProductExists(
   }
 }
 
-async function assertAreaExists(
-  prisma: GraphQLContext['prisma'],
-  areaId: string,
-): Promise<void> {
+async function assertAreaExists(prisma: GraphQLContext['prisma'], areaId: string): Promise<void> {
   const area = await prisma.customizationArea.findUnique({
     where: { id: areaId },
     select: { id: true },
@@ -277,10 +272,7 @@ export async function getAdminCustomizationRulesByProduct(
   const rows = await context.prisma.productCustomizationRule.findMany({
     where: { productId: id },
     include: ruleInclude,
-    orderBy: [
-      { area: { sortOrder: 'asc' } },
-      { option: { nameEs: 'asc' } },
-    ],
+    orderBy: [{ area: { sortOrder: 'asc' } }, { option: { nameEs: 'asc' } }],
   })
 
   return rows.map(mapAdminCustomizationRuleToGql)
@@ -372,9 +364,7 @@ export async function createAdminCustomizationRule(
     },
   })
   if (existing) {
-    throw conflictError(
-      'Ya existe una regla para esta combinación de producto, área y opción.',
-    )
+    throw conflictError('Ya existe una regla para esta combinación de producto, área y opción.')
   }
 
   const configJson = buildRuleConfigJson(input, option)
@@ -442,9 +432,7 @@ export async function updateAdminCustomizationRule(
     },
   })
   if (duplicate) {
-    throw conflictError(
-      'Ya existe una regla para esta combinación de producto, área y opción.',
-    )
+    throw conflictError('Ya existe una regla para esta combinación de producto, área y opción.')
   }
 
   const prevConfig = parseRuleConfig(existing.configJson)
@@ -564,9 +552,7 @@ export async function duplicateCustomizationRulesToProduct(
       where: { productId: input.toProductId },
       select: { areaId: true, optionId: true },
     })
-    const existingKeys = new Set(
-      targetExisting.map((r) => `${r.areaId}:${r.optionId}`),
-    )
+    const existingKeys = new Set(targetExisting.map((r) => `${r.areaId}:${r.optionId}`))
 
     const ids: string[] = []
 
@@ -619,10 +605,7 @@ export async function duplicateCustomizationRulesToProduct(
   const rows = await context.prisma.productCustomizationRule.findMany({
     where: { id: { in: createdIds } },
     include: ruleInclude,
-    orderBy: [
-      { area: { sortOrder: 'asc' } },
-      { option: { nameEs: 'asc' } },
-    ],
+    orderBy: [{ area: { sortOrder: 'asc' } }, { option: { nameEs: 'asc' } }],
   })
 
   return rows.map(mapAdminCustomizationRuleToGql)

@@ -28,7 +28,10 @@ import {
   EmptyCartState,
 } from '@/src/features/storefront/cart/cart-states'
 import { mapBffCartToCheckoutSummary } from '@/src/features/storefront/checkout/mappers/checkout-ui.mapper'
-import { buildCreateCheckoutOrderInput, mapProfileAndAddressToCheckoutForm } from '@/src/features/storefront/checkout/mappers/checkout-ui.mapper'
+import {
+  buildCreateCheckoutOrderInput,
+  mapProfileAndAddressToCheckoutForm,
+} from '@/src/features/storefront/checkout/mappers/checkout-ui.mapper'
 import {
   getCheckoutErrorMessage,
   validateBillingStep,
@@ -125,8 +128,12 @@ export default function CheckoutPage() {
   const [usingSavedAddress, setUsingSavedAddress] = useState(true)
   const prefillAppliedRef = useRef(false)
 
-  const [contactErrors, setContactErrors] = useState<Partial<Record<keyof ContactFormData, string>>>({})
-  const [shippingErrors, setShippingErrors] = useState<Partial<Record<keyof ShippingAddressData, string>>>({})
+  const [contactErrors, setContactErrors] = useState<
+    Partial<Record<keyof ContactFormData, string>>
+  >({})
+  const [shippingErrors, setShippingErrors] = useState<
+    Partial<Record<keyof ShippingAddressData, string>>
+  >({})
   const [shippingRateError, setShippingRateError] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -174,10 +181,7 @@ export default function CheckoutPage() {
     })
   }, [])
 
-  const summary = useMemo(
-    () => (cart ? mapBffCartToCheckoutSummary(cart) : null),
-    [cart],
-  )
+  const summary = useMemo(() => (cart ? mapBffCartToCheckoutSummary(cart) : null), [cart])
 
   const hasCustomization = useMemo(
     () =>
@@ -315,21 +319,13 @@ export default function CheckoutPage() {
 
   return (
     <CheckoutLayout>
-      <CheckoutSteps
-        currentStep={currentStep}
-        completedSteps={completedSteps}
-        className="mb-8"
-      />
+      <CheckoutSteps currentStep={currentStep} completedSteps={completedSteps} className="mb-8" />
 
       <div className="grid gap-8 lg:grid-cols-[1fr,380px]">
         <div className="space-y-6">
           {(currentStep === 'informacion' || completedSteps.includes('informacion')) && (
             <div className="rounded-lg border border-border bg-card p-4 md:p-6">
-              <ContactForm
-                data={contactData}
-                onChange={setContactData}
-                errors={contactErrors}
-              />
+              <ContactForm data={contactData} onChange={setContactData} errors={contactErrors} />
             </div>
           )}
 
@@ -385,9 +381,7 @@ export default function CheckoutPage() {
               {shippingRateError && (
                 <Alert variant="destructive" className="mt-4">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertDescription className="font-serif">
-                    {shippingRateError}
-                  </AlertDescription>
+                  <AlertDescription className="font-serif">{shippingRateError}</AlertDescription>
                 </Alert>
               )}
 
@@ -443,9 +437,7 @@ export default function CheckoutPage() {
             >
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {getButtonText()}
-              {!isSubmitting && currentStep !== 'pago' && (
-                <ChevronRight className="ml-2 h-4 w-4" />
-              )}
+              {!isSubmitting && currentStep !== 'pago' && <ChevronRight className="ml-2 h-4 w-4" />}
             </Button>
           </div>
         </div>
@@ -457,5 +449,3 @@ export default function CheckoutPage() {
     </CheckoutLayout>
   )
 }
-
-

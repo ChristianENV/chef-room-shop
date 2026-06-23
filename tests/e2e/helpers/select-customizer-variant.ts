@@ -2,7 +2,10 @@ import { expect, type Page } from '@playwright/test'
 
 /** Selects the first in-stock size without changing the product default color. */
 export async function selectCustomizerSize(page: Page, sizeLabel?: string): Promise<void> {
-  await page.getByRole('button', { name: /extras/i }).first().click()
+  await page
+    .getByRole('button', { name: /extras/i })
+    .first()
+    .click()
   await expect(page.getByTestId('customizer-size-options')).toBeVisible()
 
   if (sizeLabel) {
@@ -34,7 +37,10 @@ export async function selectCustomizerFabricColor(
   options?: { openPanel?: boolean },
 ): Promise<void> {
   if (options?.openPanel !== false) {
-    await page.getByRole('button', { name: /colores/i }).first().click()
+    await page
+      .getByRole('button', { name: /colores/i })
+      .first()
+      .click()
     await expect(page.getByTestId('customizer-base-colors')).toBeVisible()
   }
 
@@ -48,7 +54,10 @@ export async function selectCustomizerColorAndSize(
   page: Page,
   options?: { colorId?: string; sizeLabel?: string },
 ): Promise<void> {
-  await page.getByRole('button', { name: /colores/i }).first().click()
+  await page
+    .getByRole('button', { name: /colores/i })
+    .first()
+    .click()
   await expect(page.getByTestId('customizer-base-colors')).toBeVisible()
 
   if (options?.colorId) {

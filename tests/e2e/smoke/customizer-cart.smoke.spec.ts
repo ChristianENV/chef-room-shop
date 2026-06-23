@@ -6,8 +6,7 @@ import {
 } from '../helpers/mock-customizer-previews'
 import { selectCustomizerColorAndSize } from '../helpers/select-customizer-variant'
 
-const CUSTOMIZER_SLUG =
-  process.env.E2E_CUSTOMIZER_SLUG ?? 'demo-filipina-executive-blanca'
+const CUSTOMIZER_SLUG = process.env.E2E_CUSTOMIZER_SLUG ?? 'demo-filipina-executive-blanca'
 
 test('customizer smoke flow to checkout pre-payment', async ({ page }) => {
   if (shouldMockCustomizerPreviews()) {

@@ -24,11 +24,11 @@ const paddingClasses = {
   xl: 'p-8 md:p-12',
 }
 
-export function BrandContainer({ 
-  children, 
+export function BrandContainer({
+  children,
   variant = 'default',
   padding = 'md',
-  className 
+  className,
 }: BrandContainerProps) {
   return (
     <div className={cn(variantClasses[variant], paddingClasses[padding], className)}>
@@ -45,12 +45,12 @@ interface SectionHeaderProps {
   className?: string
 }
 
-export function SectionHeader({ 
-  title, 
-  subtitle, 
+export function SectionHeader({
+  title,
+  subtitle,
   align = 'left',
   size = 'md',
-  className 
+  className,
 }: SectionHeaderProps) {
   const alignClasses = {
     left: 'text-left',
@@ -69,11 +69,7 @@ export function SectionHeader({
       <h2 className={cn('font-sans font-semibold text-foreground', titleSizeClasses[size])}>
         {title}
       </h2>
-      {subtitle && (
-        <p className="mt-1 font-serif text-muted-foreground">
-          {subtitle}
-        </p>
-      )}
+      {subtitle && <p className="mt-1 font-serif text-muted-foreground">{subtitle}</p>}
     </div>
   )
 }
@@ -86,13 +82,7 @@ interface PageHeaderProps {
   className?: string
 }
 
-export function PageHeader({ 
-  title, 
-  description, 
-  breadcrumb,
-  action,
-  className 
-}: PageHeaderProps) {
+export function PageHeader({ title, description, breadcrumb, action, className }: PageHeaderProps) {
   return (
     <div className={cn('mb-8 md:mb-12', className)}>
       {breadcrumb && breadcrumb.length > 0 && (

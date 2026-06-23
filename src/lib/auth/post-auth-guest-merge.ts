@@ -8,10 +8,7 @@ export async function runPostAuthGuestMerge(): Promise<void> {
   try {
     const result = await mergeCurrentGuestSessionAction()
     if (result?.conflict && process.env.NODE_ENV === 'development') {
-      console.warn(
-        '[guest-merge] Guest session already linked to another account.',
-        result,
-      )
+      console.warn('[guest-merge] Guest session already linked to another account.', result)
     }
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {

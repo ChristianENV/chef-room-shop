@@ -17,14 +17,8 @@ type UnreadCountQueryOptions = {
 /**
  * TanStack Query hook for unread in-app notification count.
  */
-export function useMyUnreadNotificationCountQuery(
-  options: UnreadCountQueryOptions = {},
-) {
-  const {
-    enabled = true,
-    refetchInterval = NOTIFICATIONS_POLL_INTERVAL_MS,
-    audience,
-  } = options
+export function useMyUnreadNotificationCountQuery(options: UnreadCountQueryOptions = {}) {
+  const { enabled = true, refetchInterval = NOTIFICATIONS_POLL_INTERVAL_MS, audience } = options
 
   return useQuery({
     queryKey: notificationsQueryKeys.unreadCount(audience),

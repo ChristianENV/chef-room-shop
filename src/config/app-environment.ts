@@ -13,9 +13,7 @@ export type AppEnvironmentResolutionInput = {
  * - NP: platform preview/staging signals (`VERCEL_ENV=preview`, Railway np/staging, …)
  * - Prod: platform production signals, or `NODE_ENV=production` when no staging signal
  */
-export function resolveAppEnvironment(
-  input: AppEnvironmentResolutionInput = {},
-): AppEnvironment {
+export function resolveAppEnvironment(input: AppEnvironmentResolutionInput = {}): AppEnvironment {
   const vercel = (input.vercelEnv ?? process.env.VERCEL_ENV)?.trim().toLowerCase()
   if (vercel === 'production') return 'prod'
   if (vercel === 'preview') return 'np'
@@ -44,8 +42,6 @@ export function resolveAppEnvironment(
   return 'local'
 }
 
-export function isProductionAppEnvironment(
-  input: AppEnvironmentResolutionInput = {},
-): boolean {
+export function isProductionAppEnvironment(input: AppEnvironmentResolutionInput = {}): boolean {
   return resolveAppEnvironment(input) === 'prod'
 }

@@ -16,11 +16,7 @@ export default async function AdminLoginPage() {
 
   return (
     <Suspense
-      fallback={
-        <p className="py-12 text-center font-serif text-muted-foreground">
-          Cargando...
-        </p>
-      }
+      fallback={<p className="py-12 text-center font-serif text-muted-foreground">Cargando...</p>}
     >
       <LoginForm variant="admin" googleEnabled={googleEnabled} />
     </Suspense>

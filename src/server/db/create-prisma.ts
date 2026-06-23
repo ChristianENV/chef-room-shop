@@ -27,8 +27,7 @@ export function normalizeDatabaseUrl(url: string | undefined): string | undefine
     const parsed = new URL(url)
     parsed.searchParams.delete('channel_binding')
 
-    const isNeon =
-      parsed.hostname.includes('neon.tech') || parsed.hostname.includes('pooler')
+    const isNeon = parsed.hostname.includes('neon.tech') || parsed.hostname.includes('pooler')
 
     if (isNeon) {
       if (!parsed.searchParams.has('connect_timeout')) {
@@ -41,9 +40,7 @@ export function normalizeDatabaseUrl(url: string | undefined): string | undefine
 
     return parsed.toString()
   } catch {
-    return url
-      .replace(/([?&])channel_binding=require(&?)/g, '$1')
-      .replace(/[?&]$/, '')
+    return url.replace(/([?&])channel_binding=require(&?)/g, '$1').replace(/[?&]$/, '')
   }
 }
 

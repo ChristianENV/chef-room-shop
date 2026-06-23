@@ -22,9 +22,7 @@ export function EmailVerificationBanner() {
     <Alert className="mb-6 border-warning/30 bg-warning/5">
       <AlertCircle className="h-4 w-4 text-warning" />
       <AlertDescription className="flex flex-col gap-3 font-serif text-sm sm:flex-row sm:items-center sm:justify-between">
-        <span>
-          Verifica tu correo para proteger tu cuenta y el acceso a tus pedidos.
-        </span>
+        <span>Verifica tu correo para proteger tu cuenta y el acceso a tus pedidos.</span>
         <Button asChild size="sm" variant="outline" className="shrink-0 font-sans">
           <Link href={routes.verifyEmail}>Verificar correo</Link>
         </Button>

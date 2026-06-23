@@ -26,11 +26,7 @@ type CustomizationRulesByProductArgs = {
 
 export const catalogResolvers = {
   Query: {
-    products: (
-      _parent: unknown,
-      args: ProductsQueryArgs,
-      context: GraphQLContext,
-    ) =>
+    products: (_parent: unknown, args: ProductsQueryArgs, context: GraphQLContext) =>
       getProducts(context.prisma, {
         filter: args.filter,
         sort: args.sort,
@@ -38,11 +34,8 @@ export const catalogResolvers = {
         offset: args.offset,
       }),
 
-    productBySlug: (
-      _parent: unknown,
-      args: ProductBySlugArgs,
-      context: GraphQLContext,
-    ) => getProductBySlug(context.prisma, args.slug),
+    productBySlug: (_parent: unknown, args: ProductBySlugArgs, context: GraphQLContext) =>
+      getProductBySlug(context.prisma, args.slug),
 
     productTypes: (_parent: unknown, _args: unknown, context: GraphQLContext) =>
       getProductTypes(context.prisma),
@@ -50,8 +43,7 @@ export const catalogResolvers = {
     colors: (_parent: unknown, _args: unknown, context: GraphQLContext) =>
       getColors(context.prisma),
 
-    sizes: (_parent: unknown, _args: unknown, context: GraphQLContext) =>
-      getSizes(context.prisma),
+    sizes: (_parent: unknown, _args: unknown, context: GraphQLContext) => getSizes(context.prisma),
 
     customizationRulesByProduct: (
       _parent: unknown,

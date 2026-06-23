@@ -76,8 +76,7 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
       const result = await uploadModel({
         productId,
         file,
-        onStageChange: (stage) =>
-          setState((s) => ({ ...s, stage })),
+        onStageChange: (stage) => setState((s) => ({ ...s, stage })),
         onOptimizationProgress: (progress) =>
           setState((s) => ({ ...s, optimizationProgress: progress })),
       })
@@ -120,7 +119,17 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
     setState({ ...INITIAL_STATE })
   }
 
-  const { stage, file, optimizationProgress, error, warnings, result, originalSizeBytes, optimizedSizeBytes, compressionRatio } = state
+  const {
+    stage,
+    file,
+    optimizationProgress,
+    error,
+    warnings,
+    result,
+    originalSizeBytes,
+    optimizedSizeBytes,
+    compressionRatio,
+  } = state
 
   // ── No product saved yet ────────────────────────────────────────────────────
   if (!productId) {
@@ -150,8 +159,15 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
             <div className="min-w-0 flex-1">
               <div className="mb-1 flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
-                <span className="truncate text-sm font-medium" data-testid="admin-product-model-filename">{result.fileName}</span>
-                <Badge variant="secondary" className="shrink-0 text-xs">GLB</Badge>
+                <span
+                  className="truncate text-sm font-medium"
+                  data-testid="admin-product-model-filename"
+                >
+                  {result.fileName}
+                </span>
+                <Badge variant="secondary" className="shrink-0 text-xs">
+                  GLB
+                </Badge>
                 {result.isActive && (
                   <Badge className="shrink-0 bg-emerald-100 text-xs text-emerald-700">Activo</Badge>
                 )}
@@ -189,7 +205,11 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
                 onClick={handleDelete}
                 disabled={isDeleting}
               >
-                {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                {isDeleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </CardContent>
@@ -198,7 +218,9 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
           <Alert variant="default" className="border-amber-200 bg-amber-50">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
             <AlertDescription className="text-xs text-amber-700">
-              {warnings.map((w, i) => <p key={i}>{w}</p>)}
+              {warnings.map((w, i) => (
+                <p key={i}>{w}</p>
+              ))}
             </AlertDescription>
           </Alert>
         )}
@@ -225,7 +247,9 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
             <div className="grid grid-cols-3 gap-3 pt-1">
               <div className="rounded-lg bg-white p-3 text-center shadow-sm ring-1 ring-[#E2E0DB]">
                 <p className="text-xs text-muted-foreground">Original</p>
-                <p className="mt-0.5 font-mono text-sm font-semibold">{formatBytes(originalSizeBytes)}</p>
+                <p className="mt-0.5 font-mono text-sm font-semibold">
+                  {formatBytes(originalSizeBytes)}
+                </p>
               </div>
               <div className="rounded-lg bg-white p-3 text-center shadow-sm ring-1 ring-[#E2E0DB]">
                 <p className="text-xs text-muted-foreground">Optimizado</p>
@@ -263,11 +287,7 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
           ? 'admin-product-model-uploading'
           : 'admin-product-model-confirming'
     return (
-      <Card
-        data-testid={testId}
-        data-state={stage}
-        className="border-[#E2E0DB] bg-[#fafaf8]"
-      >
+      <Card data-testid={testId} data-state={stage} className="border-[#E2E0DB] bg-[#fafaf8]">
         <CardContent className="flex items-center gap-3 p-6">
           <Loader2 className="h-5 w-5 animate-spin text-[#2B3280]" />
           <span className="text-sm font-medium text-[#2B3280]">{msg}</span>
@@ -313,7 +333,10 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
         }`}
         onClick={() => inputRef.current?.click()}
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && inputRef.current?.click()}
-        onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+        onDragOver={(e) => {
+          e.preventDefault()
+          setIsDragging(true)
+        }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
       >
@@ -337,7 +360,8 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
             <p className="text-sm font-medium text-foreground">
               {isDragging ? 'Suelta el archivo aquí' : 'Arrastra tu archivo GLB aquí'}
             </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">o{' '}
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              o{' '}
               <span className="font-medium text-[#2B3280] underline underline-offset-2">
                 selecciona un archivo
               </span>
@@ -353,7 +377,9 @@ export function ProductModel3DUploader({ productId, initialModel3d }: Props) {
         <Alert variant="default" className="border-amber-200 bg-amber-50">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
           <AlertDescription className="text-xs text-amber-700">
-            {warnings.map((w, i) => <p key={i}>{w}</p>)}
+            {warnings.map((w, i) => (
+              <p key={i}>{w}</p>
+            ))}
           </AlertDescription>
         </Alert>
       )}

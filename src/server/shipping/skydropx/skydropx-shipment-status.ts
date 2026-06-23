@@ -1,10 +1,6 @@
 import 'server-only'
 
-import {
-  FulfillmentStatus,
-  OrderStatus,
-  ShipmentStatus,
-} from '@prisma/client'
+import { FulfillmentStatus, OrderStatus, ShipmentStatus } from '@prisma/client'
 
 import { readSkydropxPackageStatus } from './skydropx.mappers'
 import type { ShipmentStatusTransition } from './skydropx.webhook.types'
@@ -20,10 +16,7 @@ export const SHIPMENT_STATUS_RANK: Record<ShipmentStatus, number> = {
   CANCELLED: 5,
 }
 
-export function shouldApplyShipmentStatus(
-  current: ShipmentStatus,
-  next: ShipmentStatus,
-): boolean {
+export function shouldApplyShipmentStatus(current: ShipmentStatus, next: ShipmentStatus): boolean {
   if (current === ShipmentStatus.DELIVERED) {
     return next === ShipmentStatus.DELIVERED
   }
@@ -61,15 +54,7 @@ export function mapSkydropxPackageStatusToTransition(input: {
     }
   }
 
-  if (
-    matches(
-      'exception',
-      'failed_attempt',
-      'failed',
-      'shipment.exception',
-      'package.failed',
-    )
-  ) {
+  if (matches('exception', 'failed_attempt', 'failed', 'shipment.exception', 'package.failed')) {
     return {
       nextStatus: ShipmentStatus.FAILED,
       fulfillmentStatus: FulfillmentStatus.SHIPPED,
@@ -151,10 +136,7 @@ export function resolveRefreshTrackingTransition(
       eventType: 'tracking.refresh',
     })
 
-    if (
-      transition &&
-      shouldApplyShipmentStatus(previousShipmentStatus, transition.nextStatus)
-    ) {
+    if (transition && shouldApplyShipmentStatus(previousShipmentStatus, transition.nextStatus)) {
       return transition
     }
 

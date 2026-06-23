@@ -36,11 +36,7 @@ export type AvatarUploadDialogProps = {
  * The user's file never leaves the browser as-is — it is cropped, resized to
  * 256×256 and encoded to WebP + JPG on the client before the upload mutation.
  */
-export function AvatarUploadDialog({
-  open,
-  onOpenChange,
-  onSuccess,
-}: AvatarUploadDialogProps) {
+export function AvatarUploadDialog({ open, onOpenChange, onSuccess }: AvatarUploadDialogProps) {
   const [state, setState] = useState<DialogState>('empty')
   const [imageSrc, setImageSrc] = useState<string | null>(null)
   const [cropArea, setCropArea] = useState<CropArea>({ x: 0, y: 0, width: 256, height: 256 })
@@ -83,25 +79,22 @@ export function AvatarUploadDialog({
     [state, resetState, onOpenChange],
   )
 
-  const handleFile = useCallback(
-    (file: File) => {
-      const validationError = validateImageFile(file)
-      if (validationError) {
-        setErrorMessage(validationError)
-        setState('error')
-        return
-      }
+  const handleFile = useCallback((file: File) => {
+    const validationError = validateImageFile(file)
+    if (validationError) {
+      setErrorMessage(validationError)
+      setState('error')
+      return
+    }
 
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current)
-      }
-      const url = createObjectUrl(file)
-      objectUrlRef.current = url
-      setImageSrc(url)
-      setState('editing')
-    },
-    [],
-  )
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current)
+    }
+    const url = createObjectUrl(file)
+    objectUrlRef.current = url
+    setImageSrc(url)
+    setState('editing')
+  }, [])
 
   const handleFileInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,9 +152,7 @@ export function AvatarUploadDialog({
       onSuccess?.(result.image)
     } catch (err) {
       const message =
-        err instanceof Error
-          ? err.message
-          : 'No pudimos guardar tu foto. Intenta de nuevo.'
+        err instanceof Error ? err.message : 'No pudimos guardar tu foto. Intenta de nuevo.'
       setErrorMessage(message)
       setState('error')
     }
@@ -231,9 +222,7 @@ export function AvatarUploadDialog({
           )}
 
           {/* ── UPLOADING STATE ── */}
-          {state === 'uploading' && (
-            <UploadingState progress={progress} />
-          )}
+          {state === 'uploading' && <UploadingState progress={progress} />}
 
           {/* ── SUCCESS STATE ── */}
           {state === 'success' && (
@@ -338,9 +327,7 @@ function EmptyState({
           <ImagePlus className="h-7 w-7 text-primary" aria-hidden />
         </div>
         <div>
-          <p className="font-sans text-sm font-medium text-foreground">
-            Arrastra tu foto aquí
-          </p>
+          <p className="font-sans text-sm font-medium text-foreground">Arrastra tu foto aquí</p>
           <p className="mt-0.5 font-serif text-xs text-muted-foreground">
             JPG, PNG o WebP · Máx. 16 MB
           </p>
@@ -390,13 +377,7 @@ function UploadingState({ progress }: { progress: number }) {
   )
 }
 
-function SuccessState({
-  imageUrl,
-  onClose,
-}: {
-  imageUrl: string | null
-  onClose: () => void
-}) {
+function SuccessState({ imageUrl, onClose }: { imageUrl: string | null; onClose: () => void }) {
   return (
     <div
       className="flex flex-col items-center gap-4 py-6"
@@ -435,11 +416,7 @@ function ErrorState({
   onClose: () => void
 }) {
   return (
-    <div
-      className="flex flex-col items-center gap-4 py-6"
-      role="alert"
-      aria-live="assertive"
-    >
+    <div className="flex flex-col items-center gap-4 py-6" role="alert" aria-live="assertive">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
         <AlertCircle className="h-7 w-7 text-destructive" aria-hidden />
       </div>

@@ -11,7 +11,9 @@ export function useAdminCustomizationPricingPreviewQuery(
   enabled = true,
 ) {
   return useQuery({
-    queryKey: adminCustomizationQueryKeys.pricingPreview(input ?? { productId: '', areaId: '', optionId: '' }),
+    queryKey: adminCustomizationQueryKeys.pricingPreview(
+      input ?? { productId: '', areaId: '', optionId: '' },
+    ),
     queryFn: () => getAdminCustomizationPricingPreview(input!),
     enabled:
       enabled &&

@@ -1,8 +1,4 @@
-import type {
-  NotificationAudience,
-  NotificationType,
-  Prisma,
-} from '@prisma/client'
+import type { NotificationAudience, NotificationType, Prisma } from '@prisma/client'
 
 export type NotificationRecord = Prisma.NotificationGetPayload<object>
 
@@ -40,17 +36,11 @@ export type CreateNotificationInput = {
   dedupeKey?: string | null
 }
 
-export type CreateUserNotificationInput = Omit<
-  CreateNotificationInput,
-  'audience'
-> & {
+export type CreateUserNotificationInput = Omit<CreateNotificationInput, 'audience'> & {
   userId: string
 }
 
-export type CreateAdminNotificationInput = Omit<
-  CreateNotificationInput,
-  'audience'
->
+export type CreateAdminNotificationInput = Omit<CreateNotificationInput, 'audience'>
 
 export type MyNotificationsFilters = {
   first: number

@@ -8,12 +8,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-export type SortOption = 
-  | 'popular' 
-  | 'newest' 
-  | 'price-asc' 
-  | 'price-desc' 
-  | 'rating'
+export type SortOption = 'popular' | 'newest' | 'price-asc' | 'price-desc' | 'rating'
 
 interface SortSelectProps {
   value: SortOption
@@ -36,11 +31,7 @@ export function SortSelect({ value, onChange }: SortSelectProps) {
       </SelectTrigger>
       <SelectContent>
         {SORT_OPTIONS.map((option) => (
-          <SelectItem 
-            key={option.value} 
-            value={option.value}
-            className="font-serif text-sm"
-          >
+          <SelectItem key={option.value} value={option.value} className="font-serif text-sm">
             {option.label}
           </SelectItem>
         ))}

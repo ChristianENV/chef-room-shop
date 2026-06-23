@@ -24,9 +24,7 @@ function toIso(date: Date | null | undefined): string | null {
   return date ? date.toISOString() : null
 }
 
-function sanitizeMetadataJson(
-  value: Prisma.JsonValue | null,
-): Record<string, unknown> | null {
+function sanitizeMetadataJson(value: Prisma.JsonValue | null): Record<string, unknown> | null {
   if (value === null || value === undefined) return null
   if (typeof value === 'object' && !Array.isArray(value)) {
     return value as Record<string, unknown>
@@ -37,9 +35,7 @@ function sanitizeMetadataJson(
 /**
  * Maps a Prisma shipment (with order number and events) to AdminShipment GraphQL type.
  */
-export function mapShipmentToAdminGql(
-  shipment: ShipmentWithOrderAndEvents,
-): AdminShipmentGql {
+export function mapShipmentToAdminGql(shipment: ShipmentWithOrderAndEvents): AdminShipmentGql {
   return {
     id: shipment.id,
     orderNumber: shipment.order.orderNumber,
@@ -96,8 +92,8 @@ export function deriveShipmentLabelStatus(shipment: Shipment): string {
 
   const hasLabel = Boolean(
     shipment.labelUrl?.trim() ||
-      shipment.providerLabelId?.trim() ||
-      shipment.providerShipmentId?.trim(),
+    shipment.providerLabelId?.trim() ||
+    shipment.providerShipmentId?.trim(),
   )
 
   if (!hasLabel) {
@@ -134,6 +130,6 @@ export function mapShipmentToAdminListItemGql(
     updatedAt: shipment.updatedAt.toISOString(),
     trackingUpdatedAt: latestEvent
       ? latestEvent.createdAt.toISOString()
-      : shipment.shippedAt?.toISOString() ?? shipment.updatedAt.toISOString(),
+      : (shipment.shippedAt?.toISOString() ?? shipment.updatedAt.toISOString()),
   }
 }

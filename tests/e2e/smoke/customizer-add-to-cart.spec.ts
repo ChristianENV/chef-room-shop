@@ -6,8 +6,7 @@ import {
 } from '../helpers/mock-customizer-previews'
 import { selectCustomizerColorAndSize } from '../helpers/select-customizer-variant'
 
-const CUSTOMIZER_SLUG =
-  process.env.E2E_CUSTOMIZER_SLUG ?? 'demo-filipina-executive-blanca'
+const CUSTOMIZER_SLUG = process.env.E2E_CUSTOMIZER_SLUG ?? 'demo-filipina-executive-blanca'
 const USE_PREVIEW_MOCK = shouldMockCustomizerPreviews()
 
 test('customize -> add to cart smoke', async ({ page }) => {
@@ -43,7 +42,9 @@ test('customize -> add to cart smoke', async ({ page }) => {
   await page.getByTestId('customizer-add-to-cart-button').click()
   const successDialog = page.getByTestId('customizer-add-to-cart-success-dialog')
   await expect(successDialog).toBeVisible({ timeout: 60_000 })
-  await expect(successDialog.getByRole('heading', { name: /tu diseño está en el carrito/i })).toBeVisible()
+  await expect(
+    successDialog.getByRole('heading', { name: /tu diseño está en el carrito/i }),
+  ).toBeVisible()
 
   await page.getByTestId('customizer-go-to-cart-button').click()
   await expect(page).toHaveURL(/\/cart/)

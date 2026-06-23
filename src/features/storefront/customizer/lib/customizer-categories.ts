@@ -1,12 +1,4 @@
-import {
-  Bookmark,
-  Box,
-  Palette,
-  Shirt,
-  SlidersHorizontal,
-  Sticker,
-  Type,
-} from 'lucide-react'
+import { Bookmark, Box, Palette, Shirt, SlidersHorizontal, Sticker, Type } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export type CustomizerCategory =

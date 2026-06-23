@@ -8,11 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { routes } from '@/src/config/routes'
 import { formatCurrencyMXN } from '@/src/lib/formatters'
 import type { CartPreview, CartPreviewItem } from '@/src/types/cart'
@@ -166,9 +162,7 @@ function CartPopoverSkeleton() {
 function CartPopoverError({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="py-6 text-center">
-      <p className="font-serif text-sm text-muted-foreground">
-        No pudimos cargar tu carrito.
-      </p>
+      <p className="font-serif text-sm text-muted-foreground">No pudimos cargar tu carrito.</p>
       <Button variant="outline" size="sm" className="mt-4" onClick={onRetry}>
         <RefreshCw className="mr-2 h-4 w-4" />
         Reintentar
@@ -273,9 +267,7 @@ export function CartPopover({ triggerClassName, triggerTestId }: CartPopoverProp
 
         <div className="px-4 py-4">
           {showPopoverLoading && <CartPopoverSkeleton />}
-          {isError && !showPopoverLoading && (
-            <CartPopoverError onRetry={() => void refetch()} />
-          )}
+          {isError && !showPopoverLoading && <CartPopoverError onRetry={() => void refetch()} />}
           {!showPopoverLoading && !isError && cartPreview && (
             <CartPopoverContent cart={cartPreview} />
           )}

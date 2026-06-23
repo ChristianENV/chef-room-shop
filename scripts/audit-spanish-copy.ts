@@ -9,14 +9,7 @@ const ROOT = process.cwd()
 
 const SCAN_DIRS = ['src', 'components', 'lib', 'e2e'] as const
 
-const IGNORE_DIR_NAMES = new Set([
-  'node_modules',
-  '.next',
-  'dist',
-  'build',
-  '.git',
-  'migrations',
-])
+const IGNORE_DIR_NAMES = new Set(['node_modules', '.next', 'dist', 'build', '.git', 'migrations'])
 
 const IGNORE_FILES = new Set([
   'package-lock.json',
@@ -198,9 +191,7 @@ function main(): void {
   for (const f of sorted) {
     console.error(`  ${f.file}:${f.line}  [${f.kind}]  ${f.match}`)
   }
-  console.error(
-    '\nFix UTF-8 strings in source (e.g. sesión, not sesi?n). See docs/copywriting.md',
-  )
+  console.error('\nFix UTF-8 strings in source (e.g. sesión, not sesi?n). See docs/copywriting.md')
   process.exit(1)
 }
 

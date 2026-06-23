@@ -104,8 +104,7 @@ function parseAmountToCents(value: unknown): number | null {
 }
 
 /** Skydropx PRO rates validity window from quotation time. */
-export const SKYDROPX_RATE_VALIDITY_MS =
-  APP_LIMITS.shipping.rateExpirationHours * 60 * 60 * 1000
+export const SKYDROPX_RATE_VALIDITY_MS = APP_LIMITS.shipping.rateExpirationHours * 60 * 60 * 1000
 
 export function skydropxRateExpiresAt(from: Date = new Date()): Date {
   return new Date(from.getTime() + SKYDROPX_RATE_VALIDITY_MS)
@@ -121,9 +120,7 @@ export function mapOriginToSkydropxAddress(): SkydropxAddressInput {
 /**
  * Maps a customer destination to Skydropx address_to (quotation: CP + city/state).
  */
-export function mapAddressToSkydropxAddress(
-  input: DestinationAddressInput,
-): SkydropxAddressInput {
+export function mapAddressToSkydropxAddress(input: DestinationAddressInput): SkydropxAddressInput {
   const postal_code = normalizeMxPostalCode(input.postalCode)
   const city = input.city?.trim() || 'Ciudad'
   const state = input.state?.trim() || 'México'
@@ -212,9 +209,7 @@ export function mapSkydropxRateToShippingRate(raw: unknown): MappedShippingRate 
     service,
     amountCents: amount,
     currency:
-      readString(record, 'currency_code') ??
-      readString(record, 'currency') ??
-      SHIPPING_CURRENCY_MX,
+      readString(record, 'currency_code') ?? readString(record, 'currency') ?? SHIPPING_CURRENCY_MX,
     estimatedDays: days,
     estimatedDeliveryDate:
       estimatedDeliveryDate && !Number.isNaN(estimatedDeliveryDate.getTime())
@@ -247,8 +242,7 @@ function extractLabelUrlFromShipmentNode(shipment: Record<string, unknown>): str
     for (const pkg of packages) {
       const pkgRecord = asRecord(pkg)
       if (!pkgRecord) continue
-      const url =
-        readString(pkgRecord, 'label_url') ?? readString(pkgRecord, 'label_pdf')
+      const url = readString(pkgRecord, 'label_url') ?? readString(pkgRecord, 'label_pdf')
       if (url) return url
     }
   }
@@ -284,8 +278,7 @@ export function parseSkydropxShipmentResponse(raw: unknown): MappedShipmentData 
 
   const rateNode = asRecord(shipment.rate) ?? shipment
 
-  const providerShipmentId =
-    readString(shipment, 'id') ?? readString(shipment, 'shipment_id')
+  const providerShipmentId = readString(shipment, 'id') ?? readString(shipment, 'shipment_id')
 
   const providerLabelId =
     readString(shipment, 'label_id') ??
@@ -293,8 +286,7 @@ export function parseSkydropxShipmentResponse(raw: unknown): MappedShipmentData 
     readString(rateNode, 'id')
 
   const trackingNumber =
-    readString(shipment, 'tracking_number') ??
-    readString(shipment, 'master_tracking_number')
+    readString(shipment, 'tracking_number') ?? readString(shipment, 'master_tracking_number')
 
   const labelUrl = extractLabelUrlFromShipmentNode(shipment)
 
@@ -316,8 +308,7 @@ export function parseSkydropxShipmentResponse(raw: unknown): MappedShipmentData 
     parseAmountToCents(shipment.amount)
 
   const labelFormat =
-    readString(shipment, 'printing_format') ??
-    readString(shipment, 'label_format')
+    readString(shipment, 'printing_format') ?? readString(shipment, 'label_format')
 
   return {
     providerShipmentId,
@@ -391,9 +382,7 @@ export function parseSkydropxQuotationResponse(raw: unknown): ParsedSkydropxQuot
     readString(quotation, 'id') ?? readString(data, 'id') ?? readString(root, 'id')
 
   const isCompleted =
-    quotation.is_completed === true ||
-    data.is_completed === true ||
-    root.is_completed === true
+    quotation.is_completed === true || data.is_completed === true || root.is_completed === true
 
   return {
     providerQuoteId,

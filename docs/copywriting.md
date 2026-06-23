@@ -38,10 +38,10 @@ Sale con código **1** si encuentra coincidencias.
 
 ## Ejemplos correctos
 
-| Incorrecto | Correcto |
-|------------|----------|
-| Inicia sesi?n | Inicia sesión |
-| Correo electr?nico | Correo electrónico |
+| Incorrecto           | Correcto             |
+| -------------------- | -------------------- |
+| Inicia sesi?n        | Inicia sesión        |
+| Correo electr?nico   | Correo electrónico   |
 | Direcciones de env?o | Direcciones de envío |
-| Datos inv?lidos | Datos inválidos |
-| ?No tienes cuenta? | ¿No tienes cuenta? |
+| Datos inv?lidos      | Datos inválidos      |
+| ?No tienes cuenta?   | ¿No tienes cuenta?   |

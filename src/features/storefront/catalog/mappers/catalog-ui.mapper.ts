@@ -75,9 +75,7 @@ function uniqueSizesFromVariants(variants: CatalogProductVariant[]): string[] {
 }
 
 function totalStock(variants: CatalogProductVariant[]): number {
-  return variants
-    .filter((v) => v.isActive)
-    .reduce((sum, v) => sum + (v.stockQty ?? 0), 0)
+  return variants.filter((v) => v.isActive).reduce((sum, v) => sum + (v.stockQty ?? 0), 0)
 }
 
 /**

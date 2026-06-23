@@ -64,16 +64,15 @@ export function PurchaseDetailPageContent({
   cashPaymentLocations,
 }: PurchaseDetailPageContentProps) {
   const showGuestCta = !isAuthenticated && !canViewDetails
-  const showEmailMismatch =
-    isAuthenticated && !canViewDetails && viewerEmailMatchesOrder === false
+  const showEmailMismatch = isAuthenticated && !canViewDetails && viewerEmailMatchesOrder === false
 
   return (
     <div data-testid="purchase-detail-page" className="space-y-6">
       {tokenExpired && (
         <Alert>
           <AlertDescription className="font-serif text-sm">
-            El enlace de confirmación expiró. Inicia sesión o crea una cuenta con el mismo
-            correo del pedido para consultarlo, o contacta a soporte.
+            El enlace de confirmación expiró. Inicia sesión o crea una cuenta con el mismo correo
+            del pedido para consultarlo, o contacta a soporte.
           </AlertDescription>
         </Alert>
       )}
@@ -81,8 +80,8 @@ export function PurchaseDetailPageContent({
       {showEmailMismatch && (
         <Alert>
           <AlertDescription className="font-serif text-sm">
-            Esta compra fue realizada con otro correo. Podemos ayudarte a asociarla si
-            contactas a soporte o usas el enlace del correo de confirmación.
+            Esta compra fue realizada con otro correo. Podemos ayudarte a asociarla si contactas a
+            soporte o usas el enlace del correo de confirmación.
           </AlertDescription>
         </Alert>
       )}
@@ -130,9 +129,7 @@ export function PurchaseDetailPageContent({
                   {paymentReference && (
                     <div>
                       <dt className="text-muted-foreground">Referencia</dt>
-                      <dd className="font-sans font-medium text-foreground">
-                        {paymentReference}
-                      </dd>
+                      <dd className="font-sans font-medium text-foreground">{paymentReference}</dd>
                     </div>
                   )}
                   {paymentExpiresAt && (

@@ -26,9 +26,7 @@ export function AccountProfileHeader({ user }: AccountProfileHeaderProps) {
       <EditableAvatar user={user} />
       <div className="text-center sm:text-left">
         <h2 className="font-sans text-xl font-semibold text-foreground">{displayName}</h2>
-        {user?.email && (
-          <p className="font-serif text-sm text-muted-foreground">{user.email}</p>
-        )}
+        {user?.email && <p className="font-serif text-sm text-muted-foreground">{user.email}</p>}
         <div className="mt-2 flex justify-center sm:justify-start">
           <CustomerTierBadge customerTier={user?.customerTier} showRegular />
         </div>

@@ -1648,16 +1648,8 @@ export const typeDefs = /* GraphQL */ `
     adminRecentDesigns(limit: Int): [AdminRecentDesign!]!
     adminRecentPayments(limit: Int): [AdminRecentPayment!]!
     adminTopProducts(limit: Int): [AdminTopProduct!]!
-    adminUsers(
-      filter: AdminUsersFilterInput
-      limit: Int
-      offset: Int
-    ): AdminUsersPayload!
-    adminPayments(
-      filter: AdminPaymentsFilterInput
-      limit: Int
-      offset: Int
-    ): AdminPaymentsPayload!
+    adminUsers(filter: AdminUsersFilterInput, limit: Int, offset: Int): AdminUsersPayload!
+    adminPayments(filter: AdminPaymentsFilterInput, limit: Int, offset: Int): AdminPaymentsPayload!
     adminOrders(
       filter: AdminOrdersFilterInput
       sort: AdminOrdersSortInput
@@ -1669,11 +1661,7 @@ export const typeDefs = /* GraphQL */ `
     adminOrderProductionQueue(limit: Int): [AdminOrder!]!
     adminOrderProductionSheet(orderNumber: String!): AdminProductionSheet
     adminDesignConfigJson(designId: ID!): JSON
-    adminDesigns(
-      filter: AdminDesignsFilterInput
-      limit: Int
-      offset: Int
-    ): AdminDesignsPayload!
+    adminDesigns(filter: AdminDesignsFilterInput, limit: Int, offset: Int): AdminDesignsPayload!
     adminDesignById(id: ID!): AdminDesignDetail
     adminSettingsOverview: AdminSettingsOverview!
     adminShipmentByOrderNumber(orderNumber: String!): AdminShipmentByOrderNumberPayload!
@@ -1735,7 +1723,10 @@ export const typeDefs = /* GraphQL */ `
     retryCheckoutPayment(input: RetryCheckoutPaymentInput!): CompleteCheckoutPayload!
     verifyCheckoutPaymentByToken(orderNumber: String!, token: String!): AccountPaymentStatusPayload!
     claimGuestOrderByCheckoutToken(orderNumber: String!, token: String!): ClaimGuestOrderPayload!
-    requestOrderClaimTransfer(orderNumber: String!, checkoutToken: String!): OrderClaimTransferPayload!
+    requestOrderClaimTransfer(
+      orderNumber: String!
+      checkoutToken: String!
+    ): OrderClaimTransferPayload!
     approveOrderClaimTransfer(token: String!): ApproveOrderClaimTransferPayload!
     createConektaCheckout(input: CreateConektaCheckoutInput!): ConektaCheckoutPayload!
     claimOrder(token: String!): OrderClaimPayload!
@@ -1762,7 +1753,10 @@ export const typeDefs = /* GraphQL */ `
     deleteAdminProductImage(id: ID!): Boolean!
     reorderAdminProductImages(productId: ID!, imageIds: [ID!]!): [AdminProductImage!]!
     createAdminCustomizationRule(input: AdminCustomizationRuleInput!): AdminCustomizationRule!
-    updateAdminCustomizationRule(id: ID!, input: AdminCustomizationRuleInput!): AdminCustomizationRule!
+    updateAdminCustomizationRule(
+      id: ID!
+      input: AdminCustomizationRuleInput!
+    ): AdminCustomizationRule!
     deleteAdminCustomizationRule(id: ID!): Boolean!
     toggleAdminCustomizationRule(id: ID!, enabled: Boolean!): AdminCustomizationRule!
     duplicateCustomizationRulesToProduct(
@@ -1772,8 +1766,12 @@ export const typeDefs = /* GraphQL */ `
     confirmAvatarUpload(input: ConfirmAvatarUploadInput!): UserAvatarPayload!
     createProductImageUpload(input: CreateProductImageUploadInput!): ProductImageUploadPayload!
     confirmProductImageUpload(input: ConfirmProductImageUploadInput!): ProductImage!
-    createAdminProductModelUpload(input: CreateAdminProductModelUploadInput!): ProductModelUploadPayload!
-    confirmAdminProductModelUpload(input: ConfirmAdminProductModelUploadInput!): AdminProductModel3d!
+    createAdminProductModelUpload(
+      input: CreateAdminProductModelUploadInput!
+    ): ProductModelUploadPayload!
+    confirmAdminProductModelUpload(
+      input: ConfirmAdminProductModelUploadInput!
+    ): AdminProductModel3d!
     deleteAdminProductModelAsset(modelAssetId: ID!): Boolean!
     setActiveAdminProductModelAsset(modelAssetId: ID!): AdminProductModel3d!
     createDesignDraft(input: CreateDesignDraftInput!): AccountDesign!

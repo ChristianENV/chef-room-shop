@@ -1,9 +1,6 @@
 import 'server-only'
 
-import type {
-  SkydropxCreateShipmentRequest,
-  SkydropxShipmentResponse,
-} from './skydropx.types'
+import type { SkydropxCreateShipmentRequest, SkydropxShipmentResponse } from './skydropx.types'
 import type { SkydropxShipmentProviderContext } from './skydropx.provider'
 
 const MOCK_CARRIER = 'fedex'

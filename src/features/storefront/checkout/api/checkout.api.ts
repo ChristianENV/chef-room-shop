@@ -25,7 +25,10 @@ import type {
   OrderClaimTransferPayload,
   PublicOrder,
 } from '../types'
-import type { AccountOrder, AccountPaymentStatusPayload } from '@/src/features/storefront/account/types'
+import type {
+  AccountOrder,
+  AccountPaymentStatusPayload,
+} from '@/src/features/storefront/account/types'
 
 type CreateCheckoutOrderData = { createCheckoutOrder: CheckoutOrderPayload }
 type CompleteCheckoutData = { completeCheckout: CompleteCheckoutPayload }
@@ -58,10 +61,7 @@ type RequestOrderClaimTransferData = {
 export async function createCheckoutOrder(
   input: CreateCheckoutOrderInput,
 ): Promise<CheckoutOrderPayload> {
-  const data = await fetchGraphQL<
-    CreateCheckoutOrderData,
-    { input: CreateCheckoutOrderInput }
-  >({
+  const data = await fetchGraphQL<CreateCheckoutOrderData, { input: CreateCheckoutOrderInput }>({
     query: CREATE_CHECKOUT_ORDER_MUTATION,
     variables: { input },
   })
@@ -74,10 +74,7 @@ export async function createCheckoutOrder(
 export async function completeCheckout(
   input: CreateCheckoutOrderInput,
 ): Promise<CompleteCheckoutPayload> {
-  const data = await fetchGraphQL<
-    CompleteCheckoutData,
-    { input: CreateCheckoutOrderInput }
-  >({
+  const data = await fetchGraphQL<CompleteCheckoutData, { input: CreateCheckoutOrderInput }>({
     query: COMPLETE_CHECKOUT_MUTATION,
     variables: { input },
   })
@@ -88,10 +85,7 @@ export async function completeCheckout(
  * Retries Conekta checkout for an existing order using return token.
  */
 export async function retryCheckoutPayment(returnToken: string): Promise<CompleteCheckoutPayload> {
-  const data = await fetchGraphQL<
-    RetryCheckoutPaymentData,
-    { input: { token: string } }
-  >({
+  const data = await fetchGraphQL<RetryCheckoutPaymentData, { input: { token: string } }>({
     query: RETRY_CHECKOUT_PAYMENT_MUTATION,
     variables: { input: { token: returnToken } },
   })
@@ -124,13 +118,12 @@ export async function getOrderByCheckoutToken(
   orderNumber: string,
   token: string,
 ): Promise<CheckoutOrderDetailAccess | null> {
-  const data = await fetchGraphQL<
-    OrderByCheckoutTokenData,
-    { orderNumber: string; token: string }
-  >({
-    query: ORDER_BY_CHECKOUT_TOKEN_QUERY,
-    variables: { orderNumber, token },
-  })
+  const data = await fetchGraphQL<OrderByCheckoutTokenData, { orderNumber: string; token: string }>(
+    {
+      query: ORDER_BY_CHECKOUT_TOKEN_QUERY,
+      variables: { orderNumber, token },
+    },
+  )
   return data.orderByCheckoutToken
 }
 
@@ -192,12 +185,10 @@ export async function getOrderByNumber(
   orderNumber: string,
   email: string,
 ): Promise<PublicOrder | null> {
-  const data = await fetchGraphQL<OrderByNumberData, { orderNumber: string; email: string }>(
-    {
-      query: ORDER_BY_NUMBER_QUERY,
-      variables: { orderNumber, email },
-    },
-  )
+  const data = await fetchGraphQL<OrderByNumberData, { orderNumber: string; email: string }>({
+    query: ORDER_BY_NUMBER_QUERY,
+    variables: { orderNumber, email },
+  })
   return data.orderByNumber
 }
 
@@ -207,12 +198,11 @@ export async function getOrderByNumber(
 export async function createConektaCheckout(
   input: CreateConektaCheckoutInput,
 ): Promise<ConektaCheckoutPayload> {
-  const data = await fetchGraphQL<
-    CreateConektaCheckoutData,
-    { input: CreateConektaCheckoutInput }
-  >({
-    query: CREATE_CONEKTA_CHECKOUT_MUTATION,
-    variables: { input },
-  })
+  const data = await fetchGraphQL<CreateConektaCheckoutData, { input: CreateConektaCheckoutInput }>(
+    {
+      query: CREATE_CONEKTA_CHECKOUT_MUTATION,
+      variables: { input },
+    },
+  )
   return data.createConektaCheckout
 }

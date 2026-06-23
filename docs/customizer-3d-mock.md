@@ -49,29 +49,29 @@ Prioridad de `getCustomizerModelForProduct`:
 
 Inspección del glTF (CLO Standalone 2024):
 
-| Material | Rol customizador | Store |
-|----------|------------------|-------|
-| `FABRIC 1_2333` | **body** | `baseColor` |
-| `Default Button_2335` | **buttons** | `detailColor` |
+| Material              | Rol customizador | Store         |
+| --------------------- | ---------------- | ------------- |
+| `FABRIC 1_2333`       | **body**         | `baseColor`   |
+| `Default Button_2335` | **buttons**      | `detailColor` |
 
 No hay material separado de vivos/cuello/puños en este export → `detailColor` no tinta tela extra.
 
 **Meshes**
 
-| Mesh | Material |
-|------|----------|
-| `Cloth_mesh` | FABRIC 1_2333 |
+| Mesh                       | Material            |
+| -------------------------- | ------------------- |
+| `Cloth_mesh`               | FABRIC 1_2333       |
 | `Button_*` (10 instancias) | Default Button_2335 |
 
 **Mapas PBR** (en ambos materiales): `map`, `normalMap`, `metallicRoughnessTexture`
 
 **Hints en registry** (`model-registry.ts`):
 
-| Grupo | Hints |
-|-------|-------|
-| body | `fabric`, `cloth`, `jacket`, `chef`, `thick`, `2333` |
-| detail | `collar`, `cuff`, `trim`, … (sin match en este export) |
-| buttons | `button`, `default button`, `2335` |
+| Grupo   | Hints                                                  |
+| ------- | ------------------------------------------------------ |
+| body    | `fabric`, `cloth`, `jacket`, `chef`, `thick`, `2333`   |
+| detail  | `collar`, `cuff`, `trim`, … (sin match en este export) |
+| buttons | `button`, `default button`, `2335`                     |
 
 Precedencia: **buttons > detail > body**. El tinte solo muta `material.color`; mapas PBR se preservan.
 
@@ -86,13 +86,13 @@ El export CLO usa coordenadas ~cm (altura ~71 unidades). En el registry:
 
 Calibradas en `customizer-zones.ts` para `Cloth_mesh` (pendiente anchors finales en DB):
 
-| Zona | Posición local (aprox.) |
-|------|-------------------------|
-| pecho izquierdo | `(-6, 142, 11)` |
-| pecho derecho | `(14, 142, 11)` |
-| espalda | `(7, 132, -1)` |
-| manga izquierda | `(-18, 118, 3)` |
-| manga derecha | `(25, 118, 3)` |
+| Zona            | Posición local (aprox.) |
+| --------------- | ----------------------- |
+| pecho izquierdo | `(-6, 142, 11)`         |
+| pecho derecho   | `(14, 142, 11)`         |
+| espalda         | `(7, 132, -1)`          |
+| manga izquierda | `(-18, 118, 3)`         |
+| manga derecha   | `(25, 118, 3)`          |
 
 Con GLB activo, texto/logo se proyectan en WebGL (`TextDecal` / `LogoDecal`) y el overlay DOM se oculta.
 

@@ -33,7 +33,7 @@ const GLB_MAGIC = 0x46546c67 // "glTF"
 const totalLength = 12 + 8 + jsonBytes.length
 const header = Buffer.allocUnsafe(12)
 header.writeUInt32LE(GLB_MAGIC, 0)
-header.writeUInt32LE(2, 4)         // version 2
+header.writeUInt32LE(2, 4) // version 2
 header.writeUInt32LE(totalLength, 8)
 
 const glb = Buffer.concat([header, jsonChunkHeader, jsonBytes])

@@ -31,8 +31,7 @@ export function CustomizerProductSelector({
   selectedSlug,
   onSelectProduct,
 }: CustomizerProductSelectorProps) {
-  const selected =
-    products.find((product) => product.slug === selectedSlug) ?? products[0] ?? null
+  const selected = products.find((product) => product.slug === selectedSlug) ?? products[0] ?? null
 
   if (!selected) return null
 

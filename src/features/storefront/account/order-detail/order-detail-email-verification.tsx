@@ -13,9 +13,7 @@ type OrderDetailEmailVerificationProps = {
 /**
  * Blocks order detail until the user verifies their email.
  */
-export function OrderDetailEmailVerification({
-  callbackUrl,
-}: OrderDetailEmailVerificationProps) {
+export function OrderDetailEmailVerification({ callbackUrl }: OrderDetailEmailVerificationProps) {
   const verifyHref = `${routes.verifyEmail}?callbackUrl=${encodeURIComponent(callbackUrl)}`
 
   return (
@@ -28,8 +26,8 @@ export function OrderDetailEmailVerification({
           Verifica tu correo para consultar el detalle de tu pedido
         </h2>
         <p className="mt-2 max-w-md font-serif text-sm text-muted-foreground">
-          Por seguridad, necesitamos confirmar que eres el titular del correo asociado a esta
-          compra antes de mostrar la información completa.
+          Por seguridad, necesitamos confirmar que eres el titular del correo asociado a esta compra
+          antes de mostrar la información completa.
         </p>
         <div className="mt-6 flex w-full max-w-sm flex-col items-center gap-3">
           <VerifyEmailResend callbackURL={callbackUrl} />

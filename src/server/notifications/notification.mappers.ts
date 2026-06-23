@@ -32,9 +32,7 @@ export function sanitizeNotificationMetadata(
   return Object.keys(sanitized).length > 0 ? sanitized : null
 }
 
-export function mapNotificationToGql(
-  notification: NotificationRecord,
-): NotificationGql {
+export function mapNotificationToGql(notification: NotificationRecord): NotificationGql {
   return {
     id: notification.id,
     audience: notification.audience,

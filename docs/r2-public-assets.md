@@ -8,19 +8,19 @@ Local files are **not deleted** in this phase. The app uses `getPublicImageUrl()
 
 Server upload script (never expose to the client):
 
-| Variable | Purpose |
-|----------|---------|
-| `R2_ACCOUNT_ID` | Cloudflare account ID |
-| `R2_ACCESS_KEY_ID` | R2 access key |
-| `R2_SECRET_ACCESS_KEY` | R2 secret key |
-| `R2_BUCKET_NAME` | Bucket name |
-| `R2_PUBLIC_BASE_URL` | Public CDN base URL (no trailing slash) |
-| `R2_REGION` | Optional, default `auto` |
+| Variable               | Purpose                                 |
+| ---------------------- | --------------------------------------- |
+| `R2_ACCOUNT_ID`        | Cloudflare account ID                   |
+| `R2_ACCESS_KEY_ID`     | R2 access key                           |
+| `R2_SECRET_ACCESS_KEY` | R2 secret key                           |
+| `R2_BUCKET_NAME`       | Bucket name                             |
+| `R2_PUBLIC_BASE_URL`   | Public CDN base URL (no trailing slash) |
+| `R2_REGION`            | Optional, default `auto`                |
 
 Client / Next.js image config:
 
-| Variable | Purpose |
-|----------|---------|
+| Variable                         | Purpose                                                  |
+| -------------------------------- | -------------------------------------------------------- |
 | `NEXT_PUBLIC_R2_PUBLIC_BASE_URL` | Same public CDN base URL for `next/image` remotePatterns |
 
 Set `NEXT_PUBLIC_R2_PUBLIC_BASE_URL` to the same value as `R2_PUBLIC_BASE_URL` in each environment.
@@ -42,11 +42,11 @@ pnpm r2:public-images:upload -- --force
 
 ## What gets uploaded
 
-| Local path | R2 object key |
-|------------|---------------|
-| `public/images/landing/landing-hero-customizer.png` | `public/images/landing/landing-hero-customizer.png` |
+| Local path                                                             | R2 object key                                                          |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `public/images/landing/landing-hero-customizer.png`                    | `public/images/landing/landing-hero-customizer.png`                    |
 | `public/images/chefroom-logo-assets/chefroom-logo-horizontal-blue.png` | `public/images/chefroom-logo-assets/chefroom-logo-horizontal-blue.png` |
-| `public/models/customizer/chef-jacket/chef-jacket-diffuse.png` | `public/images/models/customizer/chef-jacket/chef-jacket-diffuse.png` |
+| `public/models/customizer/chef-jacket/chef-jacket-diffuse.png`         | `public/images/models/customizer/chef-jacket/chef-jacket-diffuse.png`  |
 
 ### Included (current audit)
 
@@ -119,11 +119,7 @@ Example CORS rule (Cloudflare dashboard → R2 bucket → Settings → CORS):
 ```json
 [
   {
-    "AllowedOrigins": [
-      "http://localhost:3000",
-      "https://chefroom.mx",
-      "https://*.vercel.app"
-    ],
+    "AllowedOrigins": ["http://localhost:3000", "https://chefroom.mx", "https://*.vercel.app"],
     "AllowedMethods": ["GET", "HEAD"],
     "AllowedHeaders": ["*"],
     "MaxAgeSeconds": 86400

@@ -199,8 +199,7 @@ export function computeCartTotals(items: CartItemWithRelations[]): {
  * Maps a cart line item with relations to the GraphQL cart item shape.
  */
 export function mapCartItemToGql(item: CartItemWithRelations): CartItemGql {
-  const totalPriceCents =
-    (item.unitPriceCents + item.customizationPriceCents) * item.quantity
+  const totalPriceCents = (item.unitPriceCents + item.customizationPriceCents) * item.quantity
 
   return {
     id: item.id,

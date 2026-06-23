@@ -61,7 +61,8 @@ export function ShippingMethodSelector({
       {hasCustomization && (
         <div className="rounded-lg border border-warning/30 bg-warning/5 p-3">
           <p className="font-serif text-sm text-warning">
-            Tu pedido incluye productos personalizados. El tiempo de produccion es adicional al tiempo de envio.
+            Tu pedido incluye productos personalizados. El tiempo de produccion es adicional al
+            tiempo de envio.
           </p>
         </div>
       )}
@@ -78,7 +79,7 @@ export function ShippingMethodSelector({
               selectedMethod === option.id
                 ? 'border-primary bg-primary/5'
                 : 'border-border bg-card hover:border-primary/50',
-              !option.available && 'cursor-not-allowed opacity-50'
+              !option.available && 'cursor-not-allowed opacity-50',
             )}
           >
             {/* Radio Circle */}
@@ -87,19 +88,17 @@ export function ShippingMethodSelector({
                 'mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2',
                 selectedMethod === option.id
                   ? 'border-primary bg-primary'
-                  : 'border-muted-foreground'
+                  : 'border-muted-foreground',
               )}
             >
-              {selectedMethod === option.id && (
-                <div className="h-2 w-2 rounded-full bg-white" />
-              )}
+              {selectedMethod === option.id && <div className="h-2 w-2 rounded-full bg-white" />}
             </div>
 
             {/* Icon */}
             <div
               className={cn(
                 'flex-shrink-0',
-                selectedMethod === option.id ? 'text-primary' : 'text-muted-foreground'
+                selectedMethod === option.id ? 'text-primary' : 'text-muted-foreground',
               )}
             >
               {option.icon}
@@ -108,9 +107,7 @@ export function ShippingMethodSelector({
             {/* Content */}
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <span className="font-sans font-semibold text-foreground">
-                  {option.name}
-                </span>
+                <span className="font-sans font-semibold text-foreground">{option.name}</span>
                 <span className="font-sans font-semibold text-foreground">
                   {option.price === 0 ? (
                     <span className="text-success">Gratis</span>
@@ -119,9 +116,7 @@ export function ShippingMethodSelector({
                   )}
                 </span>
               </div>
-              <p className="mt-1 font-serif text-sm text-muted-foreground">
-                {option.description}
-              </p>
+              <p className="mt-1 font-serif text-sm text-muted-foreground">{option.description}</p>
               <p className="mt-1 font-serif text-xs text-muted-foreground">
                 Tiempo estimado: {option.estimatedDays}
               </p>
@@ -139,9 +134,7 @@ export function ShippingMethodSelector({
 
       {/* Production Time Info */}
       <div className="rounded-lg bg-secondary/50 p-4">
-        <h3 className="font-sans text-sm font-semibold text-foreground">
-          Tiempos de produccion
-        </h3>
+        <h3 className="font-sans text-sm font-semibold text-foreground">Tiempos de produccion</h3>
         <ul className="mt-2 space-y-1 font-serif text-sm text-muted-foreground">
           <li>Productos estandar: 3-5 dias habiles</li>
           <li>Productos personalizados: 5-8 dias habiles adicionales</li>

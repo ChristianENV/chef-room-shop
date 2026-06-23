@@ -1,9 +1,4 @@
-import {
-  CartStatus,
-  OrderStatus,
-  RoleSlug,
-  type Prisma,
-} from '@prisma/client'
+import { CartStatus, OrderStatus, RoleSlug, type Prisma } from '@prisma/client'
 
 import type { GraphQLContext } from '../../context'
 import { requireAdminGraphQL } from './admin-dashboard.auth'
@@ -64,10 +59,7 @@ function paidOrderDateWhere(since: Date): Prisma.OrderWhereInput {
   return {
     deletedAt: null,
     status: { in: PAID_ORDER_STATUSES },
-    OR: [
-      { placedAt: { gte: since } },
-      { placedAt: null, createdAt: { gte: since } },
-    ],
+    OR: [{ placedAt: { gte: since } }, { placedAt: null, createdAt: { gte: since } }],
   }
 }
 
@@ -139,8 +131,7 @@ export async function getAdminDashboardMetrics(
   ])
 
   const paidCount = paidOrderStats._count
-  const averageOrderValueCents =
-    paidCount > 0 ? Math.round(paidOrderStats._avg.totalCents ?? 0) : 0
+  const averageOrderValueCents = paidCount > 0 ? Math.round(paidOrderStats._avg.totalCents ?? 0) : 0
 
   return mapMetricsToGql({
     salesTodayCents: salesToday._sum.totalCents ?? 0,

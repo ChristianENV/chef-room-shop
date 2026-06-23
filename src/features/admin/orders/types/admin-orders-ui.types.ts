@@ -9,11 +9,7 @@ export type AdminOrderStatusFilter =
   | 'cancelado'
 
 /** UI filter slug for payment status. */
-export type AdminPaymentStatusFilter =
-  | 'pendiente'
-  | 'completado'
-  | 'fallido'
-  | 'reembolsado'
+export type AdminPaymentStatusFilter = 'pendiente' | 'completado' | 'fallido' | 'reembolsado'
 
 export type StatusBadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline'
 

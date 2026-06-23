@@ -2,14 +2,14 @@
 import { routes } from '@/src/config/routes'
 
 import Link from 'next/link'
-import { 
-  Calendar, 
-  CreditCard, 
-  Edit, 
-  Mail, 
-  MapPin, 
-  Package, 
-  Palette, 
+import {
+  Calendar,
+  CreditCard,
+  Edit,
+  Mail,
+  MapPin,
+  Package,
+  Palette,
   Phone,
   Star,
 } from 'lucide-react'
@@ -81,7 +81,7 @@ export function ProfileSummary({
               </Badge>
             </div>
           </div>
-          
+
           <div className="space-y-2 pt-2">
             <div className="flex items-center gap-3 text-sm">
               <Mail className="h-4 w-4 text-muted-foreground" />
@@ -94,9 +94,10 @@ export function ProfileSummary({
             <div className="flex items-center gap-3 text-sm">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <span className="font-serif text-muted-foreground">
-                Cliente desde {new Date(user.createdAt).toLocaleDateString('es-MX', { 
-                  month: 'long', 
-                  year: 'numeric' 
+                Cliente desde{' '}
+                {new Date(user.createdAt).toLocaleDateString('es-MX', {
+                  month: 'long',
+                  year: 'numeric',
                 })}
               </span>
             </div>
@@ -121,7 +122,9 @@ export function ProfileSummary({
               <div className="flex items-center gap-2">
                 <Badge variant="outline">{defaultAddress.label}</Badge>
                 {defaultAddress.isDefaultShipping && (
-                  <Badge variant="secondary" className="text-xs">Envio</Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    Envio
+                  </Badge>
                 )}
               </div>
               <p className="font-serif text-sm text-foreground">
@@ -167,8 +170,8 @@ export function ProfileSummary({
           {recentOrders.length > 0 ? (
             <div className="space-y-3">
               {recentOrders.slice(0, 3).map((order) => (
-                <div 
-                  key={order.id} 
+                <div
+                  key={order.id}
                   className="flex items-center justify-between rounded-lg border border-border p-3"
                 >
                   <div>
@@ -191,9 +194,7 @@ export function ProfileSummary({
           ) : (
             <div className="flex flex-col items-center justify-center py-6 text-center">
               <Package className="mb-2 h-8 w-8 text-muted-foreground" />
-              <p className="font-serif text-sm text-muted-foreground">
-                Aún no tienes pedidos.
-              </p>
+              <p className="font-serif text-sm text-muted-foreground">Aún no tienes pedidos.</p>
               <Button variant="outline" size="sm" className="mt-3" asChild>
                 <Link href={routes.shop}>Explorar productos</Link>
               </Button>
@@ -217,8 +218,8 @@ export function ProfileSummary({
           {savedDesigns.length > 0 ? (
             <div className="space-y-3">
               {savedDesigns.slice(0, 3).map((design) => (
-                <div 
-                  key={design.id} 
+                <div
+                  key={design.id}
                   className="flex items-center gap-3 rounded-lg border border-border p-3"
                 >
                   <div className="h-12 w-12 rounded-lg bg-secondary flex items-center justify-center">
@@ -228,9 +229,7 @@ export function ProfileSummary({
                     <p className="font-sans text-sm font-medium text-foreground truncate">
                       {design.name}
                     </p>
-                    <p className="font-serif text-xs text-muted-foreground">
-                      {design.productName}
-                    </p>
+                    <p className="font-serif text-xs text-muted-foreground">{design.productName}</p>
                   </div>
                   <DesignStatusBadge status={design.status} />
                 </div>
@@ -266,24 +265,19 @@ export function ProfileSummary({
                   {statusLabel[user.customerStatus]}
                 </p>
                 <p className="font-serif text-sm text-muted-foreground">
-                  {user.customerStatus === 'premium' 
+                  {user.customerStatus === 'premium'
                     ? 'Disfrutas de envio gratis en todos tus pedidos'
-                    : 'Completa 3 pedidos mas para ser Cliente Premium'
-                  }
+                    : 'Completa 3 pedidos mas para ser Cliente Premium'}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-center">
-                <p className="font-sans text-2xl font-bold text-primary">
-                  {recentOrders.length}
-                </p>
+                <p className="font-sans text-2xl font-bold text-primary">{recentOrders.length}</p>
                 <p className="font-serif text-xs text-muted-foreground">Pedidos</p>
               </div>
               <div className="text-center">
-                <p className="font-sans text-2xl font-bold text-primary">
-                  {savedDesigns.length}
-                </p>
+                <p className="font-sans text-2xl font-bold text-primary">{savedDesigns.length}</p>
                 <p className="font-serif text-xs text-muted-foreground">Disenos</p>
               </div>
             </div>
@@ -299,31 +293,23 @@ import type { OrderStatus, SavedDesignStatus } from '@/lib/types'
 
 function OrderStatusBadge({ status }: { status: OrderStatus }) {
   const config: Record<OrderStatus, { label: string; className: string }> = {
-    'pendiente': { label: 'Pendiente', className: 'bg-warning/10 text-warning' },
-    'pagado': { label: 'Pagado', className: 'bg-success/10 text-success' },
+    pendiente: { label: 'Pendiente', className: 'bg-warning/10 text-warning' },
+    pagado: { label: 'Pagado', className: 'bg-success/10 text-success' },
     'en-produccion': { label: 'En produccion', className: 'bg-primary/10 text-primary' },
-    'enviado': { label: 'Enviado', className: 'bg-accent/10 text-accent' },
-    'entregado': { label: 'Entregado', className: 'bg-success/10 text-success' },
-    'cancelado': { label: 'Cancelado', className: 'bg-destructive/10 text-destructive' },
+    enviado: { label: 'Enviado', className: 'bg-accent/10 text-accent' },
+    entregado: { label: 'Entregado', className: 'bg-success/10 text-success' },
+    cancelado: { label: 'Cancelado', className: 'bg-destructive/10 text-destructive' },
   }
 
-  return (
-    <Badge className={cn('text-xs', config[status].className)}>
-      {config[status].label}
-    </Badge>
-  )
+  return <Badge className={cn('text-xs', config[status].className)}>{config[status].label}</Badge>
 }
 
 function DesignStatusBadge({ status }: { status: SavedDesignStatus }) {
   const config: Record<SavedDesignStatus, { label: string; className: string }> = {
-    'borrador': { label: 'Borrador', className: 'bg-muted text-muted-foreground' },
+    borrador: { label: 'Borrador', className: 'bg-muted text-muted-foreground' },
     'en-carrito': { label: 'En carrito', className: 'bg-primary/10 text-primary' },
-    'comprado': { label: 'Comprado', className: 'bg-success/10 text-success' },
+    comprado: { label: 'Comprado', className: 'bg-success/10 text-success' },
   }
 
-  return (
-    <Badge className={cn('text-xs', config[status].className)}>
-      {config[status].label}
-    </Badge>
-  )
+  return <Badge className={cn('text-xs', config[status].className)}>{config[status].label}</Badge>
 }

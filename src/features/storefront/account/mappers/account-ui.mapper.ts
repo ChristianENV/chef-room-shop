@@ -78,11 +78,8 @@ export function mapAccountUserToProfile(user: AccountUser): UserProfile {
  * Maps BFF address to legacy Address UI shape.
  */
 export function mapAccountAddressToUi(address: AccountAddress): UiAddress {
-  const isShipping =
-    address.isDefault &&
-    (address.type === 'SHIPPING' || address.type === 'BOTH')
-  const isBilling =
-    address.isDefault && (address.type === 'BILLING' || address.type === 'BOTH')
+  const isShipping = address.isDefault && (address.type === 'SHIPPING' || address.type === 'BOTH')
+  const isBilling = address.isDefault && (address.type === 'BILLING' || address.type === 'BOTH')
 
   return {
     id: address.id,
@@ -140,19 +137,21 @@ function mapPaymentStatus(status: string): PaymentStatus {
 /**
  * Maps BFF order to legacy Order UI shape.
  */
-export function mapAccountOrderToUi(order: AccountOrder & {
-  items: AccountOrderItem[]
-  shipments?: Array<{
-    carrier: string | null
-    trackingNumber: string | null
-    status: string
-    deliveredAt?: string | null
-  }>
-  payments?: Array<{ status: string }>
-  subtotalCents?: number
-  shippingCostCents?: number
-  discountTotalCents?: number
-}): Order {
+export function mapAccountOrderToUi(
+  order: AccountOrder & {
+    items: AccountOrderItem[]
+    shipments?: Array<{
+      carrier: string | null
+      trackingNumber: string | null
+      status: string
+      deliveredAt?: string | null
+    }>
+    payments?: Array<{ status: string }>
+    subtotalCents?: number
+    shippingCostCents?: number
+    discountTotalCents?: number
+  },
+): Order {
   const date = order.placedAt ?? order.createdAt
   const shipment = order.shipments?.[0]
   const trackingNumber = shipment?.trackingNumber ?? undefined
@@ -214,8 +213,7 @@ export function mapAccountDesignToUi(design: AccountDesign): SavedDesign {
     selection.selectedColor.hex ??
     legacyConfig?.garment?.baseColor ??
     '#FFFFFF'
-  const fabricName =
-    selection.fabricColor.name ?? selection.selectedColor.name ?? 'Personalizado'
+  const fabricName = selection.fabricColor.name ?? selection.selectedColor.name ?? 'Personalizado'
   const previewUrl = resolveDesignPreviewUrl(design)
   const hasLogo = selection.elements.some((element) => element.type === 'logo')
   const textElement = selection.elements.find((element) => element.type === 'text')
@@ -299,7 +297,7 @@ export function mapUiAddressToInput(partial: Partial<Address>): MyAddressInput {
     neighborhood: partial.neighborhood,
     city: partial.city ?? '',
     state: partial.state ?? '',
-    country: partial.country === 'Mexico' ? 'MX' : partial.country ?? 'MX',
+    country: partial.country === 'Mexico' ? 'MX' : (partial.country ?? 'MX'),
     postalCode: partial.postalCode ?? '',
     references: partial.label,
     isDefault: !!(partial.isDefaultShipping || partial.isDefaultBilling),

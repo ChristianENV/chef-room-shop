@@ -41,10 +41,7 @@ export function isProtectedAdminPath(pathname: string): boolean {
  * Edge proxy: when enforcement is on, protected admin paths need a session cookie.
  * Role validation happens server-side via {@link requireAdminSession} (no Prisma in Edge).
  */
-export function canAccessAdminRoute(
-  pathname: string,
-  hasSessionCookie: boolean,
-): boolean {
+export function canAccessAdminRoute(pathname: string, hasSessionCookie: boolean): boolean {
   if (!isProtectedAdminPath(pathname)) return true
   return hasSessionCookie
 }
@@ -53,10 +50,7 @@ export function canAccessAdminRoute(
  * Returns true if the user has the given permission slug.
  * SUPERADMIN is treated as having all permissions.
  */
-export function hasPermission(
-  user: CurrentUser,
-  permissionKey: string,
-): boolean {
+export function hasPermission(user: CurrentUser, permissionKey: string): boolean {
   if (user.roles.includes('SUPERADMIN')) return true
   return user.permissions.includes(permissionKey)
 }

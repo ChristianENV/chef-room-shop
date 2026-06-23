@@ -36,7 +36,11 @@ export function CustomerTierBadge({
   if (!label && !showRegular) return null
   if (!label) {
     return (
-      <Badge variant="secondary" className={cn('font-normal', className)} data-testid="customer-tier-badge">
+      <Badge
+        variant="secondary"
+        className={cn('font-normal', className)}
+        data-testid="customer-tier-badge"
+      >
         Cliente
       </Badge>
     )

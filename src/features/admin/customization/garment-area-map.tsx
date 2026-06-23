@@ -116,9 +116,7 @@ export function GarmentAreaMap({
 
   return (
     <div className="rounded-lg border border-border bg-card p-4">
-      <h3 className="mb-1 font-sans text-sm font-semibold text-foreground">
-        Mapa de zonas
-      </h3>
+      <h3 className="mb-1 font-sans text-sm font-semibold text-foreground">Mapa de zonas</h3>
       <p className="mb-4 font-serif text-xs text-muted-foreground">
         Vista administrativa — no es el customizador de tienda.
       </p>

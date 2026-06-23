@@ -69,9 +69,7 @@ export function extractSkydropxWebhookEvent(payload: unknown): ParsedSkydropxWeb
     readString(attributes, 'shipment_status')
 
   const legacyEventType =
-    readString(root, 'event_type') ??
-    readString(root, 'eventType') ??
-    readString(root, 'type')
+    readString(root, 'event_type') ?? readString(root, 'eventType') ?? readString(root, 'type')
 
   const eventType =
     legacyEventType && legacyEventType.includes('.')
@@ -171,10 +169,7 @@ export function shouldSendDeliveredEmail(
   previousStatus: ShipmentStatus,
   nextStatus: ShipmentStatus,
 ): boolean {
-  return (
-    nextStatus === ShipmentStatus.DELIVERED &&
-    previousStatus !== ShipmentStatus.DELIVERED
-  )
+  return nextStatus === ShipmentStatus.DELIVERED && previousStatus !== ShipmentStatus.DELIVERED
 }
 
 function buildShipmentEventMessage(event: ParsedSkydropxWebhookEvent): string {
@@ -185,10 +180,7 @@ function buildShipmentEventMessage(event: ParsedSkydropxWebhookEvent): string {
 async function resolveShipment(
   prisma: PrismaClient,
   event: ParsedSkydropxWebhookEvent,
-): Promise<
-  | (Prisma.ShipmentGetPayload<{ include: { order: true } }>)
-  | null
-> {
+): Promise<Prisma.ShipmentGetPayload<{ include: { order: true } }> | null> {
   if (event.providerShipmentId) {
     const byProvider = await prisma.shipment.findFirst({
       where: { providerShipmentId: event.providerShipmentId },

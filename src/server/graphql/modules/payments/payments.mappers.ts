@@ -48,9 +48,11 @@ export function mapOrderItemsToConektaLineItems(
 /**
  * Reads cached checkout URL from the latest payment attempt JSON.
  */
-export function getCachedCheckoutFromAttempts(
-  attempts: Array<{ rawResponseJson: unknown }>,
-): { checkoutUrl: string | null; checkoutId: string | null; conektaOrderId: string | null } {
+export function getCachedCheckoutFromAttempts(attempts: Array<{ rawResponseJson: unknown }>): {
+  checkoutUrl: string | null
+  checkoutId: string | null
+  conektaOrderId: string | null
+} {
   for (const attempt of attempts) {
     const raw = attempt.rawResponseJson
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue

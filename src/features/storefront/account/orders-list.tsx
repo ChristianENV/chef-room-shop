@@ -4,12 +4,7 @@ import { useState } from 'react'
 import { routes } from '@/src/config/routes'
 
 import Link from 'next/link'
-import {
-  ChevronRight,
-  ExternalLink,
-  Package,
-  Truck,
-} from 'lucide-react'
+import { ChevronRight, ExternalLink, Package, Truck } from 'lucide-react'
 
 import { ProductImageDisplay } from '@/components/shared/product-image'
 import { parseProductSnapshot } from '@/src/features/storefront/account/order-detail/order-detail.utils'
@@ -19,7 +14,10 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { OrderPaymentActions } from '@/src/features/storefront/account/components/order-payment-actions'
 import { resolvePaymentActionsForOrder } from '@/src/features/storefront/account/lib/resolve-payment-actions'
-import type { AccountOrder, AccountPaymentStatusPayload } from '@/src/features/storefront/account/types'
+import type {
+  AccountOrder,
+  AccountPaymentStatusPayload,
+} from '@/src/features/storefront/account/types'
 import { centsToPesos } from '@/src/lib/formatters'
 
 interface OrderCardProps {
@@ -77,8 +75,7 @@ export function OrderCard({ order }: OrderCardProps) {
     paymentActions.canContinuePayment ||
     paymentActions.canRetryPayment
 
-  const paidMessage =
-    verified?.paymentStatus === 'PAID' ? verified.message : null
+  const paidMessage = verified?.paymentStatus === 'PAID' ? verified.message : null
 
   return (
     <Card className="overflow-hidden border-border bg-card transition-shadow duration-200 hover:border-primary/20 hover:shadow-md">
@@ -110,36 +107,34 @@ export function OrderCard({ order }: OrderCardProps) {
           {order.items.map((item) => {
             const snapshot = parseProductSnapshot(item.productSnapshotJson)
             return (
-            <div
-              key={item.id}
-              className="flex items-center gap-3 rounded-lg border border-border bg-secondary/30 p-2"
-            >
-              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md bg-secondary">
-                <ProductImageDisplay
-                  src={snapshot.imageUrl}
-                  alt={item.name}
-                  className="absolute inset-0"
-                  placeholderIconClassName="h-5 w-5"
-                />
+              <div
+                key={item.id}
+                className="flex items-center gap-3 rounded-lg border border-border bg-secondary/30 p-2"
+              >
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md bg-secondary">
+                  <ProductImageDisplay
+                    src={snapshot.imageUrl}
+                    alt={item.name}
+                    className="absolute inset-0"
+                    placeholderIconClassName="h-5 w-5"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <p className="max-w-[150px] truncate font-sans text-sm font-medium text-foreground">
+                    {item.name}
+                  </p>
+                  <p className="font-serif text-xs text-muted-foreground">
+                    Cantidad: {item.quantity}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="max-w-[150px] truncate font-sans text-sm font-medium text-foreground">
-                  {item.name}
-                </p>
-                <p className="font-serif text-xs text-muted-foreground">
-                  Cantidad: {item.quantity}
-                </p>
-              </div>
-            </div>
             )
           })}
         </div>
 
         <div className="flex flex-col gap-3 border-t border-border bg-secondary/20 p-4 sm:flex-row sm:items-center sm:justify-between">
           {trackingNumber && (
-            <span className="font-serif text-sm text-muted-foreground">
-              Guía: {trackingNumber}
-            </span>
+            <span className="font-serif text-sm text-muted-foreground">Guía: {trackingNumber}</span>
           )}
 
           <div className="flex flex-col gap-3 sm:items-end">

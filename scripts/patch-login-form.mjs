@@ -200,10 +200,7 @@ s = s.replace(
 s = s.replaceAll('formData.email', 'email')
 s = s.replaceAll('formData.password', 'password')
 s = s.replaceAll('formData.rememberMe', 'rememberMe')
-s = s.replaceAll(
-  'setFormData({ ...formData, email: e.target.value })',
-  'setEmail(e.target.value)',
-)
+s = s.replaceAll('setFormData({ ...formData, email: e.target.value })', 'setEmail(e.target.value)')
 s = s.replaceAll(
   'setFormData({ ...formData, password: e.target.value })',
   'setPassword(e.target.value)',

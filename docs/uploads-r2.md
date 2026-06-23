@@ -19,10 +19,10 @@ Browser                          Next.js BFF                     Cloudflare R2
 
 ### Formato de salida avatar
 
-| Archivo | Tamaño | Formato | Calidad |
-|---------|--------|---------|---------|
-| `avatar.webp` | 256×256 | WebP | 0.82 |
-| `avatar.jpg` | 256×256 | JPEG | 0.86 |
+| Archivo       | Tamaño  | Formato | Calidad |
+| ------------- | ------- | ------- | ------- |
+| `avatar.webp` | 256×256 | WebP    | 0.82    |
+| `avatar.jpg`  | 256×256 | JPEG    | 0.86    |
 
 El círculo se muestra por CSS (`border-radius: 9999px`); el archivo almacenado es cuadrado.
 
@@ -47,11 +47,11 @@ Admin UI                         Next.js BFF                     Cloudflare R2
   |-- reorderAdminProductImages ----->| sortOrder + isPrimary          |
 ```
 
-| Archivo | Max lado | Formato | Calidad |
-|---------|----------|---------|---------|
-| `image.webp` | 1600px | WebP | 0.82 |
-| `image.jpg` | 1600px | JPEG | 0.86 (fondo blanco si PNG) |
-| `thumb.webp` | 400px | WebP | 0.78 |
+| Archivo      | Max lado | Formato | Calidad                    |
+| ------------ | -------- | ------- | -------------------------- |
+| `image.webp` | 1600px   | WebP    | 0.82                       |
+| `image.jpg`  | 1600px   | JPEG    | 0.86 (fondo blanco si PNG) |
+| `thumb.webp` | 400px    | WebP    | 0.78                       |
 
 - Máximo **10** imágenes por producto.
 - Sin cámara en admin productos.
@@ -71,9 +71,9 @@ Customizer                         Next.js BFF                     Cloudflare R2
   |-- confirmDesignPreviewUpload ----->|  Design.previewUrl + Asset     |
 ```
 
-| Archivo | Max lado | Formato | Calidad |
-|---------|----------|---------|---------|
-| `front.webp` / `back.webp` | 1200px | WebP | 0.82 |
+| Archivo                    | Max lado | Formato | Calidad |
+| -------------------------- | -------- | ------- | ------- |
+| `front.webp` / `back.webp` | 1200px   | WebP    | 0.82    |
 
 Keys:
 
@@ -122,12 +122,12 @@ Browser                         Next.js BFF (GraphQL Yoga)            Cloudflare
 
 Layers:
 
-| Path | Role |
-|------|------|
-| `src/server/storage/r2/*` | Server-only R2 client, config, keys, presigning, errors |
-| `src/server/graphql/modules/uploads/*` | GraphQL upload module (auth, validation, service, mappers, token) |
-| `src/server/graphql/resolvers/uploads.resolver.ts` | Mutation resolvers |
-| `src/features/uploads/*` | Frontend API + React Query hooks (PUT to R2 + confirm) |
+| Path                                               | Role                                                              |
+| -------------------------------------------------- | ----------------------------------------------------------------- |
+| `src/server/storage/r2/*`                          | Server-only R2 client, config, keys, presigning, errors           |
+| `src/server/graphql/modules/uploads/*`             | GraphQL upload module (auth, validation, service, mappers, token) |
+| `src/server/graphql/resolvers/uploads.resolver.ts` | Mutation resolvers                                                |
+| `src/features/uploads/*`                           | Frontend API + React Query hooks (PUT to R2 + confirm)            |
 
 ## Why presigned URLs
 
@@ -142,14 +142,14 @@ Layers:
 
 See [`docs/configuration.md`](./configuration.md). Todas las variables de entorno viven en `.env.local` — no existe ni se debe crear `.env.example` en este proyecto.
 
-| Var | Notes |
-|-----|-------|
-| `R2_ACCOUNT_ID` | Cloudflare account id; builds the S3 endpoint |
-| `R2_ACCESS_KEY_ID` | R2 token key — **secret** |
-| `R2_SECRET_ACCESS_KEY` | R2 token secret — **secret** |
-| `R2_BUCKET_NAME` | Target bucket |
-| `R2_PUBLIC_BASE_URL` | Public CDN base (r2.dev or custom domain), no trailing slash |
-| `R2_REGION` | Always `auto` for R2 |
+| Var                    | Notes                                                        |
+| ---------------------- | ------------------------------------------------------------ |
+| `R2_ACCOUNT_ID`        | Cloudflare account id; builds the S3 endpoint                |
+| `R2_ACCESS_KEY_ID`     | R2 token key — **secret**                                    |
+| `R2_SECRET_ACCESS_KEY` | R2 token secret — **secret**                                 |
+| `R2_BUCKET_NAME`       | Target bucket                                                |
+| `R2_PUBLIC_BASE_URL`   | Public CDN base (r2.dev or custom domain), no trailing slash |
+| `R2_REGION`            | Always `auto` for R2                                         |
 
 When any var is missing, `isR2Configured()` is false and upload mutations throw
 a GraphQL error with `extensions.reason = "R2_NOT_CONFIGURED"`.
@@ -210,15 +210,15 @@ queries on success.
 
 ## Security
 
-| Concern | Mitigation |
-|---------|------------|
-| Avatar ownership | Session `userId` is the only source; users can only touch their own avatar (admins included, no cross-user edits in v1) |
-| Product access | Requires `ADMIN` / `SUPERADMIN`; product must exist and not be soft-deleted |
-| Per-product cap | Max **10** images per product (v1) |
-| Content types | Original input limited to `image/jpeg`, `image/png`, `image/webp`; stored as webp/jpg |
-| Size limits | Avatar ≤ **8 MB**, product ≤ **15 MB** per file (declared size validated before signing) |
-| Confirm integrity | `HEAD` object before persisting; missing object → `R2_OBJECT_NOT_FOUND` |
-| Secrets | R2 keys server-only; DB never stores secrets or presigned URLs |
+| Concern           | Mitigation                                                                                                              |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Avatar ownership  | Session `userId` is the only source; users can only touch their own avatar (admins included, no cross-user edits in v1) |
+| Product access    | Requires `ADMIN` / `SUPERADMIN`; product must exist and not be soft-deleted                                             |
+| Per-product cap   | Max **10** images per product (v1)                                                                                      |
+| Content types     | Original input limited to `image/jpeg`, `image/png`, `image/webp`; stored as webp/jpg                                   |
+| Size limits       | Avatar ≤ **8 MB**, product ≤ **15 MB** per file (declared size validated before signing)                                |
+| Confirm integrity | `HEAD` object before persisting; missing object → `R2_OBJECT_NOT_FOUND`                                                 |
+| Secrets           | R2 keys server-only; DB never stores secrets or presigned URLs                                                          |
 
 ## Limits & formats
 

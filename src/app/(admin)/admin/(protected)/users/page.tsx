@@ -3,20 +3,13 @@
 import { useDeferredValue, useMemo, useState } from 'react'
 
 import { AdminPageConfig } from '@/src/features/admin/layout/admin-page-config'
-import {
-  AdminUsersError,
-  AdminUsersTable,
-  AdminUsersToolbar,
-} from '@/src/features/admin/users'
+import { AdminUsersError, AdminUsersTable, AdminUsersToolbar } from '@/src/features/admin/users'
 import { useAdminUsersQuery } from '@/src/features/admin/users/api/use-admin-users-query'
 import {
   buildAdminUsersListVariables,
   mapAdminUserToTableRow,
 } from '@/src/features/admin/users/mappers/admin-users-ui.mapper'
-import type {
-  AdminUserRoleFilter,
-  AdminUserStatusFilter,
-} from '@/src/features/admin/users/types'
+import type { AdminUserRoleFilter, AdminUserStatusFilter } from '@/src/features/admin/users/types'
 
 export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -47,9 +40,7 @@ export default function AdminUsersPage() {
     <AdminPageConfig breadcrumb={[{ label: 'Usuarios' }]}>
       <div className="space-y-6">
         <div>
-          <h1 className="font-sans text-2xl font-bold tracking-tight text-foreground">
-            Usuarios
-          </h1>
+          <h1 className="font-sans text-2xl font-bold tracking-tight text-foreground">Usuarios</h1>
           <p className="mt-1 font-serif text-muted-foreground">
             Consulta cuentas registradas, roles y estado de verificación.
           </p>

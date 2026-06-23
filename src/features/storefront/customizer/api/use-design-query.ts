@@ -5,8 +5,7 @@ import { getDesignById } from './customizer-designs.api'
 
 export const customizerQueryKeys = {
   all: ['customizer-designs'] as const,
-  detail: (designId: string) =>
-    [...customizerQueryKeys.all, 'detail', designId] as const,
+  detail: (designId: string) => [...customizerQueryKeys.all, 'detail', designId] as const,
 }
 
 export function useDesignQuery(designId?: string | null) {

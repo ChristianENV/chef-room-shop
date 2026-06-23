@@ -96,9 +96,7 @@ export function mapAdminProductVariantToGql(
   return {
     id: variant.id,
     sku: variant.sku,
-    variantName:
-      variantNameOverride?.trim() ||
-      `${variant.color.name} / ${variant.size.name}`,
+    variantName: variantNameOverride?.trim() || `${variant.color.name} / ${variant.size.name}`,
     priceCents: variant.priceCents ?? productBasePriceCents,
     stockQty: variant.stockQty,
     color: mapAdminColorToGql(variant.color),

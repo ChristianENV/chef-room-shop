@@ -21,10 +21,7 @@ async function loadSkydropxProviderModules() {
 describe('resolveSkydropxModeFromEnvironment', () => {
   it('local resolves to mock', async () => {
     const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
-    assert.equal(
-      resolveSkydropxModeFromEnvironment({ nodeEnv: 'development' }),
-      'mock',
-    )
+    assert.equal(resolveSkydropxModeFromEnvironment({ nodeEnv: 'development' }), 'mock')
   })
 
   it('np resolves to mock', async () => {
@@ -62,19 +59,14 @@ describe('resolveSkydropxModeFromEnvironment', () => {
 
   it('NODE_ENV=production without staging signals fails safe to live', async () => {
     const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
-    assert.equal(
-      resolveSkydropxModeFromEnvironment({ nodeEnv: 'production' }),
-      'live',
-    )
+    assert.equal(resolveSkydropxModeFromEnvironment({ nodeEnv: 'production' }), 'live')
   })
 })
 
 describe('mock Skydropx shipment provider', () => {
   it('returns deterministic tracking and label data', async () => {
-    const {
-      buildMockSkydropxShipmentResponse,
-      parseSkydropxShipmentResponse,
-    } = await loadSkydropxProviderModules()
+    const { buildMockSkydropxShipmentResponse, parseSkydropxShipmentResponse } =
+      await loadSkydropxProviderModules()
 
     const raw = buildMockSkydropxShipmentResponse({
       orderNumber: 'CR-2026-000099',
@@ -119,15 +111,11 @@ describe('mock Skydropx shipment provider', () => {
 
 describe('mock admin label persistence shape', () => {
   it('maps mock provider response to the same DB fields as live flow', async () => {
-    const {
-      buildMockSkydropxShipmentResponse,
-      parseSkydropxShipmentResponse,
-    } = await loadSkydropxProviderModules()
+    const { buildMockSkydropxShipmentResponse, parseSkydropxShipmentResponse } =
+      await loadSkydropxProviderModules()
 
     const orderNumber = 'CR-2026-PERSIST-001'
-    const parsed = parseSkydropxShipmentResponse(
-      buildMockSkydropxShipmentResponse({ orderNumber }),
-    )
+    const parsed = parseSkydropxShipmentResponse(buildMockSkydropxShipmentResponse({ orderNumber }))
 
     assert.ok(parsed.providerShipmentId)
     assert.ok(parsed.providerLabelId)
@@ -152,13 +140,10 @@ describe('mock admin label persistence shape', () => {
   })
 
   it('does not infer shipped status from mock tracking number alone', async () => {
-    const {
-      buildMockSkydropxShipmentResponse,
-      parseSkydropxShipmentResponse,
-    } = await loadSkydropxProviderModules()
-    const { deriveAdminLabelCreationStatuses } = await import(
-      '@/src/server/graphql/modules/admin-shipping/admin-shipping-label-status'
-    )
+    const { buildMockSkydropxShipmentResponse, parseSkydropxShipmentResponse } =
+      await loadSkydropxProviderModules()
+    const { deriveAdminLabelCreationStatuses } =
+      await import('@/src/server/graphql/modules/admin-shipping/admin-shipping-label-status')
 
     const parsed = parseSkydropxShipmentResponse(
       buildMockSkydropxShipmentResponse({ orderNumber: 'CR-2026-STATUS-001' }),

@@ -15,26 +15,21 @@ export function AuthLayout({ children, className }: AuthLayoutProps) {
     <div className="flex min-h-screen">
       {/* Left Panel - Brand Visual (hidden on mobile) */}
       <AuthBrandPanel />
-      
+
       {/* Right Panel - Auth Form */}
-      <div className={cn(
-        'flex w-full flex-col bg-background lg:w-1/2',
-        className
-      )}>
+      <div className={cn('flex w-full flex-col bg-background lg:w-1/2', className)}>
         {/* Mobile Header with Logo */}
         <header className="flex items-center justify-between p-4 lg:hidden">
           <Link href={routes.home}>
             <ChefRoomLogo variant="horizontal" colorScheme="dark" size="sm" />
           </Link>
         </header>
-        
+
         {/* Form Container */}
         <main className="flex flex-1 items-center justify-center p-6 lg:p-12">
-          <div className="w-full max-w-md">
-            {children}
-          </div>
+          <div className="w-full max-w-md">{children}</div>
         </main>
-        
+
         {/* Footer Links */}
         <footer className="p-6 text-center">
           <p className="font-serif text-xs text-muted-foreground">
@@ -67,25 +62,35 @@ function AuthBrandPanel() {
           <rect width="100" height="100" fill="url(#grid)" />
         </svg>
       </div>
-      
+
       {/* Content */}
       <div className="relative flex flex-1 flex-col items-center justify-center p-12">
         {/* Logo */}
         <Link href={routes.home}>
           <ChefRoomLogo variant="horizontal" colorScheme="light" size="xl" />
         </Link>
-        
+
         {/* Customization Preview Mock */}
         <div className="mt-12 w-full max-w-sm">
           <div className="rounded-xl border border-white/20 bg-white/10 p-6 backdrop-blur-sm">
             <div className="flex items-center gap-4">
               {/* Mock Uniform Preview */}
               <div className="flex h-24 w-20 items-center justify-center rounded-lg bg-white/20">
-                <svg className="h-12 w-12 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                <svg
+                  className="h-12 w-12 text-white/60"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                  />
                 </svg>
               </div>
-              
+
               {/* Mock Customization Options */}
               <div className="flex-1 space-y-2">
                 <div className="h-2 w-3/4 rounded bg-white/30" />
@@ -99,12 +104,10 @@ function AuthBrandPanel() {
             </div>
           </div>
         </div>
-        
+
         {/* Tagline */}
         <div className="mt-12 text-center">
-          <p className="font-sans text-xl font-semibold text-white">
-            Diseña, guarda y compra
-          </p>
+          <p className="font-sans text-xl font-semibold text-white">Diseña, guarda y compra</p>
           <p className="font-sans text-xl font-semibold text-white">
             tus uniformes personalizados.
           </p>
@@ -113,7 +116,7 @@ function AuthBrandPanel() {
           </p>
         </div>
       </div>
-      
+
       {/* Bottom decoration */}
       <div className="relative p-6">
         <div className="flex items-center justify-center gap-2 text-white/50">

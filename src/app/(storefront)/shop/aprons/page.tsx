@@ -31,8 +31,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: 'Mandiles Personalizados | Chef Room by Bedolla',
-    description:
-      'Mandiles con logo y bordado personalizado para restaurantes y chefs.',
+    description: 'Mandiles con logo y bordado personalizado para restaurantes y chefs.',
     type: 'website',
   },
   alternates: {
@@ -158,7 +157,10 @@ export default function MandilesPersonalizadosPage() {
                   <p className="mt-2 font-serif text-sm text-muted-foreground">{style.desc}</p>
                   <ul className="mt-4 space-y-2">
                     {style.features.map((feature, i) => (
-                      <li key={i} className="flex items-center gap-2 font-serif text-sm text-muted-foreground">
+                      <li
+                        key={i}
+                        className="flex items-center gap-2 font-serif text-sm text-muted-foreground"
+                      >
                         <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                         {feature}
                       </li>
@@ -185,9 +187,7 @@ export default function MandilesPersonalizadosPage() {
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div className="aspect-video rounded-xl bg-muted lg:aspect-square">
               <div className="flex h-full items-center justify-center">
-                <span className="font-sans text-sm text-muted-foreground">
-                  Equipo uniformado
-                </span>
+                <span className="font-sans text-sm text-muted-foreground">Equipo uniformado</span>
               </div>
             </div>
             <div>
@@ -198,8 +198,8 @@ export default function MandilesPersonalizadosPage() {
                 Uniforma a Todo Tu Equipo
               </h2>
               <p className="mt-4 font-serif text-lg text-muted-foreground">
-                Los mandiles personalizados refuerzan la identidad de tu restaurante y crean
-                una imagen profesional unificada. Desde la cocina hasta el servicio.
+                Los mandiles personalizados refuerzan la identidad de tu restaurante y crean una
+                imagen profesional unificada. Desde la cocina hasta el servicio.
               </p>
               <ul className="mt-6 space-y-4">
                 {[

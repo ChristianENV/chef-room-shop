@@ -65,9 +65,7 @@ async function captureAngle(
       const message =
         error instanceof Error ? error.message.toLowerCase() : 'composite capture failed'
       const corsIssue =
-        message.includes('tainted') ||
-        message.includes('cors') ||
-        message.includes('cross-origin')
+        message.includes('tainted') || message.includes('cors') || message.includes('cross-origin')
       const fallbackBlob = await captureWebGLCanvasAsWebp(
         gl.domElement,
         DESIGN_PREVIEW_MAX_DIMENSION,

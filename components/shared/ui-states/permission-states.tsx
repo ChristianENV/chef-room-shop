@@ -14,25 +14,20 @@ interface AdminOnlyStateProps {
   className?: string
 }
 
-export function AdminOnlyState({ 
+export function AdminOnlyState({
   message = 'Esta seccion esta restringida a administradores.',
   showContactLink = true,
-  className 
+  className,
 }: AdminOnlyStateProps) {
   return (
-    <div className={cn(
-      'flex flex-col items-center justify-center py-16 text-center',
-      className
-    )}>
+    <div className={cn('flex flex-col items-center justify-center py-16 text-center', className)}>
       <div className="mb-4 rounded-full bg-primary/10 p-4">
         <Shield className="h-8 w-8 text-primary" />
       </div>
       <h3 className="font-sans text-lg font-semibold text-foreground">
         Acceso de administrador requerido
       </h3>
-      <p className="mt-2 max-w-md font-serif text-muted-foreground">
-        {message}
-      </p>
+      <p className="mt-2 max-w-md font-serif text-muted-foreground">{message}</p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         <Button asChild>
           <Link href={routes.home}>Ir al inicio</Link>
@@ -54,14 +49,12 @@ interface LoginRequiredStateProps {
   className?: string
 }
 
-export function LoginRequiredState({ 
+export function LoginRequiredState({
   message = 'Necesitas iniciar sesion para acceder a esta seccion.',
   returnUrl,
-  className 
+  className,
 }: LoginRequiredStateProps) {
-  const loginHref = returnUrl 
-    ? `/login?returnUrl=${encodeURIComponent(returnUrl)}`
-    : '/login'
+  const loginHref = returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login'
 
   return (
     <Card className={cn('border-border bg-card', className)}>
@@ -70,12 +63,8 @@ export function LoginRequiredState({
           <div className="mb-4 rounded-full bg-secondary p-4">
             <LogIn className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h3 className="font-sans text-lg font-semibold text-foreground">
-            Inicia sesion
-          </h3>
-          <p className="mt-2 max-w-md font-serif text-muted-foreground">
-            {message}
-          </p>
+          <h3 className="font-sans text-lg font-semibold text-foreground">Inicia sesion</h3>
+          <p className="mt-2 max-w-md font-serif text-muted-foreground">{message}</p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Button asChild>
               <Link href={loginHref}>
@@ -101,11 +90,11 @@ interface FeatureLockedStateProps {
   className?: string
 }
 
-export function FeatureLockedState({ 
+export function FeatureLockedState({
   featureName,
   description = 'Esta funcion no esta disponible en tu plan actual.',
   upgradeHref = '/account/suscripcion',
-  className 
+  className,
 }: FeatureLockedStateProps) {
   return (
     <Card className={cn('border-primary/30 bg-card', className)}>
@@ -114,12 +103,8 @@ export function FeatureLockedState({
           <div className="mb-4 rounded-full bg-primary/10 p-4">
             <Shield className="h-8 w-8 text-primary" />
           </div>
-          <h3 className="font-sans text-lg font-semibold text-foreground">
-            {featureName}
-          </h3>
-          <p className="mt-2 max-w-md font-serif text-muted-foreground">
-            {description}
-          </p>
+          <h3 className="font-sans text-lg font-semibold text-foreground">{featureName}</h3>
+          <p className="mt-2 max-w-md font-serif text-muted-foreground">{description}</p>
           <Button className="mt-6" asChild>
             <Link href={upgradeHref}>Ver planes</Link>
           </Button>

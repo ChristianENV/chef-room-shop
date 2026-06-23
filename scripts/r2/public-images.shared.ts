@@ -121,7 +121,8 @@ export function getExcludeReason(relativeFromPublic: string): string {
   if (basename.startsWith('mask-icon')) return 'mask-icon excluded'
   if (basename.startsWith('safari-pinned-tab')) return 'safari-pinned-tab excluded'
   if (basename === 'site.webmanifest') return 'PWA manifest excluded'
-  if (basename === 'manifest.json' || basename === 'manifest.webmanifest') return 'manifest excluded'
+  if (basename === 'manifest.json' || basename === 'manifest.webmanifest')
+    return 'manifest excluded'
   if (basename === 'browserconfig.xml') return 'browser metadata excluded'
   if (basename === 'apple-icon.png') return 'app icon excluded'
   if (/^icon-(light|dark)-\d+x\d+\./.test(basename)) return 'browser tab icon excluded'

@@ -20,10 +20,7 @@ const userRolesInclude = {
 /**
  * Ensures the user has the CUSTOMER role (idempotent).
  */
-export async function ensureCustomerRole(
-  db: PrismaClient,
-  userId: string,
-): Promise<void> {
+export async function ensureCustomerRole(db: PrismaClient, userId: string): Promise<void> {
   const customerRole = await db.role.findUnique({
     where: { slug: RoleSlug.CUSTOMER },
   })
@@ -83,12 +80,7 @@ export async function getUserRolesAndPermissions(
 /**
  * Returns true when the user has ADMIN or SUPERADMIN role.
  */
-export async function userHasAdminAccess(
-  db: PrismaClient,
-  userId: string,
-): Promise<boolean> {
+export async function userHasAdminAccess(db: PrismaClient, userId: string): Promise<boolean> {
   const { roles } = await getUserRolesAndPermissions(db, userId)
-  return roles.some((role) =>
-    ADMIN_ROLE_SLUGS.includes(role as (typeof ADMIN_ROLE_SLUGS)[number]),
-  )
+  return roles.some((role) => ADMIN_ROLE_SLUGS.includes(role as (typeof ADMIN_ROLE_SLUGS)[number]))
 }

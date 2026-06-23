@@ -153,8 +153,7 @@ async function main(): Promise<void> {
 
     const clientId = process.env.SKYDROPX_CLIENT_ID?.trim()
     const clientSecret = process.env.SKYDROPX_CLIENT_SECRET?.trim()
-    const apiBase =
-      process.env.SKYDROPX_API_BASE_URL?.trim() || 'https://api-pro.skydropx.com'
+    const apiBase = process.env.SKYDROPX_API_BASE_URL?.trim() || 'https://api-pro.skydropx.com'
 
     if (!clientId || !clientSecret) {
       console.error('Skydropx credentials not configured (SKYDROPX_CLIENT_ID/SECRET).')

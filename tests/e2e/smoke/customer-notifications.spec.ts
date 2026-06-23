@@ -1,10 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 import { loginAsCustomer } from '../helpers/customer-login'
-import {
-  defaultMockNotifications,
-  mockNotificationsGraphQL,
-} from '../helpers/mock-notifications'
+import { defaultMockNotifications, mockNotificationsGraphQL } from '../helpers/mock-notifications'
 
 test.describe('customer notifications UI', () => {
   test('guest does not see notification bell or fetch notifications', async ({ page }) => {

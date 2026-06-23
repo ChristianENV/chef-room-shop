@@ -67,9 +67,7 @@ export default function AdminProductsPage() {
 
   const productTypeFilterOptions = useMemo(
     () =>
-      formOptionsQuery.data
-        ? mapFormOptionsToProductTypeSlugOptions(formOptionsQuery.data)
-        : [],
+      formOptionsQuery.data ? mapFormOptionsToProductTypeSlugOptions(formOptionsQuery.data) : [],
     [formOptionsQuery.data],
   )
 
@@ -117,9 +115,7 @@ export default function AdminProductsPage() {
   }
 
   const handleDuplicate = (row: AdminProductTableRow) => {
-    const confirmed = window.confirm(
-      'Se creará una copia en estado borrador. ¿Continuar?',
-    )
+    const confirmed = window.confirm('Se creará una copia en estado borrador. ¿Continuar?')
     if (!confirmed) return
 
     void runAction(row.id, async () => {
@@ -149,9 +145,7 @@ export default function AdminProductsPage() {
   }
 
   const handleStatusChange = (row: AdminProductTableRow, status: AdminProductStatusUi) => {
-    void runAction(row.id, () =>
-      updateStatusMutation.mutateAsync({ id: row.id, status }),
-    )
+    void runAction(row.id, () => updateStatusMutation.mutateAsync({ id: row.id, status }))
   }
 
   const handleSelectAll = (checked: boolean) => {

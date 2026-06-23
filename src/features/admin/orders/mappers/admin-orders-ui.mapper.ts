@@ -1,10 +1,5 @@
-import {
-  centsToPesos,
-  formatCurrencyMXN,
-} from '@/src/lib/formatters'
-import {
-  parseProductSnapshot,
-} from '@/src/features/storefront/account/order-detail/order-detail.utils'
+import { centsToPesos, formatCurrencyMXN } from '@/src/lib/formatters'
+import { parseProductSnapshot } from '@/src/features/storefront/account/order-detail/order-detail.utils'
 
 import type {
   AdminOrder,
@@ -14,9 +9,7 @@ import type {
   AdminOrdersFilterInput,
   AdminOrdersListVariables,
 } from '../types'
-import {
-  buildAdminCustomizationFromItem,
-} from '../lib/admin-customization.utils'
+import { buildAdminCustomizationFromItem } from '../lib/admin-customization.utils'
 import type {
   AdminOrderStatusFilter,
   AdminOrdersProductionSheetUi,
@@ -179,10 +172,7 @@ function formatDateOnly(iso: string): string {
   })
 }
 
-function resolveCustomerName(
-  name: string | null | undefined,
-  email: string,
-): string {
+function resolveCustomerName(name: string | null | undefined, email: string): string {
   const trimmed = name?.trim()
   if (trimmed) return trimmed
   const local = email.split('@')[0]?.trim()
@@ -274,7 +264,9 @@ function deriveProductionStatusLabel(order: AdminOrder): string {
   return mapFulfillmentStatusToLabel(order.fulfillmentStatus)
 }
 
-function deriveActionFlags(order: AdminOrder): Pick<
+function deriveActionFlags(
+  order: AdminOrder,
+): Pick<
   AdminOrdersUiOrder,
   'canMoveToProduction' | 'canMarkReadyToShip' | 'canAddTracking' | 'canCancel'
 > {
@@ -286,7 +278,10 @@ function deriveActionFlags(order: AdminOrder): Pick<
 
   return {
     canMoveToProduction:
-      isPaid && !['IN_PRODUCTION', 'READY_TO_SHIP', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'].includes(status),
+      isPaid &&
+      !['IN_PRODUCTION', 'READY_TO_SHIP', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'].includes(
+        status,
+      ),
     canMarkReadyToShip: ['PAID', 'IN_PRODUCTION', 'READY_TO_SHIP'].includes(status),
     canAddTracking: !['CANCELLED', 'REFUNDED', 'DELIVERED'].includes(status),
     canCancel: status !== 'DELIVERED' && status !== 'CANCELLED' && status !== 'REFUNDED',
@@ -339,9 +334,7 @@ export function mapAdminOrderToDetail(order: AdminOrder): AdminOrdersUiOrder {
     tax: centsToPesos(order.taxCents),
     customizationTotal: centsToPesos(order.customizationTotalCents),
     total: centsToPesos(order.totalCents),
-    paymentMethod: latestPayment
-      ? mapPaymentMethodToLabel(latestPayment.method)
-      : undefined,
+    paymentMethod: latestPayment ? mapPaymentMethodToLabel(latestPayment.method) : undefined,
     paymentReference: latestPayment?.providerOrderId ?? undefined,
     trackingNumber: latestShipment?.trackingNumber ?? undefined,
     trackingUrl: undefined,
@@ -428,7 +421,8 @@ export function buildAdminOrdersListVariables(input: {
   offset?: number
 }): AdminOrdersListVariables {
   const filter: AdminOrdersFilterInput = {}
-  const effectiveStatus = input.cardStatusFilter ?? (input.statusFilter !== 'all' ? input.statusFilter : null)
+  const effectiveStatus =
+    input.cardStatusFilter ?? (input.statusFilter !== 'all' ? input.statusFilter : null)
 
   if (input.search.trim()) {
     filter.search = input.search.trim()

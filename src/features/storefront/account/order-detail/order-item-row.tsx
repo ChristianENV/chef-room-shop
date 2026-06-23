@@ -4,10 +4,7 @@ import { Package } from 'lucide-react'
 import { centsToPesos, formatCurrencyMXN } from '@/src/lib/formatters'
 import type { AccountOrderItem } from '../types'
 import { OrderDesignSummary } from './order-design-summary'
-import {
-  parseDesignSnapshot,
-  parseProductSnapshot,
-} from './order-detail.utils'
+import { parseDesignSnapshot, parseProductSnapshot } from './order-detail.utils'
 
 type OrderItemRowProps = {
   item: AccountOrderItem

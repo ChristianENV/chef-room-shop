@@ -19,12 +19,12 @@ Generación y gestión de guías desde el detalle de orden (dialog o página `/a
 
 ## Botón visible cuando
 
-| Condición | UI |
-|-----------|-----|
-| No pagada | Mensaje: *Disponible cuando el pedido esté pagado.* |
-| Ya tiene guía | Mensaje: *Esta orden ya tiene guía.* + acciones de etiqueta |
-| Cancelada / entregada | Mensaje de no disponible |
-| Elegible | Botón **Generar guía** (`data-testid="admin-create-label-button"`) |
+| Condición             | UI                                                                 |
+| --------------------- | ------------------------------------------------------------------ |
+| No pagada             | Mensaje: _Disponible cuando el pedido esté pagado._                |
+| Ya tiene guía         | Mensaje: _Esta orden ya tiene guía._ + acciones de etiqueta        |
+| Cancelada / entregada | Mensaje de no disponible                                           |
+| Elegible              | Botón **Generar guía** (`data-testid="admin-create-label-button"`) |
 
 ## Etiqueta e impresión
 
@@ -35,7 +35,7 @@ Generación y gestión de guías desde el detalle de orden (dialog o página `/a
 ## Tracking
 
 - **Actualizar tracking** — `adminRefreshShipmentTracking` (requiere número de guía y paquetería).
-- Feedback: *Tracking actualizado* o *Sin cambios recientes*.
+- Feedback: _Tracking actualizado_ o _Sin cambios recientes_.
 
 ## Cancelar guía
 
@@ -45,11 +45,11 @@ Generación y gestión de guías desde el detalle de orden (dialog o página `/a
 
 ## Patrón UX: Dialogs vs Drawers
 
-| Caso | Componente |
-|------|------------|
-| Detalle de orden + guía | `Dialog` o página dedicada |
-| Confirmar generar / cancelar guía | `AlertDialog` |
-| Drawer lateral | No usar para lectura de guía |
+| Caso                              | Componente                   |
+| --------------------------------- | ---------------------------- |
+| Detalle de orden + guía           | `Dialog` o página dedicada   |
+| Confirmar generar / cancelar guía | `AlertDialog`                |
+| Drawer lateral                    | No usar para lectura de guía |
 
 ## Invalidación de queries
 
@@ -63,15 +63,15 @@ Tras crear, cancelar o refrescar:
 
 Mapeados en `shipping-mutation-errors.ts`:
 
-| Caso | Mensaje UI |
-|------|------------|
-| 502 Skydropx | *Skydropx no pudo generar la guía…* + nota de reintentar |
-| 422 Skydropx | Detalle si Skydropx lo envía; si no, revisar teléfono 10 dígitos y CP |
-| Tarifa expirada | *Vuelve a cotizar el envío antes de generar la guía.* |
-| Dirección incompleta | *La dirección del pedido está incompleta. Faltan: …* |
-| Origen no configurado | *Configura la dirección de origen… Faltan: …* |
-| Teléfono inválido | *El teléfono debe tener 10 dígitos…* |
-| Saldo / carrier | *Revisa saldo o servicios habilitados en Skydropx.* |
+| Caso                  | Mensaje UI                                                            |
+| --------------------- | --------------------------------------------------------------------- |
+| 502 Skydropx          | _Skydropx no pudo generar la guía…_ + nota de reintentar              |
+| 422 Skydropx          | Detalle si Skydropx lo envía; si no, revisar teléfono 10 dígitos y CP |
+| Tarifa expirada       | _Vuelve a cotizar el envío antes de generar la guía._                 |
+| Dirección incompleta  | _La dirección del pedido está incompleta. Faltan: …_                  |
+| Origen no configurado | _Configura la dirección de origen… Faltan: …_                         |
+| Teléfono inválido     | _El teléfono debe tener 10 dígitos…_                                  |
+| Saldo / carrier       | _Revisa saldo o servicios habilitados en Skydropx._                   |
 
 ## Limitaciones (v1)
 
@@ -95,9 +95,9 @@ src/features/admin/shipping/
 
 ## data-testid
 
-| ID | Ubicación |
-|----|-----------|
-| `admin-shipping-card` | Tarjeta guía Skydropx |
-| `admin-create-label-button` | Botón generar guía |
+| ID                          | Ubicación             |
+| --------------------------- | --------------------- |
+| `admin-shipping-card`       | Tarjeta guía Skydropx |
+| `admin-create-label-button` | Botón generar guía    |
 
 Ver también `docs/graphql-admin-shipping.md`.

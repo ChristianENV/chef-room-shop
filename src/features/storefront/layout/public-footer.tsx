@@ -153,7 +153,8 @@ export function PublicFooter({ showNewsletter = true, className }: PublicFooterP
       <div className="border-t border-border px-6 py-5 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 md:flex-row">
           <p className="font-serif text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} {BUSINESS_VARS.legalName}. Todos los derechos reservados.
+            &copy; {new Date().getFullYear()} {BUSINESS_VARS.legalName}. Todos los derechos
+            reservados.
           </p>
           <div className="flex items-center gap-6">
             {footerLegalLinks.map((link) => (

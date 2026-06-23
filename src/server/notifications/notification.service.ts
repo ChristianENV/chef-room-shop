@@ -8,10 +8,7 @@ import type { CurrentUser } from '@/src/server/auth/types'
 import { requireAuthenticatedAccount } from '@/src/server/graphql/modules/account/account.auth'
 import type { GraphQLContext } from '@/src/server/graphql/context'
 
-import {
-  buildReadableNotificationsWhere,
-  mapNotificationToGql,
-} from './notification.mappers'
+import { buildReadableNotificationsWhere, mapNotificationToGql } from './notification.mappers'
 import type {
   CreateAdminNotificationInput,
   CreateNotificationInput,
@@ -49,10 +46,7 @@ function notFoundError(): GraphQLError {
   })
 }
 
-function parseCreateInput<T>(
-  schema: { parse: (input: unknown) => T },
-  input: unknown,
-): T {
+function parseCreateInput<T>(schema: { parse: (input: unknown) => T }, input: unknown): T {
   try {
     return schema.parse(input)
   } catch {

@@ -1,11 +1,6 @@
 import 'server-only'
 
-import {
-  NotificationType,
-  OrderStatus,
-  ShipmentStatus,
-  type PrismaClient,
-} from '@prisma/client'
+import { NotificationType, OrderStatus, ShipmentStatus, type PrismaClient } from '@prisma/client'
 
 import { routes } from '@/src/config/routes'
 
@@ -47,10 +42,7 @@ export function buildOrderShippedDedupeKey(orderId: string): string {
 export function isOrderShippedTransition(
   input: Pick<
     OrderShippedNotificationInput,
-    | 'previousOrderStatus'
-    | 'newOrderStatus'
-    | 'previousShipmentStatus'
-    | 'newShipmentStatus'
+    'previousOrderStatus' | 'newOrderStatus' | 'previousShipmentStatus' | 'newShipmentStatus'
   >,
 ): boolean {
   if (

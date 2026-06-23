@@ -17,7 +17,10 @@ function extractConektaOrderId(payload: ConektaWebhookPayload): string | null {
   if (!object) return null
 
   if (typeof object.order_id === 'string') return object.order_id
-  if (typeof object.id === 'string' && (object.object === 'order' || payload.type?.startsWith('order.'))) {
+  if (
+    typeof object.id === 'string' &&
+    (object.object === 'order' || payload.type?.startsWith('order.'))
+  ) {
     return object.id
   }
   return null

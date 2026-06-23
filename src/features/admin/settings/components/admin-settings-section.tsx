@@ -49,10 +49,7 @@ export function AdminSettingsField({ label, value, mono }: AdminSettingsFieldPro
     <div className="grid gap-1 sm:grid-cols-[180px_1fr] sm:items-start sm:gap-4">
       <dt className="font-serif text-sm text-muted-foreground">{label}</dt>
       <dd
-        className={cn(
-          'font-sans text-sm text-foreground',
-          mono && 'font-mono text-xs break-all',
-        )}
+        className={cn('font-sans text-sm text-foreground', mono && 'font-mono text-xs break-all')}
       >
         {value}
       </dd>

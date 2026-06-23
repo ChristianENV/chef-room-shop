@@ -28,10 +28,7 @@ function FeaturedProductsSkeleton() {
   return (
     <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {Array.from({ length: FEATURED_LIMIT }).map((_, i) => (
-        <div
-          key={i}
-          className="overflow-hidden rounded-2xl border border-border/70 bg-background"
-        >
+        <div key={i} className="overflow-hidden rounded-2xl border border-border/70 bg-background">
           <Skeleton className="aspect-[3/4] w-full rounded-none" />
           <div className="space-y-3 p-5">
             <Skeleton className="h-3 w-20" />

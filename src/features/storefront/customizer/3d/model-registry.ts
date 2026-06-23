@@ -3,7 +3,10 @@ import {
   getCustomizerChefJacketGltfUrl,
   resolveCustomizerModelUrl,
 } from '@/src/config/public-models'
-import type { CustomizerProductData, CustomizerProductModel3d } from '../types/customizer-product.types'
+import type {
+  CustomizerProductData,
+  CustomizerProductModel3d,
+} from '../types/customizer-product.types'
 
 /**
  * Optional placement anchor for decals/overlays projected onto the 3D model.
@@ -143,10 +146,9 @@ const PRODUCT_TYPE_TRANSFORMS: Record<
 }
 
 /** Registry transform by product type slug — not by model URL. */
-export function getRegistryTransformForProductType(productTypeSlug: string): Pick<
-  CustomizerModelDefinition,
-  'scale' | 'position' | 'rotation'
-> {
+export function getRegistryTransformForProductType(
+  productTypeSlug: string,
+): Pick<CustomizerModelDefinition, 'scale' | 'position' | 'rotation'> {
   const match = PRODUCT_TYPE_TRANSFORMS[productTypeSlug]
   if (match) {
     return {
@@ -169,9 +171,12 @@ export function isCustomizerMockGlbEnabled(): boolean {
   return process.env.NODE_ENV === 'development'
 }
 
-type ProductLike = Pick<CustomizerProductData, 'productTypeSlug'> & {
-  model3d?: CustomizerProductModel3d | null
-} | null | undefined
+type ProductLike =
+  | (Pick<CustomizerProductData, 'productTypeSlug'> & {
+      model3d?: CustomizerProductModel3d | null
+    })
+  | null
+  | undefined
 
 /**
  * Resolves the 3D model definition for a product, or `null` to use the

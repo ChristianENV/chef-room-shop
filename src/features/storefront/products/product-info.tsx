@@ -17,10 +17,8 @@ import {
 } from '@/src/features/storefront/products/lib/product-variant.utils'
 import type { StorefrontProductDetail } from '@/src/features/storefront/products/types'
 
-const GENERIC_ADD_ERROR =
-  'No pudimos agregar el producto. Intenta de nuevo.'
-const VARIANT_REQUIRED_MESSAGE =
-  'Selecciona una talla y color para continuar.'
+const GENERIC_ADD_ERROR = 'No pudimos agregar el producto. Intenta de nuevo.'
+const VARIANT_REQUIRED_MESSAGE = 'Selecciona una talla y color para continuar.'
 
 function getInitialColorAndSize(product: StorefrontProductDetail): {
   color: string
@@ -48,9 +46,7 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
   const singleVariant = useMemo(() => getSingleVariant(variants), [variants])
   const initialSelection = useMemo(() => getInitialColorAndSize(product), [product])
 
-  const [selectedColor, setSelectedColor] = useState<string>(
-    () => initialSelection.color,
-  )
+  const [selectedColor, setSelectedColor] = useState<string>(() => initialSelection.color)
   const [selectedSize, setSelectedSize] = useState<string>(() => initialSelection.size)
   const [quantity, setQuantity] = useState(1)
   const [selectionError, setSelectionError] = useState<string | null>(null)
@@ -132,9 +128,7 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
         {product.category}
       </p>
 
-      <h1 className="font-sans text-2xl font-bold text-foreground md:text-3xl">
-        {product.name}
-      </h1>
+      <h1 className="font-sans text-2xl font-bold text-foreground md:text-3xl">{product.name}</h1>
 
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1">
@@ -150,19 +144,13 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
             />
           ))}
         </div>
-        <span className="font-sans text-sm font-medium text-foreground">
-          {product.rating}
-        </span>
+        <span className="font-sans text-sm font-medium text-foreground">{product.rating}</span>
         <span className="font-serif text-sm text-muted-foreground">
           ({product.reviewCount} resenas)
         </span>
       </div>
 
-      <PriceDisplay
-        price={product.price}
-        originalPrice={product.originalPrice}
-        size="lg"
-      />
+      <PriceDisplay price={product.price} originalPrice={product.originalPrice} size="lg" />
 
       <p className="font-serif text-base leading-relaxed text-muted-foreground">
         {product.shortDescription}
@@ -215,8 +203,7 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
           </div>
           <div className="flex flex-wrap gap-2">
             {product.sizes.map((size) => {
-              const sizeAvailable =
-                !requiresVariant || availableSizes.includes(size)
+              const sizeAvailable = !requiresVariant || availableSizes.includes(size)
               return (
                 <button
                   key={size}

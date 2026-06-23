@@ -27,9 +27,7 @@ export function getProductImageUrl(image: ProductImageLike | null | undefined): 
 /**
  * Resolves the main display URL (full size preferred).
  */
-export function getProductMainImageUrl(
-  image: ProductImageLike | null | undefined,
-): string | null {
+export function getProductMainImageUrl(image: ProductImageLike | null | undefined): string | null {
   if (!image) return null
   const url = image.url?.trim()
   if (url) return url
@@ -80,9 +78,7 @@ export function getPrimaryProductImageUrl(
 /**
  * Filters images with a usable URL, sorted primary first then sortOrder.
  */
-export function getVisibleProductImages(
-  images: ProductImage[] | undefined | null,
-): ProductImage[] {
+export function getVisibleProductImages(images: ProductImage[] | undefined | null): ProductImage[] {
   if (!images?.length) return []
   return [...images]
     .filter((img) => Boolean(getProductMainImageUrl(img)))

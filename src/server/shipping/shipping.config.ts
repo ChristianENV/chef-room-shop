@@ -2,10 +2,7 @@ import 'server-only'
 
 import { SHIPPING_VARS } from '@/src/config/vars'
 
-import {
-  resolveShippingOriginFromEnv,
-  type ShippingOriginConfig,
-} from './shipping-origin.resolve'
+import { resolveShippingOriginFromEnv, type ShippingOriginConfig } from './shipping-origin.resolve'
 
 export type { ShippingOriginConfig }
 
@@ -16,11 +13,7 @@ export type PackageDimensionsConfig = {
   weightKg: number
 }
 
-function parsePositiveNumber(
-  raw: string | undefined,
-  fallback: number,
-  label: string,
-): number {
+function parsePositiveNumber(raw: string | undefined, fallback: number, label: string): number {
   if (!raw?.trim()) return fallback
   const value = Number.parseFloat(raw.trim())
   if (!Number.isFinite(value) || value <= 0) {

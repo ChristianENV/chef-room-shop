@@ -4,10 +4,7 @@ import { ShipmentStatus } from '@prisma/client'
 const LABEL_FORMATS = ['PDF', 'ZPL', 'EPL'] as const
 const shipmentStatusValues = Object.values(ShipmentStatus) as [string, ...string[]]
 
-export const orderNumberSchema = z
-  .string()
-  .trim()
-  .min(1, 'Número de pedido requerido')
+export const orderNumberSchema = z.string().trim().min(1, 'Número de pedido requerido')
 
 export const adminCreateShippingLabelInputSchema = z.object({
   orderNumber: orderNumberSchema,
@@ -36,13 +33,7 @@ export const adminCancelShippingLabelInputSchema = z.object({
 
 export const adminSimulateMockShipmentTrackingInputSchema = z.object({
   orderNumber: orderNumberSchema,
-  trackingStatus: z.enum([
-    'created',
-    'label_generated',
-    'in_transit',
-    'delivered',
-    'exception',
-  ]),
+  trackingStatus: z.enum(['created', 'label_generated', 'in_transit', 'delivered', 'exception']),
 })
 
 export type ParsedAdminCreateShippingLabelInput = z.infer<

@@ -34,9 +34,7 @@ export type MapOrderToSkydropxShipmentInput = {
   orderNumber?: string
 }
 
-export function mapLabelFormatToSkydropx(
-  labelFormat?: string | null,
-): 'standard' | 'thermal' {
+export function mapLabelFormatToSkydropx(labelFormat?: string | null): 'standard' | 'thermal' {
   const normalized = labelFormat?.trim().toUpperCase()
   if (normalized === 'ZPL' || normalized === 'EPL' || normalized === 'THERMAL') {
     return 'thermal'
@@ -56,10 +54,7 @@ export function mapOrderToSkydropxShipmentPayload(
   if (input.recipient) {
     recipient = input.recipient
   } else if (input.shippingAddress && input.customerEmail) {
-    recipient = validateOrderShippingAddressForSkydropx(
-      input.shippingAddress,
-      input.customerEmail,
-    )
+    recipient = validateOrderShippingAddressForSkydropx(input.shippingAddress, input.customerEmail)
   } else {
     throw new Error('mapOrderToSkydropxShipmentPayload: recipient or shippingAddress required')
   }

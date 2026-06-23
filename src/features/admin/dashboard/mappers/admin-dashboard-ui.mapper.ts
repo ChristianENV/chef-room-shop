@@ -54,10 +54,7 @@ const DESIGN_STATUS_MAP: Record<string, RecentDesign['status']> = {
 /**
  * Resolves display customer name with email fallback.
  */
-export function resolveCustomerDisplayName(
-  name: string | null | undefined,
-  email: string,
-): string {
+export function resolveCustomerDisplayName(name: string | null | undefined, email: string): string {
   const trimmed = name?.trim()
   if (trimmed) return trimmed
   const local = email.split('@')[0]?.trim()
@@ -99,10 +96,7 @@ function mapProductionStatus(orderStatus: string): ProductionItem['status'] {
   return 'en-produccion'
 }
 
-function resolveEstimatedDelivery(
-  estimatedDeliveryDate: string | null,
-  createdAt: string,
-): string {
+function resolveEstimatedDelivery(estimatedDeliveryDate: string | null, createdAt: string): string {
   if (estimatedDeliveryDate) return estimatedDeliveryDate
   const base = new Date(createdAt)
   base.setDate(base.getDate() + 7)
@@ -118,9 +112,7 @@ export function mapMetricsToUi(metrics: AdminDashboardMetrics): AdminMetricsUi {
     ventasMes: formatCurrencyMXN(centsToPesos(metrics.salesMonthCents)),
     ordenesPendientes: metrics.pendingOrders,
     ordenesPendientesSubtitle:
-      metrics.pendingOrders > 0
-        ? `${metrics.pendingOrders} por confirmar`
-        : undefined,
+      metrics.pendingOrders > 0 ? `${metrics.pendingOrders} por confirmar` : undefined,
     disenosCreados: metrics.designsCreated,
     carritosAbandonados: metrics.abandonedCarts,
     ticketPromedio: formatCurrencyMXN(centsToPesos(metrics.averageOrderValueCents)),
@@ -148,13 +140,8 @@ export function mapRecentOrderToUi(order: AdminRecentOrder): AdminOrder {
 /**
  * Maps BFF production queue order to production card item (one row per order).
  */
-export function mapProductionQueueItemToUi(
-  item: AdminProductionQueueItem,
-): ProductionItem {
-  const productName =
-    item.productNames.length > 0
-      ? item.productNames.join(', ')
-      : 'Producto'
+export function mapProductionQueueItemToUi(item: AdminProductionQueueItem): ProductionItem {
+  const productName = item.productNames.length > 0 ? item.productNames.join(', ') : 'Producto'
 
   return {
     id: item.id,
@@ -164,13 +151,8 @@ export function mapProductionQueueItemToUi(
     quantity: Math.max(item.productNames.length, 1),
     customizationType: mapCustomizationType(item.customizationTypes),
     customizationText:
-      item.customizationTypes.length > 1
-        ? item.customizationTypes.slice(1).join(', ')
-        : undefined,
-    estimatedDelivery: resolveEstimatedDelivery(
-      item.estimatedDeliveryDate,
-      item.createdAt,
-    ),
+      item.customizationTypes.length > 1 ? item.customizationTypes.slice(1).join(', ') : undefined,
+    estimatedDelivery: resolveEstimatedDelivery(item.estimatedDeliveryDate, item.createdAt),
     status: mapProductionStatus(item.status),
     priority: 'normal',
   }

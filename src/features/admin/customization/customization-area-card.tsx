@@ -13,7 +13,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Switch } from '@/components/ui/switch'
-import type { CustomizationAreaGroupUi, CustomizationRuleCardUi } from './types/admin-customization-ui.types'
+import type {
+  CustomizationAreaGroupUi,
+  CustomizationRuleCardUi,
+} from './types/admin-customization-ui.types'
 
 type CustomizationAreaCardProps = {
   group: CustomizationAreaGroupUi
@@ -85,7 +88,10 @@ function RuleRow({
               <Pencil className="mr-2 h-4 w-4" />
               Editar
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onDelete} className="text-destructive focus:text-destructive">
+            <DropdownMenuItem
+              onClick={onDelete}
+              className="text-destructive focus:text-destructive"
+            >
               <Trash2 className="mr-2 h-4 w-4" />
               Eliminar
             </DropdownMenuItem>

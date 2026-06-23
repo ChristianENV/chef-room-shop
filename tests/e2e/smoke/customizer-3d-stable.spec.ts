@@ -5,8 +5,7 @@ import {
   shouldMockCustomizerPreviews,
 } from '../helpers/mock-customizer-previews'
 
-const CUSTOMIZER_SLUG =
-  process.env.E2E_CUSTOMIZER_SLUG ?? 'demo-filipina-executive-blanca'
+const CUSTOMIZER_SLUG = process.env.E2E_CUSTOMIZER_SLUG ?? 'demo-filipina-executive-blanca'
 const USE_PREVIEW_MOCK = shouldMockCustomizerPreviews()
 
 test('customizer 3D viewport stays interactable without load fallback', async ({ page }) => {

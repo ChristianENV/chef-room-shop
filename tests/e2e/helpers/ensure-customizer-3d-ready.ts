@@ -4,9 +4,7 @@ import { expect, type Page } from '@playwright/test'
 export async function ensureCustomizer3DReady(page: Page): Promise<void> {
   const mode3d = page.getByTestId('customizer-render-mode-3d')
   if (await mode3d.isVisible()) {
-    const isActive = await mode3d.evaluate((element) =>
-      element.classList.contains('bg-primary'),
-    )
+    const isActive = await mode3d.evaluate((element) => element.classList.contains('bg-primary'))
     if (!isActive) {
       await mode3d.click({ force: true })
     }
@@ -21,7 +19,9 @@ export async function ensureCustomizer3DReady(page: Page): Promise<void> {
   await expect(canvas).toBeVisible({ timeout: 30_000 })
   await page.waitForFunction(() => {
     const element = document.querySelector('[data-testid="customizer-3d-viewport"] canvas')
-    return Boolean(element && element instanceof HTMLCanvasElement && element.width > 0 && element.height > 0)
+    return Boolean(
+      element && element instanceof HTMLCanvasElement && element.width > 0 && element.height > 0,
+    )
   })
 
   await page.waitForTimeout(5_000)

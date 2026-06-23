@@ -262,10 +262,7 @@ export default function CustomizerAnalyticsPage() {
           <ChartPlaceholder height={240} type="line" label="Grafico de linea temporal" />
         </AdminChartCard>
 
-        <AdminChartCard
-          title="Funnel de conversion"
-          description="De diseno creado a compra"
-        >
+        <AdminChartCard title="Funnel de conversion" description="De diseno creado a compra">
           <FunnelChart steps={MOCK_FUNNEL} />
         </AdminChartCard>
       </div>
@@ -286,10 +283,7 @@ export default function CustomizerAnalyticsPage() {
           <PopularColorsChart colors={MOCK_COLORS} />
         </AdminChartCard>
 
-        <AdminChartCard
-          title="Tipos de personalizacion"
-          description="Bordado, logo, texto, patch"
-        >
+        <AdminChartCard title="Tipos de personalizacion" description="Bordado, logo, texto, patch">
           <CustomizationTypesChart types={MOCK_CUSTOMIZATION_TYPES} />
         </AdminChartCard>
       </div>

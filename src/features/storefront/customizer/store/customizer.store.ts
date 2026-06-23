@@ -75,10 +75,7 @@ type CustomizerState = DesignSnapshot & {
       updatedAt?: string | null
     },
   ) => void
-  hydrateFromLocalDraft: (
-    product: CustomizerProductData,
-    configJson: unknown,
-  ) => void
+  hydrateFromLocalDraft: (product: CustomizerProductData, configJson: unknown) => void
   syncProductCatalog: (product: CustomizerProductData) => void
   setSelectedProduct: (product: CustomizerProductData) => void
   resetDesignForProduct: (product: CustomizerProductData) => void
@@ -108,10 +105,7 @@ type CustomizerState = DesignSnapshot & {
   setActiveTool: (tool: DesignTool) => void
   toggleLayerVisibility: (id: string) => void
   updateLayer: (id: string, patch: LayerPatch) => void
-  syncLayerAssets: (
-    id: string,
-    patch: Pick<LayerPatch, 'assetUrl' | 'assetPublicId'>,
-  ) => void
+  syncLayerAssets: (id: string, patch: Pick<LayerPatch, 'assetUrl' | 'assetPublicId'>) => void
   updateLayerPosition: (id: string, position: { x: number; y: number }) => void
   updateLayerSize: (id: string, size: { width: number; height: number }) => void
   updateLayerRotation: (id: string, rotation: number) => void
@@ -190,10 +184,9 @@ function buildProductState(product: CustomizerProductData) {
     product.colors.find((color) => color.id === firstVariant?.colorId)?.hex ??
     product.colors[0]?.hex ??
     INITIAL_STATE.baseColor
-  const firstSize =
-    (product.sizes.find((size) => size.id === firstVariant?.sizeId)?.name ??
-      product.sizes[0]?.name ??
-      INITIAL_STATE.size) as Size
+  const firstSize = (product.sizes.find((size) => size.id === firstVariant?.sizeId)?.name ??
+    product.sizes[0]?.name ??
+    INITIAL_STATE.size) as Size
 
   const resolved = resolveCustomizerVariant(product, {
     baseColor: firstColor,
@@ -409,9 +402,8 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
           baseColor,
           size: state.size,
         })
-        const nextSize =
-          (state.product.sizes.find((size) => size.id === resolved?.sizeId)?.name ??
-            state.size) as Size
+        const nextSize = (state.product.sizes.find((size) => size.id === resolved?.sizeId)?.name ??
+          state.size) as Size
 
         return {
           baseColor,
@@ -530,9 +522,7 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => {
     updateLayer: (id, patch) => patchLayer(id, patch, true),
     syncLayerAssets: (id, patch) =>
       set((state) => ({
-        layers: state.layers.map((layer) =>
-          layer.id === id ? { ...layer, ...patch } : layer,
-        ),
+        layers: state.layers.map((layer) => (layer.id === id ? { ...layer, ...patch } : layer)),
       })),
     updateLayerPosition: (id, position) => patchLayer(id, { position }, true),
     updateLayerSize: (id, size) => patchLayer(id, { size }, true),

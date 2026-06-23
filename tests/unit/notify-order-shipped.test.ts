@@ -118,9 +118,8 @@ describe('notifyOrderShipped', { skip: !hasDatabase }, () => {
     userId: string | null
   }) {
     const { prisma } = await loadPrisma()
-    const { buildMockTrackingNumber } = await import(
-      '@/src/server/shipping/skydropx/skydropx.mock-provider'
-    )
+    const { buildMockTrackingNumber } =
+      await import('@/src/server/shipping/skydropx/skydropx.mock-provider')
 
     if (params.userId) {
       cleanup.trackUser(params.userId)
@@ -166,9 +165,8 @@ describe('notifyOrderShipped', { skip: !hasDatabase }, () => {
     const orderNumber = `CR-MOCK-SHIPPED-${Date.now()}`
     const order = await createReadyToShipMockOrder({ orderNumber, userId: user.id })
 
-    const { simulateMockShipmentTrackingStatus } = await import(
-      '@/src/server/shipping/skydropx/skydropx.mock-tracking'
-    )
+    const { simulateMockShipmentTrackingStatus } =
+      await import('@/src/server/shipping/skydropx/skydropx.mock-tracking')
 
     await simulateMockShipmentTrackingStatus(prisma, {
       orderNumber,
@@ -203,9 +201,8 @@ describe('notifyOrderShipped', { skip: !hasDatabase }, () => {
     const orderNumber = `CR-MOCK-GUEST-SHIPPED-${Date.now()}`
     const order = await createReadyToShipMockOrder({ orderNumber, userId: null })
 
-    const { simulateMockShipmentTrackingStatus } = await import(
-      '@/src/server/shipping/skydropx/skydropx.mock-tracking'
-    )
+    const { simulateMockShipmentTrackingStatus } =
+      await import('@/src/server/shipping/skydropx/skydropx.mock-tracking')
 
     await simulateMockShipmentTrackingStatus(prisma, {
       orderNumber,
@@ -230,9 +227,8 @@ describe('notifyOrderShipped', { skip: !hasDatabase }, () => {
     const orderNumber = `CR-MOCK-LABEL-GEN-${Date.now()}`
     await createReadyToShipMockOrder({ orderNumber, userId: user.id })
 
-    const { simulateMockShipmentTrackingStatus } = await import(
-      '@/src/server/shipping/skydropx/skydropx.mock-tracking'
-    )
+    const { simulateMockShipmentTrackingStatus } =
+      await import('@/src/server/shipping/skydropx/skydropx.mock-tracking')
 
     await simulateMockShipmentTrackingStatus(prisma, {
       orderNumber,
@@ -319,9 +315,8 @@ describe('notifyOrderShipped', { skip: !hasDatabase }, () => {
       data: { status: ShipmentStatus.IN_TRANSIT, shippedAt: new Date() },
     })
 
-    const { simulateMockShipmentTrackingStatus } = await import(
-      '@/src/server/shipping/skydropx/skydropx.mock-tracking'
-    )
+    const { simulateMockShipmentTrackingStatus } =
+      await import('@/src/server/shipping/skydropx/skydropx.mock-tracking')
 
     await simulateMockShipmentTrackingStatus(prisma, {
       orderNumber,
@@ -372,9 +367,8 @@ describe('safeNotifyOrderShipped', () => {
 
 describe('mock label initial status does not notify shipped', () => {
   it('deriveAdminLabelCreationStatuses stays pre-shipped in mock mode', async () => {
-    const { deriveAdminLabelCreationStatuses } = await import(
-      '@/src/server/graphql/modules/admin-shipping/admin-shipping-label-status'
-    )
+    const { deriveAdminLabelCreationStatuses } =
+      await import('@/src/server/graphql/modules/admin-shipping/admin-shipping-label-status')
     const { isOrderShippedTransition } = await loadNotifyModules()
 
     const statuses = deriveAdminLabelCreationStatuses({

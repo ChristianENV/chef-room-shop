@@ -27,11 +27,7 @@ Lista paginada con filtros y orden.
 ```graphql
 query AdminOrdersList {
   adminOrders(
-    filter: {
-      search: "CR-"
-      productionOnly: true
-      hasCustomDesign: true
-    }
+    filter: { search: "CR-", productionOnly: true, hasCustomDesign: true }
     sort: { field: "createdAt", direction: "desc" }
     limit: 20
     offset: 0
@@ -43,7 +39,10 @@ query AdminOrdersList {
       paymentStatus
       fulfillmentStatus
       totalCents
-      customer { email name }
+      customer {
+        email
+        name
+      }
       hasCustomDesign
     }
   }
@@ -72,14 +71,14 @@ Hoja de producción: items, snapshots, notas, cliente.
 
 ## Mutations
 
-| Mutation | Descripción |
-|----------|-------------|
-| `updateAdminOrderStatus` | Cambia `Order.status` + `OrderEvent` STATUS_CHANGED |
+| Mutation                     | Descripción                                                               |
+| ---------------------------- | ------------------------------------------------------------------------- |
+| `updateAdminOrderStatus`     | Cambia `Order.status` + `OrderEvent` STATUS_CHANGED                       |
 | `moveAdminOrderToProduction` | Requiere pago; `status` → IN_PRODUCTION, `fulfillmentStatus` → PROCESSING |
-| `markAdminOrderReadyToShip` | `status` → READY_TO_SHIP, `fulfillmentStatus` → PROCESSING |
-| `addAdminOrderTracking` | Crea/actualiza `Shipment` manual (sin Skydropx), `status` → SHIPPED |
-| `cancelAdminOrder` | No si DELIVERED; sin reembolso automático |
-| `addAdminOrderNote` | `OrderEvent` NOTE_ADDED + append en `order.notes` |
+| `markAdminOrderReadyToShip`  | `status` → READY_TO_SHIP, `fulfillmentStatus` → PROCESSING                |
+| `addAdminOrderTracking`      | Crea/actualiza `Shipment` manual (sin Skydropx), `status` → SHIPPED       |
+| `cancelAdminOrder`           | No si DELIVERED; sin reembolso automático                                 |
+| `addAdminOrderNote`          | `OrderEvent` NOTE_ADDED + append en `order.notes`                         |
 
 ### Ejemplo: producción y envío
 
@@ -93,14 +92,13 @@ mutation OpsFlow {
     status
   }
   ship: addAdminOrderTracking(
-    input: {
-      orderNumber: "CR-2026-0001"
-      carrier: "Estafeta"
-      trackingNumber: "1234567890"
-    }
+    input: { orderNumber: "CR-2026-0001", carrier: "Estafeta", trackingNumber: "1234567890" }
   ) {
     status
-    shipments { trackingNumber carrier }
+    shipments {
+      trackingNumber
+      carrier
+    }
   }
 }
 ```
@@ -111,7 +109,10 @@ mutation OpsFlow {
 mutation Cancel {
   cancelAdminOrder(orderNumber: "CR-2026-0002", reason: "Cliente solicitó cancelación") {
     status
-    events { type message }
+    events {
+      type
+      message
+    }
   }
 }
 ```
@@ -144,17 +145,17 @@ La página admin de órdenes consume el BFF vía TanStack Query. Ver también `d
 
 ### Hooks usados
 
-| Hook | Uso en UI |
-|------|-----------|
-| `useAdminOrdersQuery` | Tabla principal + filtros |
-| `useAdminOrderStatusSummaryQuery` | Tarjetas de resumen |
-| `useAdminOrderByNumberQuery` | Drawer de detalle |
-| `useAdminOrderProductionSheetQuery` | Pestaña ficha de producción |
-| `useMoveAdminOrderToProductionMutation` | Tabla + drawer |
-| `useMarkAdminOrderReadyToShipMutation` | Tabla + drawer |
-| `useAddAdminOrderTrackingMutation` | Drawer (diálogo guía) |
-| `useCancelAdminOrderMutation` | Tabla + drawer |
-| `useAddAdminOrderNoteMutation` | Drawer |
+| Hook                                    | Uso en UI                   |
+| --------------------------------------- | --------------------------- |
+| `useAdminOrdersQuery`                   | Tabla principal + filtros   |
+| `useAdminOrderStatusSummaryQuery`       | Tarjetas de resumen         |
+| `useAdminOrderByNumberQuery`            | Drawer de detalle           |
+| `useAdminOrderProductionSheetQuery`     | Pestaña ficha de producción |
+| `useMoveAdminOrderToProductionMutation` | Tabla + drawer              |
+| `useMarkAdminOrderReadyToShipMutation`  | Tabla + drawer              |
+| `useAddAdminOrderTrackingMutation`      | Drawer (diálogo guía)       |
+| `useCancelAdminOrderMutation`           | Tabla + drawer              |
+| `useAddAdminOrderNoteMutation`          | Drawer                      |
 
 ### Acciones disponibles en UI
 

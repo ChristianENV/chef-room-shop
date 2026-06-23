@@ -6,10 +6,7 @@ interface AdminSectionPlaceholderProps {
   description: string
 }
 
-export function AdminSectionPlaceholder({
-  title,
-  description,
-}: AdminSectionPlaceholderProps) {
+export function AdminSectionPlaceholder({ title, description }: AdminSectionPlaceholderProps) {
   return (
     <div className="space-y-6">
       <div>
@@ -31,12 +28,11 @@ export function AdminSectionPlaceholder({
         </CardHeader>
         <CardContent>
           <p className="font-serif text-sm text-muted-foreground">
-            El módulo de {title.toLowerCase()} se conectará con datos reales cuando el backend y
-            la autenticación estén listos.
+            El módulo de {title.toLowerCase()} se conectará con datos reales cuando el backend y la
+            autenticación estén listos.
           </p>
         </CardContent>
       </Card>
     </div>
   )
 }
-

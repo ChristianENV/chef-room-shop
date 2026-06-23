@@ -4,12 +4,12 @@ Server-only Skydropx integration for quoting outbound shipping from the **active
 
 ## Operations
 
-| Operation | Type | Description |
-|-----------|------|-------------|
-| `createShippingQuote` | Mutation | Quote from active cart + destination CP |
-| `shippingQuoteById` | Query | Load persisted quote + rates (no Skydropx call) |
+| Operation              | Type     | Description                                              |
+| ---------------------- | -------- | -------------------------------------------------------- |
+| `createShippingQuote`  | Mutation | Quote from active cart + destination CP                  |
+| `shippingQuoteById`    | Query    | Load persisted quote + rates (no Skydropx call)          |
 | `refreshShippingQuote` | Mutation | `GET /api/v1/quotations/:id` when `isCompleted` is false |
-| `selectShippingRate` | Mutation | Sets `selectedAt` on one rate, clears others |
+| `selectShippingRate`   | Mutation | Sets `selectedAt` on one rate, clears others             |
 
 All mutations return `ShippingQuotePayload { quote, recommendedRate }`.
 
@@ -26,7 +26,7 @@ All mutations return `ShippingQuotePayload { quote, recommendedRate }`.
 
 - **Authenticated:** `userId` from Better Auth session; ACTIVE cart for that user.
 - **Guest:** existing `chefroom_guest` cookie only — **no new guest session** is created.
-- No active cart or empty cart → `BAD_REQUEST` — *Tu carrito está vacío.*
+- No active cart or empty cart → `BAD_REQUEST` — _Tu carrito está vacío._
 - Quote/rate access is scoped to the same owner (`FORBIDDEN` otherwise).
 
 ## Package calculation
@@ -67,15 +67,15 @@ After `createShippingQuote`, if `quote.isCompleted === false`, the client should
 
 ## Errors
 
-| Code | When |
-|------|------|
-| `BAD_REQUEST` | Empty cart, invalid CP, expired rate |
-| `FORBIDDEN` | Quote/rate owned by another session |
-| `NOT_FOUND` | Unknown quote/rate id |
-| `SERVICE_UNAVAILABLE` | Missing `SKYDROPX_CLIENT_ID` / `SECRET` |
+| Code                        | When                                                   |
+| --------------------------- | ------------------------------------------------------ |
+| `BAD_REQUEST`               | Empty cart, invalid CP, expired rate                   |
+| `FORBIDDEN`                 | Quote/rate owned by another session                    |
+| `NOT_FOUND`                 | Unknown quote/rate id                                  |
+| `SERVICE_UNAVAILABLE`       | Missing `SKYDROPX_CLIENT_ID` / `SECRET`                |
 | `SKYDROPX_VALIDATION_ERROR` | Origen inválido, CP, teléfono, paquete, o Skydropx 422 |
-| `SKYDROPX_AUTH_ERROR` | Credenciales Skydropx rechazadas |
-| `SKYDROPX_API_ERROR` | Skydropx 5xx / 502 |
+| `SKYDROPX_AUTH_ERROR`       | Credenciales Skydropx rechazadas                       |
+| `SKYDROPX_API_ERROR`        | Skydropx 5xx / 502                                     |
 
 Build succeeds without Skydropx credentials; runtime calls throw `SERVICE_UNAVAILABLE`.
 
@@ -98,9 +98,18 @@ mutation CreateShippingQuote($input: CreateShippingQuoteInput!) {
       id
       isCompleted
       destinationPostalCode
-      rates { id carrier amountCents selectedAt }
+      rates {
+        id
+        carrier
+        amountCents
+        selectedAt
+      }
     }
-    recommendedRate { id carrier amountCents }
+    recommendedRate {
+      id
+      carrier
+      amountCents
+    }
   }
 }
 ```
