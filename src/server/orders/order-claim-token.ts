@@ -88,4 +88,3 @@ export async function validateOrderClaimToken(token: string): Promise<{
     claimTokenId: claimToken.id,
   }
 }
-

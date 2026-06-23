@@ -146,7 +146,8 @@ export async function requestOrderClaimTransfer(input: {
       }
     }
 
-    const { validateCheckoutReturnToken } = await import('@/src/server/checkout/checkout-return-token')
+    const { validateCheckoutReturnToken } =
+      await import('@/src/server/checkout/checkout-return-token')
     const validation = await validateCheckoutReturnToken(trimmedToken)
     if (!validation.order) {
       return {
