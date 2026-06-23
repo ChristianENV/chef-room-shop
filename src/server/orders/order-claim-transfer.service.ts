@@ -1,22 +1,24 @@
 import 'server-only'
 
 import { OrderClaimTransferRequestStatus } from '@prisma/client'
+import type { PrismaClient } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 
-import { validateCheckoutReturnToken } from '@/src/server/checkout/checkout-return-token'
-import { prisma } from '@/src/server/db/prisma'
-import { buildOrderClaimTransferAuthorizeUrl } from '@/src/server/email/email.links'
-import { sendTransactionalEmail } from '@/src/server/email/email.service'
 import type { GraphQLContext } from '@/src/server/graphql/context'
 
+import { linkGuestOrderToUser } from './link-guest-order-to-user'
 import {
   generateOrderClaimToken,
   hashOrderClaimToken,
   maskCustomerEmail,
-} from './order-claim-token'
-import { linkGuestOrderToUser } from './link-guest-order-to-user'
+} from './order-claim-token-crypto'
 
 const TRANSFER_TTL_HOURS = 48
+
+async function getPrisma(): Promise<PrismaClient> {
+  const { prisma } = await import('@/src/server/db/prisma')
+  return prisma
+}
 
 export type RequestOrderClaimTransferStatus =
   | 'SENT'
@@ -79,6 +81,7 @@ async function loadTransferByToken(token: string) {
   }
 
   const tokenHash = hashOrderClaimToken(trimmed)
+  const prisma = await getPrisma()
 
   return prisma.orderClaimTransferRequest.findUnique({
     where: { tokenHash },
@@ -112,6 +115,8 @@ async function markExpiredIfNeeded(
     return status
   }
 
+  const prisma = await getPrisma()
+
   await prisma.orderClaimTransferRequest.update({
     where: { id: requestId },
     data: { status: OrderClaimTransferRequestStatus.EXPIRED },
@@ -141,6 +146,7 @@ export async function requestOrderClaimTransfer(input: {
       }
     }
 
+    const { validateCheckoutReturnToken } = await import('@/src/server/checkout/checkout-return-token')
     const validation = await validateCheckoutReturnToken(trimmedToken)
     if (!validation.order) {
       return {
@@ -173,6 +179,8 @@ export async function requestOrderClaimTransfer(input: {
         message: 'El enlace no corresponde a este pedido.',
       }
     }
+
+    const prisma = await getPrisma()
 
     const order = await prisma.order.findFirst({
       where: { id: validation.order.id, deletedAt: null },
@@ -263,6 +271,8 @@ export async function requestOrderClaimTransfer(input: {
       },
     })
 
+    const { buildOrderClaimTransferAuthorizeUrl } = await import('@/src/server/email/email.links')
+    const { sendTransactionalEmail } = await import('@/src/server/email/email.service')
     const authorizeUrl = buildOrderClaimTransferAuthorizeUrl(plainToken)
 
     await sendTransactionalEmail({
@@ -323,6 +333,10 @@ export async function requestOrderClaimTransferForGraphQL(
 export async function getOrderClaimTransferPreview(
   token: string,
 ): Promise<OrderClaimTransferPreview | null> {
+  if (!token.trim()) {
+    return null
+  }
+
   const transfer = await loadTransferByToken(token)
   if (!transfer || transfer.order.deletedAt) {
     return null
@@ -367,6 +381,14 @@ export async function approveOrderClaimTransfer(
   token: string,
 ): Promise<ApproveOrderClaimTransferResult> {
   try {
+    if (!token.trim()) {
+      return {
+        success: false,
+        status: 'TOKEN_INVALID',
+        message: 'Este enlace ya no es válido.',
+      }
+    }
+
     const transfer = await loadTransferByToken(token)
     if (!transfer || transfer.order.deletedAt) {
       return {
@@ -427,6 +449,7 @@ export async function approveOrderClaimTransfer(
     }
 
     const now = new Date()
+    const prisma = await getPrisma()
 
     await prisma.$transaction(async (tx) => {
       const current = await tx.orderClaimTransferRequest.findUnique({
@@ -564,6 +587,8 @@ export async function cancelOrderClaimTransfer(
         message: 'Esta solicitud ya no puede cancelarse.',
       }
     }
+
+    const prisma = await getPrisma()
 
     await prisma.orderClaimTransferRequest.update({
       where: { id: transfer.id },
