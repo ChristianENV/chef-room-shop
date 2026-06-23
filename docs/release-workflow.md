@@ -156,7 +156,7 @@ Configure branch protection on **`main`** to require **`validate-release-pr`**. 
 
 **Permissions:** `contents: read` only
 
-**Setup:** `actions/checkout`, `actions/setup-node` (Node **22** — no `.nvmrc` / `engines` yet; pin in a follow-up after confirming hosting runtime), `corepack enable`, `pnpm install --frozen-lockfile` (pnpm version from `packageManager` in `package.json`).
+**Setup:** `actions/checkout@v6`, `pnpm/action-setup@v6` (before Node cache), `actions/setup-node@v6` (Node **22** — no `.nvmrc` / `engines` yet; pin in a follow-up after confirming hosting runtime), `pnpm install --frozen-lockfile` (pnpm version from `packageManager` in `package.json`). CI uses `pnpm/action-setup` before `actions/setup-node` cache so pnpm is available when setup-node resolves pnpm caching.
 
 **Jobs** (separate so branch protection can require each individually):
 

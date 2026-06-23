@@ -32,7 +32,7 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         if: github.event.pull_request.merged == true
         with:
           fetch-depth: 0
