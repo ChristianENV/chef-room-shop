@@ -130,4 +130,8 @@ jobs:
         run: pnpm db:generate
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/chef_room_ci?schema=public
-      - run: pnpm exec next build
+      - name: Build
+        run: pnpm exec next build
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/chef_room_ci?schema=public
+          NEXT_TELEMETRY_DISABLED: '1'
