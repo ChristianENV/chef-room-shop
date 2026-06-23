@@ -168,7 +168,7 @@ Configure branch protection on **`main`** to require **`validate-release-pr`**. 
 | `test`      | `pnpm db:generate` → `pnpm test`            |
 | `build`     | `pnpm db:generate` → `pnpm exec next build` |
 
-CI does **not** run migrations or Playwright. No production secrets are hardcoded; DB-backed tests skip when `DATABASE_URL` is unset.
+CI does **not** run migrations or Playwright. No production secrets are hardcoded. CI uses a dummy local `DATABASE_URL` only for Prisma generate during install/build steps (`postgresql://postgres:postgres@localhost:5432/chef_room_ci`); it is not a production, NP, or secret database URL. DB-backed unit tests still skip when `DATABASE_URL` is unset on the `pnpm test` step.
 
 ### Validate PR Target
 
@@ -276,12 +276,12 @@ Configure in **Settings → Branches → Branch protection rules**. Require **PR
 
 ## Secrets and test infrastructure (CI)
 
-| Secret / config              | Needed for                                 | Notes                                                                                                  |
-| ---------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
-| `DATABASE_URL`               | DB-backed unit tests                       | Many suites **skip** without it; some skip `localhost:5432/chef_room`. Use a dedicated CI Neon branch. |
-| `BETTER_AUTH_SECRET`         | Build/runtime                              | Required for auth routes; use CI dummy value for build-only jobs if tests mock auth.                   |
-| `NEXT_PUBLIC_APP_URL`        | Build                                      | Set to NP or production URL per workflow.                                                              |
-| Skydropx / Conekta / R2 keys | Not required for lint/typecheck/unit/build | Integration tests and E2E may need subsets later.                                                      |
+| Secret / config              | Needed for                                                                                                | Notes                                                                                                                                                                                                             |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`               | Prisma generate in CI (dummy local URL on install/generate steps only); optional for DB-backed unit tests | CI uses `postgresql://postgres:postgres@localhost:5432/chef_room_ci` for generate only. Many suites **skip** without it on `pnpm test`; use a dedicated CI Neon branch only if you intentionally enable DB tests. |
+| `BETTER_AUTH_SECRET`         | Build/runtime                                                                                             | Required for auth routes; use CI dummy value for build-only jobs if tests mock auth.                                                                                                                              |
+| `NEXT_PUBLIC_APP_URL`        | Build                                                                                                     | Set to NP or production URL per workflow.                                                                                                                                                                         |
+| Skydropx / Conekta / R2 keys | Not required for lint/typecheck/unit/build                                                                | Integration tests and E2E may need subsets later.                                                                                                                                                                 |
 
 Unit tests load `.env.local` via dotenv in helpers when present; CI should inject env via GitHub Secrets, not commit `.env.local`.
 
