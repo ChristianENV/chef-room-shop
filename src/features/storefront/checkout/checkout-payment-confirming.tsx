@@ -23,17 +23,12 @@ export function CheckoutPaymentConfirming({
   active = true,
   className,
 }: CheckoutPaymentConfirmingProps) {
-  const progress = active
-    ? Math.min(100, Math.round((elapsedMs / durationMs) * 100))
-    : 100
+  const progress = active ? Math.min(100, Math.round((elapsedMs / durationMs) * 100)) : 100
   const secondsRemaining = Math.max(0, Math.ceil((durationMs - elapsedMs) / 1000))
 
   return (
     <div
-      className={cn(
-        'rounded-lg border border-primary/20 bg-primary/5 p-5',
-        className,
-      )}
+      className={cn('rounded-lg border border-primary/20 bg-primary/5 p-5', className)}
       role="status"
       aria-live="polite"
       aria-busy={active}
@@ -45,9 +40,7 @@ export function CheckoutPaymentConfirming({
         />
         <div className="min-w-0 flex-1 space-y-3">
           <div>
-            <p className="font-sans text-base font-semibold text-foreground">
-              Confirmando pago
-            </p>
+            <p className="font-sans text-base font-semibold text-foreground">Confirmando pago</p>
             <p className="mt-1 font-serif text-sm text-muted-foreground">
               Estamos validando la respuesta de Conekta.
             </p>

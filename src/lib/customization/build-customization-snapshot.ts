@@ -163,7 +163,9 @@ export function extractSelectionFromConfigJson(configJson: unknown): {
         : EMPTY_COLOR
 
   const selectedOptions =
-    config.selectedOptions && typeof config.selectedOptions === 'object' && !Array.isArray(config.selectedOptions)
+    config.selectedOptions &&
+    typeof config.selectedOptions === 'object' &&
+    !Array.isArray(config.selectedOptions)
       ? (config.selectedOptions as Record<string, unknown>)
       : { ...style }
 
@@ -242,9 +244,7 @@ export function buildCustomizationSnapshot(
   const pricing = parseRecord(config.pricing)
   const customizationPriceCents =
     input.customizationPriceCents ??
-    (typeof pricing.customizationPriceCents === 'number'
-      ? pricing.customizationPriceCents
-      : null)
+    (typeof pricing.customizationPriceCents === 'number' ? pricing.customizationPriceCents : null)
 
   return {
     designId: input.design?.id ?? null,
@@ -277,20 +277,10 @@ export function enrichProductSnapshotWithConfig(
     ...snapshot,
     variantId: snapshot.variantId ?? selection.selectedVariantId,
     sizeName:
-      snapshot.sizeName ??
-      selection.selectedSize.label ??
-      selection.selectedSize.name ??
-      null,
+      snapshot.sizeName ?? selection.selectedSize.label ?? selection.selectedSize.name ?? null,
     colorName:
-      snapshot.colorName ??
-      selection.fabricColor.name ??
-      selection.selectedColor.name ??
-      null,
-    colorHex:
-      snapshot.colorHex ??
-      selection.fabricColor.hex ??
-      selection.selectedColor.hex ??
-      null,
+      snapshot.colorName ?? selection.fabricColor.name ?? selection.selectedColor.name ?? null,
+    colorHex: snapshot.colorHex ?? selection.fabricColor.hex ?? selection.selectedColor.hex ?? null,
   }
 }
 

@@ -24,10 +24,7 @@ import {
 import { SlidersHorizontal, X } from 'lucide-react'
 
 import { mapProductTypeSlugToCategory } from './mappers/catalog-ui.mapper'
-import {
-  EMPTY_FILTER_OPTIONS,
-  type CatalogFilterOptions,
-} from './catalog-filter-options'
+import { EMPTY_FILTER_OPTIONS, type CatalogFilterOptions } from './catalog-filter-options'
 
 export interface FilterState {
   categories: string[]
@@ -69,7 +66,10 @@ function FilterContent({
     onFiltersChange({ ...filters, [key]: value })
   }
 
-  const toggleArrayFilter = (key: 'categories' | 'sizes' | 'colors' | 'productionTime' | 'materials', value: string) => {
+  const toggleArrayFilter = (
+    key: 'categories' | 'sizes' | 'colors' | 'productionTime' | 'materials',
+    value: string,
+  ) => {
     const current = filters[key]
     const updated = current.includes(value)
       ? current.filter((v) => v !== value)
@@ -79,7 +79,11 @@ function FilterContent({
 
   return (
     <div className="space-y-1">
-      <Accordion type="multiple" defaultValue={['categoria', 'talla', 'color', 'precio']} className="w-full">
+      <Accordion
+        type="multiple"
+        defaultValue={['categoria', 'talla', 'color', 'precio']}
+        className="w-full"
+      >
         {/* Category Filter */}
         <AccordionItem value="categoria">
           <AccordionTrigger className="font-sans text-sm font-semibold text-foreground hover:no-underline">
@@ -208,9 +212,7 @@ function FilterContent({
                 <Checkbox
                   id="customizable-yes"
                   checked={filters.customizable === true}
-                  onCheckedChange={(checked) => 
-                    updateFilter('customizable', checked ? true : null)
-                  }
+                  onCheckedChange={(checked) => updateFilter('customizable', checked ? true : null)}
                 />
                 <Label
                   htmlFor="customizable-yes"
@@ -296,15 +298,17 @@ export function CatalogFilters({
             variant="ghost"
             size="sm"
             className="h-auto px-2 py-1 font-serif text-xs text-muted-foreground hover:text-foreground"
-            onClick={() => onFiltersChange({
-              categories: [],
-              sizes: [],
-              colors: [],
-              priceRange: [0, 3000],
-              customizable: null,
-              productionTime: [],
-              materials: [],
-            })}
+            onClick={() =>
+              onFiltersChange({
+                categories: [],
+                sizes: [],
+                colors: [],
+                priceRange: [0, 3000],
+                customizable: null,
+                productionTime: [],
+                materials: [],
+              })
+            }
           >
             Limpiar
           </Button>
@@ -408,10 +412,11 @@ export function ActiveFilters({
       activeFilters.push({
         key: `cat-${cat}`,
         label: category.label,
-        onRemove: () => onFiltersChange({
-          ...filters,
-          categories: filters.categories.filter((c) => c !== cat),
-        }),
+        onRemove: () =>
+          onFiltersChange({
+            ...filters,
+            categories: filters.categories.filter((c) => c !== cat),
+          }),
       })
     }
   })
@@ -422,10 +427,11 @@ export function ActiveFilters({
     activeFilters.push({
       key: `size-${sizeSlug}`,
       label: `Talla ${size?.label ?? sizeSlug.toUpperCase()}`,
-      onRemove: () => onFiltersChange({
-        ...filters,
-        sizes: filters.sizes.filter((s) => s !== sizeSlug),
-      }),
+      onRemove: () =>
+        onFiltersChange({
+          ...filters,
+          sizes: filters.sizes.filter((s) => s !== sizeSlug),
+        }),
     })
   })
 
@@ -436,10 +442,11 @@ export function ActiveFilters({
       activeFilters.push({
         key: `color-${color}`,
         label: colorObj.label,
-        onRemove: () => onFiltersChange({
-          ...filters,
-          colors: filters.colors.filter((c) => c !== color),
-        }),
+        onRemove: () =>
+          onFiltersChange({
+            ...filters,
+            colors: filters.colors.filter((c) => c !== color),
+          }),
       })
     }
   })
@@ -477,15 +484,17 @@ export function ActiveFilters({
         </button>
       ))}
       <button
-        onClick={() => onFiltersChange({
-          categories: [],
-          sizes: [],
-          colors: [],
-          priceRange: [0, 3000],
-          customizable: null,
-          productionTime: [],
-          materials: [],
-        })}
+        onClick={() =>
+          onFiltersChange({
+            categories: [],
+            sizes: [],
+            colors: [],
+            priceRange: [0, 3000],
+            customizable: null,
+            productionTime: [],
+            materials: [],
+          })
+        }
         className="font-sans text-xs font-medium text-primary hover:underline"
       >
         Limpiar todo

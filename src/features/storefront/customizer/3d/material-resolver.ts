@@ -20,7 +20,9 @@ const DEFAULT_FABRIC_COLOR = '#f4f1ea'
 const DEFAULT_BUTTON_COLOR = '#1f2937'
 const DEBUG_MATERIAL_COLOR = '#d7263d'
 
-export function createFabricMaterial(color: string = DEFAULT_FABRIC_COLOR): THREE.MeshStandardMaterial {
+export function createFabricMaterial(
+  color: string = DEFAULT_FABRIC_COLOR,
+): THREE.MeshStandardMaterial {
   return new THREE.MeshStandardMaterial({
     color,
     roughness: 0.82,
@@ -33,7 +35,9 @@ export function createFabricMaterial(color: string = DEFAULT_FABRIC_COLOR): THRE
   })
 }
 
-export function createButtonMaterial(color: string = DEFAULT_BUTTON_COLOR): THREE.MeshStandardMaterial {
+export function createButtonMaterial(
+  color: string = DEFAULT_BUTTON_COLOR,
+): THREE.MeshStandardMaterial {
   return new THREE.MeshStandardMaterial({
     color,
     roughness: 0.55,

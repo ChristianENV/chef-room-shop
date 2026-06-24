@@ -115,9 +115,7 @@ function buildSearchWhere(search: string): Prisma.OrderWhereInput {
   }
 }
 
-function buildListWhere(
-  filter: AdminOrdersListInput['filter'],
-): Prisma.OrderWhereInput {
+function buildListWhere(filter: AdminOrdersListInput['filter']): Prisma.OrderWhereInput {
   const where: Prisma.OrderWhereInput = { deletedAt: null }
 
   if (filter?.search) {
@@ -145,20 +143,14 @@ function buildListWhere(
   if (filter?.hasCustomDesign === true) {
     where.items = {
       some: {
-        OR: [
-          { designId: { not: null } },
-          { designSnapshotJson: { not: Prisma.AnyNull } },
-        ],
+        OR: [{ designId: { not: null } }, { designSnapshotJson: { not: Prisma.AnyNull } }],
       },
     }
   } else if (filter?.hasCustomDesign === false) {
     where.NOT = {
       items: {
         some: {
-          OR: [
-            { designId: { not: null } },
-            { designSnapshotJson: { not: Prisma.AnyNull } },
-          ],
+          OR: [{ designId: { not: null } }, { designSnapshotJson: { not: Prisma.AnyNull } }],
         },
       },
     }
@@ -293,40 +285,33 @@ export async function getAdminOrderStatusSummary(
 
   const baseWhere: Prisma.OrderWhereInput = { deletedAt: null }
 
-  const [
-    pendingPayment,
-    paid,
-    inProduction,
-    readyToShip,
-    shipped,
-    delivered,
-    cancelled,
-  ] = await Promise.all([
-    context.prisma.order.count({
-      where: { ...baseWhere, status: OrderStatus.PENDING_PAYMENT },
-    }),
-    context.prisma.order.count({
-      where: { ...baseWhere, status: OrderStatus.PAID },
-    }),
-    context.prisma.order.count({
-      where: { ...baseWhere, status: OrderStatus.IN_PRODUCTION },
-    }),
-    context.prisma.order.count({
-      where: { ...baseWhere, status: OrderStatus.READY_TO_SHIP },
-    }),
-    context.prisma.order.count({
-      where: { ...baseWhere, status: OrderStatus.SHIPPED },
-    }),
-    context.prisma.order.count({
-      where: { ...baseWhere, status: OrderStatus.DELIVERED },
-    }),
-    context.prisma.order.count({
-      where: {
-        ...baseWhere,
-        status: { in: [OrderStatus.CANCELLED, OrderStatus.REFUNDED] },
-      },
-    }),
-  ])
+  const [pendingPayment, paid, inProduction, readyToShip, shipped, delivered, cancelled] =
+    await Promise.all([
+      context.prisma.order.count({
+        where: { ...baseWhere, status: OrderStatus.PENDING_PAYMENT },
+      }),
+      context.prisma.order.count({
+        where: { ...baseWhere, status: OrderStatus.PAID },
+      }),
+      context.prisma.order.count({
+        where: { ...baseWhere, status: OrderStatus.IN_PRODUCTION },
+      }),
+      context.prisma.order.count({
+        where: { ...baseWhere, status: OrderStatus.READY_TO_SHIP },
+      }),
+      context.prisma.order.count({
+        where: { ...baseWhere, status: OrderStatus.SHIPPED },
+      }),
+      context.prisma.order.count({
+        where: { ...baseWhere, status: OrderStatus.DELIVERED },
+      }),
+      context.prisma.order.count({
+        where: {
+          ...baseWhere,
+          status: { in: [OrderStatus.CANCELLED, OrderStatus.REFUNDED] },
+        },
+      }),
+    ])
 
   return {
     pendingPayment,
@@ -389,9 +374,7 @@ export async function updateAdminOrderStatus(
     throw forbiddenAction('No se puede cambiar el estado de un pedido entregado.')
   }
 
-  const message =
-    parsed.message?.trim() ||
-    `Estado actualizado a ${parsed.status} por operaciones.`
+  const message = parsed.message?.trim() || `Estado actualizado a ${parsed.status} por operaciones.`
   const previousStatus = order.status
   const newStatus = parsed.status as OrderStatus
 
@@ -433,9 +416,7 @@ export async function moveAdminOrderToProduction(
   const order = await loadOrderByNumber(context, parsedNumber)
 
   if (!canMoveToProduction(order)) {
-    throw forbiddenAction(
-      'Solo pedidos pagados pueden enviarse a producción.',
-    )
+    throw forbiddenAction('Solo pedidos pagados pueden enviarse a producción.')
   }
 
   if (
@@ -547,8 +528,7 @@ export async function addAdminOrderTracking(
   }
 
   const shippedAt = parsed.shippedAt ? new Date(parsed.shippedAt) : new Date()
-  const shipmentStatus =
-    (parsed.status as ShipmentStatus | undefined) ?? ShipmentStatus.IN_TRANSIT
+  const shipmentStatus = (parsed.status as ShipmentStatus | undefined) ?? ShipmentStatus.IN_TRANSIT
 
   await context.prisma.$transaction(async (tx) => {
     const existing = order.shipments[0]

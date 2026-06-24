@@ -40,18 +40,9 @@ describe('isPaymentConfirmedTransition', () => {
   it('returns true only when transitioning into PAID', async () => {
     const { isPaymentConfirmedTransition } = await loadNotifyModules()
 
-    assert.equal(
-      isPaymentConfirmedTransition(PaymentStatus.PAID, PaymentStatus.PENDING),
-      true,
-    )
-    assert.equal(
-      isPaymentConfirmedTransition(PaymentStatus.PAID, PaymentStatus.PAID),
-      false,
-    )
-    assert.equal(
-      isPaymentConfirmedTransition(PaymentStatus.FAILED, PaymentStatus.PENDING),
-      false,
-    )
+    assert.equal(isPaymentConfirmedTransition(PaymentStatus.PAID, PaymentStatus.PENDING), true)
+    assert.equal(isPaymentConfirmedTransition(PaymentStatus.PAID, PaymentStatus.PAID), false)
+    assert.equal(isPaymentConfirmedTransition(PaymentStatus.FAILED, PaymentStatus.PENDING), false)
   })
 })
 
@@ -94,10 +85,7 @@ describe('notifyPaymentConfirmed', { skip: !hasDatabase }, () => {
     await prisma.$disconnect()
   })
 
-  async function createOrderWithPayment(params: {
-    userId: string | null
-    orderNumber: string
-  }) {
+  async function createOrderWithPayment(params: { userId: string | null; orderNumber: string }) {
     const { prisma } = await loadPrismaModules()
 
     if (params.userId) {
@@ -171,9 +159,7 @@ describe('notifyPaymentConfirmed', { skip: !hasDatabase }, () => {
     })
     cleanup.notificationIds.push(...notifications.map((row) => row.id))
 
-    const userNotification = notifications.find(
-      (row) => row.audience === NotificationAudience.USER,
-    )
+    const userNotification = notifications.find((row) => row.audience === NotificationAudience.USER)
 
     assert.ok(userNotification)
     assert.equal(userNotification.type, NotificationType.PAYMENT_CONFIRMED)
@@ -213,10 +199,7 @@ describe('notifyPaymentConfirmed', { skip: !hasDatabase }, () => {
     assert.equal(adminNotification.userId, null)
     assert.equal(adminNotification.title, 'Pago recibido')
     assert.match(adminNotification.message, new RegExp(order.orderNumber))
-    assert.equal(
-      adminNotification.href,
-      `/admin/orders/${encodeURIComponent(order.orderNumber)}`,
-    )
+    assert.equal(adminNotification.href, `/admin/orders/${encodeURIComponent(order.orderNumber)}`)
   })
 
   it('does not create USER notification for guest paid orders', async () => {

@@ -28,10 +28,7 @@ export function isEmailNotVerifiedError(error: unknown): boolean {
 /**
  * User-facing account error message (no internal GraphQL details).
  */
-export function getAccountUserErrorMessage(
-  error: unknown,
-  fallback: string,
-): string {
+export function getAccountUserErrorMessage(error: unknown, fallback: string): string {
   if (isAccountUnauthenticated(error)) {
     return 'Debes iniciar sesión para ver esta sección.'
   }

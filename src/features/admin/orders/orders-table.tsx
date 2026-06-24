@@ -110,9 +110,7 @@ export function OrdersTable({
                     <p className="font-sans text-sm font-medium text-foreground">
                       {row.customerName}
                     </p>
-                    <p className="font-serif text-xs text-muted-foreground">
-                      {row.customerEmail}
-                    </p>
+                    <p className="font-serif text-xs text-muted-foreground">{row.customerEmail}</p>
                   </div>
                 </TableCell>
                 <TableCell className="text-center">

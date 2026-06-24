@@ -46,10 +46,9 @@ export const addressTypeSchema = z
   .string()
   .min(1)
   .transform((value) => value.toUpperCase())
-  .refine(
-    (value) => Object.values(AddressType).includes(value as AddressType),
-    { message: 'Tipo de dirección inválido.' },
-  )
+  .refine((value) => Object.values(AddressType).includes(value as AddressType), {
+    message: 'Tipo de dirección inválido.',
+  })
   .transform((value) => value as AddressType)
 
 /**

@@ -72,9 +72,7 @@ export function OrderProgressTimeline({ order }: OrderProgressTimelineProps) {
               <p
                 className={cn(
                   'font-sans text-sm font-medium',
-                  step.state === 'pending'
-                    ? 'text-muted-foreground'
-                    : 'text-foreground',
+                  step.state === 'pending' ? 'text-muted-foreground' : 'text-foreground',
                 )}
               >
                 {step.label}
@@ -83,9 +81,7 @@ export function OrderProgressTimeline({ order }: OrderProgressTimelineProps) {
                 <p className="mt-0.5 font-serif text-xs text-muted-foreground">{step.date}</p>
               )}
               {step.state === 'failed' && (
-                <p className="mt-1 font-serif text-xs text-destructive">
-                  El pago no se completó
-                </p>
+                <p className="mt-1 font-serif text-xs text-destructive">El pago no se completó</p>
               )}
             </div>
           </li>

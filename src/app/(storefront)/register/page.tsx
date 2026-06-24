@@ -23,11 +23,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
   return (
     <AuthLayout>
       <Suspense
-        fallback={
-          <p className="py-12 text-center font-serif text-muted-foreground">
-            Cargando...
-          </p>
-        }
+        fallback={<p className="py-12 text-center font-serif text-muted-foreground">Cargando...</p>}
       >
         <RegisterForm googleEnabled={googleEnabled} />
       </Suspense>

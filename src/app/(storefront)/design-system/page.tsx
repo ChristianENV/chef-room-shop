@@ -14,16 +14,16 @@ import {
   HomepagePreviewSection,
 } from '@/components/shared/design-system'
 import { routes } from '@/src/config/routes'
-import { 
-  Palette, 
-  Type, 
-  Layers, 
-  Component, 
+import {
+  Palette,
+  Type,
+  Layers,
+  Component,
   LayoutDashboard,
   Sparkles,
   ExternalLink,
   Layout,
-  ArrowLeft
+  ArrowLeft,
 } from 'lucide-react'
 
 const sections = [
@@ -60,7 +60,10 @@ export default function DesignSystemPage() {
         <div className="mx-auto max-w-7xl px-4 py-4 md:px-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href={routes.home} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+              <Link
+                href={routes.home}
+                className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+              >
                 <ArrowLeft className="h-4 w-4" />
                 <span className="hidden font-sans text-sm md:inline">Volver</span>
               </Link>
@@ -90,7 +93,7 @@ export default function DesignSystemPage() {
             Chef Room Design System
           </h1>
           <p className="mx-auto mt-4 max-w-2xl font-serif text-lg text-muted-foreground text-pretty">
-            Sistema de diseno completo para la plataforma de uniformes de chef personalizables. 
+            Sistema de diseno completo para la plataforma de uniformes de chef personalizables.
             Incluye tokens de marca, tipografia, componentes y guias de uso.
           </p>
           <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2">
@@ -104,9 +107,7 @@ export default function DesignSystemPage() {
         <div className="mb-12 rounded-lg border border-border bg-card p-6">
           <div className="mb-4 flex items-center gap-2">
             <Layout className="h-5 w-5 text-primary" />
-            <h2 className="font-sans text-lg font-semibold text-foreground">
-              Demos de Layouts
-            </h2>
+            <h2 className="font-sans text-lg font-semibold text-foreground">Demos de Layouts</h2>
           </div>
           <p className="mb-6 font-serif text-sm text-muted-foreground">
             Explora los diferentes layouts disponibles para la plataforma.
@@ -121,9 +122,7 @@ export default function DesignSystemPage() {
                 <h3 className="font-sans text-sm font-semibold text-foreground group-hover:text-primary">
                   {demo.label}
                 </h3>
-                <p className="mt-1 font-serif text-xs text-muted-foreground">
-                  {demo.description}
-                </p>
+                <p className="mt-1 font-serif text-xs text-muted-foreground">{demo.description}</p>
               </Link>
             ))}
           </div>

@@ -45,9 +45,7 @@ export function BenefitsGrid({
     <section className={cn('px-4 py-16 md:px-6 md:py-20', className)}>
       <div className="mx-auto max-w-6xl">
         <div className="mb-12 text-center">
-          <h2 className="font-sans text-3xl font-bold text-foreground md:text-4xl">
-            {title}
-          </h2>
+          <h2 className="font-sans text-3xl font-bold text-foreground md:text-4xl">{title}</h2>
           {subtitle && (
             <p className="mx-auto mt-4 max-w-2xl font-serif text-lg text-muted-foreground">
               {subtitle}

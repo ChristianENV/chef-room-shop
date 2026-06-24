@@ -4,14 +4,14 @@ Hosted checkout (redirect) for Chef Room orders. No PAN/CVV is collected or stor
 
 ## Environment variables
 
-| Variable | Scope | Description |
-|----------|--------|-------------|
-| `CONEKTA_PRIVATE_KEY` | Server | Secret API key (`key_...`) for REST calls |
+| Variable                         | Scope  | Description                                                |
+| -------------------------------- | ------ | ---------------------------------------------------------- |
+| `CONEKTA_PRIVATE_KEY`            | Server | Secret API key (`key_...`) for REST calls                  |
 | `NEXT_PUBLIC_CONEKTA_PUBLIC_KEY` | Client | Public key for Checkout Component (future; optional in v1) |
-| `CONEKTA_WEBHOOK_SECRET` | Server | Shared secret or Digest match for webhooks (dev) |
-| `CONEKTA_WEBHOOK_PUBLIC_KEY` | Server | RSA public key PEM for Digest verification (production) |
-| `CONEKTA_API_VERSION` | Server | Default `2.2.0` |
-| `CONEKTA_ENV` | Server | `sandbox` or `production` (informational) |
+| `CONEKTA_WEBHOOK_SECRET`         | Server | Shared secret or Digest match for webhooks (dev)           |
+| `CONEKTA_WEBHOOK_PUBLIC_KEY`     | Server | RSA public key PEM for Digest verification (production)    |
+| `CONEKTA_API_VERSION`            | Server | Default `2.2.0`                                            |
+| `CONEKTA_ENV`                    | Server | `sandbox` or `production` (informational)                  |
 
 Set these in `.env.local`. **Build passes without keys**; payment operations fail at runtime with a controlled GraphQL error.
 
@@ -24,13 +24,13 @@ Set these in `.env.local`. **Build passes without keys**; payment operations fai
 
 ## GraphQL: checkout & account payments
 
-| Operation | Auth | Purpose |
-|-----------|------|---------|
-| `completeCheckout` | Session/guest cart | Order + Conekta + redirect URL |
-| `retryCheckoutPayment({ token })` | Return token | Retry from success page |
-| `verifyMyOrderPayment(orderNumber)` | Session + ownership | Manual Conekta sync (fallback) |
-| `retryMyOrderPayment(orderNumber)` | Session + ownership | New Conekta checkout for owned order |
-| `createConektaCheckout` | Session/email | Legacy hosted checkout |
+| Operation                           | Auth                | Purpose                              |
+| ----------------------------------- | ------------------- | ------------------------------------ |
+| `completeCheckout`                  | Session/guest cart  | Order + Conekta + redirect URL       |
+| `retryCheckoutPayment({ token })`   | Return token        | Retry from success page              |
+| `verifyMyOrderPayment(orderNumber)` | Session + ownership | Manual Conekta sync (fallback)       |
+| `retryMyOrderPayment(orderNumber)`  | Session + ownership | New Conekta checkout for owned order |
+| `createConektaCheckout`             | Session/email       | Legacy hosted checkout               |
 
 ### `createConektaCheckout` (legacy)
 
@@ -66,10 +66,10 @@ Configure in Conekta panel → Webhooks → point to:
 
 **Events handled (via `event.type`):**
 
-| Event pattern | Payment | Order |
-|---------------|---------|-------|
-| `order.paid`, `charge.paid` | `PAID` | `PAID` |
-| `charge.failed` | `FAILED` | `PAYMENT_FAILED` |
+| Event pattern                     | Payment     | Order              |
+| --------------------------------- | ----------- | ------------------ |
+| `order.paid`, `charge.paid`       | `PAID`      | `PAID`             |
+| `charge.failed`                   | `FAILED`    | `PAYMENT_FAILED`   |
 | `order.expired`, `charge.expired` | `CANCELLED` | stays / note event |
 
 **Security**
@@ -80,11 +80,11 @@ Configure in Conekta panel → Webhooks → point to:
 
 ## Redirect URLs
 
-| URL | Purpose |
-|-----|---------|
-| `/checkout/success?token=<opaque>` | Conekta `success_url` / `failure_url` (preferred) |
-| `/checkout/success?token=...&payment=failed` | Failure hint only |
-| `/checkout/success?orderNumber=CR-...` | Legacy in-flight sessions |
+| URL                                          | Purpose                                           |
+| -------------------------------------------- | ------------------------------------------------- |
+| `/checkout/success?token=<opaque>`           | Conekta `success_url` / `failure_url` (preferred) |
+| `/checkout/success?token=...&payment=failed` | Failure hint only                                 |
+| `/checkout/success?orderNumber=CR-...`       | Legacy in-flight sessions                         |
 
 Real payment state comes from `checkoutResultByToken` / `orderByNumber` + webhooks, not from `payment=failed`.
 
@@ -101,11 +101,11 @@ Real payment state comes from `checkoutResultByToken` / `orderByNumber` + webhoo
 
 **Prisma Studio checks:**
 
-| Model | Field | After `order.paid` |
-|-------|--------|-------------------|
-| `Order` | `status` | `PAID` |
-| `Payment` | `status` | `PAID` |
-| `ConektaWebhookEvent` | `processedAt` | set |
+| Model                 | Field         | After `order.paid` |
+| --------------------- | ------------- | ------------------ |
+| `Order`               | `status`      | `PAID`             |
+| `Payment`             | `status`      | `PAID`             |
+| `ConektaWebhookEvent` | `processedAt` | set                |
 
 ## `/checkout/success` (Payment Status UX)
 
@@ -117,13 +117,13 @@ After 30s without change: **Verificar pago nuevamente** (refetch BFF only; does 
 
 When webhook marks order `PAID`, UI shows **Pago confirmado** without manual refresh.
 
-| UX state | BFF status (examples) | Actions |
-|----------|----------------------|---------|
-| Confirming | `PENDING`, `PENDING_PAYMENT`, `AUTHORIZED` | Poll; buttons disabled |
-| Paid | `PAID` | All actions enabled |
-| Failed | `FAILED`, `PAYMENT_FAILED` | Retry + verify again |
-| Expired / cancelled | `EXPIRED`, `CANCELLED` | Retry + verify again |
-| Pending after timeout | Still pending after 30s | Verify again; shop enabled |
+| UX state              | BFF status (examples)                      | Actions                    |
+| --------------------- | ------------------------------------------ | -------------------------- |
+| Confirming            | `PENDING`, `PENDING_PAYMENT`, `AUTHORIZED` | Poll; buttons disabled     |
+| Paid                  | `PAID`                                     | All actions enabled        |
+| Failed                | `FAILED`, `PAYMENT_FAILED`                 | Retry + verify again       |
+| Expired / cancelled   | `EXPIRED`, `CANCELLED`                     | Retry + verify again       |
+| Pending after timeout | Still pending after 30s                    | Verify again; shop enabled |
 
 Cash (“Pago en efectivo”): reference/expiry from `PaymentAttempt.rawResponseJson` when available.
 
@@ -154,11 +154,11 @@ Replace `ord_REPLACE` with the `Payment.providerOrderId` from Prisma.
 
 After webhook processing, the server may send (idempotent):
 
-| Event | Email template |
-|-------|----------------|
-| Paid | `payment_confirmed` |
-| Failed | `payment_failed` |
-| Expired/cancelled | `payment_expired` |
+| Event             | Email template      |
+| ----------------- | ------------------- |
+| Paid              | `payment_confirmed` |
+| Failed            | `payment_failed`    |
+| Expired/cancelled | `payment_expired`   |
 
 See [emails.md](./emails.md). Email failures do not block webhook `200` responses.
 

@@ -22,9 +22,7 @@ function buildSearchWhere(search: string): Prisma.UserWhereInput {
   }
 }
 
-function buildListWhere(
-  filter: AdminUsersListInput['filter'],
-): Prisma.UserWhereInput {
+function buildListWhere(filter: AdminUsersListInput['filter']): Prisma.UserWhereInput {
   const and: Prisma.UserWhereInput[] = [{ deletedAt: null }]
 
   if (filter?.search?.trim()) {

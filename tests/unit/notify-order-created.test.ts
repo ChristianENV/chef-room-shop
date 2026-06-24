@@ -63,10 +63,7 @@ describe('notifyOrderCreated', { skip: !hasDatabase }, () => {
     await prisma.$disconnect()
   })
 
-  async function createMinimalOrder(params: {
-    userId: string | null
-    orderNumber: string
-  }) {
+  async function createMinimalOrder(params: { userId: string | null; orderNumber: string }) {
     const { prisma } = await loadPrismaModules()
 
     if (params.userId) {
@@ -124,9 +121,7 @@ describe('notifyOrderCreated', { skip: !hasDatabase }, () => {
     })
     cleanup.notificationIds.push(...notifications.map((row) => row.id))
 
-    const userNotification = notifications.find(
-      (row) => row.audience === NotificationAudience.USER,
-    )
+    const userNotification = notifications.find((row) => row.audience === NotificationAudience.USER)
 
     assert.ok(userNotification)
     assert.equal(userNotification.audience, NotificationAudience.USER)
@@ -165,10 +160,7 @@ describe('notifyOrderCreated', { skip: !hasDatabase }, () => {
     assert.equal(adminNotification.userId, null)
     assert.equal(adminNotification.title, 'Nuevo pedido')
     assert.match(adminNotification.message, new RegExp(order.orderNumber))
-    assert.equal(
-      adminNotification.href,
-      `/admin/orders/${encodeURIComponent(order.orderNumber)}`,
-    )
+    assert.equal(adminNotification.href, `/admin/orders/${encodeURIComponent(order.orderNumber)}`)
   })
 
   it('does not create USER notification for guest orders', async () => {

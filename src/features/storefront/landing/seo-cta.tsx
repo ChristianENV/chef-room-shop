@@ -31,9 +31,7 @@ export function SeoCTA({
     return (
       <section className={cn('bg-secondary px-4 py-16 md:px-6 md:py-20', className)}>
         <div className="mx-auto max-w-3xl text-center">
-          <h2 className="font-sans text-3xl font-bold text-foreground md:text-4xl">
-            {title}
-          </h2>
+          <h2 className="font-sans text-3xl font-bold text-foreground md:text-4xl">{title}</h2>
           <p className="mx-auto mt-4 max-w-xl font-serif text-lg text-muted-foreground">
             {description}
           </p>
@@ -58,12 +56,8 @@ export function SeoCTA({
   return (
     <section className={cn('bg-primary px-4 py-16 md:px-6 md:py-20', className)}>
       <div className="mx-auto max-w-3xl text-center">
-        <h2 className="font-sans text-3xl font-bold text-white md:text-4xl">
-          {title}
-        </h2>
-        <p className="mx-auto mt-4 max-w-xl font-serif text-lg text-white/90">
-          {description}
-        </p>
+        <h2 className="font-sans text-3xl font-bold text-white md:text-4xl">{title}</h2>
+        <p className="mx-auto mt-4 max-w-xl font-serif text-lg text-white/90">{description}</p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <Button
             asChild

@@ -36,11 +36,7 @@ export const adminShippingResolvers = {
       context: GraphQLContext,
     ) => getAdminShipmentByOrderNumber(context, args.orderNumber),
 
-    adminShipments: (
-      _parent: unknown,
-      args: AdminShipmentsArgs,
-      context: GraphQLContext,
-    ) =>
+    adminShipments: (_parent: unknown, args: AdminShipmentsArgs, context: GraphQLContext) =>
       getAdminShipments(context, {
         filter: args.filter,
         limit: args.limit,

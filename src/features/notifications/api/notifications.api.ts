@@ -1,6 +1,9 @@
 import { fetchGraphQL } from '@/src/lib/graphql/fetch-graphql'
 
-import { MARK_ALL_NOTIFICATIONS_READ_MUTATION, MARK_NOTIFICATION_READ_MUTATION } from '../graphql/notifications.mutations'
+import {
+  MARK_ALL_NOTIFICATIONS_READ_MUTATION,
+  MARK_NOTIFICATION_READ_MUTATION,
+} from '../graphql/notifications.mutations'
 import {
   MY_NOTIFICATIONS_QUERY,
   MY_UNREAD_NOTIFICATION_COUNT_QUERY,

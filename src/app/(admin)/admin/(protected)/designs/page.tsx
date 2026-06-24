@@ -14,7 +14,10 @@ import {
   buildAdminDesignsListVariables,
   mapAdminDesignListItemToTableRow,
 } from '@/src/features/admin/designs/mappers/admin-designs-ui.mapper'
-import type { AdminDesignOwnerFilter, AdminDesignStatusFilter } from '@/src/features/admin/designs/types'
+import type {
+  AdminDesignOwnerFilter,
+  AdminDesignStatusFilter,
+} from '@/src/features/admin/designs/types'
 
 export default function AdminDesignsPage() {
   const [searchQuery, setSearchQuery] = useState('')

@@ -52,9 +52,7 @@ export function ProductPerformanceTable({ products, className }: ProductPerforma
             <TableRow key={product.id}>
               <TableCell>
                 <div>
-                  <p className="font-sans text-sm font-medium text-foreground">
-                    {product.name}
-                  </p>
+                  <p className="font-sans text-sm font-medium text-foreground">{product.name}</p>
                   <p className="font-serif text-xs text-muted-foreground capitalize">
                     {product.category}
                   </p>
@@ -75,8 +73,10 @@ export function ProductPerformanceTable({ products, className }: ProductPerforma
                   className={cn(
                     'font-mono',
                     product.conversion >= 20 && 'bg-success/10 text-success',
-                    product.conversion >= 10 && product.conversion < 20 && 'bg-warning/10 text-warning',
-                    product.conversion < 10 && 'bg-destructive/10 text-destructive'
+                    product.conversion >= 10 &&
+                      product.conversion < 20 &&
+                      'bg-warning/10 text-warning',
+                    product.conversion < 10 && 'bg-destructive/10 text-destructive',
                   )}
                 >
                   {product.conversion.toFixed(1)}%

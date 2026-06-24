@@ -2,15 +2,7 @@
 
 import { customizeEditDesign, routes } from '@/src/config/routes'
 import Link from 'next/link'
-import {
-  Copy,
-  Edit,
-  Eye,
-  MoreHorizontal,
-  Palette,
-  ShoppingCart,
-  Trash2,
-} from 'lucide-react'
+import { Copy, Edit, Eye, MoreHorizontal, Palette, ShoppingCart, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -92,7 +84,10 @@ export function SavedDesignCard({
                 </Link>
               </DropdownMenuItem>
               {canAddToCart && (
-                <DropdownMenuItem onClick={() => onAddToCart?.(design.id)} disabled={isAddingToCart}>
+                <DropdownMenuItem
+                  onClick={() => onAddToCart?.(design.id)}
+                  disabled={isAddingToCart}
+                >
                   <ShoppingCart className="mr-2 h-4 w-4" />
                   Agregar al carrito
                 </DropdownMenuItem>

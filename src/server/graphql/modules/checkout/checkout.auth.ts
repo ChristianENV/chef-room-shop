@@ -41,9 +41,7 @@ function activeCartWhere(owner: CheckoutOwner): Prisma.CartWhereInput {
 /**
  * Resolves checkout owner from session. Does not create a new guest session.
  */
-export async function resolveCheckoutOwner(
-  context: GraphQLContext,
-): Promise<CheckoutOwner> {
+export async function resolveCheckoutOwner(context: GraphQLContext): Promise<CheckoutOwner> {
   if (context.currentUser) {
     return {
       userId: context.currentUser.id,

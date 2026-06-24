@@ -187,9 +187,7 @@ export function mapAdminProductToFormValues(
 /**
  * Maps form values to BFF AdminProductInput (pesos → centavos).
  */
-export function mapFormValuesToAdminProductInput(
-  values: ProductFormValues,
-): AdminProductInput {
+export function mapFormValuesToAdminProductInput(values: ProductFormValues): AdminProductInput {
   return {
     name: values.name.trim(),
     slug: values.slug.trim() || null,
@@ -230,9 +228,7 @@ export function buildAdminProductsListVariables(input: {
     filter.customizable = true
   }
   const needsArchived =
-    input.includeArchived ||
-    input.statusFilter === 'ARCHIVED' ||
-    input.statusFilter === 'all'
+    input.includeArchived || input.statusFilter === 'ARCHIVED' || input.statusFilter === 'all'
   if (needsArchived) {
     filter.includeArchived = true
   }

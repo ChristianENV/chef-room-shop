@@ -32,8 +32,8 @@ export function GuestOrderAccountCta({
             Crea tu cuenta para guardar y consultar este pedido
           </h2>
           <p className="mt-2 font-serif text-sm text-muted-foreground">
-            Después de iniciar sesión o registrarte volverás a esta compra para ver el
-            seguimiento completo en tu cuenta.
+            Después de iniciar sesión o registrarte volverás a esta compra para ver el seguimiento
+            completo en tu cuenta.
           </p>
 
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">

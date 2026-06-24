@@ -10,7 +10,10 @@ import {
 
 import type { GraphQLContext } from '../../context'
 import { requireAuthenticatedAccount } from './account.auth'
-import { resolveAccountPaymentActions, type OrderWithPaymentAttempts } from './account-payment-actions'
+import {
+  resolveAccountPaymentActions,
+  type OrderWithPaymentAttempts,
+} from './account-payment-actions'
 import { startConektaCheckoutForOrder } from '../payments/payments.service'
 import type { AccountPaymentStatusPayloadGql } from './account.types'
 

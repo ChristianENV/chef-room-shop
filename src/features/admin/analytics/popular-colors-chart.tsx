@@ -26,9 +26,7 @@ export function PopularColorsChart({ colors, className }: PopularColorsChartProp
           />
           <div className="flex-1">
             <div className="flex items-center justify-between">
-              <span className="font-sans text-sm font-medium text-foreground">
-                {color.name}
-              </span>
+              <span className="font-sans text-sm font-medium text-foreground">{color.name}</span>
               <span className="font-mono text-xs text-muted-foreground">
                 {color.count.toLocaleString()} ({color.percentage}%)
               </span>

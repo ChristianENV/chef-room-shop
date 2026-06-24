@@ -1,20 +1,11 @@
 'use client'
 
-import {
-  Copy,
-  ExternalLink,
-  Printer,
-  RefreshCw,
-  XCircle,
-} from 'lucide-react'
+import { Copy, ExternalLink, Printer, RefreshCw, XCircle } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 
 import type { AdminShipmentUi } from '../mappers/admin-shipping-ui.mapper'
-import {
-  canCancelShippingLabel,
-  canRefreshShipment,
-} from '../mappers/admin-shipping-ui.mapper'
+import { canCancelShippingLabel, canRefreshShipment } from '../mappers/admin-shipping-ui.mapper'
 import type { AdminShipment } from '../types'
 
 type AdminShippingLabelActionsProps = {
@@ -71,25 +62,13 @@ export function AdminShippingLabelActions({
         </Button>
       ) : null}
       {canRefreshShipment(rawShipment) ? (
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onRefreshTracking}
-          disabled={isRefreshing}
-        >
-          <RefreshCw
-            className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
-          />
+        <Button size="sm" variant="outline" onClick={onRefreshTracking} disabled={isRefreshing}>
+          <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           Actualizar tracking
         </Button>
       ) : null}
       {canCancelShippingLabel(rawShipment) ? (
-        <Button
-          size="sm"
-          variant="destructive"
-          onClick={onCancelLabel}
-          disabled={isCancelling}
-        >
+        <Button size="sm" variant="destructive" onClick={onCancelLabel} disabled={isCancelling}>
           <XCircle className="mr-2 h-4 w-4" />
           Cancelar guía
         </Button>

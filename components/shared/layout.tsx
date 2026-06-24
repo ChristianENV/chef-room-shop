@@ -43,7 +43,7 @@ export function ResponsiveShell({
         'mx-auto w-full',
         maxWidthClasses[maxWidth],
         paddingClasses[padding],
-        className
+        className,
       )}
     >
       {children}
@@ -72,10 +72,7 @@ export function SimpleBreadcrumb({ items, className }: SimpleBreadcrumbProps) {
           <li key={index} className="flex items-center gap-1">
             {index > 0 && <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />}
             {item.href ? (
-              <Link
-                href={item.href}
-                className="transition-colors hover:text-foreground"
-              >
+              <Link href={item.href} className="transition-colors hover:text-foreground">
                 {item.label}
               </Link>
             ) : (
@@ -113,14 +110,10 @@ export function ContentCard({
         <div className="flex items-center justify-between border-b border-border px-4 py-3 md:px-6">
           <div>
             {title && (
-              <h3 className="font-sans text-base font-semibold text-foreground">
-                {title}
-              </h3>
+              <h3 className="font-sans text-base font-semibold text-foreground">{title}</h3>
             )}
             {description && (
-              <p className="mt-0.5 font-serif text-sm text-muted-foreground">
-                {description}
-              </p>
+              <p className="mt-0.5 font-serif text-sm text-muted-foreground">{description}</p>
             )}
           </div>
           {action && <div>{action}</div>}
@@ -145,11 +138,7 @@ const gridCols = {
 }
 
 export function DataGrid({ children, columns = 3, className }: DataGridProps) {
-  return (
-    <div className={cn('grid gap-4 md:gap-6', gridCols[columns], className)}>
-      {children}
-    </div>
-  )
+  return <div className={cn('grid gap-4 md:gap-6', gridCols[columns], className)}>{children}</div>
 }
 
 interface StatCardProps {
@@ -171,35 +160,19 @@ export function StatCard({ label, value, change, icon, className }: StatCardProp
   }
 
   return (
-    <div
-      className={cn(
-        'rounded-lg border border-border bg-card p-4 md:p-6',
-        className
-      )}
-    >
+    <div className={cn('rounded-lg border border-border bg-card p-4 md:p-6', className)}>
       <div className="flex items-start justify-between">
         <div>
           <p className="font-serif text-sm text-muted-foreground">{label}</p>
-          <p className="mt-1 font-sans text-2xl font-bold text-foreground md:text-3xl">
-            {value}
-          </p>
+          <p className="mt-1 font-sans text-2xl font-bold text-foreground md:text-3xl">{value}</p>
           {change && (
-            <p
-              className={cn(
-                'mt-1 font-sans text-sm font-medium',
-                trendColors[change.trend]
-              )}
-            >
+            <p className={cn('mt-1 font-sans text-sm font-medium', trendColors[change.trend])}>
               {change.trend === 'up' && '+'}
               {change.value}
             </p>
           )}
         </div>
-        {icon && (
-          <div className="rounded-lg bg-secondary p-2 text-muted-foreground">
-            {icon}
-          </div>
-        )}
+        {icon && <div className="rounded-lg bg-secondary p-2 text-muted-foreground">{icon}</div>}
       </div>
     </div>
   )

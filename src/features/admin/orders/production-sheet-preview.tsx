@@ -82,7 +82,9 @@ export function ProductionSheetPreview({
         {sheet.notes ? (
           <div className="rounded-lg border border-warning/30 bg-warning/5 p-4">
             <p className="font-sans text-sm font-semibold text-warning">Notas del pedido</p>
-            <p className="mt-1 whitespace-pre-wrap font-serif text-sm text-foreground">{sheet.notes}</p>
+            <p className="mt-1 whitespace-pre-wrap font-serif text-sm text-foreground">
+              {sheet.notes}
+            </p>
           </div>
         ) : null}
 
@@ -92,7 +94,9 @@ export function ProductionSheetPreview({
           <div key={item.id} className="space-y-4 rounded-lg border border-border p-4">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
-                <p className="font-sans text-lg font-semibold text-foreground">{item.productName}</p>
+                <p className="font-sans text-lg font-semibold text-foreground">
+                  {item.productName}
+                </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <Badge variant="outline">{item.sku}</Badge>
                   <Badge variant="secondary">Talla: {item.size}</Badge>

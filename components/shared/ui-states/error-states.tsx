@@ -5,12 +5,12 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { 
-  AlertCircle, 
-  RefreshCw, 
-  WifiOff, 
-  CreditCard, 
-  FileQuestion, 
+import {
+  AlertCircle,
+  RefreshCw,
+  WifiOff,
+  CreditCard,
+  FileQuestion,
   Lock,
   AlertTriangle,
 } from 'lucide-react'
@@ -25,27 +25,20 @@ interface GenericErrorStateProps {
   className?: string
 }
 
-export function GenericErrorState({ 
+export function GenericErrorState({
   title = 'Algo salio mal',
   message = 'Ocurrio un error inesperado. Por favor intenta de nuevo.',
   retry,
   showHomeLink = false,
-  className 
+  className,
 }: GenericErrorStateProps) {
   return (
-    <div className={cn(
-      'flex flex-col items-center justify-center py-16 text-center',
-      className
-    )}>
+    <div className={cn('flex flex-col items-center justify-center py-16 text-center', className)}>
       <div className="mb-4 rounded-full bg-destructive/10 p-4">
         <AlertCircle className="h-8 w-8 text-destructive" />
       </div>
-      <h3 className="font-sans text-lg font-semibold text-foreground">
-        {title}
-      </h3>
-      <p className="mt-2 max-w-md font-serif text-muted-foreground">
-        {message}
-      </p>
+      <h3 className="font-sans text-lg font-semibold text-foreground">{title}</h3>
+      <p className="mt-2 max-w-md font-serif text-muted-foreground">{message}</p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         {retry && (
           <Button onClick={retry} variant="outline">
@@ -69,21 +62,13 @@ interface NetworkErrorStateProps {
   className?: string
 }
 
-export function NetworkErrorState({ 
-  retry,
-  className 
-}: NetworkErrorStateProps) {
+export function NetworkErrorState({ retry, className }: NetworkErrorStateProps) {
   return (
-    <div className={cn(
-      'flex flex-col items-center justify-center py-16 text-center',
-      className
-    )}>
+    <div className={cn('flex flex-col items-center justify-center py-16 text-center', className)}>
       <div className="mb-4 rounded-full bg-warning/10 p-4">
         <WifiOff className="h-8 w-8 text-warning" />
       </div>
-      <h3 className="font-sans text-lg font-semibold text-foreground">
-        Sin conexion
-      </h3>
+      <h3 className="font-sans text-lg font-semibold text-foreground">Sin conexion</h3>
       <p className="mt-2 max-w-md font-serif text-muted-foreground">
         Parece que no tienes conexion a internet. Verifica tu conexion e intenta de nuevo.
       </p>
@@ -106,12 +91,12 @@ interface PaymentErrorStateProps {
   className?: string
 }
 
-export function PaymentErrorState({ 
+export function PaymentErrorState({
   errorCode,
   message = 'No pudimos procesar tu pago. Por favor verifica los datos de tu tarjeta o intenta con otro metodo de pago.',
   retry,
   onContactSupport,
-  className 
+  className,
 }: PaymentErrorStateProps) {
   return (
     <Card className={cn('border-destructive/30 bg-card', className)}>
@@ -120,23 +105,13 @@ export function PaymentErrorState({
           <div className="mb-4 rounded-full bg-destructive/10 p-4">
             <CreditCard className="h-8 w-8 text-destructive" />
           </div>
-          <h3 className="font-sans text-lg font-semibold text-foreground">
-            Error en el pago
-          </h3>
-          <p className="mt-2 max-w-md font-serif text-muted-foreground">
-            {message}
-          </p>
+          <h3 className="font-sans text-lg font-semibold text-foreground">Error en el pago</h3>
+          <p className="mt-2 max-w-md font-serif text-muted-foreground">{message}</p>
           {errorCode && (
-            <p className="mt-2 font-mono text-xs text-muted-foreground">
-              Codigo: {errorCode}
-            </p>
+            <p className="mt-2 font-mono text-xs text-muted-foreground">Codigo: {errorCode}</p>
           )}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            {retry && (
-              <Button onClick={retry}>
-                Intentar de nuevo
-              </Button>
-            )}
+            {retry && <Button onClick={retry}>Intentar de nuevo</Button>}
             {onContactSupport && (
               <Button variant="outline" onClick={onContactSupport}>
                 Contactar soporte
@@ -155,28 +130,16 @@ interface ProductNotFoundStateProps {
   className?: string
 }
 
-export function ProductNotFoundState({ 
-  productId,
-  className 
-}: ProductNotFoundStateProps) {
+export function ProductNotFoundState({ productId, className }: ProductNotFoundStateProps) {
   return (
-    <div className={cn(
-      'flex flex-col items-center justify-center py-16 text-center',
-      className
-    )}>
+    <div className={cn('flex flex-col items-center justify-center py-16 text-center', className)}>
       <div className="mb-4 rounded-full bg-secondary p-4">
         <FileQuestion className="h-8 w-8 text-muted-foreground" />
       </div>
-      <h3 className="font-sans text-lg font-semibold text-foreground">
-        Producto no encontrado
-      </h3>
+      <h3 className="font-sans text-lg font-semibold text-foreground">Producto no encontrado</h3>
       <p className="mt-2 max-w-md font-serif text-muted-foreground">
         El producto que buscas no existe o ya no esta disponible.
-        {productId && (
-          <span className="block mt-1 font-mono text-xs">
-            ID: {productId}
-          </span>
-        )}
+        {productId && <span className="block mt-1 font-mono text-xs">ID: {productId}</span>}
       </p>
       <Button asChild className="mt-6">
         <Link href={routes.shop}>Ver catálogo</Link>
@@ -192,25 +155,18 @@ interface UnauthorizedStateProps {
   className?: string
 }
 
-export function UnauthorizedState({ 
+export function UnauthorizedState({
   message = 'No tienes permiso para acceder a esta pagina.',
   showLoginButton = true,
-  className 
+  className,
 }: UnauthorizedStateProps) {
   return (
-    <div className={cn(
-      'flex flex-col items-center justify-center py-16 text-center',
-      className
-    )}>
+    <div className={cn('flex flex-col items-center justify-center py-16 text-center', className)}>
       <div className="mb-4 rounded-full bg-warning/10 p-4">
         <Lock className="h-8 w-8 text-warning" />
       </div>
-      <h3 className="font-sans text-lg font-semibold text-foreground">
-        Acceso restringido
-      </h3>
-      <p className="mt-2 max-w-md font-serif text-muted-foreground">
-        {message}
-      </p>
+      <h3 className="font-sans text-lg font-semibold text-foreground">Acceso restringido</h3>
+      <p className="mt-2 max-w-md font-serif text-muted-foreground">{message}</p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         {showLoginButton && (
           <Button asChild>
@@ -232,10 +188,10 @@ interface CustomizerValidationErrorStateProps {
   className?: string
 }
 
-export function CustomizerValidationErrorState({ 
+export function CustomizerValidationErrorState({
   errors,
   onDismiss,
-  className 
+  className,
 }: CustomizerValidationErrorStateProps) {
   return (
     <Alert variant="destructive" className={cn('border-destructive/30', className)}>
@@ -248,12 +204,7 @@ export function CustomizerValidationErrorState({
           ))}
         </ul>
         {onDismiss && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={onDismiss}
-            className="mt-3"
-          >
+          <Button variant="outline" size="sm" onClick={onDismiss} className="mt-3">
             Entendido
           </Button>
         )}
@@ -270,11 +221,11 @@ interface InlineErrorAlertProps {
   className?: string
 }
 
-export function InlineErrorAlert({ 
+export function InlineErrorAlert({
   title = 'Error',
   message,
   retry,
-  className 
+  className,
 }: InlineErrorAlertProps) {
   return (
     <Alert variant="destructive" className={cn('border-destructive/30', className)}>
@@ -283,12 +234,7 @@ export function InlineErrorAlert({
       <AlertDescription className="font-serif">
         {message}
         {retry && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={retry}
-            className="mt-3 block"
-          >
+          <Button variant="outline" size="sm" onClick={retry} className="mt-3 block">
             <RefreshCw className="mr-2 h-3 w-3" />
             Reintentar
           </Button>

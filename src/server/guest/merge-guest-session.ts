@@ -4,25 +4,15 @@ import { createPrismaClient } from '@/src/server/db/create-prisma'
 
 const prisma = createPrismaClient()
 
-import {
-  EMPTY_GUEST_MERGE_RESULT,
-  type GuestMergeResult,
-} from './guest-merge.types'
+import { EMPTY_GUEST_MERGE_RESULT, type GuestMergeResult } from './guest-merge.types'
 
-type CartItemIdentity = Pick<
-  CartItem,
-  'productId' | 'productVariantId' | 'designId'
->
+type CartItemIdentity = Pick<CartItem, 'productId' | 'productVariantId' | 'designId'>
 
 /**
  * Stable key for deduplicating cart lines during guest merge.
  */
 function cartItemIdentityKey(item: CartItemIdentity): string {
-  return [
-    item.productId,
-    item.productVariantId ?? '',
-    item.designId ?? '',
-  ].join(':')
+  return [item.productId, item.productVariantId ?? '', item.designId ?? ''].join(':')
 }
 
 /**
@@ -123,10 +113,7 @@ export async function mergeGuestSessionIntoUser(input: {
 }
 
 async function mergeGuestCart(
-  tx: Omit<
-    PrismaClient,
-    '$connect' | '$disconnect' | '$on' | '$transaction' | '$extends'
-  >,
+  tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$extends'>,
   guestSessionId: string,
   userId: string,
 ): Promise<number> {

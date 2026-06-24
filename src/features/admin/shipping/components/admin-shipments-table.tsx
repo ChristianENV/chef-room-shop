@@ -94,7 +94,9 @@ export function AdminShipmentsTable({ rows, loading }: AdminShipmentsTableProps)
                 <span className="font-sans text-sm text-foreground">{row.carrier}</span>
               </TableCell>
               <TableCell>
-                <span className="font-mono text-xs text-muted-foreground">{row.trackingNumber}</span>
+                <span className="font-mono text-xs text-muted-foreground">
+                  {row.trackingNumber}
+                </span>
               </TableCell>
               <TableCell>
                 <span className="font-sans text-sm text-foreground">{row.labelStatus}</span>

@@ -6,11 +6,7 @@ import {
   SELECT_SHIPPING_RATE_MUTATION,
 } from '../graphql/shipping.mutations'
 import { SHIPPING_QUOTE_BY_ID_QUERY } from '../graphql/shipping.queries'
-import type {
-  CreateShippingQuoteInput,
-  ShippingQuote,
-  ShippingQuotePayload,
-} from '../types'
+import type { CreateShippingQuoteInput, ShippingQuote, ShippingQuotePayload } from '../types'
 
 type ShippingQuoteByIdData = { shippingQuoteById: ShippingQuote | null }
 type CreateShippingQuoteData = { createShippingQuote: ShippingQuotePayload }
@@ -34,10 +30,7 @@ export async function getShippingQuoteById(id: string): Promise<ShippingQuote | 
 export async function createShippingQuote(
   input: CreateShippingQuoteInput,
 ): Promise<ShippingQuotePayload> {
-  const data = await fetchGraphQL<
-    CreateShippingQuoteData,
-    { input: CreateShippingQuoteInput }
-  >({
+  const data = await fetchGraphQL<CreateShippingQuoteData, { input: CreateShippingQuoteInput }>({
     query: CREATE_SHIPPING_QUOTE_MUTATION,
     variables: { input },
   })

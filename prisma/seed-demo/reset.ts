@@ -1,9 +1,6 @@
 import type { PrismaClient } from '@prisma/client'
 
-import {
-  DEMO_ORDER_PREFIX,
-  DEMO_PRODUCT_SLUG_PREFIX,
-} from './constants'
+import { DEMO_ORDER_PREFIX, DEMO_PRODUCT_SLUG_PREFIX } from './constants'
 
 /**
  * Deletes demo-scoped rows when ALLOW_DEMO_SEED_RESET=true.
@@ -65,10 +62,7 @@ export async function resetDemoData(prisma: PrismaClient): Promise<void> {
   if (demoUserIds.length > 0) {
     await prisma.notification.deleteMany({
       where: {
-        OR: [
-          { userId: { in: demoUserIds } },
-          { audience: 'ADMIN', userId: { in: demoUserIds } },
-        ],
+        OR: [{ userId: { in: demoUserIds } }, { audience: 'ADMIN', userId: { in: demoUserIds } }],
       },
     })
     await prisma.cartItem.deleteMany({

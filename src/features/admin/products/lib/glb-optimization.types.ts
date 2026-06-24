@@ -17,7 +17,16 @@ export type GlbOptimizationResult =
     }
 
 export type GlbOptimizationProgress = {
-  stage: 'preparing' | 'reading' | 'dedup' | 'prune' | 'weld' | 'reorder' | 'quantize' | 'writing' | 'done'
+  stage:
+    | 'preparing'
+    | 'reading'
+    | 'dedup'
+    | 'prune'
+    | 'weld'
+    | 'reorder'
+    | 'quantize'
+    | 'writing'
+    | 'done'
   percent: number
   message: string
 }

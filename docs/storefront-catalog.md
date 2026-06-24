@@ -19,11 +19,11 @@ Defaults: `staleTime` 60s, `retry` 1, `refetchOnWindowFocus` false. Devtools in 
 
 ### Hooks
 
-| Hook | Purpose |
-|------|---------|
-| `useProductsQuery(params)` | Product list with BFF filters/sort |
+| Hook                       | Purpose                                       |
+| -------------------------- | --------------------------------------------- |
+| `useProductsQuery(params)` | Product list with BFF filters/sort            |
 | `useCatalogFiltersQuery()` | `productTypes`, `colors`, `sizes` for sidebar |
-| `useProductQuery(slug)` | PDP by slug |
+| `useProductQuery(slug)`    | PDP by slug                                   |
 
 ## `/shop` filtering
 
@@ -38,12 +38,12 @@ Filter state stores **BFF slugs** in `categories`, `colors`, `sizes`.
 
 ## Pages
 
-| Route | Data |
-|-------|------|
-| `/shop` | TanStack: filters + products |
-| `/products/[slug]` | TanStack: `useProductQuery` + related from `useProductsQuery` |
-| `/customize` | TanStack: `useCustomizableProductsQuery` + default filipina via `useProductQuery` |
-| `/customize/[slug]` | TanStack: `useProductQuery(slug)` + reglas de personalización |
+| Route               | Data                                                                              |
+| ------------------- | --------------------------------------------------------------------------------- |
+| `/shop`             | TanStack: filters + products                                                      |
+| `/products/[slug]`  | TanStack: `useProductQuery` + related from `useProductsQuery`                     |
+| `/customize`        | TanStack: `useCustomizableProductsQuery` + default filipina via `useProductQuery` |
+| `/customize/[slug]` | TanStack: `useProductQuery(slug)` + reglas de personalización                     |
 
 CTAs de producto deben usar `routes.customizeProduct(slug)`. CTAs genéricos usan `routes.customize`.
 

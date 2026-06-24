@@ -5,7 +5,9 @@ export function shouldMockCustomizerPreviews(): boolean {
 }
 
 function getE2eUploadBase(): string {
-  return process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${process.env.PLAYWRIGHT_PORT ?? 3100}`
+  return (
+    process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${process.env.PLAYWRIGHT_PORT ?? 3100}`
+  )
 }
 
 export async function mockCustomizerPreviewFlow(page: Page): Promise<void> {

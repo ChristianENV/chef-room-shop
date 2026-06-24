@@ -9,10 +9,10 @@ y configurar un modelo 3D en el customizador de Chef Room.
 
 El modelador entrega **dos archivos**:
 
-| Archivo | Uso |
-|---------|-----|
-| `.blend` (o `.max`) | Fuente editable; **nunca se sube al repo** |
-| `.glb` | Export web; solo se versiona si pesa < 20 MB tras optimizar |
+| Archivo             | Uso                                                         |
+| ------------------- | ----------------------------------------------------------- |
+| `.blend` (o `.max`) | Fuente editable; **nunca se sube al repo**                  |
+| `.glb`              | Export web; solo se versiona si pesa < 20 MB tras optimizar |
 
 ### Convenciones de exportación
 
@@ -57,14 +57,14 @@ pnpm tsx scripts/optimize-glb.ts input.glb output.glb
 
 Pipeline aplicado:
 
-| Paso | Función | Efecto |
-|------|---------|--------|
-| 1 | `dedup` | Elimina buffers/texturas/accessors duplicados |
-| 2 | `prune` | Elimina nodos/materiales no referenciados |
-| 3 | `weld` | Fusiona vértices duplicados |
-| 4 | `reorder` | Optimiza caché de vértices (meshopt) |
-| 5 | `quantize` | Comprime atributos de vértice |
-| + | `EXTMeshoptCompression` | Compresión meshopt en el buffer (requiere decoder en THREE.js) |
+| Paso | Función                 | Efecto                                                         |
+| ---- | ----------------------- | -------------------------------------------------------------- |
+| 1    | `dedup`                 | Elimina buffers/texturas/accessors duplicados                  |
+| 2    | `prune`                 | Elimina nodos/materiales no referenciados                      |
+| 3    | `weld`                  | Fusiona vértices duplicados                                    |
+| 4    | `reorder`               | Optimiza caché de vértices (meshopt)                           |
+| 5    | `quantize`              | Comprime atributos de vértice                                  |
+| +    | `EXTMeshoptCompression` | Compresión meshopt en el buffer (requiere decoder en THREE.js) |
 
 ### Alternativa rápida (CLI oficial)
 
@@ -82,6 +82,7 @@ npx @gltf-transform/cli optimize input.glb output.glb --compress draco
 ```
 
 > **Nota sobre Draco vs Meshopt:**
+>
 > - **Meshopt** — mejor compatibilidad con React Three Fiber sin configuración extra.
 >   `@react-three/drei` incluye el decoder automáticamente.
 > - **Draco** — mayor compresión (~10–20% menos que meshopt), pero requiere
@@ -131,14 +132,14 @@ Configura la regla CORS en **R2 → Bucket → CORS Policy**:
 
 **Content-Type recomendados al subir:**
 
-| Extensión | Content-Type |
-|-----------|-------------|
-| `.glb` | `model/gltf-binary` |
-| `.gltf` | `model/gltf+json` |
-| `.bin` | `application/octet-stream` |
-| `.png` | `image/png` |
-| `.jpg` | `image/jpeg` |
-| `.webp` | `image/webp` |
+| Extensión | Content-Type               |
+| --------- | -------------------------- |
+| `.glb`    | `model/gltf-binary`        |
+| `.gltf`   | `model/gltf+json`          |
+| `.bin`    | `application/octet-stream` |
+| `.png`    | `image/png`                |
+| `.jpg`    | `image/jpeg`               |
+| `.webp`   | `image/webp`               |
 
 > Si `useGLTF` falla por CORS (`Cross-Origin Request Blocked`) el customizador
 > cae automáticamente al **modelo procedural de fallback** y muestra un warning
@@ -251,9 +252,9 @@ El GLB optimizado para producción se aloja en R2. El repo solo contiene código
 
 Desarrollo usa el glTF en `public/models/customizer/chef-jacket/`:
 
-| Material | Mapeo |
-|----------|--------|
-| `FABRIC 1_2333` | body → `baseColor` |
+| Material              | Mapeo                   |
+| --------------------- | ----------------------- |
+| `FABRIC 1_2333`       | body → `baseColor`      |
 | `Default Button_2335` | buttons → `detailColor` |
 
 Mesh principal: `Cloth_mesh`. Decals usan zonas en `customizer-zones.ts` (aprox.).

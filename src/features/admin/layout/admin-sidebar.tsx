@@ -44,7 +44,7 @@ function EnvironmentBadge({ environment }: { environment: AdminEnvironment }) {
     <span
       className={cn(
         'rounded-md px-2 py-0.5 font-sans text-xs font-semibold uppercase',
-        config.color
+        config.color,
       )}
     >
       {config.label}
@@ -108,8 +108,7 @@ export function AdminSidebar({ environment = 'DEV' }: AdminSidebarProps) {
           <SidebarGroupContent>
             <SidebarMenu>
               {adminNavItems.map((item) => {
-                const isActive =
-                  pathname === item.href || pathname.startsWith(`${item.href}/`)
+                const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
                 const Icon = item.icon
 
                 return (
@@ -137,9 +136,7 @@ export function AdminSidebar({ environment = 'DEV' }: AdminSidebarProps) {
               </div>
               <div className="flex flex-1 flex-col items-start text-left group-data-[collapsible=icon]:hidden">
                 <span className="font-sans text-sm font-medium">Admin</span>
-                <span className="font-serif text-xs text-muted-foreground">
-                  admin@chefroom.mx
-                </span>
+                <span className="font-serif text-xs text-muted-foreground">admin@chefroom.mx</span>
               </div>
               <ChevronDown className="h-4 w-4 text-muted-foreground group-data-[collapsible=icon]:hidden" />
             </Button>
@@ -152,10 +149,7 @@ export function AdminSidebar({ environment = 'DEV' }: AdminSidebarProps) {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              onSelect={() => void handleSignOut()}
-            >
+            <DropdownMenuItem variant="destructive" onSelect={() => void handleSignOut()}>
               <LogOut className="mr-2 h-4 w-4" />
               Cerrar Sesión
             </DropdownMenuItem>

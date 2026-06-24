@@ -4,13 +4,7 @@ import dynamic from 'next/dynamic'
 import type { RefObject } from 'react'
 import { motion } from 'framer-motion'
 import { Layers, SlidersHorizontal } from 'lucide-react'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import type { CatalogProduct } from '@/src/features/storefront/catalog/types'
 import { LeftSidebar } from './left-sidebar'
 import { RightSidebar } from './right-sidebar'

@@ -8,8 +8,13 @@ import {
   ShipmentStatus,
 } from '@prisma/client'
 
+import { safeNotifyOrderDelivered } from '@/src/server/notifications/notify-order-delivered'
+import { safeNotifyOrderShipped } from '@/src/server/notifications/notify-order-shipped'
+
 import { buildMockTrackingNumber } from './skydropx.mock-provider'
 import { isSkydropxMockMode } from './skydropx.mode'
+import { buildShipmentLifecycleNotificationInput } from './skydropx-shipment-status'
+import type { ShipmentStatusTransition } from './skydropx.webhook.types'
 
 export const MOCK_TRACKING_STATUSES = [
   'created',
@@ -53,16 +58,22 @@ export class MockTrackingSimulationError extends Error {
 }
 
 const shipmentWithOrderInclude = {
-  order: { select: { id: true, orderNumber: true, status: true } },
+  order: {
+    select: {
+      id: true,
+      orderNumber: true,
+      status: true,
+      userId: true,
+      fulfillmentStatus: true,
+    },
+  },
 } satisfies Prisma.ShipmentInclude
 
 type ShipmentWithOrder = Prisma.ShipmentGetPayload<{
   include: typeof shipmentWithOrderInclude
 }>
 
-export function isMockTrackingNumber(
-  trackingNumber: string | null | undefined,
-): boolean {
+export function isMockTrackingNumber(trackingNumber: string | null | undefined): boolean {
   const value = trackingNumber?.trim() ?? ''
   return value.startsWith('CRMOCK-')
 }
@@ -140,8 +151,7 @@ function buildMockTrackingEventMetadata(params: {
     orderId: params.order.id,
     orderNumber: params.order.orderNumber,
     trackingNumber:
-      params.shipment.trackingNumber?.trim() ||
-      buildMockTrackingNumber(params.order.orderNumber),
+      params.shipment.trackingNumber?.trim() || buildMockTrackingNumber(params.order.orderNumber),
     carrierName: params.shipment.carrier,
     trackingStatus: params.status,
     occurredAt: params.occurredAt.toISOString(),
@@ -176,7 +186,7 @@ async function loadShipmentForSimulation(
 
   if (!isMockShipmentRecord(shipment)) {
     throw new MockTrackingSimulationError(
-      'Este envío no es mock. Genera una guía con SKYDROPX_MODE=mock primero.',
+      'Este envío no es mock. Genera una guía en un entorno local/np primero.',
     )
   }
 
@@ -193,7 +203,7 @@ export async function simulateMockShipmentTrackingStatus(
 ): Promise<ShipmentWithOrder> {
   if (!isSkydropxMockMode()) {
     throw new MockTrackingSimulationError(
-      'La simulación de tracking solo está disponible con SKYDROPX_MODE=mock.',
+      'La simulación de tracking solo está disponible en entornos local/np (modo mock).',
     )
   }
 
@@ -201,6 +211,8 @@ export async function simulateMockShipmentTrackingStatus(
   const transition = mapMockTrackingStatusToTransition(status)
   const occurredAt = input.occurredAt ?? new Date()
   const shipment = await loadShipmentForSimulation(prisma, input)
+  const previousOrderStatus = shipment.order.status
+  const previousShipmentStatus = shipment.status
   const metadata = buildMockTrackingEventMetadata({
     order: shipment.order,
     shipment,
@@ -208,19 +220,17 @@ export async function simulateMockShipmentTrackingStatus(
     occurredAt,
   })
 
-  return prisma.$transaction(async (tx) => {
+  const updatedShipment = await prisma.$transaction(async (tx) => {
     const shipmentUpdate: Prisma.ShipmentUpdateInput = {
       status: transition.nextStatus,
       trackingNumber: metadata.trackingNumber,
-      shippedAt: transition.setShippedAt
-        ? shipment.shippedAt ?? occurredAt
-        : shipment.shippedAt,
+      shippedAt: transition.setShippedAt ? (shipment.shippedAt ?? occurredAt) : shipment.shippedAt,
       deliveredAt: transition.setDeliveredAt
-        ? shipment.deliveredAt ?? occurredAt
+        ? (shipment.deliveredAt ?? occurredAt)
         : shipment.deliveredAt,
     }
 
-    const updatedShipment = await tx.shipment.update({
+    const nextShipment = await tx.shipment.update({
       where: { id: shipment.id },
       data: shipmentUpdate,
       include: shipmentWithOrderInclude,
@@ -247,6 +257,27 @@ export async function simulateMockShipmentTrackingStatus(
       })
     }
 
-    return updatedShipment
+    return nextShipment
   })
+
+  const notificationInput = buildShipmentLifecycleNotificationInput({
+    order: shipment.order,
+    previousOrderStatus,
+    previousShipmentStatus,
+    transition: {
+      nextStatus: transition.nextStatus,
+      orderStatus: transition.orderStatus as ShipmentStatusTransition['orderStatus'],
+      fulfillmentStatus:
+        transition.fulfillmentStatus as ShipmentStatusTransition['fulfillmentStatus'],
+      setShippedAt: transition.setShippedAt,
+      setDeliveredAt: transition.setDeliveredAt,
+    },
+    trackingNumber: metadata.trackingNumber,
+    carrier: metadata.carrierName,
+  })
+
+  void safeNotifyOrderShipped(prisma, notificationInput)
+  void safeNotifyOrderDelivered(prisma, notificationInput)
+
+  return updatedShipment
 }

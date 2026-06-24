@@ -1,5 +1,4 @@
 import {
-  FulfillmentStatus,
   OrderEventType,
   OrderStatus,
   PaymentStatus,
@@ -23,7 +22,10 @@ import { createShippingProvider } from '@/src/server/shipping/skydropx/skydropx.
 import { SkydropxApiError } from '@/src/server/shipping/skydropx/skydropx.errors'
 import { skydropxErrorToGraphQLError } from '@/src/server/shipping/skydropx/skydropx-graphql-errors'
 import { summarizeLabelAddressForDebug } from '@/src/server/shipping/skydropx/skydropx-address'
-import { logSkydropxDebug, isSkydropxDebugEnabled } from '@/src/server/shipping/skydropx/skydropx.debug'
+import {
+  logSkydropxDebug,
+  isSkydropxDebugEnabled,
+} from '@/src/server/shipping/skydropx/skydropx.debug'
 import {
   SkydropxValidationError,
   validateOrderShippingAddressForSkydropx,
@@ -35,6 +37,13 @@ import {
   mapOrderToSkydropxShipmentPayload,
   parseSkydropxShipmentResponse,
 } from '@/src/server/shipping/skydropx/skydropx.mappers'
+import {
+  buildShipmentLifecycleNotificationInput,
+  resolveOrderStatusAfterShipmentTransition,
+  resolveRefreshTrackingTransition,
+} from '@/src/server/shipping/skydropx/skydropx-shipment-status'
+import { safeNotifyOrderDelivered } from '@/src/server/notifications/notify-order-delivered'
+import { safeNotifyOrderShipped } from '@/src/server/notifications/notify-order-shipped'
 
 import { derivePaymentStatus } from '../admin-dashboard/admin-dashboard.mappers'
 import type { GraphQLContext } from '../../context'
@@ -47,6 +56,7 @@ import {
 import type {
   AdminCancelShippingLabelInput,
   AdminCreateShippingLabelInput,
+  AdminShipmentByOrderNumberPayloadGql,
   AdminShipmentGql,
   AdminShipmentsListInput,
   AdminShipmentsPayloadGql,
@@ -59,6 +69,7 @@ import {
   orderNumberSchema,
   parseAdminShipmentsListInput,
 } from './admin-shipping.validation'
+import { deriveAdminLabelCreationStatuses } from './admin-shipping-label-status'
 
 const shipmentInclude = {
   order: { select: { orderNumber: true } },
@@ -151,9 +162,7 @@ function assertOrderEligibleForLabel(order: {
   status: OrderStatus
   payments: { status: PaymentStatus }[]
 }): void {
-  const paymentStatus = derivePaymentStatus(
-    order as Parameters<typeof derivePaymentStatus>[0],
-  )
+  const paymentStatus = derivePaymentStatus(order as Parameters<typeof derivePaymentStatus>[0])
   if (order.status === OrderStatus.CANCELLED || order.status === OrderStatus.REFUNDED) {
     throw badRequestError('No se puede generar guía para un pedido cancelado.')
   }
@@ -278,16 +287,19 @@ export async function getAdminShipments(
 }
 
 /**
- * Returns the admin shipment for an order, or null if none exists.
+ * Returns the admin shipment for an order plus resolved Skydropx mock-mode flag.
  */
 export async function getAdminShipmentByOrderNumber(
   context: GraphQLContext,
   orderNumber: string,
-): Promise<AdminShipmentGql | null> {
+): Promise<AdminShipmentByOrderNumberPayloadGql> {
   requireAdminGraphQL(context)
   const parsed = orderNumberSchema.parse(orderNumber)
   const shipment = await loadShipmentByOrderNumber(context, parsed)
-  return shipment ? mapShipmentToAdminGql(shipment) : null
+  return {
+    shipment: shipment ? mapShipmentToAdminGql(shipment) : null,
+    isSkydropxMockMode: isSkydropxMockMode(),
+  }
 }
 
 /**
@@ -368,10 +380,7 @@ export async function createAdminShippingLabel(
   let recipientAddress
   try {
     originAddress = validateShippingOriginForLabel()
-    recipientAddress = validateOrderShippingAddressForSkydropx(
-      address,
-      order.customerEmail,
-    )
+    recipientAddress = validateOrderShippingAddressForSkydropx(address, order.customerEmail)
   } catch (error) {
     if (error instanceof SkydropxValidationError) {
       throw validationGraphQLError(error)
@@ -426,18 +435,14 @@ export async function createAdminShippingLabel(
   const costCents = rate.amountCents ?? parsedShipment.costCents
   const labelFormat = (parsed.labelFormat ?? 'PDF').toUpperCase()
   const hasTracking = Boolean(parsedShipment.trackingNumber?.trim())
-
-  const shipmentStatus = hasTracking
-    ? ShipmentStatus.IN_TRANSIT
-    : ShipmentStatus.LABEL_CREATED
-
-  const orderStatus = hasTracking ? OrderStatus.SHIPPED : OrderStatus.READY_TO_SHIP
-  const fulfillmentStatus = hasTracking
-    ? FulfillmentStatus.SHIPPED
-    : FulfillmentStatus.PROCESSING
+  const mockMode = isSkydropxMockMode()
+  const labelStatuses = deriveAdminLabelCreationStatuses({
+    isMockMode: mockMode,
+    hasTracking,
+  })
 
   const carrierLabel = parsedShipment.carrier ?? rate.carrier ?? 'paquetería'
-  const eventMessage = isSkydropxMockMode()
+  const eventMessage = mockMode
     ? `Guía mock generada con ${carrierLabel} (modo prueba).`
     : `Guía generada con ${carrierLabel}.`
 
@@ -445,7 +450,7 @@ export async function createAdminShippingLabel(
     const shipment = await tx.shipment.create({
       data: {
         orderId: order.id,
-        status: shipmentStatus,
+        status: labelStatuses.shipmentStatus,
         provider: ShippingProvider.SKYDROPX,
         providerShipmentId: parsedShipment.providerShipmentId,
         providerLabelId: parsedShipment.providerLabelId,
@@ -458,7 +463,7 @@ export async function createAdminShippingLabel(
         costCents,
         currency: rate.currency,
         trackingNumber: parsedShipment.trackingNumber,
-        shippedAt: hasTracking ? new Date() : null,
+        shippedAt: labelStatuses.setShippedAt ? new Date() : null,
         rawResponseJson: parsedShipment.rawJson as Prisma.InputJsonValue,
       },
       include: shipmentInclude,
@@ -467,11 +472,11 @@ export async function createAdminShippingLabel(
     await tx.shipmentEvent.create({
       data: {
         shipmentId: shipment.id,
-        status: shipmentStatus,
-        message: hasTracking
-          ? `Etiqueta creada. Tracking: ${parsedShipment.trackingNumber}`
-          : isSkydropxMockMode()
-            ? 'Etiqueta mock generada (modo prueba).'
+        status: labelStatuses.shipmentStatus,
+        message: mockMode
+          ? 'Etiqueta mock generada (modo prueba).'
+          : hasTracking
+            ? `Etiqueta creada. Tracking: ${parsedShipment.trackingNumber}`
             : 'Etiqueta creada en Skydropx.',
         metadataJson: {
           providerShipmentId: parsedShipment.providerShipmentId,
@@ -483,8 +488,8 @@ export async function createAdminShippingLabel(
     await tx.order.update({
       where: { id: order.id },
       data: {
-        status: orderStatus,
-        fulfillmentStatus,
+        status: labelStatuses.orderStatus,
+        fulfillmentStatus: labelStatuses.fulfillmentStatus,
       },
     })
 
@@ -616,10 +621,32 @@ export async function refreshAdminShipmentTracking(
 
   const parsedTracking = parseSkydropxShipmentResponse(skydropxRaw)
   const nextTracking = parsedTracking.trackingNumber ?? tracking
-  const nextStatus =
-    parsedTracking.trackingNumber && shipment.status === ShipmentStatus.LABEL_CREATED
-      ? ShipmentStatus.IN_TRANSIT
-      : shipment.status
+  const previousShipmentStatus = shipment.status
+  const transition = resolveRefreshTrackingTransition(
+    previousShipmentStatus,
+    skydropxRaw,
+    Boolean(nextTracking),
+  )
+  const nextStatus = transition?.nextStatus ?? previousShipmentStatus
+
+  const order = await context.prisma.order.findUniqueOrThrow({
+    where: { id: shipment.orderId },
+    select: {
+      id: true,
+      orderNumber: true,
+      userId: true,
+      status: true,
+      fulfillmentStatus: true,
+    },
+  })
+  const previousOrderStatus = order.status
+  const nextOrderStatuses = transition
+    ? resolveOrderStatusAfterShipmentTransition({
+        previousOrderStatus,
+        previousFulfillmentStatus: order.fulfillmentStatus,
+        transition,
+      })
+    : { orderStatus: previousOrderStatus, fulfillmentStatus: order.fulfillmentStatus }
 
   const updated = await context.prisma.$transaction(async (tx) => {
     const next = await tx.shipment.update({
@@ -628,7 +655,12 @@ export async function refreshAdminShipmentTracking(
         trackingNumber: nextTracking,
         status: nextStatus,
         labelUrl: parsedTracking.labelUrl ?? shipment.labelUrl,
-        shippedAt: shipment.shippedAt ?? (nextTracking ? new Date() : null),
+        shippedAt:
+          transition?.setShippedAt && !shipment.shippedAt
+            ? new Date()
+            : (shipment.shippedAt ?? (nextTracking ? new Date() : null)),
+        deliveredAt:
+          transition?.setDeliveredAt && !shipment.deliveredAt ? new Date() : shipment.deliveredAt,
       },
       include: shipmentInclude,
     })
@@ -645,8 +677,36 @@ export async function refreshAdminShipmentTracking(
       },
     })
 
+    if (
+      transition &&
+      (nextOrderStatuses.orderStatus !== previousOrderStatus ||
+        nextOrderStatuses.fulfillmentStatus !== order.fulfillmentStatus)
+    ) {
+      await tx.order.update({
+        where: { id: order.id },
+        data: {
+          status: nextOrderStatuses.orderStatus,
+          fulfillmentStatus: nextOrderStatuses.fulfillmentStatus,
+        },
+      })
+    }
+
     return next
   })
+
+  if (transition) {
+    const notificationInput = buildShipmentLifecycleNotificationInput({
+      order,
+      previousOrderStatus,
+      previousShipmentStatus,
+      transition,
+      trackingNumber: nextTracking,
+      carrier,
+    })
+
+    void safeNotifyOrderShipped(context.prisma, notificationInput)
+    void safeNotifyOrderDelivered(context.prisma, notificationInput)
+  }
 
   return mapShipmentToAdminGql(updated)
 }

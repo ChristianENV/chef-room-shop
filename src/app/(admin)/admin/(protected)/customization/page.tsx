@@ -91,9 +91,7 @@ export default function CustomizationRulesPage() {
     return areaGroups.filter((g) => g.areaSlug === selectedAreaSlug)
   }, [areaGroups, selectedAreaSlug])
 
-  const garmentType = selectedProduct
-    ? mapProductToGarmentMapType(selectedProduct)
-    : 'filipinas'
+  const garmentType = selectedProduct ? mapProductToGarmentMapType(selectedProduct) : 'filipinas'
 
   const areaStates = useMemo(() => {
     const states: Record<string, { enabled: boolean; hasRules: boolean }> = {}
@@ -203,8 +201,7 @@ export default function CustomizationRulesPage() {
   }
 
   const catalogError = areasQuery.isError || optionsQuery.isError
-  const initialLoading =
-    productsQuery.isPending || areasQuery.isPending || optionsQuery.isPending
+  const initialLoading = productsQuery.isPending || areasQuery.isPending || optionsQuery.isPending
 
   const rulesContent = () => {
     if (rulesQuery.isError) {
@@ -225,9 +222,7 @@ export default function CustomizationRulesPage() {
       )
     }
     if (ruleCards.length === 0) {
-      return (
-        <AdminCustomizationEmpty onAction={() => openCreateRule()} />
-      )
+      return <AdminCustomizationEmpty onAction={() => openCreateRule()} />
     }
     return (
       <div className="grid gap-4 sm:grid-cols-2">
@@ -237,9 +232,7 @@ export default function CustomizationRulesPage() {
             group={group}
             isSelected={selectedAreaSlug === group.areaSlug}
             onSelectArea={() =>
-              setSelectedAreaSlug((prev) =>
-                prev === group.areaSlug ? null : group.areaSlug,
-              )
+              setSelectedAreaSlug((prev) => (prev === group.areaSlug ? null : group.areaSlug))
             }
             onAddRule={() => openCreateRule(group.areaId)}
             onEditRule={openEditRule}
@@ -443,9 +436,7 @@ export default function CustomizationRulesPage() {
       <DeleteRuleDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        ruleLabel={
-          deletingRule ? `${deletingRule.areaName} · ${deletingRule.optionName}` : null
-        }
+        ruleLabel={deletingRule ? `${deletingRule.areaName} · ${deletingRule.optionName}` : null}
         onConfirm={() => void handleDeleteConfirm()}
         isDeleting={deleteMutation.isPending}
       />

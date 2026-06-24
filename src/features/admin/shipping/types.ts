@@ -1,3 +1,8 @@
+export type AdminShipmentByOrderNumberPayload = {
+  shipment: AdminShipment | null
+  isSkydropxMockMode: boolean
+}
+
 export type AdminShipmentEvent = {
   id: string
   status: string
@@ -40,12 +45,7 @@ export type AdminCancelShippingLabelInput = {
 
 export type AdminSimulateMockShipmentTrackingInput = {
   orderNumber: string
-  trackingStatus:
-    | 'created'
-    | 'label_generated'
-    | 'in_transit'
-    | 'delivered'
-    | 'exception'
+  trackingStatus: 'created' | 'label_generated' | 'in_transit' | 'delivered' | 'exception'
 }
 
 export type MockTrackingStatus = AdminSimulateMockShipmentTrackingInput['trackingStatus']

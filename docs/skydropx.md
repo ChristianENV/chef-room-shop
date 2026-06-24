@@ -8,51 +8,62 @@ Chef Room uses **Skydropx PRO** (`api-pro.skydropx.com`) as the logistics aggreg
 2. Copy **Client ID** and **Client Secret** (server-only)
 3. Set in `.env.local`:
 
-| Variable | Purpose |
-|----------|---------|
-| `SKYDROPX_ENV` | `sandbox` or `production` (logical label) |
-| `SKYDROPX_API_BASE_URL` | Default `https://api-pro.skydropx.com` |
-| `SKYDROPX_CLIENT_ID` | OAuth client id |
-| `SKYDROPX_CLIENT_SECRET` | OAuth secret — never expose to the browser |
+| Variable                  | Purpose                                             |
+| ------------------------- | --------------------------------------------------- |
+| `SKYDROPX_ENV`            | `sandbox` or `production` (logical label)           |
+| `SKYDROPX_API_BASE_URL`   | Default `https://api-pro.skydropx.com`              |
+| `SKYDROPX_CLIENT_ID`      | OAuth client id                                     |
+| `SKYDROPX_CLIENT_SECRET`  | OAuth secret — never expose to the browser          |
 | `SKYDROPX_WEBHOOK_SECRET` | Webhook HMAC/Bearer/header (required in production) |
-| `SKYDROPX_MODE` | `live` or `mock` — see [Mock mode](#mock-mode-devtest) below |
 
 Missing credentials **do not** break `npm run build`. Live mode throws `SkydropxConfigError` at runtime when credentials are missing.
 
-## Mock mode (dev/test)
+## Mock mode (local / np)
 
-Set in `.env.local`:
+Skydropx behavior is derived from existing deployment env signals — no extra shipping mode variable:
 
-```env
-SKYDROPX_MODE=mock
-```
+| Environment | Signals                                                                                       | Skydropx mode |
+| ----------- | --------------------------------------------------------------------------------------------- | ------------- |
+| **local**   | `NODE_ENV=development` (your `.env.local`)                                                    | mock          |
+| **np**      | `VERCEL_ENV=preview`, Railway np/staging, …                                                   | mock          |
+| **prod**    | `VERCEL_ENV=production`, Railway production, or `NODE_ENV=production` without staging signals | live          |
 
-| Mode | When | Behavior |
-|------|------|----------|
-| `live` | Explicit, or default when credentials exist | Real Skydropx PRO API (`skydropx.client.ts`) |
-| `mock` | Explicit, or default in non-production when `SKYDROPX_CLIENT_ID` / `SECRET` are missing | Deterministic label data; **no HTTP calls** to Skydropx |
+Local development with `NODE_ENV="development"` already enables mock Skydropx — nothing else to set.
 
-**Production safety:** `NODE_ENV=production` never defaults to mock. Use `SKYDROPX_MODE=mock` in production only if you explicitly intend to (not recommended).
+| Mode   | When                                  | Behavior                                                |
+| ------ | ------------------------------------- | ------------------------------------------------------- |
+| `live` | `prod`, or production runtime signals | Real Skydropx PRO API (`skydropx.client.ts`)            |
+| `mock` | `local`, `np` (non-production)        | Deterministic label data; **no HTTP calls** to Skydropx |
+
+**Production safety:** Production always uses live Skydropx. Mock shipping is not available in prod. Production platform signals (`VERCEL_ENV=production`, Railway production, or `NODE_ENV=production` without preview/staging signals) always resolve to live mode.
 
 **Provider boundary:** `createShippingProvider()` in `skydropx.provider.ts` selects live vs mock for admin label creation (`createAdminShippingLabel`).
 
 **Example mock data** (order `CR-2026-000099`):
 
-| Field | Value |
-|-------|--------|
-| `providerShipmentId` | `mock-shipment-CR-2026-000099` |
-| `providerLabelId` | `mock-label-CR-2026-000099` |
-| `trackingNumber` | `CRMOCK-CR-2026-000099` |
-| `labelUrl` | `/mock-labels/CR-2026-000099.pdf` |
+| Field                                               | Value                                                 |
+| --------------------------------------------------- | ----------------------------------------------------- |
+| `providerShipmentId`                                | `mock-shipment-CR-2026-000099`                        |
+| `providerLabelId`                                   | `mock-label-CR-2026-000099`                           |
+| `trackingNumber`                                    | `CRMOCK-CR-2026-000099`                               |
+| `labelUrl`                                          | `/mock-labels/CR-2026-000099.pdf`                     |
 | `tracking_url_provider` (in `rawResponseJson` only) | `https://tracking.example.test/CRMOCK-CR-2026-000099` |
-| `carrier` / `service` | `fedex` / `standard` (or checkout rate values) |
-| `status` | `label_generated` |
+| `carrier` / `service`                               | `fedex` / `standard` (or checkout rate values)        |
+| `status`                                            | `label_generated`                                     |
 
-Mock mode applies to **admin guide generation** and **mock tracking simulation**. Checkout quotes still call live Skydropx unless you add separate mock support later. Cancel label, refresh tracking (live API), and webhooks are unchanged.
+**Mock lifecycle (admin label + tracking simulation):**
+
+```txt
+Generate mock label → READY_TO_SHIP / LABEL_CREATED (tracking number present, not shipped yet)
+Simulate in_transit   → SHIPPED / IN_TRANSIT → ORDER_SHIPPED
+Simulate delivered    → DELIVERED → ORDER_DELIVERED
+```
+
+Mock labels include a tracking number for printing and QA, but admin label creation does **not** mark the order as shipped. Use `adminSimulateMockShipmentTrackingStatus` to advance the lifecycle. Checkout quotes still call live Skydropx unless you add separate mock support later. Cancel label, refresh tracking (live API), and webhooks are unchanged.
 
 ### Mock tracking simulation
 
-Requires `SKYDROPX_MODE=mock` and a shipment with mock tracking (`CRMOCK-*` or `mock-shipment-*` provider id).
+Requires a mock-mode environment (local `NODE_ENV=development`, or np preview/staging) and a shipment with mock tracking (`CRMOCK-*` or `mock-shipment-*` provider id).
 
 GraphQL mutation (admin only):
 
@@ -71,23 +82,23 @@ mutation SimulateMockTracking {
 
 Supported `MockTrackingStatus` values:
 
-| Mock status | ShipmentStatus | OrderStatus (when updated) |
-|-------------|----------------|----------------------------|
-| `created` | `PENDING` | unchanged |
-| `label_generated` | `LABEL_CREATED` | unchanged |
-| `in_transit` | `IN_TRANSIT` | `SHIPPED` |
-| `delivered` | `DELIVERED` | `DELIVERED` |
-| `exception` | `FAILED` | unchanged |
+| Mock status       | ShipmentStatus  | OrderStatus (when updated) | Notification                           |
+| ----------------- | --------------- | -------------------------- | -------------------------------------- |
+| `created`         | `PENDING`       | unchanged                  | —                                      |
+| `label_generated` | `LABEL_CREATED` | unchanged                  | —                                      |
+| `in_transit`      | `IN_TRANSIT`    | `SHIPPED`                  | `ORDER_SHIPPED` (authenticated only)   |
+| `delivered`       | `DELIVERED`     | `DELIVERED`                | `ORDER_DELIVERED` (authenticated only) |
+| `exception`       | `FAILED`        | unchanged                  | —                                      |
 
 Implementation: `src/server/shipping/skydropx/skydropx.mock-tracking.ts` → `simulateMockShipmentTrackingStatus`.
 
-Admin order detail shows a **Simulación mock** panel when the tracking number starts with `CRMOCK-`.
+Admin order detail shows a **Simulación mock** panel when the tracking number starts with `CRMOCK-`, and a **Modo simulación Skydropx** notice when `isSkydropxMockMode` is true.
 
 `adminRefreshShipmentTracking` is blocked in mock mode — use the simulation mutation instead.
 
 Safe `ShipmentEvent.metadataJson` fields only: `orderId`, `orderNumber`, `trackingNumber`, `carrierName`, `trackingStatus`, `occurredAt`.
 
-**Notification hooks are not wired in this phase** — shipped/delivered in-app notifications will be added in a later branch.
+**Notification hooks:** `ORDER_SHIPPED` on shipped/in-transit transitions; `ORDER_DELIVERED` on delivered transitions. Guest orders are skipped. Dedupe keys: `order-shipped:{orderId}`, `order-delivered:{orderId}`.
 
 Limitations: mock mode is for local/dev/QA only. No webhook replay, no carrier API calls, no realtime push.
 
@@ -123,15 +134,15 @@ sequenceDiagram
 
 ### Endpoints wrapped in client
 
-| Method | Path | Client function |
-|--------|------|-----------------|
-| POST | `/api/v1/oauth/token` | `getSkydropxAccessToken` |
-| POST | `/api/v1/quotations` | `createSkydropxQuotation` |
-| GET | `/api/v1/quotations/{id}` | `getSkydropxQuotation` |
-| POST | `/api/v1/shipments/` | `createSkydropxShipment` |
-| GET | `/api/v1/shipments/{id}` | `getSkydropxShipment` |
-| POST | `/api/v1/shipments/{id}/cancellations` | `cancelSkydropxLabelOrShipment` |
-| GET | `/api/v1/shipments/tracking` | `getSkydropxTracking` |
+| Method | Path                                   | Client function                 |
+| ------ | -------------------------------------- | ------------------------------- |
+| POST   | `/api/v1/oauth/token`                  | `getSkydropxAccessToken`        |
+| POST   | `/api/v1/quotations`                   | `createSkydropxQuotation`       |
+| GET    | `/api/v1/quotations/{id}`              | `getSkydropxQuotation`          |
+| POST   | `/api/v1/shipments/`                   | `createSkydropxShipment`        |
+| GET    | `/api/v1/shipments/{id}`               | `getSkydropxShipment`           |
+| POST   | `/api/v1/shipments/{id}/cancellations` | `cancelSkydropxLabelOrShipment` |
+| GET    | `/api/v1/shipments/tracking`           | `getSkydropxTracking`           |
 
 ## Origin (Puebla)
 
@@ -143,12 +154,12 @@ Optional per-environment overrides: `SHIPPING_ORIGIN_*` env vars. Resolved by `g
 
 Tiered by total garment quantity (`SHIPPING_VARS.packageTiers` → `src/server/shipping/shipping.package.ts`):
 
-| Quantity | Dimensions (L×W×H cm) | Weight (kg) |
-|----------|------------------------|-------------|
-| 1 | 30 × 20 × 5 | 0.5 |
-| 2–3 | 35 × 25 × 8 | 0.9 |
-| 4–6 | 40 × 30 × 12 | 1.5 |
-| >6 | 40 × 30 × 12 | 1.5 + 0.15 kg per extra unit |
+| Quantity | Dimensions (L×W×H cm) | Weight (kg)                  |
+| -------- | --------------------- | ---------------------------- |
+| 1        | 30 × 20 × 5           | 0.5                          |
+| 2–3      | 35 × 25 × 8           | 0.9                          |
+| 4–6      | 40 × 30 × 12          | 1.5                          |
+| >6       | 40 × 30 × 12          | 1.5 + 0.15 kg per extra unit |
 
 **Pending:** true multi-parcel shipments for large orders.
 
@@ -219,12 +230,12 @@ pnpm tsx scripts/skydropx-create-quote-smoke.ts 72830 --send
 
 Errores frecuentes en cotización:
 
-| Síntoma | Causa |
-|---------|--------|
-| 422 `reference es demasiado largo` | `SHIPPING_ORIGIN_REFERENCE` > 30 chars (ahora truncado) |
-| 422 teléfono | Origen con +52 — usar 10 dígitos |
-| 422 CP | Destino sin 5 dígitos |
-| GraphQL `SKYDROPX_VALIDATION_ERROR` | Validación local antes de llamar Skydropx |
+| Síntoma                             | Causa                                                   |
+| ----------------------------------- | ------------------------------------------------------- |
+| 422 `reference es demasiado largo`  | `SHIPPING_ORIGIN_REFERENCE` > 30 chars (ahora truncado) |
+| 422 teléfono                        | Origen con +52 — usar 10 dígitos                        |
+| 422 CP                              | Destino sin 5 dígitos                                   |
+| GraphQL `SKYDROPX_VALIDATION_ERROR` | Validación local antes de llamar Skydropx               |
 
 ## Debug de generación de guías
 
@@ -232,32 +243,32 @@ Errores frecuentes en cotización:
 
 El endpoint `POST /api/v1/shipments/` usa `address_from` / `address_to` con campos v1. Internamente normalizamos a dirección canónica y mapeamos:
 
-| Canónico | Skydropx v1 |
-|----------|-------------|
-| `address` | parte de `street1` |
-| `internal_number` | parte de `street1` |
-| `sector` (colonia) | `area_level3` |
-| `city` | `area_level2` |
-| `state` | `area_level1` |
-| `postal_code` | `postal_code` (5 dígitos) |
-| `country` | `country_code` (`MX`) |
-| `person_name` | `name` |
-| `phone` | `phone` (**10 dígitos**, sin +52) |
-| `reference` | `reference` |
+| Canónico           | Skydropx v1                       |
+| ------------------ | --------------------------------- |
+| `address`          | parte de `street1`                |
+| `internal_number`  | parte de `street1`                |
+| `sector` (colonia) | `area_level3`                     |
+| `city`             | `area_level2`                     |
+| `state`            | `area_level1`                     |
+| `postal_code`      | `postal_code` (5 dígitos)         |
+| `country`          | `country_code` (`MX`)             |
+| `person_name`      | `name`                            |
+| `phone`            | `phone` (**10 dígitos**, sin +52) |
+| `reference`        | `reference`                       |
 
 Origen y destino deben tener calle, número exterior, colonia, ciudad, estado, CP, teléfono 10 dígitos y email.
 
 ### Causas frecuentes
 
-| Síntoma | Causa probable |
-|---------|----------------|
-| `422` | Teléfono con +52, CP ≠ 5 dígitos, colonia/número faltante en **destino** u origen |
-| `502 Bad Gateway` | Skydropx caído o payload inválido |
-| Tarifa expirada | `ShippingRate.expiresAt` pasado — volver a cotizar en checkout |
-| Dirección incompleta | Falta colonia (`Address.label`), número exterior (`line2`), teléfono |
-| Origen incompleto | `SHIPPING_ORIGIN_*` incompletos |
-| 401/403 | `SKYDROPX_CLIENT_ID` / `SECRET` incorrectos |
-| Saldo / carrier | Cuenta Skydropx sin créditos o paquetería no habilitada |
+| Síntoma              | Causa probable                                                                    |
+| -------------------- | --------------------------------------------------------------------------------- |
+| `422`                | Teléfono con +52, CP ≠ 5 dígitos, colonia/número faltante en **destino** u origen |
+| `502 Bad Gateway`    | Skydropx caído o payload inválido                                                 |
+| Tarifa expirada      | `ShippingRate.expiresAt` pasado — volver a cotizar en checkout                    |
+| Dirección incompleta | Falta colonia (`Address.label`), número exterior (`line2`), teléfono              |
+| Origen incompleto    | `SHIPPING_ORIGIN_*` incompletos                                                   |
+| 401/403              | `SKYDROPX_CLIENT_ID` / `SECRET` incorrectos                                       |
+| Saldo / carrier      | Cuenta Skydropx sin créditos o paquetería no habilitada                           |
 
 ### Endpoint admin (label)
 

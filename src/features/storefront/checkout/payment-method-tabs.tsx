@@ -5,13 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import {
-  CreditCard,
-  Building2,
-  Banknote,
-  AlertCircle,
-  Info,
-} from 'lucide-react'
+import { CreditCard, Building2, Banknote, AlertCircle, Info } from 'lucide-react'
 
 import { CASH_PAYMENT_LOCATIONS } from '@/src/config/payment-vars'
 
@@ -44,9 +38,7 @@ export function PaymentMethodTabs({
     <div className={cn('space-y-4', className)}>
       <div className="flex items-center gap-2">
         <CreditCard className="h-5 w-5 text-primary" />
-        <h2 className="font-sans text-lg font-semibold text-foreground">
-          Método de pago
-        </h2>
+        <h2 className="font-sans text-lg font-semibold text-foreground">Método de pago</h2>
       </div>
 
       <Tabs
@@ -102,9 +94,7 @@ export function PaymentMethodTabs({
                 {CASH_PAYMENT_LOCATIONS.slice(0, 8).map((location) => (
                   <li key={location}>{location}</li>
                 ))}
-                {CASH_PAYMENT_LOCATIONS.length > 8 && (
-                  <li>y más puntos autorizados</li>
-                )}
+                {CASH_PAYMENT_LOCATIONS.length > 8 && <li>y más puntos autorizados</li>}
               </ul>
               <p>
                 3. Recibirás confirmación por correo a:{' '}

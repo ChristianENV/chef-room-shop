@@ -19,10 +19,7 @@ import {
 
 import type { GraphQLContext } from '../../context'
 import { mapUserToAccountUser } from '../account/account.mappers'
-import {
-  requireAvatarUploadActor,
-  requireProductImageUploadActor,
-} from './uploads.auth'
+import { requireAvatarUploadActor, requireProductImageUploadActor } from './uploads.auth'
 import {
   mapKeysToGql,
   mapPresignedUrlsToGql,
@@ -260,8 +257,7 @@ export async function confirmProductImageUpload(
         select: { id: true },
       })
 
-      const shouldBePrimary =
-        parsed.isPrimary ?? (existing?.isPrimary || !hasPrimary)
+      const shouldBePrimary = parsed.isPrimary ?? (existing?.isPrimary || !hasPrimary)
 
       if (shouldBePrimary) {
         await tx.productImage.updateMany({

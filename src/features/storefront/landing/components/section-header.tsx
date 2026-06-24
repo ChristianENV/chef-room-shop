@@ -20,13 +20,7 @@ export function SectionHeader({
   const centered = align === 'center'
 
   return (
-    <div
-      className={cn(
-        'max-w-2xl',
-        centered && 'mx-auto text-center',
-        className,
-      )}
-    >
+    <div className={cn('max-w-2xl', centered && 'mx-auto text-center', className)}>
       <p className="font-sans text-[11px] font-semibold tracking-[0.28em] uppercase text-primary md:text-[12px]">
         {eyebrow}
       </p>

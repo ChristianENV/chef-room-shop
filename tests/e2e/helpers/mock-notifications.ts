@@ -33,10 +33,7 @@ function buildNotification(
   }
 }
 
-function countUnread(
-  notifications: MockNotification[],
-  audience?: 'USER' | 'ADMIN',
-): number {
+function countUnread(notifications: MockNotification[], audience?: 'USER' | 'ADMIN'): number {
   return notifications.filter(
     (item) => !item.readAt && (audience ? item.audience === audience : true),
   ).length
@@ -124,7 +121,10 @@ export async function mockNotificationsGraphQL(
       return
     }
 
-    const payload = request.postDataJSON() as { query?: string; variables?: Record<string, unknown> }
+    const payload = request.postDataJSON() as {
+      query?: string
+      variables?: Record<string, unknown>
+    }
     const query = payload.query ?? ''
 
     if (query.includes('myUnreadNotificationCount')) {

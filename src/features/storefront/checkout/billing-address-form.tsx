@@ -14,11 +14,38 @@ import { cn } from '@/lib/utils'
 import { Receipt } from 'lucide-react'
 
 const MEXICAN_STATES = [
-  'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas',
-  'Chihuahua', 'Ciudad de Mexico', 'Coahuila', 'Colima', 'Durango', 'Estado de Mexico',
-  'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco', 'Michoacan', 'Morelos', 'Nayarit',
-  'Nuevo Leon', 'Oaxaca', 'Puebla', 'Queretaro', 'Quintana Roo', 'San Luis Potosi',
-  'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz', 'Yucatan', 'Zacatecas'
+  'Aguascalientes',
+  'Baja California',
+  'Baja California Sur',
+  'Campeche',
+  'Chiapas',
+  'Chihuahua',
+  'Ciudad de Mexico',
+  'Coahuila',
+  'Colima',
+  'Durango',
+  'Estado de Mexico',
+  'Guanajuato',
+  'Guerrero',
+  'Hidalgo',
+  'Jalisco',
+  'Michoacan',
+  'Morelos',
+  'Nayarit',
+  'Nuevo Leon',
+  'Oaxaca',
+  'Puebla',
+  'Queretaro',
+  'Quintana Roo',
+  'San Luis Potosi',
+  'Sinaloa',
+  'Sonora',
+  'Tabasco',
+  'Tamaulipas',
+  'Tlaxcala',
+  'Veracruz',
+  'Yucatan',
+  'Zacatecas',
 ]
 
 export interface BillingAddressData {
@@ -65,10 +92,7 @@ export function BillingAddressForm({ data, onChange, errors, className }: Billin
           checked={data.sameAsShipping}
           onCheckedChange={(checked) => handleChange('sameAsShipping', checked === true)}
         />
-        <Label
-          htmlFor="sameAsShipping"
-          className="font-serif text-sm text-muted-foreground"
-        >
+        <Label htmlFor="sameAsShipping" className="font-serif text-sm text-muted-foreground">
           Usar la misma direccion de envio
         </Label>
       </div>
@@ -230,10 +254,7 @@ export function BillingAddressForm({ data, onChange, errors, className }: Billin
             <Label htmlFor="billingState" className="font-sans text-sm font-medium">
               Estado *
             </Label>
-            <Select
-              value={data.state}
-              onValueChange={(value) => handleChange('state', value)}
-            >
+            <Select value={data.state} onValueChange={(value) => handleChange('state', value)}>
               <SelectTrigger className={cn('mt-1.5', errors?.state && 'border-destructive')}>
                 <SelectValue placeholder="Selecciona un estado" />
               </SelectTrigger>

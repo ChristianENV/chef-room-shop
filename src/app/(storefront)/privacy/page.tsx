@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Política de privacidad | Chef Room by Bedolla',
-  description: 'Política de privacidad de Chef Room. Información sobre el tratamiento de datos personales.',
+  description:
+    'Política de privacidad de Chef Room. Información sobre el tratamiento de datos personales.',
 }
 
 export default function PrivacyPage() {

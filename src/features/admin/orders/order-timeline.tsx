@@ -1,15 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import {
-  Clock,
-  CreditCard,
-  Factory,
-  Package,
-  Truck,
-  CheckCircle,
-  XCircle,
-} from 'lucide-react'
+import { Clock, CreditCard, Factory, Package, Truck, CheckCircle, XCircle } from 'lucide-react'
 
 import type {
   AdminOrderStatusFilter,

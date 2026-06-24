@@ -77,10 +77,7 @@ export function resolveZoneId(designZone: string | undefined): ZoneId {
  * Returns the first mesh whose name contains any hint, or the first Mesh in
  * the scene if nothing matches (guarantees decals always have a surface).
  */
-export function findZoneMesh(
-  root: THREE.Object3D,
-  hints: string[],
-): THREE.Mesh | null {
+export function findZoneMesh(root: THREE.Object3D, hints: string[]): THREE.Mesh | null {
   let fallback: THREE.Mesh | null = null
   let found: THREE.Mesh | null = null
 

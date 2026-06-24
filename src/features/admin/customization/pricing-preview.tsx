@@ -109,7 +109,8 @@ export function PricingPreviewCard({
         ) : preview ? (
           <div className="space-y-3 rounded-lg bg-secondary p-4">
             <p className="font-sans text-xs text-muted-foreground">
-              Ejemplo: {preview.sampleDimensions} en {selectedRule.areaName} ({selectedRule.optionName})
+              Ejemplo: {preview.sampleDimensions} en {selectedRule.areaName} (
+              {selectedRule.optionName})
             </p>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">

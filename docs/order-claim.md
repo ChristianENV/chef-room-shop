@@ -25,15 +25,15 @@
 
 ## Seguridad
 
-| Regla | Implementación |
-|--------|----------------|
-| No email en URL | Solo `token` en query |
-| No token plano en DB | `tokenHash` único |
-| No `userId` desde cliente | Solo sesión Better Auth |
-| Email debe coincidir | `currentUser.email` === `order.customerEmail` |
-| Email verificado | `currentUser.emailVerified` antes de vincular |
-| Token usado/expirado | Preview null / mensaje controlado |
-| Pedido de otro usuario | `FORBIDDEN` si `userId` distinto |
+| Regla                     | Implementación                                |
+| ------------------------- | --------------------------------------------- |
+| No email en URL           | Solo `token` en query                         |
+| No token plano en DB      | `tokenHash` único                             |
+| No `userId` desde cliente | Solo sesión Better Auth                       |
+| Email debe coincidir      | `currentUser.email` === `order.customerEmail` |
+| Email verificado          | `currentUser.emailVerified` antes de vincular |
+| Token usado/expirado      | Preview null / mensaje controlado             |
+| Pedido de otro usuario    | `FORBIDDEN` si `userId` distinto              |
 
 ## Expiración
 

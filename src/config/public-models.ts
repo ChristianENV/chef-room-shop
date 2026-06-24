@@ -18,10 +18,7 @@ export function getCustomizerChefJacketGltfUrl(): string {
 /** True when the URL points at the local chef-jacket glTF path. */
 export function isLocalChefJacketGltfUrl(url: string): boolean {
   const trimmed = url.trim()
-  return (
-    trimmed === CHEF_JACKET_GLTF_LOCAL ||
-    trimmed.endsWith('/chef-jacket/chef-jacket.gltf')
-  )
+  return trimmed === CHEF_JACKET_GLTF_LOCAL || trimmed.endsWith('/chef-jacket/chef-jacket.gltf')
 }
 
 /**

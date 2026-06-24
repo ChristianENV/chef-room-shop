@@ -25,7 +25,7 @@ const OWNER_TYPE_LABELS: Record<string, string> = {
 
 function formatAdminDate(iso: string): string {
   try {
-    return format(new Date(iso), "d MMM yyyy, HH:mm", { locale: es })
+    return format(new Date(iso), 'd MMM yyyy, HH:mm', { locale: es })
   } catch {
     return iso
   }
@@ -75,9 +75,7 @@ export function mapAdminDesignListItemToTableRow(
   const isGuest = design.ownerType.toUpperCase() === 'GUEST'
   const customerName = isGuest
     ? 'Invitado'
-    : design.customerName?.trim() ||
-      design.customerEmail?.split('@')[0]?.trim() ||
-      'Cliente'
+    : design.customerName?.trim() || design.customerEmail?.split('@')[0]?.trim() || 'Cliente'
 
   const relatedCartLabel = design.relatedCartId
     ? `Carrito ${design.relatedCartId.slice(0, 8)}…`
@@ -94,9 +92,7 @@ export function mapAdminDesignListItemToTableRow(
     status: design.status,
     statusLabel: mapDesignStatusToLabel(design.status),
     finalPriceLabel:
-      design.finalPriceCents != null
-        ? formatMoney(design.finalPriceCents, design.currency)
-        : '—',
+      design.finalPriceCents != null ? formatMoney(design.finalPriceCents, design.currency) : '—',
     currency: design.currency,
     createdAtLabel: formatAdminDate(design.createdAt),
     updatedAtLabel: formatAdminDate(design.updatedAt),

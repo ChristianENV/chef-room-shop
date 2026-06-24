@@ -1,4 +1,9 @@
-import type { CartPageState, CartPreview, CartPreviewCategory, CartPreviewItem } from '@/src/types/cart'
+import type {
+  CartPageState,
+  CartPreview,
+  CartPreviewCategory,
+  CartPreviewItem,
+} from '@/src/types/cart'
 
 /** Free shipping threshold in MXN (mock business rule). */
 export const FREE_SHIPPING_THRESHOLD_MXN = 2000
@@ -39,8 +44,7 @@ export function computeCartTotals(items: CartPreviewItem[]) {
     0,
   )
   const partialTotal = subtotal + customizationTotal
-  const shipping =
-    partialTotal >= FREE_SHIPPING_THRESHOLD_MXN ? 0 : STANDARD_SHIPPING_MXN
+  const shipping = partialTotal >= FREE_SHIPPING_THRESHOLD_MXN ? 0 : STANDARD_SHIPPING_MXN
   const total = partialTotal + shipping
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
 
@@ -104,9 +108,6 @@ export function updateCartPreviewItemQuantity(
 /**
  * Removes a line item by id (in-memory mock).
  */
-export function removeCartPreviewItem(
-  items: CartPreviewItem[],
-  itemId: string,
-): CartPreviewItem[] {
+export function removeCartPreviewItem(items: CartPreviewItem[], itemId: string): CartPreviewItem[] {
   return items.filter((item) => item.id !== itemId)
 }

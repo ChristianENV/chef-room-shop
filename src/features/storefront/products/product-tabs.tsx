@@ -2,7 +2,14 @@
 
 import { cn } from '@/lib/utils'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import type { Product } from '@/lib/types'
 
 interface ProductTabsProps {
@@ -14,11 +21,21 @@ export function ProductTabs({ product, className }: ProductTabsProps) {
   return (
     <Tabs defaultValue="descripcion" className={cn('w-full', className)}>
       <TabsList className="w-full justify-start overflow-x-auto bg-secondary">
-        <TabsTrigger value="descripcion" className="font-sans">Descripcion</TabsTrigger>
-        <TabsTrigger value="materiales" className="font-sans">Materiales</TabsTrigger>
-        <TabsTrigger value="tallas" className="font-sans">Guia de tallas</TabsTrigger>
-        <TabsTrigger value="personalizacion" className="font-sans">Personalizacion</TabsTrigger>
-        <TabsTrigger value="cuidados" className="font-sans">Cuidados</TabsTrigger>
+        <TabsTrigger value="descripcion" className="font-sans">
+          Descripcion
+        </TabsTrigger>
+        <TabsTrigger value="materiales" className="font-sans">
+          Materiales
+        </TabsTrigger>
+        <TabsTrigger value="tallas" className="font-sans">
+          Guia de tallas
+        </TabsTrigger>
+        <TabsTrigger value="personalizacion" className="font-sans">
+          Personalizacion
+        </TabsTrigger>
+        <TabsTrigger value="cuidados" className="font-sans">
+          Cuidados
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="descripcion" className="mt-6">
@@ -43,9 +60,7 @@ export function ProductTabs({ product, className }: ProductTabsProps) {
         <div className="space-y-4">
           <div className="rounded-lg border border-border p-4">
             <h4 className="font-sans text-sm font-semibold text-foreground">Composicion</h4>
-            <p className="mt-2 font-serif text-muted-foreground">
-              65% Poliester, 35% Algodon
-            </p>
+            <p className="mt-2 font-serif text-muted-foreground">65% Poliester, 35% Algodon</p>
           </div>
           <div className="rounded-lg border border-border p-4">
             <h4 className="font-sans text-sm font-semibold text-foreground">Peso de la tela</h4>
@@ -69,26 +84,32 @@ export function ProductTabs({ product, className }: ProductTabsProps) {
       <TabsContent value="personalizacion" className="mt-6">
         <div className="space-y-6">
           <p className="font-serif text-muted-foreground">
-            Personaliza tu prenda con bordados de alta calidad. Ofrecemos diferentes opciones para hacer tu uniforme unico.
+            Personaliza tu prenda con bordados de alta calidad. Ofrecemos diferentes opciones para
+            hacer tu uniforme unico.
           </p>
-          
+
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-lg border border-border p-4">
               <h4 className="font-sans text-sm font-semibold text-foreground">Bordado de nombre</h4>
               <p className="mt-2 font-serif text-sm text-muted-foreground">
-                Agrega tu nombre con tipografia profesional. Disponible en pecho izquierdo, derecho o manga.
+                Agrega tu nombre con tipografia profesional. Disponible en pecho izquierdo, derecho
+                o manga.
               </p>
               <p className="mt-2 font-sans text-sm font-bold text-primary">Desde $149</p>
             </div>
             <div className="rounded-lg border border-border p-4">
-              <h4 className="font-sans text-sm font-semibold text-foreground">Logo personalizado</h4>
+              <h4 className="font-sans text-sm font-semibold text-foreground">
+                Logo personalizado
+              </h4>
               <p className="mt-2 font-serif text-sm text-muted-foreground">
                 Bordamos el logo de tu restaurante o negocio. Hasta 10cm de ancho.
               </p>
               <p className="mt-2 font-sans text-sm font-bold text-primary">Desde $299</p>
             </div>
             <div className="rounded-lg border border-border p-4">
-              <h4 className="font-sans text-sm font-semibold text-foreground">Texto personalizado</h4>
+              <h4 className="font-sans text-sm font-semibold text-foreground">
+                Texto personalizado
+              </h4>
               <p className="mt-2 font-serif text-sm text-muted-foreground">
                 Agrega frases, cargos o cualquier texto. Multiples fuentes disponibles.
               </p>
@@ -112,23 +133,33 @@ export function ProductTabs({ product, className }: ProductTabsProps) {
           </p>
           <ul className="space-y-3 font-serif text-muted-foreground">
             <li className="flex items-start gap-3">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-foreground">1</span>
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-foreground">
+                1
+              </span>
               Lavar a maquina con agua fria o tibia (max 40C)
             </li>
             <li className="flex items-start gap-3">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-foreground">2</span>
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-foreground">
+                2
+              </span>
               No usar blanqueador
             </li>
             <li className="flex items-start gap-3">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-foreground">3</span>
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-foreground">
+                3
+              </span>
               Secar a temperatura media o al aire libre
             </li>
             <li className="flex items-start gap-3">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-foreground">4</span>
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-foreground">
+                4
+              </span>
               Planchar a temperatura media si es necesario
             </li>
             <li className="flex items-start gap-3">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-foreground">5</span>
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-foreground">
+                5
+              </span>
               No limpiar en seco
             </li>
           </ul>
@@ -152,9 +183,10 @@ function SizeGuide() {
   return (
     <div className="space-y-4">
       <p className="font-serif text-muted-foreground">
-        Todas las medidas estan en centimetros. Si estas entre dos tallas, te recomendamos elegir la talla mayor para mayor comodidad.
+        Todas las medidas estan en centimetros. Si estas entre dos tallas, te recomendamos elegir la
+        talla mayor para mayor comodidad.
       </p>
-      
+
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -179,13 +211,17 @@ function SizeGuide() {
       </div>
 
       <div className="mt-6 rounded-lg bg-secondary p-4">
-        <h4 className="font-sans text-sm font-semibold text-foreground">
-          Como medirte
-        </h4>
+        <h4 className="font-sans text-sm font-semibold text-foreground">Como medirte</h4>
         <ul className="mt-2 space-y-1 font-serif text-sm text-muted-foreground">
-          <li><strong>Pecho:</strong> Mide la parte mas ancha de tu pecho, debajo de las axilas.</li>
-          <li><strong>Cintura:</strong> Mide alrededor de tu cintura natural, a la altura del ombligo.</li>
-          <li><strong>Cadera:</strong> Mide la parte mas ancha de tus caderas.</li>
+          <li>
+            <strong>Pecho:</strong> Mide la parte mas ancha de tu pecho, debajo de las axilas.
+          </li>
+          <li>
+            <strong>Cintura:</strong> Mide alrededor de tu cintura natural, a la altura del ombligo.
+          </li>
+          <li>
+            <strong>Cadera:</strong> Mide la parte mas ancha de tus caderas.
+          </li>
         </ul>
       </div>
     </div>

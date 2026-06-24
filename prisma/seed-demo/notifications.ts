@@ -1,7 +1,10 @@
 import type { PrismaClient } from '@prisma/client'
 import { NotificationType } from '@prisma/client'
 
-import { createAdminNotification, createUserNotification } from '@/src/server/notifications/notification.service'
+import {
+  createAdminNotification,
+  createUserNotification,
+} from '@/src/server/notifications/notification.service'
 
 type DemoNotificationSeedInput = {
   prisma: PrismaClient

@@ -4,10 +4,7 @@ import type { AdminPaymentsListInput } from '../modules/admin-payments/admin-pay
 
 export const adminPaymentsResolvers = {
   Query: {
-    adminPayments: (
-      _parent: unknown,
-      args: AdminPaymentsListInput,
-      context: GraphQLContext,
-    ) => getAdminPayments(context, args),
+    adminPayments: (_parent: unknown, args: AdminPaymentsListInput, context: GraphQLContext) =>
+      getAdminPayments(context, args),
   },
 }

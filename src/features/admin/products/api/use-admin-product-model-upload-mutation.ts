@@ -146,7 +146,10 @@ export function useAdminProductModelUploadMutation() {
       setStage('readyToUpload')
 
       // 3. Get presigned URL
-      const createData = await fetchGraphQL<CreateUploadPayload, { input: Record<string, unknown> }>({
+      const createData = await fetchGraphQL<
+        CreateUploadPayload,
+        { input: Record<string, unknown> }
+      >({
         query: CREATE_ADMIN_PRODUCT_MODEL_UPLOAD_MUTATION,
         variables: {
           input: {
@@ -177,10 +180,12 @@ export function useAdminProductModelUploadMutation() {
 
       // 5. Confirm
       setStage('confirming')
-      const confirmData = await fetchGraphQL<ConfirmUploadPayload, { input: { uploadId: string } }>({
-        query: CONFIRM_ADMIN_PRODUCT_MODEL_UPLOAD_MUTATION,
-        variables: { input: { uploadId } },
-      })
+      const confirmData = await fetchGraphQL<ConfirmUploadPayload, { input: { uploadId: string } }>(
+        {
+          query: CONFIRM_ADMIN_PRODUCT_MODEL_UPLOAD_MUTATION,
+          variables: { input: { uploadId } },
+        },
+      )
       state.result = confirmData.confirmAdminProductModelUpload
       setStage('success')
       return state

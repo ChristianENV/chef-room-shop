@@ -22,17 +22,26 @@ export default function PublicLayoutDemo() {
               Tu cocina te define, tu uniforme te distingue
             </h1>
             <p className="mx-auto mt-6 max-w-xl font-serif text-lg text-white/80 text-pretty">
-              Uniformes de chef de alta calidad, personalizables con bordados unicos. 
-              Diseña el tuyo y destaca en cada servicio.
+              Uniformes de chef de alta calidad, personalizables con bordados unicos. Diseña el tuyo
+              y destaca en cada servicio.
             </p>
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Button size="lg" className="bg-white font-sans font-semibold text-primary hover:bg-white/90" asChild>
+              <Button
+                size="lg"
+                className="bg-white font-sans font-semibold text-primary hover:bg-white/90"
+                asChild
+              >
                 <Link href={routes.shop}>
                   Ver Catálogo
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-white/30 font-sans text-white hover:bg-white/10" asChild>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-white/30 font-sans text-white hover:bg-white/10"
+                asChild
+              >
                 <Link href={routes.customize}>Personalizar Uniforme</Link>
               </Button>
             </div>

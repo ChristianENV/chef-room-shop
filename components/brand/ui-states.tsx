@@ -36,17 +36,13 @@ const statusConfig = {
 
 export function StatusBadge({ status, text, className }: StatusBadgeProps) {
   const config = statusConfig[status]
-  
+
   return (
-    <div className={cn(
-      'inline-flex items-center gap-2 rounded-full px-3 py-1',
-      config.bg,
-      className
-    )}>
+    <div
+      className={cn('inline-flex items-center gap-2 rounded-full px-3 py-1', config.bg, className)}
+    >
       <div className={cn('h-2 w-2 rounded-full', config.dot)} />
-      <span className={cn('font-sans text-sm font-medium', config.text)}>
-        {text}
-      </span>
+      <span className={cn('font-sans text-sm font-medium', config.text)}>{text}</span>
     </div>
   )
 }
@@ -70,30 +66,23 @@ const emptyStateIcons = {
   cart: ShoppingCart,
 }
 
-export function EmptyState({ 
-  icon, 
-  title, 
-  description, 
+export function EmptyState({
+  icon,
+  title,
+  description,
   action,
   variant = 'default',
-  className 
+  className,
 }: EmptyStateProps) {
   const IconComponent = emptyStateIcons[variant]
-  
+
   return (
-    <div className={cn(
-      'flex flex-col items-center justify-center py-16 text-center',
-      className
-    )}>
+    <div className={cn('flex flex-col items-center justify-center py-16 text-center', className)}>
       <div className="mb-4 rounded-full bg-secondary p-4">
         {icon || <IconComponent className="h-8 w-8 text-muted-foreground" />}
       </div>
-      <h3 className="font-sans text-lg font-semibold text-foreground">
-        {title}
-      </h3>
-      <p className="mt-1 max-w-sm font-serif text-muted-foreground">
-        {description}
-      </p>
+      <h3 className="font-sans text-lg font-semibold text-foreground">{title}</h3>
+      <p className="mt-1 max-w-sm font-serif text-muted-foreground">{description}</p>
       {action && (
         <Button onClick={action.onClick} className="mt-4">
           {action.label}
@@ -111,26 +100,19 @@ interface ErrorStateProps {
   className?: string
 }
 
-export function ErrorState({ 
-  title = 'Algo salió mal', 
-  message, 
+export function ErrorState({
+  title = 'Algo salió mal',
+  message,
   retry,
-  className 
+  className,
 }: ErrorStateProps) {
   return (
-    <div className={cn(
-      'flex flex-col items-center justify-center py-16 text-center',
-      className
-    )}>
+    <div className={cn('flex flex-col items-center justify-center py-16 text-center', className)}>
       <div className="mb-4 rounded-full bg-destructive/10 p-4">
         <AlertCircle className="h-8 w-8 text-destructive" />
       </div>
-      <h3 className="font-sans text-lg font-semibold text-foreground">
-        {title}
-      </h3>
-      <p className="mt-1 max-w-sm font-serif text-muted-foreground">
-        {message}
-      </p>
+      <h3 className="font-sans text-lg font-semibold text-foreground">{title}</h3>
+      <p className="mt-1 max-w-sm font-serif text-muted-foreground">{message}</p>
       {retry && (
         <Button onClick={retry} variant="outline" className="mt-4">
           <RefreshCw className="mr-2 h-4 w-4" />
@@ -148,10 +130,10 @@ interface LoadingSkeletonProps {
   className?: string
 }
 
-export function LoadingSkeleton({ 
-  variant = 'product-card', 
+export function LoadingSkeleton({
+  variant = 'product-card',
   count = 1,
-  className 
+  className,
 }: LoadingSkeletonProps) {
   const items = Array.from({ length: count }, (_, i) => i)
 

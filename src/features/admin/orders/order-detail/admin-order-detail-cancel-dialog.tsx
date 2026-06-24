@@ -51,11 +51,7 @@ export function AdminOrderDetailCancelDialog({ detail }: AdminOrderDetailCancelD
           <Button variant="outline" onClick={dismissCancelDialog}>
             Volver
           </Button>
-          <Button
-            variant="destructive"
-            onClick={() => void handleCancel()}
-            disabled={isMutating}
-          >
+          <Button variant="destructive" onClick={() => void handleCancel()} disabled={isMutating}>
             Confirmar cancelación
           </Button>
         </DialogFooter>

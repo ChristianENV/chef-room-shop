@@ -111,10 +111,15 @@ function formatColorLabel(name: string | null, hex: string | null): string | nul
   return name ?? hex
 }
 
-function buildSummaryLines(configJson: unknown, elements: Array<Record<string, unknown>>): string[] {
+function buildSummaryLines(
+  configJson: unknown,
+  elements: Array<Record<string, unknown>>,
+): string[] {
   const config = parseJsonRecord(configJson)
   const fromConfig = Array.isArray(config.summary)
-    ? config.summary.filter((line): line is string => typeof line === 'string' && line.trim().length > 0)
+    ? config.summary.filter(
+        (line): line is string => typeof line === 'string' && line.trim().length > 0,
+      )
     : []
 
   if (fromConfig.length > 0) return fromConfig
@@ -124,7 +129,9 @@ function buildSummaryLines(configJson: unknown, elements: Array<Record<string, u
     .filter((text): text is string => Boolean(text))
 }
 
-function mapElements(elements: Array<Record<string, unknown>>): AdminDesignCustomizationElementGql[] {
+function mapElements(
+  elements: Array<Record<string, unknown>>,
+): AdminDesignCustomizationElementGql[] {
   return elements.map((element, index) => ({
     id: parseString(element.id) ?? `element-${index}`,
     type: parseString(element.type) ?? 'personalización',
@@ -184,7 +191,7 @@ function mapDesignBaseFields(
     productSlug,
     ownerType,
     customerName: ownerType === 'USER' ? resolveCustomerName(design.user) : null,
-    customerEmail: ownerType === 'USER' ? design.user?.email ?? null : null,
+    customerEmail: ownerType === 'USER' ? (design.user?.email ?? null) : null,
     status: design.status,
     finalPriceCents: resolveDesignFinalPriceCents(design.configJson),
     currency: config.currency?.trim() || 'MXN',

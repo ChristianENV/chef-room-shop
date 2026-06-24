@@ -9,15 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
-import { 
-  ShoppingCart, 
-  Heart, 
-  Edit3, 
-  Check, 
-  AlertCircle,
-  Info,
-  ChevronRight
-} from 'lucide-react'
+import { ShoppingCart, Heart, Edit3, Check, AlertCircle, Info, ChevronRight } from 'lucide-react'
 
 export function ShadcnComponentsSection() {
   return (
@@ -71,9 +63,7 @@ export function ShadcnComponentsSection() {
               <Badge variant="secondary">Categoría</Badge>
               <Badge variant="outline">Personalizable</Badge>
               <Badge variant="destructive">Agotado</Badge>
-              <Badge className="bg-success text-white hover:bg-success/90">
-                En Stock
-              </Badge>
+              <Badge className="bg-success text-white hover:bg-success/90">En Stock</Badge>
               <Badge className="bg-warning text-foreground hover:bg-warning/90">
                 Ultima unidad
               </Badge>
@@ -95,8 +85,8 @@ export function ShadcnComponentsSection() {
               </TabsList>
               <TabsContent value="descripcion" className="mt-4">
                 <p className="font-serif text-muted-foreground">
-                  Filipina profesional confeccionada en tela premium transpirable, 
-                  diseñada para el chef moderno que busca comodidad y estilo.
+                  Filipina profesional confeccionada en tela premium transpirable, diseñada para el
+                  chef moderno que busca comodidad y estilo.
                 </p>
               </TabsContent>
               <TabsContent value="tallas" className="mt-4">

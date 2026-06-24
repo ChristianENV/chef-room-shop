@@ -22,13 +22,7 @@
 
 import { NodeIO } from '@gltf-transform/core'
 import { KHRONOS_EXTENSIONS } from '@gltf-transform/extensions'
-import {
-  dedup,
-  prune,
-  weld,
-  reorder,
-  quantize,
-} from '@gltf-transform/functions'
+import { dedup, prune, weld, reorder, quantize } from '@gltf-transform/functions'
 import { MeshoptEncoder, MeshoptDecoder } from 'meshoptimizer'
 import { EXTMeshoptCompression } from '@gltf-transform/extensions'
 import path from 'node:path'
@@ -76,7 +70,8 @@ console.log('  [5/5] quantize — compressing vertex attributes...')
 await document.transform(quantize())
 
 // Apply meshopt compression extension
-const meshoptExtension = document.createExtension(EXTMeshoptCompression)
+const meshoptExtension = document
+  .createExtension(EXTMeshoptCompression)
   .setRequired(true)
   .setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.QUANTIZE })
 

@@ -2,9 +2,7 @@
  * Manual unit checks for customizer embroidery pricing.
  * Run: pnpm exec tsx scripts/test-customizer-pricing.ts
  */
-import {
-  CUSTOMIZER_EMBROIDERY_PRICING_CENTS,
-} from '../src/features/storefront/customizer/pricing/customizer-pricing.constants'
+import { CUSTOMIZER_EMBROIDERY_PRICING_CENTS } from '../src/features/storefront/customizer/pricing/customizer-pricing.constants'
 import { calculateCustomizerPrice } from '../src/features/storefront/customizer/pricing/calculate-customizer-price'
 import type { CustomizerPricingElement } from '../src/features/storefront/customizer/pricing/calculate-customizer-price'
 
@@ -28,7 +26,11 @@ function el(partial: CustomizerPricingElement): CustomizerPricingElement {
   }
 }
 
-function runCase(name: string, elements: CustomizerPricingElement[], expectedCustomization: number) {
+function runCase(
+  name: string,
+  elements: CustomizerPricingElement[],
+  expectedCustomization: number,
+) {
   const result = calculateCustomizerPrice({ basePriceCents: BASE, elements })
   assert(
     result.customizationPriceCents === expectedCustomization,
@@ -44,7 +46,11 @@ function runCase(name: string, elements: CustomizerPricingElement[], expectedCus
 try {
   runCase('sin personalización', [], 0)
 
-  runCase('un texto', [el({ id: 't1', type: 'text', text: 'Chef Room' })], CUSTOMIZER_EMBROIDERY_PRICING_CENTS.TEXT)
+  runCase(
+    'un texto',
+    [el({ id: 't1', type: 'text', text: 'Chef Room' })],
+    CUSTOMIZER_EMBROIDERY_PRICING_CENTS.TEXT,
+  )
 
   runCase(
     'logo pecho',

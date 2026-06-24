@@ -12,11 +12,7 @@ describe('buildSocialOAuthCallbackURL', () => {
 
     assert.ok(url.includes('/auth/social-complete?'))
     assert.ok(url.includes('source=storefront-login'))
-    assert.ok(
-      url.includes(
-        encodeURIComponent('/account/orders/ORD-1?from=checkout&token=abc'),
-      ),
-    )
+    assert.ok(url.includes(encodeURIComponent('/account/orders/ORD-1?from=checkout&token=abc')))
   })
 
   it('omits callbackUrl when unsafe or missing', () => {

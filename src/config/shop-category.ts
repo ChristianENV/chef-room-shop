@@ -11,9 +11,7 @@ export type ShopCategorySlug = (typeof SHOP_CATEGORY_SLUGS)[number]
 /**
  * Validates `?category=` from the shop URL.
  */
-export function parseShopCategorySlug(
-  value: string | null | undefined,
-): ShopCategorySlug | null {
+export function parseShopCategorySlug(value: string | null | undefined): ShopCategorySlug | null {
   if (!value) return null
   const normalized = value.trim().toLowerCase()
   return SHOP_CATEGORY_SLUGS.includes(normalized as ShopCategorySlug)
@@ -41,9 +39,7 @@ export function shopCategoryToFilterCategories(category: ShopCategorySlug | null
 /**
  * Derives shop category param from a single selected product type slug.
  */
-export function filterCategoriesToShopCategory(
-  categories: string[],
-): ShopCategorySlug | null {
+export function filterCategoriesToShopCategory(categories: string[]): ShopCategorySlug | null {
   if (categories.length !== 1) return null
   const productTypeSlug = categories[0]
   for (const shopCategory of SHOP_CATEGORY_SLUGS) {

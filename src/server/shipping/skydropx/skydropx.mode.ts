@@ -1,52 +1,41 @@
 import 'server-only'
 
+import {
+  resolveAppEnvironment,
+  type AppEnvironmentResolutionInput,
+} from '@/src/config/app-environment'
+
 import { getSkydropxConfig, isSkydropxConfigured } from './skydropx.config'
 
 export type SkydropxMode = 'live' | 'mock'
 
-export type SkydropxModeResolutionInput = {
-  explicitMode?: string | null
-  nodeEnv?: string | null
-  configured?: boolean
-}
-
-function readExplicitSkydropxMode(
-  raw = process.env.SKYDROPX_MODE,
-): SkydropxMode | null {
-  const value = raw?.trim().toLowerCase()
-  if (value === 'mock') return 'mock'
-  if (value === 'live') return 'live'
-  return null
-}
+export type SkydropxModeResolutionInput = AppEnvironmentResolutionInput
 
 /**
- * Resolves Skydropx integration mode (testable with explicit inputs).
+ * Resolves Skydropx integration mode from deployment env signals.
+ * local/np → mock; prod → live.
  */
-export function resolveSkydropxMode(
+export function resolveSkydropxModeFromEnvironment(
   input: SkydropxModeResolutionInput = {},
 ): SkydropxMode {
-  const explicit = readExplicitSkydropxMode(input.explicitMode ?? undefined)
-  if (explicit) return explicit
-
-  const nodeEnv = input.nodeEnv ?? process.env.NODE_ENV ?? ''
-  if (nodeEnv === 'production') {
-    return 'live'
-  }
-
-  const configured = input.configured ?? isSkydropxConfigured()
-  if (!configured) {
-    return 'mock'
-  }
-
+  const appEnv = resolveAppEnvironment(input)
+  if (appEnv === 'prod') return 'live'
+  if (appEnv === 'local' || appEnv === 'np') return 'mock'
   return 'live'
 }
 
 /**
+ * @deprecated Prefer resolveSkydropxModeFromEnvironment. Kept for existing tests/callers.
+ */
+export function resolveSkydropxMode(input: SkydropxModeResolutionInput = {}): SkydropxMode {
+  return resolveSkydropxModeFromEnvironment(input)
+}
+
+/**
  * Resolves Skydropx integration mode from runtime env.
- * Production never defaults to mock; dev/test without credentials may.
  */
 export function getSkydropxMode(): SkydropxMode {
-  return resolveSkydropxMode()
+  return resolveSkydropxModeFromEnvironment()
 }
 
 export function isSkydropxMockMode(): boolean {

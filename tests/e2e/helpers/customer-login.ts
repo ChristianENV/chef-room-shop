@@ -1,7 +1,6 @@
 import type { Page } from '@playwright/test'
 
-const CUSTOMER_EMAIL =
-  process.env.E2E_CUSTOMER_EMAIL ?? 'cliente.demo+1@chefroom.test'
+const CUSTOMER_EMAIL = process.env.E2E_CUSTOMER_EMAIL ?? 'cliente.demo+1@chefroom.test'
 const CUSTOMER_PASSWORD = process.env.E2E_CUSTOMER_PASSWORD ?? '12345678'
 
 /**

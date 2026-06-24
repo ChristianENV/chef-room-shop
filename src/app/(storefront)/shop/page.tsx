@@ -3,10 +3,7 @@
 import { Suspense, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { routes } from '@/src/config/routes'
-import {
-  parseShopCategorySlug,
-  shopCategoryToFilterCategories,
-} from '@/src/config/shop-category'
+import { parseShopCategorySlug, shopCategoryToFilterCategories } from '@/src/config/shop-category'
 import {
   CatalogHero,
   CatalogFilters,
@@ -71,10 +68,7 @@ function ShopPageContent() {
     refetch: refetchProducts,
   } = useProductsQuery(productsQueryParams)
 
-  const {
-    data: filtersData,
-    isLoading: isFiltersLoading,
-  } = useCatalogFiltersQuery()
+  const { data: filtersData, isLoading: isFiltersLoading } = useCatalogFiltersQuery()
 
   const filterOptions = useMemo(
     () => (filtersData ? toCatalogFilterOptions(filtersData) : undefined),
@@ -88,10 +82,7 @@ function ShopPageContent() {
 
   const isLoading = isProductsLoading || isFiltersLoading
   const errorMessage = isProductsError
-    ? getCatalogUserErrorMessage(
-        productsError,
-        'No se pudo cargar el catálogo. Intenta de nuevo.',
-      )
+    ? getCatalogUserErrorMessage(productsError, 'No se pudo cargar el catálogo. Intenta de nuevo.')
     : null
 
   const activeFilterCount = useMemo(() => {
@@ -124,10 +115,7 @@ function ShopPageContent() {
       <div className="mx-auto max-w-7xl px-4 py-8 md:px-6">
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
-            <MobileFiltersSheet
-              {...filterProps}
-              activeFilterCount={activeFilterCount}
-            />
+            <MobileFiltersSheet {...filterProps} activeFilterCount={activeFilterCount} />
 
             <p className="font-serif text-sm text-muted-foreground">
               {isLoading
@@ -163,10 +151,7 @@ function ShopPageContent() {
                 }}
               />
             ) : products.length === 0 ? (
-              <CatalogEmptyState
-                variant="no-results"
-                onClearFilters={handleClearFilters}
-              />
+              <CatalogEmptyState variant="no-results" onClearFilters={handleClearFilters} />
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
                 {products.map((product) => (

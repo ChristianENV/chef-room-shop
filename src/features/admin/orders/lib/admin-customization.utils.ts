@@ -22,8 +22,9 @@ function parseString(value: unknown): string | null {
 function parseElements(value: unknown): AdminOrdersUiCustomizationElement[] {
   if (!Array.isArray(value)) return []
   return value
-    .filter((element): element is Record<string, unknown> =>
-      Boolean(element) && typeof element === 'object' && !Array.isArray(element),
+    .filter(
+      (element): element is Record<string, unknown> =>
+        Boolean(element) && typeof element === 'object' && !Array.isArray(element),
     )
     .map((element, index) => ({
       id: parseString(element.id) ?? `element-${index}`,
@@ -51,11 +52,7 @@ export function buildAdminCustomizationFromItem(
   const designRecord = parseRecord(item.designSnapshotJson)
   const elements = parseElements(designRecord.elements)
 
-  const size =
-    design?.selectedSize?.label ??
-    design?.selectedSize?.name ??
-    product.sizeName ??
-    '—'
+  const size = design?.selectedSize?.label ?? design?.selectedSize?.name ?? product.sizeName ?? '—'
 
   const fabricName =
     design?.fabricColor?.name ??
@@ -65,10 +62,7 @@ export function buildAdminCustomizationFromItem(
     null
 
   const fabricHex =
-    design?.fabricColor?.hex ??
-    product.colorHex ??
-    design?.selectedColor?.hex ??
-    null
+    design?.fabricColor?.hex ?? product.colorHex ?? design?.selectedColor?.hex ?? null
 
   const detailName = design?.detailColor?.name ?? product.detailColorName ?? null
   const detailHex = design?.detailColor?.hex ?? null
@@ -79,9 +73,7 @@ export function buildAdminCustomizationFromItem(
   const summaryLines =
     design?.summary && design.summary.length > 0
       ? design.summary
-      : elements
-          .filter((element) => element.text)
-          .map((element) => element.text as string)
+      : elements.filter((element) => element.text).map((element) => element.text as string)
 
   if (!previewUrl && elements.length === 0 && !design && item.customizationPriceCents === 0) {
     return undefined

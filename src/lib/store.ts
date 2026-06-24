@@ -21,21 +21,21 @@ interface DesignerState {
   // Colors
   baseColor: string
   detailColor: string
-  
+
   // Style options
   collarStyle: CollarStyle
   sleeveStyle: SleeveStyle
   buttonStyle: ButtonStyle
   size: Size
-  
+
   // View
   viewMode: '2D' | '3D'
   viewAngle: 'front' | 'back'
-  
+
   // Layers
   layers: Layer[]
   selectedLayerId: string | null
-  
+
   // Actions
   setBaseColor: (color: string) => void
   setDetailColor: (color: string) => void
@@ -125,7 +125,7 @@ export const useDesignerStore = create<DesignerState>((set) => ({
   viewAngle: 'front',
   layers: defaultLayers,
   selectedLayerId: 'logo',
-  
+
   // Actions
   setBaseColor: (color) => set({ baseColor: color }),
   setDetailColor: (color) => set({ detailColor: color }),
@@ -139,32 +139,24 @@ export const useDesignerStore = create<DesignerState>((set) => ({
   toggleLayerVisibility: (id) =>
     set((state) => ({
       layers: state.layers.map((layer) =>
-        layer.id === id ? { ...layer, visible: !layer.visible } : layer
+        layer.id === id ? { ...layer, visible: !layer.visible } : layer,
       ),
     })),
   updateLayerPosition: (id, position) =>
     set((state) => ({
-      layers: state.layers.map((layer) =>
-        layer.id === id ? { ...layer, position } : layer
-      ),
+      layers: state.layers.map((layer) => (layer.id === id ? { ...layer, position } : layer)),
     })),
   updateLayerSize: (id, size) =>
     set((state) => ({
-      layers: state.layers.map((layer) =>
-        layer.id === id ? { ...layer, size } : layer
-      ),
+      layers: state.layers.map((layer) => (layer.id === id ? { ...layer, size } : layer)),
     })),
   updateLayerRotation: (id, rotation) =>
     set((state) => ({
-      layers: state.layers.map((layer) =>
-        layer.id === id ? { ...layer, rotation } : layer
-      ),
+      layers: state.layers.map((layer) => (layer.id === id ? { ...layer, rotation } : layer)),
     })),
   updateLayerOpacity: (id, opacity) =>
     set((state) => ({
-      layers: state.layers.map((layer) =>
-        layer.id === id ? { ...layer, opacity } : layer
-      ),
+      layers: state.layers.map((layer) => (layer.id === id ? { ...layer, opacity } : layer)),
     })),
   duplicateLayer: (id) =>
     set((state) => {

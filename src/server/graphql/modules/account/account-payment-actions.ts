@@ -1,6 +1,12 @@
 import 'server-only'
 
-import { OrderStatus, PaymentStatus, type Order, type Payment, type PaymentAttempt } from '@prisma/client'
+import {
+  OrderStatus,
+  PaymentStatus,
+  type Order,
+  type Payment,
+  type PaymentAttempt,
+} from '@prisma/client'
 
 import {
   getCachedCheckoutFromAttempts,
@@ -12,9 +18,11 @@ export type OrderWithPaymentAttempts = Order & {
   payments: Array<Payment & { attempts: PaymentAttempt[] }>
 }
 
-function getLatestConektaPayment(order: OrderWithPaymentAttempts): Payment & {
-  attempts: PaymentAttempt[]
-} | null {
+function getLatestConektaPayment(order: OrderWithPaymentAttempts):
+  | (Payment & {
+      attempts: PaymentAttempt[]
+    })
+  | null {
   const conekta = order.payments.find((payment) => payment.provider === 'CONEKTA')
   return conekta ?? order.payments[0] ?? null
 }
@@ -29,8 +37,7 @@ export function resolveAccountPaymentActions(
   const paymentStatus = payment?.status ?? PaymentStatus.PENDING
   const orderStatus = order.status
 
-  const isPaid =
-    paymentStatus === PaymentStatus.PAID || orderStatus === OrderStatus.PAID
+  const isPaid = paymentStatus === PaymentStatus.PAID || orderStatus === OrderStatus.PAID
 
   const canVerifyPayment =
     !isPaid &&

@@ -11,10 +11,7 @@ import { useAddCartItemMutation } from '@/src/features/storefront/cart/api/use-a
 import { useSession } from '@/src/lib/auth/auth-client'
 import type { CustomizerProductData } from '../types/customizer-product.types'
 import type { SavePhase } from '../types/customizer.types'
-import {
-  selectHasMeaningfulCustomization,
-  useCustomizerStore,
-} from '../store/customizer.store'
+import { selectHasMeaningfulCustomization, useCustomizerStore } from '../store/customizer.store'
 import { useCreateDesignDraftMutation } from '../api/use-create-design-draft'
 import { useUpdateDesignMutation } from '../api/use-update-design'
 import { ensureDesignPreviews } from '../lib/ensure-design-previews'
@@ -150,9 +147,7 @@ export function CustomizerShell({
 
   const [cartActionError, setCartActionError] = useState<string | null>(null)
   const [addToCartSuccessOpen, setAddToCartSuccessOpen] = useState(false)
-  const [addToCartSuccessPreviewUrl, setAddToCartSuccessPreviewUrl] = useState<string | null>(
-    null,
-  )
+  const [addToCartSuccessPreviewUrl, setAddToCartSuccessPreviewUrl] = useState<string | null>(null)
   const [savePhase, setSavePhase] = useState<SavePhase>('idle')
   const [previewWarning, setPreviewWarning] = useState<string | null>(null)
   const [lastPreviewSuccess, setLastPreviewSuccess] = useState(false)
@@ -236,7 +231,14 @@ export function CustomizerShell({
     hydratedProductRef.current = product.id
     hydratedDesignIdRef.current = null
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reset only when switching products
-  }, [product.id, product.slug, loadedDesign, hydrateFromDesign, hydrateFromLocalDraft, initFromProduct])
+  }, [
+    product.id,
+    product.slug,
+    loadedDesign,
+    hydrateFromDesign,
+    hydrateFromLocalDraft,
+    initFromProduct,
+  ])
 
   // Keep catalog variants/colors/sizes in sync when BFF data refreshes (rules, stock).
   useEffect(() => {
@@ -404,9 +406,7 @@ export function CustomizerShell({
 
       const capture = viewportCaptureRef.current
       if (!capture) {
-        setPreviewWarning(
-          'Guardamos la configuración, pero no pudimos generar la vista previa.',
-        )
+        setPreviewWarning('Guardamos la configuración, pero no pudimos generar la vista previa.')
         return false
       }
 
@@ -414,9 +414,7 @@ export function CustomizerShell({
         setSavePhase('capturing_front')
         const blobs = await capture.captureDesignPreviews()
         if (!blobs) {
-          setPreviewWarning(
-            'Guardamos la configuración, pero no pudimos generar la vista previa.',
-          )
+          setPreviewWarning('Guardamos la configuración, pero no pudimos generar la vista previa.')
           return false
         }
 
@@ -481,7 +479,15 @@ export function CustomizerShell({
       setSavePhase('error')
       return null
     }
-  }, [product, isAuthenticated, persistToDatabase, persistLocalDraft, setSaveStatus, setLastSavedAt, markDirty])
+  }, [
+    product,
+    isAuthenticated,
+    persistToDatabase,
+    persistLocalDraft,
+    setSaveStatus,
+    setLastSavedAt,
+    markDirty,
+  ])
 
   /** Manual save: config + front/back previews for auth; local draft for guests. */
   const runSaveWithPreviews = useCallback(async (): Promise<string | null> => {
@@ -643,8 +649,7 @@ export function CustomizerShell({
             zone: 'pecho',
           })
         } catch (error) {
-          const message =
-            error instanceof Error ? error.message : 'No pudimos subir el logotipo.'
+          const message = error instanceof Error ? error.message : 'No pudimos subir el logotipo.'
           setLogoUploadError(message)
           throw error
         }

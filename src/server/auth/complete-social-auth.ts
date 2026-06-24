@@ -3,9 +3,7 @@ import 'server-only'
 import { headers } from 'next/headers'
 
 import { login, routes } from '@/src/config/routes'
-import {
-  getActiveGuestSessionFromCookies,
-} from '@/src/server/guest/guest-session'
+import { getActiveGuestSessionFromCookies } from '@/src/server/guest/guest-session'
 import { mergeGuestSessionIntoUser } from '@/src/server/guest/merge-guest-session'
 
 import { auth } from './better-auth'

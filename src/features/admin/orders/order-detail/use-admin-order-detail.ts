@@ -13,11 +13,7 @@ import {
   mapAdminOrderToProductionSheet,
 } from '../mappers/admin-orders-ui.mapper'
 
-export type AdminOrderDetailTab =
-  | 'details'
-  | 'items'
-  | 'timeline'
-  | 'production'
+export type AdminOrderDetailTab = 'details' | 'items' | 'timeline' | 'production'
 
 type UseAdminOrderDetailOptions = {
   orderNumber: string
@@ -54,15 +50,10 @@ export function useAdminOrderDetail({
     : undefined
 
   const isMutating =
-    moveToProduction.isPending ||
-    markReady.isPending ||
-    cancelOrder.isPending ||
-    addNote.isPending
+    moveToProduction.isPending || markReady.isPending || cancelOrder.isPending || addNote.isPending
 
   const cancelDialogOpen =
-    isActive &&
-    !cancelDialogDismissed &&
-    (onOpenCancelDialog || cancelDialogExplicit)
+    isActive && !cancelDialogDismissed && (onOpenCancelDialog || cancelDialogExplicit)
 
   const resetTransientState = () => {
     setCancelDialogDismissed(false)
@@ -72,8 +63,7 @@ export function useAdminOrderDetail({
   }
 
   const handleMutationError = (error: unknown) => {
-    const message =
-      error instanceof Error ? error.message : 'No pudimos completar la acción.'
+    const message = error instanceof Error ? error.message : 'No pudimos completar la acción.'
     setActionError(message)
     if (process.env.NODE_ENV === 'development') {
       console.error('[admin-orders]', error)

@@ -38,9 +38,7 @@ export function calculateEstimatedPackageFromQuantity(quantity: number): Package
     widthCm: lastTier.widthCm,
     heightCm: lastTier.heightCm,
     weightKg:
-      Math.round(
-        (lastTier.weightKg + extraUnits * SHIPPING_VARS.extraItemWeightKg) * 100,
-      ) / 100,
+      Math.round((lastTier.weightKg + extraUnits * SHIPPING_VARS.extraItemWeightKg) * 100) / 100,
   }
 }
 

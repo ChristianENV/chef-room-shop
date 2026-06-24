@@ -42,8 +42,4 @@ export {
 } from './success-states'
 
 // Permission States
-export {
-  AdminOnlyState,
-  LoginRequiredState,
-  FeatureLockedState,
-} from './permission-states'
+export { AdminOnlyState, LoginRequiredState, FeatureLockedState } from './permission-states'

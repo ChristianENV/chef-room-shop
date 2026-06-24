@@ -2,10 +2,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { 
-  ProductCard, 
-  ProductBadge, 
-  PriceDisplay, 
+import {
+  ProductCard,
+  ProductBadge,
+  PriceDisplay,
   CustomizationBadge,
   StatusBadge,
   EmptyState,
@@ -14,7 +14,7 @@ import {
   CTAButtonGroup,
   FeatureCard,
   TrustBadge,
-  TrustBadgesRow
+  TrustBadgesRow,
 } from '@/components/brand'
 import { MOCK_PRODUCTS } from '@/lib/mock-data'
 import { Edit3, Palette, Package } from 'lucide-react'
@@ -152,13 +152,13 @@ export function CoreComponentsSection() {
               CTA Button Groups
             </h3>
             <div className="space-y-4">
-              <CTAButtonGroup 
-                primaryLabel="Agregar al Carrito" 
+              <CTAButtonGroup
+                primaryLabel="Agregar al Carrito"
                 secondaryLabel="Personalizar"
                 align="left"
               />
-              <CTAButtonGroup 
-                primaryLabel="Comprar Ahora" 
+              <CTAButtonGroup
+                primaryLabel="Comprar Ahora"
                 secondaryLabel="Ver Más Productos"
                 align="center"
               />
@@ -179,8 +179,8 @@ export function CoreComponentsSection() {
                   title="Tu carrito esta vacio"
                   description="Explora nuestros productos y agrega los que mas te gusten."
                   action={{
-                    label: "Ver Productos",
-                    onClick: () => console.log('Ver productos')
+                    label: 'Ver Productos',
+                    onClick: () => console.log('Ver productos'),
                   }}
                 />
               </div>

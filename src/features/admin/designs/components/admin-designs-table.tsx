@@ -92,7 +92,9 @@ export function AdminDesignsTable({ rows, loading, onRowClick }: AdminDesignsTab
               </TableCell>
               <TableCell>
                 <div>
-                  <span className="font-mono text-sm font-medium text-foreground">{row.shortId}</span>
+                  <span className="font-mono text-sm font-medium text-foreground">
+                    {row.shortId}
+                  </span>
                   <p className="font-mono text-[10px] text-muted-foreground">{row.id}</p>
                 </div>
               </TableCell>
@@ -102,7 +104,9 @@ export function AdminDesignsTable({ rows, loading, onRowClick }: AdminDesignsTab
               <TableCell>
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-sans text-sm font-medium text-foreground">{row.customerName}</p>
+                    <p className="font-sans text-sm font-medium text-foreground">
+                      {row.customerName}
+                    </p>
                     <Badge variant="outline" className="font-sans text-[10px]">
                       {row.ownerLabel}
                     </Badge>
@@ -125,14 +129,20 @@ export function AdminDesignsTable({ rows, loading, onRowClick }: AdminDesignsTab
                   {row.finalPriceLabel}
                 </span>
                 {row.finalPriceLabel !== '—' ? (
-                  <span className="ml-1 font-mono text-xs text-muted-foreground">{row.currency}</span>
+                  <span className="ml-1 font-mono text-xs text-muted-foreground">
+                    {row.currency}
+                  </span>
                 ) : null}
               </TableCell>
               <TableCell>
-                <span className="font-serif text-sm text-muted-foreground">{row.createdAtLabel}</span>
+                <span className="font-serif text-sm text-muted-foreground">
+                  {row.createdAtLabel}
+                </span>
               </TableCell>
               <TableCell>
-                <span className="font-serif text-sm text-muted-foreground">{row.updatedAtLabel}</span>
+                <span className="font-serif text-sm text-muted-foreground">
+                  {row.updatedAtLabel}
+                </span>
               </TableCell>
               <TableCell>
                 <div className="flex flex-col gap-1">

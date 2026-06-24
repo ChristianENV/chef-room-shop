@@ -1,11 +1,6 @@
 import 'server-only'
 
-import {
-  NotificationType,
-  OrderStatus,
-  type Order,
-  type PrismaClient,
-} from '@prisma/client'
+import { NotificationType, OrderStatus, type Order, type PrismaClient } from '@prisma/client'
 
 import { routes } from '@/src/config/routes'
 
@@ -31,20 +26,14 @@ export function isOrderInProductionTransition(
   newStatus: OrderStatus,
   previousStatus: OrderStatus,
 ): boolean {
-  return (
-    newStatus === OrderStatus.IN_PRODUCTION &&
-    previousStatus !== OrderStatus.IN_PRODUCTION
-  )
+  return newStatus === OrderStatus.IN_PRODUCTION && previousStatus !== OrderStatus.IN_PRODUCTION
 }
 
 export function isOrderReadyToShipTransition(
   newStatus: OrderStatus,
   previousStatus: OrderStatus,
 ): boolean {
-  return (
-    newStatus === OrderStatus.READY_TO_SHIP &&
-    previousStatus !== OrderStatus.READY_TO_SHIP
-  )
+  return newStatus === OrderStatus.READY_TO_SHIP && previousStatus !== OrderStatus.READY_TO_SHIP
 }
 
 /**

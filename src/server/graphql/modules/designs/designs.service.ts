@@ -166,10 +166,7 @@ function configProductSlug(configJson: unknown): string | null {
   return typeof slug === 'string' && slug.length > 0 ? slug : null
 }
 
-async function resolveDesignProduct(
-  context: GraphQLContext,
-  design: Design,
-) {
+async function resolveDesignProduct(context: GraphQLContext, design: Design) {
   const slug = configProductSlug(design.configJson)
   if (!slug) return null
 
@@ -473,10 +470,7 @@ export async function confirmDesignAssetUpload(
   const keys = buildDesignAssetLogoKeys(token.designId, token.assetId)
   const exists = await r2HeadObject(keys.webp)
   if (!exists) {
-    throw designError(
-      'No encontramos el logotipo subido. Intenta de nuevo.',
-      'BAD_USER_INPUT',
-    )
+    throw designError('No encontramos el logotipo subido. Intenta de nuevo.', 'BAD_USER_INPUT')
   }
 
   const url = buildPublicR2Url(keys.webp)

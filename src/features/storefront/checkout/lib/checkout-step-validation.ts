@@ -153,14 +153,8 @@ export function getCheckoutErrorMessage(error: unknown): string {
     return 'Tu sesión de invitado expiró. Agrega productos de nuevo e intenta otra vez.'
   }
 
-  if (
-    message.includes('envío') ||
-    message.includes('tarifa') ||
-    message.includes('cotiza')
-  ) {
-    return error instanceof Error
-      ? error.message
-      : 'Revisa la opción de envío e intenta de nuevo.'
+  if (message.includes('envío') || message.includes('tarifa') || message.includes('cotiza')) {
+    return error instanceof Error ? error.message : 'Revisa la opción de envío e intenta de nuevo.'
   }
 
   if (message.includes('forbidden') || message.includes('acceso')) {

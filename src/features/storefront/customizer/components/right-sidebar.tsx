@@ -40,13 +40,7 @@ const ELEMENT_ICON: Record<LayerType, LucideIcon> = {
   base: Shirt,
 }
 
-function SectionHeading({
-  title,
-  subtitle,
-}: {
-  title: string
-  subtitle?: string
-}) {
+function SectionHeading({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="space-y-0.5">
       <h3 className="text-sm font-semibold text-foreground">{title}</h3>
@@ -74,9 +68,7 @@ function ElementRow({ layer }: { layer: Layer }) {
     <div
       role="button"
       tabIndex={0}
-      data-testid={
-        isSelected ? 'customizer-selected-element' : 'customizer-design-element'
-      }
+      data-testid={isSelected ? 'customizer-selected-element' : 'customizer-design-element'}
       aria-label={`Elemento ${layer.name}`}
       onClick={() => selectLayer(layer.id)}
       onKeyDown={(event) => {
@@ -165,7 +157,9 @@ const TOOLS: { id: DesignTool; label: string; icon: LucideIcon; testId: string }
 ]
 
 function PropertyBlock({ children }: { children: React.ReactNode }) {
-  return <div className="space-y-2.5 rounded-xl border border-border/40 bg-card/40 p-3">{children}</div>
+  return (
+    <div className="space-y-2.5 rounded-xl border border-border/40 bg-card/40 p-3">{children}</div>
+  )
 }
 
 function ElementProperties({ layer, tool }: { layer: Layer; tool: DesignTool }) {
@@ -244,9 +238,7 @@ function ElementProperties({ layer, tool }: { layer: Layer; tool: DesignTool }) 
             min={2}
             max={60}
             step={1}
-            onValueChange={([value]) =>
-              updateLayerSize(layer.id, { width: value, height: value })
-            }
+            onValueChange={([value]) => updateLayerSize(layer.id, { width: value, height: value })}
           />
         </PropertyBlock>
       )}
@@ -329,14 +321,8 @@ function ElementProperties({ layer, tool }: { layer: Layer; tool: DesignTool }) 
 }
 
 export function RightSidebar() {
-  const {
-    layers,
-    selectedLayerId,
-    activeTool,
-    setActiveTool,
-    duplicateLayer,
-    deleteLayer,
-  } = useCustomizerStore()
+  const { layers, selectedLayerId, activeTool, setActiveTool, duplicateLayer, deleteLayer } =
+    useCustomizerStore()
 
   const selectedLayer = layers.find((item) => item.id === selectedLayerId) ?? null
   const selectedEditable = selectedLayer && isEditableElement(selectedLayer.type)
@@ -367,10 +353,7 @@ export function RightSidebar() {
         className="customizer-panel-scroll min-h-0 flex-1 overflow-y-auto"
       >
         <div className="space-y-6 px-5 py-4 pb-28">
-          <section
-            data-testid="customizer-design-elements-section"
-            className="space-y-3"
-          >
+          <section data-testid="customizer-design-elements-section" className="space-y-3">
             <SectionHeading
               title="Elementos del diseño"
               subtitle="Organiza logos, nombres y detalles de tu prenda."
@@ -392,7 +375,10 @@ export function RightSidebar() {
             data-testid="customizer-tools-section"
             className="space-y-3 border-t border-border/30 pt-5"
           >
-            <SectionHeading title="Herramientas" subtitle="Selecciona cómo quieres transformar el elemento." />
+            <SectionHeading
+              title="Herramientas"
+              subtitle="Selecciona cómo quieres transformar el elemento."
+            />
             <div className="grid grid-cols-4 gap-2">
               {TOOLS.map((item) => {
                 const Icon = item.icon

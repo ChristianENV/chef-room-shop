@@ -224,9 +224,7 @@ async function seedDevAdmin() {
   }
 
   if (!process.env.BETTER_AUTH_SECRET) {
-    console.warn(
-      'SEED_ADMIN_* set but BETTER_AUTH_SECRET is missing — skip DEV admin seed.',
-    )
+    console.warn('SEED_ADMIN_* set but BETTER_AUTH_SECRET is missing — skip DEV admin seed.')
     return
   }
 

@@ -1,6 +1,12 @@
 import type { AccountOrder } from '../types'
 
-export type OrderStatusTone = 'pending' | 'success' | 'production' | 'shipping' | 'delivered' | 'cancelled'
+export type OrderStatusTone =
+  | 'pending'
+  | 'success'
+  | 'production'
+  | 'shipping'
+  | 'delivered'
+  | 'cancelled'
 
 export type TimelineStepState = 'completed' | 'current' | 'pending' | 'failed'
 
@@ -184,8 +190,7 @@ export function orderHasCustomization(order: AccountOrder): boolean {
   return order.items.some(
     (item) =>
       item.customizationPriceCents > 0 ||
-      (item.designSnapshotJson != null &&
-        typeof item.designSnapshotJson === 'object'),
+      (item.designSnapshotJson != null && typeof item.designSnapshotJson === 'object'),
   )
 }
 
@@ -217,8 +222,7 @@ export function parseProductSnapshot(value: unknown): ProductSnapshot {
         : typeof record.colorName === 'string'
           ? record.colorName
           : null,
-    detailColorName:
-      typeof record.detailColorName === 'string' ? record.detailColorName : null,
+    detailColorName: typeof record.detailColorName === 'string' ? record.detailColorName : null,
   }
 }
 
@@ -298,8 +302,7 @@ export function parseDesignSnapshot(value: unknown): DesignSnapshot | null {
       : [],
     hasLogo: record.hasLogo === true,
     hasEmbroidery: record.hasEmbroidery === true,
-    embroideredName:
-      typeof record.embroideredName === 'string' ? record.embroideredName : null,
+    embroideredName: typeof record.embroideredName === 'string' ? record.embroideredName : null,
   }
 }
 
@@ -322,12 +325,10 @@ export function buildOrderTimeline(order: AccountOrder): OrderTimelineStep[] {
   const shipment = order.shipments[0]
 
   const paymentFailed = paymentStatus === 'FAILED' || status === 'PAYMENT_FAILED'
-  const paymentDone = paymentStatus === 'PAID' || status === 'PAID' || [
-    'IN_PRODUCTION',
-    'READY_TO_SHIP',
-    'SHIPPED',
-    'DELIVERED',
-  ].includes(status)
+  const paymentDone =
+    paymentStatus === 'PAID' ||
+    status === 'PAID' ||
+    ['IN_PRODUCTION', 'READY_TO_SHIP', 'SHIPPED', 'DELIVERED'].includes(status)
 
   const productionDone = ['READY_TO_SHIP', 'SHIPPED', 'DELIVERED'].includes(status)
   const productionCurrent = status === 'IN_PRODUCTION'
@@ -362,11 +363,7 @@ export function buildOrderTimeline(order: AccountOrder): OrderTimelineStep[] {
         ? 'pending'
         : 'pending'
 
-  const stepDelivered: TimelineStepState = delivered
-    ? 'completed'
-    : shipped
-      ? 'current'
-      : 'pending'
+  const stepDelivered: TimelineStepState = delivered ? 'completed' : shipped ? 'current' : 'pending'
 
   return [
     {

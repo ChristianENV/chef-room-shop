@@ -6,8 +6,7 @@ import {
 } from '../helpers/mock-customizer-previews'
 import { selectCustomizerColorAndSize } from '../helpers/select-customizer-variant'
 
-const CUSTOMIZER_SLUG =
-  process.env.E2E_CUSTOMIZER_SLUG ?? 'demo-filipina-clasica'
+const CUSTOMIZER_SLUG = process.env.E2E_CUSTOMIZER_SLUG ?? 'demo-filipina-clasica'
 const USE_PREVIEW_MOCK = shouldMockCustomizerPreviews()
 
 test('edit saved design hydrates size, color and text', async ({ page }) => {
@@ -67,7 +66,10 @@ test('edit saved design hydrates size, color and text', async ({ page }) => {
   await page.goto(`/customize/${CUSTOMIZER_SLUG}?designId=${designId}`)
 
   await expect(page.getByTestId('customizer-editing-saved-design-banner')).toBeVisible()
-  await page.getByRole('button', { name: /extras/i }).first().click()
+  await page
+    .getByRole('button', { name: /extras/i })
+    .first()
+    .click()
   await expect(page.getByTestId('customizer-size-option-l')).toHaveClass(/border-primary/)
   await expect(page.getByText('Chef Editado').first()).toBeVisible()
 

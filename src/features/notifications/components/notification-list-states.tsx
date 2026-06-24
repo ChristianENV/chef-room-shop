@@ -24,9 +24,7 @@ export function NotificationListEmpty() {
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/[0.06]">
         <Bell className="h-5 w-5 text-white/50" aria-hidden />
       </div>
-      <h3 className="mt-4 font-sans text-sm font-semibold text-white">
-        Sin notificaciones
-      </h3>
+      <h3 className="mt-4 font-sans text-sm font-semibold text-white">Sin notificaciones</h3>
       <p className="mt-2 font-serif text-sm text-white/60">
         Te avisaremos aquí cuando haya novedades sobre tus pedidos y diseños.
       </p>
@@ -44,13 +42,10 @@ export function NotificationListError({
   const isPanel = variant === 'panel'
 
   return (
-    <div className={cn('px-2 py-8 text-center', !isPanel && 'rounded-xl border border-border bg-card')}>
-      <p
-        className={cn(
-          'font-serif text-sm',
-          isPanel ? 'text-white/70' : 'text-muted-foreground',
-        )}
-      >
+    <div
+      className={cn('px-2 py-8 text-center', !isPanel && 'rounded-xl border border-border bg-card')}
+    >
+      <p className={cn('font-serif text-sm', isPanel ? 'text-white/70' : 'text-muted-foreground')}>
         No pudimos cargar tus notificaciones.
       </p>
       <Button
@@ -90,9 +85,7 @@ export function NotificationPageListEmpty() {
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
         <Bell className="h-5 w-5 text-muted-foreground" aria-hidden />
       </div>
-      <h3 className="mt-4 font-sans text-base font-semibold text-foreground">
-        Sin notificaciones
-      </h3>
+      <h3 className="mt-4 font-sans text-base font-semibold text-foreground">Sin notificaciones</h3>
       <p className="mt-2 font-serif text-sm text-muted-foreground">
         Cuando tengas actualizaciones de pedidos o diseños, aparecerán aquí.
       </p>

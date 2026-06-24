@@ -31,7 +31,11 @@ const mockOrders = [
 const statusConfig = {
   delivered: { label: 'Entregado', variant: 'default' as const, color: 'bg-success text-white' },
   shipped: { label: 'En Camino', variant: 'default' as const, color: 'bg-accent text-white' },
-  processing: { label: 'Procesando', variant: 'default' as const, color: 'bg-warning text-foreground' },
+  processing: {
+    label: 'Procesando',
+    variant: 'default' as const,
+    color: 'bg-warning text-foreground',
+  },
 }
 
 export default function AccountLayoutDemo() {
@@ -79,7 +83,7 @@ export default function AccountLayoutDemo() {
           <div className="space-y-4">
             {mockOrders.map((order) => {
               const status = statusConfig[order.status as keyof typeof statusConfig]
-              
+
               return (
                 <div
                   key={order.id}
@@ -87,9 +91,7 @@ export default function AccountLayoutDemo() {
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
-                      <p className="font-sans text-sm font-semibold text-foreground">
-                        {order.id}
-                      </p>
+                      <p className="font-sans text-sm font-semibold text-foreground">{order.id}</p>
                       <Badge className={status.color}>{status.label}</Badge>
                     </div>
                     <p className="mt-1 font-serif text-sm text-muted-foreground">
@@ -116,10 +118,7 @@ export default function AccountLayoutDemo() {
         </ContentCard>
 
         {/* Recent Designs */}
-        <ContentCard
-          title="Disenos Guardados"
-          description="Tus personalizaciones guardadas"
-        >
+        <ContentCard title="Disenos Guardados" description="Tus personalizaciones guardadas">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="rounded-lg border border-border p-4">
@@ -127,9 +126,7 @@ export default function AccountLayoutDemo() {
                 <p className="mt-3 font-sans text-sm font-medium text-foreground">
                   Filipina Personalizada #{i}
                 </p>
-                <p className="font-serif text-xs text-muted-foreground">
-                  Guardado hace {i} dias
-                </p>
+                <p className="font-serif text-xs text-muted-foreground">Guardado hace {i} dias</p>
                 <Button variant="outline" size="sm" className="mt-3 w-full">
                   Editar Diseno
                 </Button>

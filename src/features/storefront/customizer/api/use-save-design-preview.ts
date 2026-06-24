@@ -1,10 +1,7 @@
 'use client'
 
 import { useMutation } from '@tanstack/react-query'
-import {
-  saveDesignPreview,
-  type SaveDesignPreviewInput,
-} from './customizer-designs.api'
+import { saveDesignPreview, type SaveDesignPreviewInput } from './customizer-designs.api'
 
 export function useSaveDesignPreviewMutation() {
   return useMutation({

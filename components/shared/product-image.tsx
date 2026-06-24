@@ -69,11 +69,7 @@ export function ProductImageDisplay({
 
   return (
     <div
-      className={cn(
-        fill && 'relative h-full w-full',
-        'overflow-hidden bg-secondary',
-        className,
-      )}
+      className={cn(fill && 'relative h-full w-full', 'overflow-hidden bg-secondary', className)}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -110,9 +106,7 @@ export function ProductImageThumbnail({
     <button
       type="button"
       onClick={onClick}
-      data-testid={
-        selected ? 'product-gallery-thumbnail-active' : 'product-gallery-thumbnail'
-      }
+      data-testid={selected ? 'product-gallery-thumbnail-active' : 'product-gallery-thumbnail'}
       className={cn(
         'relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-border/60 bg-secondary transition-all',
         selected

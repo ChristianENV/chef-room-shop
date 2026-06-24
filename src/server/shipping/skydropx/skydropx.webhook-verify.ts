@@ -19,11 +19,7 @@ function readHeader(headers: Headers, names: string[]): string | null {
   return null
 }
 
-function verifyHmacSignature(
-  rawBody: string,
-  secret: string,
-  authorization: string,
-): boolean {
+function verifyHmacSignature(rawBody: string, secret: string, authorization: string): boolean {
   const prefix = 'HMAC '
   if (!authorization.startsWith(prefix)) return false
 
@@ -93,6 +89,9 @@ export function verifySkydropxWebhookRequest(input: SkydropxWebhookVerifyInput):
     verifyQuerySecret(input.requestUrl, webhookSecret)
 
   if (!verified) {
-    throw new SkydropxWebhookError('Webhook Skydropx no autorizado.', 'SKYDROPX_WEBHOOK_UNAUTHORIZED')
+    throw new SkydropxWebhookError(
+      'Webhook Skydropx no autorizado.',
+      'SKYDROPX_WEBHOOK_UNAUTHORIZED',
+    )
   }
 }

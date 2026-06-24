@@ -37,9 +37,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 /**
  * Fetches recent orders for the admin dashboard.
  */
-export async function getAdminRecentOrders(
-  limit?: number,
-): Promise<AdminRecentOrder[]> {
+export async function getAdminRecentOrders(limit?: number): Promise<AdminRecentOrder[]> {
   const data = await fetchGraphQL<RecentOrdersData, { limit?: number }>({
     query: ADMIN_RECENT_ORDERS_QUERY,
     variables: { limit },
@@ -50,9 +48,7 @@ export async function getAdminRecentOrders(
 /**
  * Fetches production queue orders for the admin dashboard.
  */
-export async function getAdminProductionQueue(
-  limit?: number,
-): Promise<AdminProductionQueueItem[]> {
+export async function getAdminProductionQueue(limit?: number): Promise<AdminProductionQueueItem[]> {
   const data = await fetchGraphQL<ProductionQueueData, { limit?: number }>({
     query: ADMIN_PRODUCTION_QUEUE_QUERY,
     variables: { limit },
@@ -63,9 +59,7 @@ export async function getAdminProductionQueue(
 /**
  * Fetches recent designs for the admin dashboard.
  */
-export async function getAdminRecentDesigns(
-  limit?: number,
-): Promise<AdminRecentDesign[]> {
+export async function getAdminRecentDesigns(limit?: number): Promise<AdminRecentDesign[]> {
   const data = await fetchGraphQL<RecentDesignsData, { limit?: number }>({
     query: ADMIN_RECENT_DESIGNS_QUERY,
     variables: { limit },
@@ -76,9 +70,7 @@ export async function getAdminRecentDesigns(
 /**
  * Fetches recent payments for the admin dashboard.
  */
-export async function getAdminRecentPayments(
-  limit?: number,
-): Promise<AdminRecentPayment[]> {
+export async function getAdminRecentPayments(limit?: number): Promise<AdminRecentPayment[]> {
   const data = await fetchGraphQL<RecentPaymentsData, { limit?: number }>({
     query: ADMIN_RECENT_PAYMENTS_QUERY,
     variables: { limit },
@@ -89,9 +81,7 @@ export async function getAdminRecentPayments(
 /**
  * Fetches top products by revenue for the admin dashboard.
  */
-export async function getAdminTopProducts(
-  limit?: number,
-): Promise<AdminTopProduct[]> {
+export async function getAdminTopProducts(limit?: number): Promise<AdminTopProduct[]> {
   const data = await fetchGraphQL<TopProductsData, { limit?: number }>({
     query: ADMIN_TOP_PRODUCTS_QUERY,
     variables: { limit },

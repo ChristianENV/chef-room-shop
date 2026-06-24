@@ -34,10 +34,7 @@ export const shippingResolvers = {
       args: RefreshShippingQuoteArgs,
       context: GraphQLContext,
     ) => refreshShippingQuote(context, args.id),
-    selectShippingRate: (
-      _parent: unknown,
-      args: SelectShippingRateArgs,
-      context: GraphQLContext,
-    ) => selectShippingRate(context, args.rateId),
+    selectShippingRate: (_parent: unknown, args: SelectShippingRateArgs, context: GraphQLContext) =>
+      selectShippingRate(context, args.rateId),
   },
 }

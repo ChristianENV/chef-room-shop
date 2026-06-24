@@ -20,9 +20,7 @@ export function CatalogEmptyState({
         <div className="mb-4 rounded-full bg-destructive/10 p-4">
           <WifiOff className="h-8 w-8 text-destructive" />
         </div>
-        <h3 className="font-sans text-lg font-semibold text-foreground">
-          Sin conexion
-        </h3>
+        <h3 className="font-sans text-lg font-semibold text-foreground">Sin conexion</h3>
         <p className="mt-2 max-w-sm font-serif text-muted-foreground">
           Parece que no tienes conexion a internet. Verifica tu red e intenta de nuevo.
         </p>
@@ -42,9 +40,7 @@ export function CatalogEmptyState({
         <div className="mb-4 rounded-full bg-destructive/10 p-4">
           <AlertCircle className="h-8 w-8 text-destructive" />
         </div>
-        <h3 className="font-sans text-lg font-semibold text-foreground">
-          Algo salio mal
-        </h3>
+        <h3 className="font-sans text-lg font-semibold text-foreground">Algo salio mal</h3>
         <p className="mt-2 max-w-sm font-serif text-muted-foreground">
           No pudimos cargar los productos. Por favor intenta de nuevo.
         </p>
@@ -64,12 +60,10 @@ export function CatalogEmptyState({
       <div className="mb-4 rounded-full bg-secondary p-4">
         <Search className="h-8 w-8 text-muted-foreground" />
       </div>
-      <h3 className="font-sans text-lg font-semibold text-foreground">
-        No encontramos productos
-      </h3>
+      <h3 className="font-sans text-lg font-semibold text-foreground">No encontramos productos</h3>
       <p className="mt-2 max-w-sm font-serif text-muted-foreground">
-        No hay productos que coincidan con los filtros seleccionados. 
-        Intenta con otros criterios de busqueda.
+        No hay productos que coincidan con los filtros seleccionados. Intenta con otros criterios de
+        busqueda.
       </p>
       {onClearFilters && (
         <Button onClick={onClearFilters} className="mt-4">

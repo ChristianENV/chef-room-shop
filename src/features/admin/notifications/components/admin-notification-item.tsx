@@ -52,7 +52,10 @@ export function AdminNotificationItem({
         />
         <div className="min-w-0 flex-1">
           <div className="mb-2 flex flex-wrap items-center gap-2">
-            <Badge variant="secondary" className="font-sans text-[10px] font-medium uppercase tracking-wide">
+            <Badge
+              variant="secondary"
+              className="font-sans text-[10px] font-medium uppercase tracking-wide"
+            >
               {getAdminNotificationTypeLabel(notification.type)}
             </Badge>
             <time

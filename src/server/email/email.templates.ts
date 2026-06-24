@@ -60,8 +60,7 @@ function resolveTrackingCta(payload: TransactionalEmailPayload): {
     return {
       href: claimUrl,
       label: 'Ver seguimiento de mi pedido',
-      trackingNote:
-        'Crea tu cuenta para consultar el estado y seguimiento de tu pedido.',
+      trackingNote: 'Crea tu cuenta para consultar el estado y seguimiento de tu pedido.',
     }
   }
 

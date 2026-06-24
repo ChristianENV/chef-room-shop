@@ -23,11 +23,41 @@ import { DEMO_ORDER_PREFIX, DEMO_PRODUCT_SLUG_PREFIX, PLACEHOLDER_IMAGE_BASE } f
 import type { SeededCatalogResult } from './catalog'
 
 const MX_CITIES = [
-  { city: 'Ciudad de México', state: 'CDMX', postalCode: '03100', line1: 'Av. Insurgentes Sur 1234', line2: 'Col. Del Valle' },
-  { city: 'Guadalajara', state: 'Jalisco', postalCode: '44100', line1: 'Av. López Mateos 890', line2: 'Col. Americana' },
-  { city: 'Monterrey', state: 'Nuevo León', postalCode: '64000', line1: 'Av. Constitución 456', line2: 'Col. Centro' },
-  { city: 'Puebla', state: 'Puebla', postalCode: '72000', line1: 'Calle 5 de Mayo 210', line2: 'Centro Histórico' },
-  { city: 'Querétaro', state: 'Querétaro', postalCode: '76000', line1: 'Blvd. Bernardo Quintana 300', line2: 'Juriquilla' },
+  {
+    city: 'Ciudad de México',
+    state: 'CDMX',
+    postalCode: '03100',
+    line1: 'Av. Insurgentes Sur 1234',
+    line2: 'Col. Del Valle',
+  },
+  {
+    city: 'Guadalajara',
+    state: 'Jalisco',
+    postalCode: '44100',
+    line1: 'Av. López Mateos 890',
+    line2: 'Col. Americana',
+  },
+  {
+    city: 'Monterrey',
+    state: 'Nuevo León',
+    postalCode: '64000',
+    line1: 'Av. Constitución 456',
+    line2: 'Col. Centro',
+  },
+  {
+    city: 'Puebla',
+    state: 'Puebla',
+    postalCode: '72000',
+    line1: 'Calle 5 de Mayo 210',
+    line2: 'Centro Histórico',
+  },
+  {
+    city: 'Querétaro',
+    state: 'Querétaro',
+    postalCode: '76000',
+    line1: 'Blvd. Bernardo Quintana 300',
+    line2: 'Juriquilla',
+  },
 ] as const
 
 const CARRIERS = ['DHL', 'FedEx', 'Estafeta'] as const
@@ -184,9 +214,7 @@ export async function seedDemoCommerce(input: CommerceInput): Promise<SeededComm
     catalog.productIdsBySlug.get(defaultProductSlug),
     'default demo product',
   )
-  const defaultVariantSku = [...catalog.variantIdsBySku.keys()].find((sku) =>
-    sku.includes('FIL'),
-  )
+  const defaultVariantSku = [...catalog.variantIdsBySku.keys()].find((sku) => sku.includes('FIL'))
   const defaultVariantId = defaultVariantSku
     ? catalog.variantIdsBySku.get(defaultVariantSku)
     : [...catalog.variantIdsBySku.values()][0]
@@ -443,11 +471,7 @@ export async function seedDemoCommerce(input: CommerceInput): Promise<SeededComm
     const discountCents = spec.sequence % 4 === 0 ? 10000 : 0
     const taxCents = Math.round((subtotalCents + customizationTotalCents) * 0.16)
     const totalCents =
-      subtotalCents +
-      customizationTotalCents +
-      shippingCents +
-      taxCents -
-      discountCents
+      subtotalCents + customizationTotalCents + shippingCents + taxCents - discountCents
 
     const order = await prisma.order.upsert({
       where: { orderNumber },
@@ -494,8 +518,7 @@ export async function seedDemoCommerce(input: CommerceInput): Promise<SeededComm
         (await prisma.design.findFirst({
           where: { userId },
         }))
-      const lineTotal =
-        defaultProduct.basePriceCents + (design ? 24900 : 0)
+      const lineTotal = defaultProduct.basePriceCents + (design ? 24900 : 0)
 
       await prisma.orderItem.create({
         data: {
@@ -627,17 +650,13 @@ export async function seedDemoCommerce(input: CommerceInput): Promise<SeededComm
       },
       create: {
         eventId: webhookEventId,
-        eventType:
-          spec.paymentStatus === PaymentStatus.CANCELLED
-            ? 'charge.failed'
-            : 'order.paid',
+        eventType: spec.paymentStatus === PaymentStatus.CANCELLED ? 'charge.failed' : 'order.paid',
         rawPayloadJson: {
           demo: true,
           orderNumber,
           status: spec.paymentStatus,
         },
-        processedAt:
-          spec.paymentStatus === PaymentStatus.PAID ? daysAgo(27 - spec.sequence) : null,
+        processedAt: spec.paymentStatus === PaymentStatus.PAID ? daysAgo(27 - spec.sequence) : null,
       },
     })
     counts.webhooks += 1
@@ -695,10 +714,7 @@ export async function seedDemoCommerce(input: CommerceInput): Promise<SeededComm
       {
         key: 'payment_confirmation',
         subject: 'Pago recibido',
-        status:
-          spec.paymentStatus === PaymentStatus.PAID
-            ? EmailStatus.SENT
-            : EmailStatus.QUEUED,
+        status: spec.paymentStatus === PaymentStatus.PAID ? EmailStatus.SENT : EmailStatus.QUEUED,
       },
     ]
     if (spec.withShipment) {

@@ -1,22 +1,17 @@
 import { GraphQLError } from 'graphql'
 
-import {
-  checkoutSuccessPath,
-} from '@/src/lib/checkout-redirect-urls'
+import { checkoutSuccessPath } from '@/src/lib/checkout-redirect-urls'
 import { getAppBaseUrl } from '@/src/server/payments/app-url'
-import { createCheckoutReturnToken, validateCheckoutReturnToken } from '@/src/server/checkout/checkout-return-token'
+import {
+  createCheckoutReturnToken,
+  validateCheckoutReturnToken,
+} from '@/src/server/checkout/checkout-return-token'
 import { buildOrderEmailTrackingLinks } from '@/src/server/email/email.links'
 
 import type { GraphQLContext } from '../../context'
-import {
-  createCheckoutOrderCore,
-  finalizeCheckoutOrderSideEffects,
-} from './checkout.service'
+import { createCheckoutOrderCore, finalizeCheckoutOrderSideEffects } from './checkout.service'
 import { mapOrderToCompleteCheckoutPayload } from './checkout.mappers'
-import type {
-  CompleteCheckoutPayloadGql,
-  CreateCheckoutOrderInput,
-} from './checkout.types'
+import type { CompleteCheckoutPayloadGql, CreateCheckoutOrderInput } from './checkout.types'
 import { startConektaCheckoutForOrder } from '../payments/payments.service'
 
 /**

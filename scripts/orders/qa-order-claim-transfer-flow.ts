@@ -9,11 +9,7 @@ import { resolve } from 'node:path'
 
 config({ path: resolve(process.cwd(), '.env.local') })
 
-import {
-  EmailStatus,
-  OrderClaimTransferRequestStatus,
-  OrderStatus,
-} from '@prisma/client'
+import { EmailStatus, OrderClaimTransferRequestStatus, OrderStatus } from '@prisma/client'
 
 import { createPrismaClient } from '@/src/server/db/create-prisma'
 
@@ -74,9 +70,8 @@ async function main() {
   await import('../../tests/unit/helpers/mock-server-only.ts')
 
   const { createCheckoutReturnToken } = await import('@/src/server/checkout/checkout-return-token')
-  const { claimGuestOrderByCheckoutToken } = await import(
-    '@/src/server/orders/claim-guest-order-by-checkout-token.service'
-  )
+  const { claimGuestOrderByCheckoutToken } =
+    await import('@/src/server/orders/claim-guest-order-by-checkout-token.service')
   const {
     approveOrderClaimTransfer,
     cancelOrderClaimTransfer,
@@ -135,9 +130,7 @@ async function main() {
 
   record(
     'Claim mismo email',
-    claimSame.status === 'CLAIMED' &&
-      order1After?.userId === userA1.id &&
-      ordersForA1 >= 1,
+    claimSame.status === 'CLAIMED' && order1After?.userId === userA1.id && ordersForA1 >= 1,
     `status=${claimSame.status}, order.userId=${order1After?.userId ?? 'null'}, userOrders=${ordersForA1}`,
   )
 
@@ -202,7 +195,7 @@ async function main() {
   const metadata = emailSent?.metadataJson as Record<string, unknown> | null
   const claimUrl =
     (metadata?.claimUrl as string | undefined) ??
-    ((metadata?.links as Record<string, string> | undefined)?.claimUrl)
+    (metadata?.links as Record<string, string> | undefined)?.claimUrl
   const plainToken = extractTokenFromAuthorizeUrl(claimUrl)
 
   const tokenStoredHashed =
@@ -228,8 +221,7 @@ async function main() {
     `request=${requestTransfer.status}, transfer=PENDING, emailTo=${emailSent?.toEmail ?? 'none'}, tokenHashed=${tokenStoredHashed}, noPlainInDb=${noPlainTokenInDb}`,
   )
 
-  const previewBefore =
-    plainToken != null ? await getOrderClaimTransferPreview(plainToken) : null
+  const previewBefore = plainToken != null ? await getOrderClaimTransferPreview(plainToken) : null
 
   const transferAfterPreview = transferPending
     ? await prisma.orderClaimTransferRequest.findUnique({ where: { id: transferPending.id } })
@@ -273,8 +265,7 @@ async function main() {
     plainToken != null
       ? await approveOrderClaimTransfer(plainToken)
       : { success: false, status: 'ERROR' as const }
-  const reusePreview =
-    plainToken != null ? await getOrderClaimTransferPreview(plainToken) : null
+  const reusePreview = plainToken != null ? await getOrderClaimTransferPreview(plainToken) : null
   const order2AfterReuse = await prisma.order.findUnique({ where: { id: order2.id } })
 
   record(
@@ -317,7 +308,7 @@ async function main() {
   const metaCancel = emailCancel?.metadataJson as Record<string, unknown> | null
   const cancelUrl =
     (metaCancel?.claimUrl as string | undefined) ??
-    ((metaCancel?.links as Record<string, string> | undefined)?.claimUrl)
+    (metaCancel?.links as Record<string, string> | undefined)?.claimUrl
   const cancelToken = extractTokenFromAuthorizeUrl(cancelUrl)
 
   const transferCancelRow = await prisma.orderClaimTransferRequest.findFirst({
@@ -394,7 +385,7 @@ async function main() {
   const metaAdmin = emailAdmin?.metadataJson as Record<string, unknown> | null
   const adminToken = extractTokenFromAuthorizeUrl(
     (metaAdmin?.claimUrl as string | undefined) ??
-      ((metaAdmin?.links as Record<string, string> | undefined)?.claimUrl),
+      (metaAdmin?.links as Record<string, string> | undefined)?.claimUrl,
   )
 
   if (adminToken) {

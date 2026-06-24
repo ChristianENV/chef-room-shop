@@ -1,12 +1,6 @@
 import { isEditableElement } from './customizer-utils'
 import type { CustomizerProductData } from '../types/customizer-product.types'
-import type {
-  ButtonStyle,
-  CollarStyle,
-  Layer,
-  Size,
-  SleeveStyle,
-} from '../types/customizer.types'
+import type { ButtonStyle, CollarStyle, Layer, Size, SleeveStyle } from '../types/customizer.types'
 import {
   computeDefaultCustomizerVariant,
   findColorByHex,
@@ -54,10 +48,9 @@ export function buildCustomizerBaseline(product: CustomizerProductData): Customi
     product.colors.find((color) => color.id === firstVariant?.colorId)?.hex ??
     product.colors[0]?.hex ??
     '#FFFFFF'
-  const firstSize =
-    (product.sizes.find((size) => size.id === firstVariant?.sizeId)?.name ??
-      product.sizes[0]?.name ??
-      'M') as Size
+  const firstSize = (product.sizes.find((size) => size.id === firstVariant?.sizeId)?.name ??
+    product.sizes[0]?.name ??
+    'M') as Size
 
   const resolved = resolveCustomizerVariant(product, {
     baseColor: firstColor,

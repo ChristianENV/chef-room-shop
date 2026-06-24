@@ -44,10 +44,7 @@ export function AdminShell({
       <SidebarProvider>
         <AdminSidebar environment={pageConfig.environment ?? 'DEV'} />
         <SidebarInset>
-          <AdminTopbar
-            breadcrumb={pageConfig.breadcrumb}
-            adminUser={adminUser}
-          />
+          <AdminTopbar breadcrumb={pageConfig.breadcrumb} adminUser={adminUser} />
           <main className="flex-1 p-4 md:p-6">{children}</main>
         </SidebarInset>
       </SidebarProvider>

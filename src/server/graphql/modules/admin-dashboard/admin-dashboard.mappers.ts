@@ -154,9 +154,7 @@ export function extractCustomizationTypes(items: OrderItem[]): string[] {
 function hasCustomDesign(items: OrderItem[]): boolean {
   return items.some(
     (item) =>
-      item.designId != null ||
-      item.designSnapshotJson != null ||
-      item.customizationPriceCents > 0,
+      item.designId != null || item.designSnapshotJson != null || item.customizationPriceCents > 0,
   )
 }
 
@@ -225,8 +223,7 @@ export function mapDesignToAdminRecent(
 ): AdminRecentDesignGql {
   const config = parseJsonRecord(design.configJson) as DesignConfig
   const slug = config.productSlug?.trim()
-  const productName =
-    (slug && productNameBySlug.get(slug)) || slug || 'Producto'
+  const productName = (slug && productNameBySlug.get(slug)) || slug || 'Producto'
 
   return {
     id: design.id,

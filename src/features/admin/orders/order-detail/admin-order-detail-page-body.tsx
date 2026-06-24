@@ -92,10 +92,7 @@ export function AdminOrderDetailPageBody({
         </aside>
 
         <div className="order-2 space-y-6 lg:order-1 lg:col-span-8">
-          <AdminOrderDetailSectionCard
-            title={`Productos (${order.items.length})`}
-            icon={Package}
-          >
+          <AdminOrderDetailSectionCard title={`Productos (${order.items.length})`} icon={Package}>
             <div className="space-y-4">
               {order.items.map((item) => (
                 <div

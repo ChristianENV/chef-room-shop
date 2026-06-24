@@ -6,17 +6,17 @@ Persistent in-app notifications for authenticated users and admins. Covers datab
 
 `Notification` rows are stored in the `notifications` table.
 
-| Field | Purpose |
-| --- | --- |
-| `userId` | Target user when the notification is user-specific |
-| `audience` | `USER` (storefront) or `ADMIN` (admin panel) |
-| `type` | Semantic category (`ORDER_CREATED`, `ADMIN_NEW_ORDER`, `SYSTEM`, …) |
-| `title` / `message` | Display copy |
-| `href` | Optional deep link |
-| `metadataJson` | Safe, non-sensitive context (order numbers, ids) |
-| `dedupeKey` | Optional unique key to prevent duplicate event notifications |
-| `readAt` | Set when the recipient marks the notification read |
-| `expiresAt` | Optional TTL; expired rows are hidden by default |
+| Field               | Purpose                                                             |
+| ------------------- | ------------------------------------------------------------------- |
+| `userId`            | Target user when the notification is user-specific                  |
+| `audience`          | `USER` (storefront) or `ADMIN` (admin panel)                        |
+| `type`              | Semantic category (`ORDER_CREATED`, `ADMIN_NEW_ORDER`, `SYSTEM`, …) |
+| `title` / `message` | Display copy                                                        |
+| `href`              | Optional deep link                                                  |
+| `metadataJson`      | Safe, non-sensitive context (order numbers, ids)                    |
+| `dedupeKey`         | Optional unique key to prevent duplicate event notifications        |
+| `readAt`            | Set when the recipient marks the notification read                  |
+| `expiresAt`         | Optional TTL; expired rows are hidden by default                    |
 
 Visibility rules:
 
@@ -126,10 +126,10 @@ Hook location: `finalizeCheckoutOrderSideEffects` in `src/server/graphql/modules
 
 Implementation: `src/server/notifications/notify-order-created.ts`
 
-| Audience | When | Type | Notes |
-| --- | --- | --- | --- |
-| `USER` | `order.userId` is set | `ORDER_CREATED` | Skipped for guest checkout (`userId` null) |
-| `ADMIN` | Always | `ADMIN_NEW_ORDER` | Broadcast (`userId: null`) |
+| Audience | When                  | Type              | Notes                                      |
+| -------- | --------------------- | ----------------- | ------------------------------------------ |
+| `USER`   | `order.userId` is set | `ORDER_CREATED`   | Skipped for guest checkout (`userId` null) |
+| `ADMIN`  | Always                | `ADMIN_NEW_ORDER` | Broadcast (`userId: null`)                 |
 
 Copy:
 
@@ -156,10 +156,10 @@ Implementation: `src/server/notifications/notify-payment-confirmed.ts`
 
 Notifications are created **only on transition** into `PaymentStatus.PAID` (`previousPaymentStatus !== PAID`). Repeated webhooks, manual verify clicks, or already-paid orders do not create new rows.
 
-| Audience | When | Type | Notes |
-| --- | --- | --- | --- |
-| `USER` | Transition to PAID and `order.userId` is set | `PAYMENT_CONFIRMED` | Skipped for guest orders |
-| `ADMIN` | Transition to PAID | `ADMIN_PAYMENT_RECEIVED` | Broadcast (`userId: null`) |
+| Audience | When                                         | Type                     | Notes                      |
+| -------- | -------------------------------------------- | ------------------------ | -------------------------- |
+| `USER`   | Transition to PAID and `order.userId` is set | `PAYMENT_CONFIRMED`      | Skipped for guest orders   |
+| `ADMIN`  | Transition to PAID                           | `ADMIN_PAYMENT_RECEIVED` | Broadcast (`userId: null`) |
 
 Copy:
 
@@ -186,9 +186,9 @@ Implementation: `src/server/notifications/notify-order-status-changed.ts`
 
 Notifications are created **only on transition** into `OrderStatus.IN_PRODUCTION` (`previousStatus !== IN_PRODUCTION`). Repeated saves or already-in-production orders do not create new rows.
 
-| Audience | When | Type | Notes |
-| --- | --- | --- | --- |
-| `USER` | Transition to `IN_PRODUCTION` and `order.userId` is set | `ORDER_IN_PRODUCTION` | Skipped for guest orders |
+| Audience | When                                                    | Type                  | Notes                    |
+| -------- | ------------------------------------------------------- | --------------------- | ------------------------ |
+| `USER`   | Transition to `IN_PRODUCTION` and `order.userId` is set | `ORDER_IN_PRODUCTION` | Skipped for guest orders |
 
 Copy:
 
@@ -211,9 +211,9 @@ Implementation: `src/server/notifications/notify-order-status-changed.ts`
 
 Notifications are created **only on transition** into `OrderStatus.READY_TO_SHIP` (`previousStatus !== READY_TO_SHIP`).
 
-| Audience | When | Type | Notes |
-| --- | --- | --- | --- |
-| `USER` | Transition to `READY_TO_SHIP` and `order.userId` is set | `ORDER_READY_TO_SHIP` | Skipped for guest orders |
+| Audience | When                                                    | Type                  | Notes                    |
+| -------- | ------------------------------------------------------- | --------------------- | ------------------------ |
+| `USER`   | Transition to `READY_TO_SHIP` and `order.userId` is set | `ORDER_READY_TO_SHIP` | Skipped for guest orders |
 
 Copy:
 
@@ -225,6 +225,73 @@ Dedupe key: `order-status:ready-to-ship:{orderId}`
 
 Error handling: `safeNotifyOrderStatusChanged` logs failures and never throws, so admin status updates are not blocked.
 
+### `ORDER_SHIPPED`
+
+Hook locations, called after successful shipment/order status persistence:
+
+- `skydropx.mock-tracking.ts` → `simulateMockShipmentTrackingStatus` (mock `in_transit`)
+- `skydropx.webhook-processor.ts` → `processSkydropxWebhook` (Skydropx shipped/in-transit events)
+- `admin-shipping.service.ts` → `refreshAdminShipmentTracking` (shipment advances to in transit)
+
+Implementation: `src/server/notifications/notify-order-shipped.ts`
+
+Notifications are created **only on transition** into shipped/in transit:
+
+- `Order.status` becomes `SHIPPED` (from a non-shipped state), or
+- `Shipment.status` advances from `PENDING` / `LABEL_CREATED` to `IN_TRANSIT` / `OUT_FOR_DELIVERY`
+
+Does **not** fire on mock/live label generation alone, tracking-number assignment only, or repeated same-status updates.
+
+| Audience | When                                                    | Type            | Notes                    |
+| -------- | ------------------------------------------------------- | --------------- | ------------------------ |
+| `USER`   | Shipped/in-transit transition and `order.userId` is set | `ORDER_SHIPPED` | Skipped for guest orders |
+
+Copy:
+
+- User: title `Tu pedido fue enviado`, message `Tu pedido {orderNumber} ya fue enviado.`, href `/account/orders/{orderNumber}`
+
+Metadata allowed: `{ orderId, orderNumber, trackingNumber, carrier, status }` only.
+
+Dedupe key: `order-shipped:{orderId}`
+
+Error handling: `safeNotifyOrderShipped` logs failures and never throws, so tracking/status updates are not blocked.
+
+### `ORDER_DELIVERED`
+
+Hook locations, called after successful shipment/order status persistence:
+
+- `skydropx.mock-tracking.ts` → `simulateMockShipmentTrackingStatus` (mock `delivered`)
+- `skydropx.webhook-processor.ts` → `processSkydropxWebhook` (Skydropx delivered events)
+- `admin-shipping.service.ts` → `refreshAdminShipmentTracking` (tracking API reports delivered)
+
+Implementation: `src/server/notifications/notify-order-delivered.ts`
+
+Notifications are created **only on transition** into delivered (`previous order/shipment status !== DELIVERED`).
+
+Does **not** fire on label generation, `in_transit`, `out_for_delivery`, or repeated same-status updates.
+
+| Audience | When                                           | Type              | Notes                    |
+| -------- | ---------------------------------------------- | ----------------- | ------------------------ |
+| `USER`   | Delivered transition and `order.userId` is set | `ORDER_DELIVERED` | Skipped for guest orders |
+
+Copy:
+
+- User: title `Tu pedido fue entregado`, message `Tu pedido {orderNumber} fue entregado.`, href `/account/orders/{orderNumber}`
+
+Metadata allowed: `{ orderId, orderNumber, trackingNumber, carrier, status }` only.
+
+Dedupe key: `order-delivered:{orderId}` — shared across webhook and refresh paths so duplicate processing creates one row.
+
+Mock testing flow:
+
+```txt
+Generate mock label → READY_TO_SHIP
+Simulate in_transit   → ORDER_SHIPPED
+Simulate delivered    → ORDER_DELIVERED
+```
+
+Error handling: `safeNotifyOrderDelivered` logs failures and never throws, so tracking/status updates are not blocked.
+
 No admin notifications, emails, or realtime delivery are part of this phase.
 
 ## v1 limitations
@@ -232,7 +299,7 @@ No admin notifications, emails, or realtime delivery are part of this phase.
 - No WebSockets, SSE, or push notifications (polling/refetch in UI)
 - Simple `first` pagination only (no cursor/`after`)
 - Metadata is filtered server-side for obvious sensitive keys but is not a full PII scrubber
-- Payment pending/failed, shipping carrier events, delivered, and other commerce events are not hooked yet
+- Payment pending/failed and other commerce events are not hooked yet
 
 ## Future phases
 

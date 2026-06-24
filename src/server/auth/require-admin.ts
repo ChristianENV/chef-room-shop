@@ -13,10 +13,7 @@ import type { CurrentUser } from './types'
  * Dev-only bypass when explicitly enabled (never in production).
  */
 export function isAdminDevBypassEnabled(): boolean {
-  return (
-    process.env.NODE_ENV !== 'production' &&
-    process.env.ENABLE_ADMIN_DEV_BYPASS === 'true'
-  )
+  return process.env.NODE_ENV !== 'production' && process.env.ENABLE_ADMIN_DEV_BYPASS === 'true'
 }
 
 /**

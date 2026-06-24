@@ -20,12 +20,7 @@ export function CheckoutOrderSummary({
   selectedShipping,
   className,
 }: CheckoutOrderSummaryProps) {
-  const {
-    items,
-    subtotalPesos,
-    customizationTotalPesos,
-    discountPesos,
-  } = summary
+  const { items, subtotalPesos, customizationTotalPesos, discountPesos } = summary
 
   const shippingPesos = selectedShipping
     ? centsToPesos(selectedShipping.amountCents)
@@ -37,9 +32,7 @@ export function CheckoutOrderSummary({
   return (
     <div className={cn('rounded-lg border border-border bg-card', className)}>
       <div className="p-4 md:p-6">
-        <h2 className="font-sans text-lg font-semibold text-foreground">
-          Resumen del pedido
-        </h2>
+        <h2 className="font-sans text-lg font-semibold text-foreground">Resumen del pedido</h2>
 
         <div className="mt-4 space-y-4">
           {items.map((item) => (
@@ -72,9 +65,7 @@ export function CheckoutOrderSummary({
                 <p className="font-serif text-xs text-muted-foreground">
                   {item.sizeLabel} / {item.colorName}
                 </p>
-                <p className="font-serif text-xs text-muted-foreground">
-                  Cant: {item.quantity}
-                </p>
+                <p className="font-serif text-xs text-muted-foreground">Cant: {item.quantity}</p>
                 {item.isCustomized && (
                   <p className="font-serif text-xs text-accent">+ Personalización</p>
                 )}
@@ -94,9 +85,7 @@ export function CheckoutOrderSummary({
         <div className="space-y-2">
           <div className="flex items-center justify-between font-serif text-sm">
             <span className="text-muted-foreground">Subtotal productos</span>
-            <span className="font-sans text-foreground">
-              {formatCurrencyMXN(subtotalPesos)}
-            </span>
+            <span className="font-sans text-foreground">{formatCurrencyMXN(subtotalPesos)}</span>
           </div>
 
           {customizationTotalPesos > 0 && (
@@ -133,9 +122,7 @@ export function CheckoutOrderSummary({
           {discountPesos > 0 && (
             <div className="flex items-center justify-between font-serif text-sm">
               <span className="text-success">Descuento</span>
-              <span className="font-sans text-success">
-                -{formatCurrencyMXN(discountPesos)}
-              </span>
+              <span className="font-sans text-success">-{formatCurrencyMXN(discountPesos)}</span>
             </div>
           )}
 

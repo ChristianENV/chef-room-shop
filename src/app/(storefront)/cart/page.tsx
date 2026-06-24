@@ -25,8 +25,7 @@ import { formatCurrencyMXN, centsToPesos } from '@/src/lib/formatters'
 import { ArrowLeft, ShoppingBag } from 'lucide-react'
 import { FREE_SHIPPING_THRESHOLD_MXN } from '@/src/features/storefront/cart/lib/cart-utils'
 
-const GENERIC_ACTION_ERROR =
-  'No pudimos actualizar tu carrito. Por favor intenta de nuevo.'
+const GENERIC_ACTION_ERROR = 'No pudimos actualizar tu carrito. Por favor intenta de nuevo.'
 
 export default function CartPage() {
   const { data, isLoading, isError, refetch, isFetching } = useMyCartQuery()

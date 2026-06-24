@@ -1,3 +1,8 @@
+export type AdminShipmentByOrderNumberPayloadGql = {
+  shipment: AdminShipmentGql | null
+  isSkydropxMockMode: boolean
+}
+
 export type AdminShipmentEventGql = {
   id: string
   status: string
@@ -40,12 +45,7 @@ export type AdminCancelShippingLabelInput = {
 
 export type AdminSimulateMockShipmentTrackingInput = {
   orderNumber: string
-  trackingStatus:
-    | 'created'
-    | 'label_generated'
-    | 'in_transit'
-    | 'delivered'
-    | 'exception'
+  trackingStatus: 'created' | 'label_generated' | 'in_transit' | 'delivered' | 'exception'
 }
 
 export type AdminShipmentListItemGql = {

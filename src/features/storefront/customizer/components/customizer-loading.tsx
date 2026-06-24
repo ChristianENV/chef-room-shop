@@ -23,9 +23,7 @@ export function CustomizerLoading() {
           </div>
         </div>
         <div className="flex flex-1 items-center justify-center bg-gradient-to-br from-[#0a0a12] via-[#0f0f1a] to-[#0a0a12]">
-          <p className="font-sans text-sm text-muted-foreground">
-            Preparando tu customizador…
-          </p>
+          <p className="font-sans text-sm text-muted-foreground">Preparando tu customizador…</p>
         </div>
       </div>
     </div>

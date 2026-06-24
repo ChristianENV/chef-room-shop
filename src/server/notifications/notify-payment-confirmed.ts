@@ -4,10 +4,7 @@ import { NotificationType, PaymentStatus, type PrismaClient } from '@prisma/clie
 
 import { routes } from '@/src/config/routes'
 
-import {
-  createAdminNotification,
-  createUserNotification,
-} from './notification.service'
+import { createAdminNotification, createUserNotification } from './notification.service'
 
 type PaymentConfirmedNotificationOrder = {
   id: string
@@ -35,9 +32,7 @@ export function isPaymentConfirmedTransition(
   paymentStatus: PaymentStatus,
   previousPaymentStatus: PaymentStatus,
 ): boolean {
-  return (
-    paymentStatus === PaymentStatus.PAID && previousPaymentStatus !== PaymentStatus.PAID
-  )
+  return paymentStatus === PaymentStatus.PAID && previousPaymentStatus !== PaymentStatus.PAID
 }
 
 /**

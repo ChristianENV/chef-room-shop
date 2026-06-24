@@ -10,7 +10,10 @@ import {
   PaymentStatus,
 } from '@prisma/client'
 
-import { derivePaymentStatus, resolveCustomerName } from '../admin-dashboard/admin-dashboard.mappers'
+import {
+  derivePaymentStatus,
+  resolveCustomerName,
+} from '../admin-dashboard/admin-dashboard.mappers'
 import type {
   AdminOrderAddressGql,
   AdminOrderCustomerGql,
@@ -185,9 +188,7 @@ export function mapOrderToAdminGql(order: AdminOrderWithRelations): AdminOrderGq
     placedAt: toIso(order.placedAt),
     createdAt: order.createdAt.toISOString(),
     updatedAt: order.updatedAt.toISOString(),
-    shippingAddress: order.shippingAddress
-      ? mapAddressToGql(order.shippingAddress)
-      : null,
+    shippingAddress: order.shippingAddress ? mapAddressToGql(order.shippingAddress) : null,
     billingAddress: order.billingAddress ? mapAddressToGql(order.billingAddress) : null,
     items: order.items.map(mapOrderItemToGql),
     payments: order.payments.map(mapPaymentToGql),

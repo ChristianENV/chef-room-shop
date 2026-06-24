@@ -62,8 +62,7 @@ export default function AdminOrdersPage() {
   const markReadyToShip = useMarkAdminOrderReadyToShipMutation()
 
   const statusCounts = useMemo(
-    () =>
-      summaryQuery.data ? mapAdminStatusSummaryToCards(summaryQuery.data) : undefined,
+    () => (summaryQuery.data ? mapAdminStatusSummaryToCards(summaryQuery.data) : undefined),
     [summaryQuery.data],
   )
 
@@ -155,17 +154,13 @@ export default function AdminOrdersPage() {
               router.push(routes.adminOrderDetail(orderNumber))
             }}
             onMoveToProduction={(orderNumber) =>
-              void runTableAction(orderNumber, () =>
-                moveToProduction.mutateAsync(orderNumber),
-              )
+              void runTableAction(orderNumber, () => moveToProduction.mutateAsync(orderNumber))
             }
             onMarkReadyToShip={(orderNumber) =>
               void runTableAction(orderNumber, () => markReadyToShip.mutateAsync(orderNumber))
             }
             onAddTracking={(orderNumber) => openOrderDialog(orderNumber)}
-            onCancelOrder={(orderNumber) =>
-              openOrderDialog(orderNumber, { cancel: true })
-            }
+            onCancelOrder={(orderNumber) => openOrderDialog(orderNumber, { cancel: true })}
             onOpenProductionSheet={(orderNumber) =>
               openOrderDialog(orderNumber, { tab: 'production' })
             }

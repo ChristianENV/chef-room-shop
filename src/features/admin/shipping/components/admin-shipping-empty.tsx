@@ -15,8 +15,7 @@ export function AdminShippingEmpty({ blockedReason }: AdminShippingEmptyProps) {
       <Package className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
       <p className="font-sans text-sm font-medium">Sin guía generada</p>
       <p className="mt-1 font-serif text-sm text-muted-foreground">
-        {blockedReason ??
-          'Genera la guía con Skydropx cuando el pedido esté listo para envío.'}
+        {blockedReason ?? 'Genera la guía con Skydropx cuando el pedido esté listo para envío.'}
       </p>
     </div>
   )

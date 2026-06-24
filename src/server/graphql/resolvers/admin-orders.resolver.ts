@@ -45,17 +45,11 @@ type MutationInputArgs<T> = {
 
 export const adminOrdersResolvers = {
   Query: {
-    adminOrders: (
-      _parent: unknown,
-      args: AdminOrdersQueryArgs,
-      context: GraphQLContext,
-    ) => getAdminOrders(context, args),
+    adminOrders: (_parent: unknown, args: AdminOrdersQueryArgs, context: GraphQLContext) =>
+      getAdminOrders(context, args),
 
-    adminOrderByNumber: (
-      _parent: unknown,
-      args: OrderNumberArgs,
-      context: GraphQLContext,
-    ) => getAdminOrderByNumber(context, args.orderNumber),
+    adminOrderByNumber: (_parent: unknown, args: OrderNumberArgs, context: GraphQLContext) =>
+      getAdminOrderByNumber(context, args.orderNumber),
 
     adminOrderStatusSummary: (
       _parent: unknown,
@@ -69,17 +63,11 @@ export const adminOrdersResolvers = {
       context: GraphQLContext,
     ) => getAdminOrderProductionQueue(context, args.limit),
 
-    adminOrderProductionSheet: (
-      _parent: unknown,
-      args: OrderNumberArgs,
-      context: GraphQLContext,
-    ) => getAdminOrderProductionSheet(context, args.orderNumber),
+    adminOrderProductionSheet: (_parent: unknown, args: OrderNumberArgs, context: GraphQLContext) =>
+      getAdminOrderProductionSheet(context, args.orderNumber),
 
-    adminDesignConfigJson: (
-      _parent: unknown,
-      args: DesignConfigArgs,
-      context: GraphQLContext,
-    ) => getAdminDesignConfigJson(context, args.designId),
+    adminDesignConfigJson: (_parent: unknown, args: DesignConfigArgs, context: GraphQLContext) =>
+      getAdminDesignConfigJson(context, args.designId),
   },
 
   Mutation: {
@@ -95,11 +83,8 @@ export const adminOrdersResolvers = {
       context: GraphQLContext,
     ) => moveAdminOrderToProduction(context, args.orderNumber),
 
-    markAdminOrderReadyToShip: (
-      _parent: unknown,
-      args: OrderNumberArgs,
-      context: GraphQLContext,
-    ) => markAdminOrderReadyToShip(context, args.orderNumber),
+    markAdminOrderReadyToShip: (_parent: unknown, args: OrderNumberArgs, context: GraphQLContext) =>
+      markAdminOrderReadyToShip(context, args.orderNumber),
 
     addAdminOrderTracking: (
       _parent: unknown,
@@ -107,11 +92,8 @@ export const adminOrdersResolvers = {
       context: GraphQLContext,
     ) => addAdminOrderTracking(context, args.input),
 
-    cancelAdminOrder: (
-      _parent: unknown,
-      args: CancelOrderArgs,
-      context: GraphQLContext,
-    ) => cancelAdminOrder(context, args.orderNumber, args.reason),
+    cancelAdminOrder: (_parent: unknown, args: CancelOrderArgs, context: GraphQLContext) =>
+      cancelAdminOrder(context, args.orderNumber, args.reason),
 
     addAdminOrderNote: (
       _parent: unknown,

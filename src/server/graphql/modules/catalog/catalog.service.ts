@@ -56,9 +56,7 @@ function clampOffset(offset?: number | null): number {
   return Math.max(0, Math.floor(offset))
 }
 
-function buildProductsWhere(
-  filter?: GetProductsInput['filter'],
-): Prisma.ProductWhereInput {
+function buildProductsWhere(filter?: GetProductsInput['filter']): Prisma.ProductWhereInput {
   const where: Prisma.ProductWhereInput = activeProductWhere()
 
   if (!filter) return where
@@ -162,9 +160,7 @@ export async function getProductBySlug(
 /**
  * Returns all product types (reference data for filters).
  */
-export async function getProductTypes(
-  prisma: PrismaClient,
-): Promise<CatalogProductTypeGql[]> {
+export async function getProductTypes(prisma: PrismaClient): Promise<CatalogProductTypeGql[]> {
   const rows = await prisma.productType.findMany({
     orderBy: { sortOrder: 'asc' },
   })

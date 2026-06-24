@@ -150,7 +150,13 @@ export interface Address {
   isDefaultBilling: boolean
 }
 
-export type OrderStatus = 'pendiente' | 'pagado' | 'en-produccion' | 'enviado' | 'entregado' | 'cancelado'
+export type OrderStatus =
+  | 'pendiente'
+  | 'pagado'
+  | 'en-produccion'
+  | 'enviado'
+  | 'entregado'
+  | 'cancelado'
 export type PaymentStatus = 'pendiente' | 'completado' | 'fallido' | 'reembolsado'
 
 export interface Order {
@@ -255,7 +261,13 @@ export interface AdminProductFormData {
 }
 
 // Customization Rules Types
-export type GarmentAreaId = 'pecho' | 'espalda' | 'manga-izquierda' | 'manga-derecha' | 'bolsillo' | 'cuello'
+export type GarmentAreaId =
+  | 'pecho'
+  | 'espalda'
+  | 'manga-izquierda'
+  | 'manga-derecha'
+  | 'bolsillo'
+  | 'cuello'
 export type CustomizationType = 'bordado' | 'estampado' | 'patch' | 'logo' | 'texto'
 
 export interface CustomizationAreaRule {
@@ -293,9 +305,21 @@ export interface CustomizationRuleFormData {
 }
 
 // Admin Order Types
-export type AdminOrderStatus = 'pendiente-pago' | 'pagado' | 'en-produccion' | 'listo-envio' | 'enviado' | 'entregado' | 'cancelado'
+export type AdminOrderStatus =
+  | 'pendiente-pago'
+  | 'pagado'
+  | 'en-produccion'
+  | 'listo-envio'
+  | 'enviado'
+  | 'entregado'
+  | 'cancelado'
 export type AdminPaymentStatus = 'pendiente' | 'completado' | 'fallido' | 'reembolsado' | 'parcial'
-export type AdminProductionStatus = 'pendiente' | 'en-cola' | 'en-proceso' | 'revision' | 'completado'
+export type AdminProductionStatus =
+  | 'pendiente'
+  | 'en-cola'
+  | 'en-proceso'
+  | 'revision'
+  | 'completado'
 
 export interface AdminOrder {
   id: string

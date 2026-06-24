@@ -1,12 +1,7 @@
 import assert from 'node:assert/strict'
 import { after, describe, it } from 'node:test'
 
-import {
-  FulfillmentStatus,
-  OrderStatus,
-  RoleSlug,
-  ShipmentStatus,
-} from '@prisma/client'
+import { FulfillmentStatus, OrderStatus, RoleSlug, ShipmentStatus } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 
 import type { CurrentUser } from '@/src/server/auth/types'
@@ -21,18 +16,32 @@ function canRunDbIntegrationTests(): boolean {
 
 const hasDatabase = canRunDbIntegrationTests()
 
-const ORIGINAL_SKYDROPX_MODE = process.env.SKYDROPX_MODE
+const ORIGINAL_NODE_ENV = process.env.NODE_ENV
+const ORIGINAL_VERCEL_ENV = process.env.VERCEL_ENV
 
-function setSkydropxMode(mode: 'live' | 'mock' | undefined): void {
-  if (mode === undefined) {
-    delete process.env.SKYDROPX_MODE
+function setDeploymentEnv(params: { nodeEnv?: string; vercelEnv?: string | null }): void {
+  const env = process.env as Record<string, string | undefined>
+
+  if (params.nodeEnv === undefined) {
+    delete env.NODE_ENV
   } else {
-    process.env.SKYDROPX_MODE = mode
+    env.NODE_ENV = params.nodeEnv
+  }
+
+  if (params.vercelEnv === undefined) {
+    // leave unchanged
+  } else if (params.vercelEnv === null) {
+    delete env.VERCEL_ENV
+  } else {
+    env.VERCEL_ENV = params.vercelEnv
   }
 }
 
 after(() => {
-  setSkydropxMode(ORIGINAL_SKYDROPX_MODE as 'live' | 'mock' | undefined)
+  setDeploymentEnv({
+    nodeEnv: ORIGINAL_NODE_ENV,
+    vercelEnv: ORIGINAL_VERCEL_ENV ?? null,
+  })
 })
 
 async function loadMockTrackingModules() {
@@ -105,10 +114,23 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   }
 
   after(async () => {
-    setSkydropxMode(ORIGINAL_SKYDROPX_MODE as 'live' | 'mock' | undefined)
+    setDeploymentEnv({
+      nodeEnv: ORIGINAL_NODE_ENV,
+      vercelEnv: ORIGINAL_VERCEL_ENV ?? null,
+    })
     const { prisma } = await loadPrisma()
 
     if (cleanup.orderIds.length > 0) {
+      await prisma.notification.deleteMany({
+        where: {
+          dedupeKey: {
+            in: cleanup.orderIds.flatMap((orderId) => [
+              `order-shipped:${orderId}`,
+              `order-delivered:${orderId}`,
+            ]),
+          },
+        },
+      })
       await prisma.shipmentEvent.deleteMany({
         where: { shipment: { orderId: { in: cleanup.orderIds } } },
       })
@@ -125,9 +147,8 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
 
   async function createMockShipmentOrder(orderNumber: string) {
     const { prisma } = await loadPrisma()
-    const { buildMockTrackingNumber } = await import(
-      '@/src/server/shipping/skydropx/skydropx.mock-provider'
-    )
+    const { buildMockTrackingNumber } =
+      await import('@/src/server/shipping/skydropx/skydropx.mock-provider')
 
     const order = await prisma.order.create({
       data: {
@@ -164,7 +185,7 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   }
 
   it('updates shipment and order on delivered in mock mode', async () => {
-    setSkydropxMode('mock')
+    setDeploymentEnv({ nodeEnv: 'development', vercelEnv: null })
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus } = await loadMockTrackingModules()
     const orderNumber = `CR-MOCK-TRACK-DEL-${Date.now()}`
@@ -187,7 +208,7 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   })
 
   it('updates shipment and order on in_transit in mock mode', async () => {
-    setSkydropxMode('mock')
+    setDeploymentEnv({ nodeEnv: 'development', vercelEnv: null })
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus } = await loadMockTrackingModules()
     const orderNumber = `CR-MOCK-TRACK-TRANSIT-${Date.now()}`
@@ -209,9 +230,8 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
     })
     cleanup.orderIds.push(order.id)
 
-    const { buildMockTrackingNumber } = await import(
-      '@/src/server/shipping/skydropx/skydropx.mock-provider'
-    )
+    const { buildMockTrackingNumber } =
+      await import('@/src/server/shipping/skydropx/skydropx.mock-provider')
 
     await prisma.shipment.create({
       data: {
@@ -241,7 +261,7 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   })
 
   it('blocks simulation in live mode', async () => {
-    setSkydropxMode('live')
+    setDeploymentEnv({ nodeEnv: 'production', vercelEnv: 'production' })
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus, MockTrackingSimulationError } =
       await loadMockTrackingModules()
@@ -259,7 +279,7 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
   })
 
   it('fails when shipment is not mock', async () => {
-    setSkydropxMode('mock')
+    setDeploymentEnv({ nodeEnv: 'development', vercelEnv: null })
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus, MockTrackingSimulationError } =
       await loadMockTrackingModules()
@@ -302,22 +322,27 @@ describe('simulateMockShipmentTrackingStatus', { skip: !hasDatabase }, () => {
     )
   })
 
-  it('does not create notifications', async () => {
-    setSkydropxMode('mock')
+  it('does not create USER notifications for guest delivered simulation', async () => {
+    setDeploymentEnv({ nodeEnv: 'development', vercelEnv: null })
     const { prisma } = await loadPrisma()
     const { simulateMockShipmentTrackingStatus } = await loadMockTrackingModules()
     const orderNumber = `CR-MOCK-TRACK-NOTIF-${Date.now()}`
     const { order } = await createMockShipmentOrder(orderNumber)
-
-    const beforeCount = await prisma.notification.count()
 
     await simulateMockShipmentTrackingStatus(prisma, {
       orderNumber,
       status: 'delivered',
     })
 
-    const afterCount = await prisma.notification.count()
-    assert.equal(afterCount, beforeCount)
+    const notification = await prisma.notification.findFirst({
+      where: {
+        OR: [
+          { dedupeKey: `order-shipped:${order.id}` },
+          { dedupeKey: `order-delivered:${order.id}` },
+        ],
+      },
+    })
+    assert.equal(notification, null)
 
     const updatedOrder = await prisma.order.findUniqueOrThrow({ where: { id: order.id } })
     assert.equal(updatedOrder.status, OrderStatus.DELIVERED)
@@ -336,9 +361,7 @@ describe('adminSimulateMockShipmentTrackingStatus auth', () => {
           trackingStatus: 'in_transit',
         }),
       (error: unknown) => {
-        return (
-          error instanceof GraphQLError && error.extensions?.code === 'FORBIDDEN'
-        )
+        return error instanceof GraphQLError && error.extensions?.code === 'FORBIDDEN'
       },
     )
   })

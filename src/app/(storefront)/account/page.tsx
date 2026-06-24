@@ -52,11 +52,7 @@ export default function AccountPage() {
 
   if (isLoading) {
     return (
-      <AccountLayout
-        title="Mi Perfil"
-        description="Resumen de tu cuenta"
-        userName={userName}
-      >
+      <AccountLayout title="Mi Perfil" description="Resumen de tu cuenta" userName={userName}>
         <ProfileSummarySkeleton />
       </AccountLayout>
     )
@@ -64,11 +60,7 @@ export default function AccountPage() {
 
   if (isError || !user) {
     return (
-      <AccountLayout
-        title="Mi Perfil"
-        description="Resumen de tu cuenta"
-        userName={userName}
-      >
+      <AccountLayout title="Mi Perfil" description="Resumen de tu cuenta" userName={userName}>
         <AccountQueryError
           message={getAccountUserErrorMessage(
             error,
@@ -84,11 +76,7 @@ export default function AccountPage() {
   }
 
   return (
-    <AccountLayout
-      title="Mi Perfil"
-      description="Resumen de tu cuenta"
-      userName={userName}
-    >
+    <AccountLayout title="Mi Perfil" description="Resumen de tu cuenta" userName={userName}>
       <EmailVerificationBanner />
       <AccountProfileHeader user={profileQuery.data ?? null} />
       <ProfileSummary

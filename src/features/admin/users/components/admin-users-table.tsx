@@ -43,7 +43,10 @@ export function AdminUsersTable({ rows, loading }: AdminUsersTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border" data-testid="admin-users-table">
+    <div
+      className="overflow-x-auto rounded-lg border border-border"
+      data-testid="admin-users-table"
+    >
       <Table className="min-w-[960px]">
         <TableHeader>
           <TableRow>

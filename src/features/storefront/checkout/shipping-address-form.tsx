@@ -15,11 +15,38 @@ import { MapPin } from 'lucide-react'
 
 // Mexican states for shipping
 const MEXICAN_STATES = [
-  'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas',
-  'Chihuahua', 'Ciudad de Mexico', 'Coahuila', 'Colima', 'Durango', 'Estado de Mexico',
-  'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco', 'Michoacan', 'Morelos', 'Nayarit',
-  'Nuevo Leon', 'Oaxaca', 'Puebla', 'Queretaro', 'Quintana Roo', 'San Luis Potosi',
-  'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz', 'Yucatan', 'Zacatecas'
+  'Aguascalientes',
+  'Baja California',
+  'Baja California Sur',
+  'Campeche',
+  'Chiapas',
+  'Chihuahua',
+  'Ciudad de Mexico',
+  'Coahuila',
+  'Colima',
+  'Durango',
+  'Estado de Mexico',
+  'Guanajuato',
+  'Guerrero',
+  'Hidalgo',
+  'Jalisco',
+  'Michoacan',
+  'Morelos',
+  'Nayarit',
+  'Nuevo Leon',
+  'Oaxaca',
+  'Puebla',
+  'Queretaro',
+  'Quintana Roo',
+  'San Luis Potosi',
+  'Sinaloa',
+  'Sonora',
+  'Tabasco',
+  'Tamaulipas',
+  'Tlaxcala',
+  'Veracruz',
+  'Yucatan',
+  'Zacatecas',
 ]
 
 export interface ShippingAddressData {
@@ -43,7 +70,12 @@ interface ShippingAddressFormProps {
   className?: string
 }
 
-export function ShippingAddressForm({ data, onChange, errors, className }: ShippingAddressFormProps) {
+export function ShippingAddressForm({
+  data,
+  onChange,
+  errors,
+  className,
+}: ShippingAddressFormProps) {
   const handleChange = (field: keyof ShippingAddressData, value: string | boolean) => {
     onChange({ ...data, [field]: value })
   }
@@ -52,9 +84,7 @@ export function ShippingAddressForm({ data, onChange, errors, className }: Shipp
     <div className={cn('space-y-4', className)}>
       <div className="flex items-center gap-2">
         <MapPin className="h-5 w-5 text-primary" />
-        <h2 className="font-sans text-lg font-semibold text-foreground">
-          Direccion de envio
-        </h2>
+        <h2 className="font-sans text-lg font-semibold text-foreground">Direccion de envio</h2>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -204,10 +234,7 @@ export function ShippingAddressForm({ data, onChange, errors, className }: Shipp
           <Label htmlFor="state" className="font-sans text-sm font-medium">
             Estado *
           </Label>
-          <Select
-            value={data.state}
-            onValueChange={(value) => handleChange('state', value)}
-          >
+          <Select value={data.state} onValueChange={(value) => handleChange('state', value)}>
             <SelectTrigger className={cn('mt-1.5', errors?.state && 'border-destructive')}>
               <SelectValue placeholder="Selecciona un estado" />
             </SelectTrigger>
@@ -229,12 +256,7 @@ export function ShippingAddressForm({ data, onChange, errors, className }: Shipp
           <Label htmlFor="country" className="font-sans text-sm font-medium">
             Pais
           </Label>
-          <Input
-            id="country"
-            value="Mexico"
-            disabled
-            className="mt-1.5 bg-secondary"
-          />
+          <Input id="country" value="Mexico" disabled className="mt-1.5 bg-secondary" />
         </div>
 
         {/* Save Address Checkbox */}
@@ -244,10 +266,7 @@ export function ShippingAddressForm({ data, onChange, errors, className }: Shipp
             checked={data.saveAddress}
             onCheckedChange={(checked) => handleChange('saveAddress', checked === true)}
           />
-          <Label
-            htmlFor="saveAddress"
-            className="font-serif text-sm text-muted-foreground"
-          >
+          <Label htmlFor="saveAddress" className="font-serif text-sm text-muted-foreground">
             Guardar esta direccion para futuras compras
           </Label>
         </div>

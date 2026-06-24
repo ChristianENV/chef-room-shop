@@ -183,11 +183,7 @@ export async function syncOrderPaymentWithConekta(
   )
 
   if (updated) {
-    void sendConektaPaymentStatusEmails(
-      { ...payment, order },
-      mappedStatus,
-      previousPaymentStatus,
-    )
+    void sendConektaPaymentStatusEmails({ ...payment, order }, mappedStatus, previousPaymentStatus)
   }
 
   const refreshed = await context.prisma.order.findFirst({

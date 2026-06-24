@@ -4,10 +4,10 @@ Storefront cart surfaces read from the GraphQL Cart BFF (`myCart` and mutations)
 
 ## Connected surfaces
 
-| Surface | Query | When it runs |
-|---------|--------|----------------|
-| `/cart` | `useMyCartQuery()` | On page load |
-| `CartPopover` (desktop) | `useMyCartQuery()` | Shared with navbar badge |
+| Surface                         | Query                                       | When it runs                                |
+| ------------------------------- | ------------------------------------------- | ------------------------------------------- |
+| `/cart`                         | `useMyCartQuery()`                          | On page load                                |
+| `CartPopover` (desktop)         | `useMyCartQuery()`                          | Shared with navbar badge                    |
 | Navbar badge (desktop + mobile) | `useCartBadgeCount()` → `myCart.totalItems` | On header mount (TanStack cache, 60s stale) |
 
 ## Guest session behavior

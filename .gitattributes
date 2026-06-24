@@ -1,0 +1,16 @@
+* text=auto eol=lf
+
+next-env.d.ts text eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.rar binary
+*.glb binary
+*.gltf text eol=lf
+*.bin binary

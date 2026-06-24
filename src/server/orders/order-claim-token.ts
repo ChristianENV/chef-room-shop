@@ -1,27 +1,18 @@
 import 'server-only'
 
-import { createHash, randomBytes } from 'crypto'
-
 import type { Order } from '@prisma/client'
 
 import { prisma } from '@/src/server/db/prisma'
-import { maskEmail } from '@/src/lib/email/mask-email'
+
+import {
+  generateOrderClaimToken,
+  hashOrderClaimToken,
+  maskCustomerEmail,
+} from './order-claim-token-crypto'
+
+export { generateOrderClaimToken, hashOrderClaimToken, maskCustomerEmail }
 
 const DEFAULT_EXPIRES_IN_DAYS = 14
-
-/**
- * Generates a cryptographically random order claim token (base64url).
- */
-export function generateOrderClaimToken(): string {
-  return randomBytes(32).toString('base64url')
-}
-
-/**
- * SHA-256 hex digest of the claim token for DB storage.
- */
-export function hashOrderClaimToken(token: string): string {
-  return createHash('sha256').update(token, 'utf8').digest('hex')
-}
 
 /**
  * Persists a hashed claim token for a guest order. Returns the plain token once (for email/URL only).
@@ -73,11 +64,21 @@ export async function validateOrderClaimToken(token: string): Promise<{
   }
 
   if (claimToken.usedAt) {
-    return { valid: false, reason: 'USED', order: claimToken.order, expiresAt: claimToken.expiresAt }
+    return {
+      valid: false,
+      reason: 'USED',
+      order: claimToken.order,
+      expiresAt: claimToken.expiresAt,
+    }
   }
 
   if (claimToken.expiresAt.getTime() < Date.now()) {
-    return { valid: false, reason: 'EXPIRED', order: claimToken.order, expiresAt: claimToken.expiresAt }
+    return {
+      valid: false,
+      reason: 'EXPIRED',
+      order: claimToken.order,
+      expiresAt: claimToken.expiresAt,
+    }
   }
 
   return {
@@ -86,11 +87,4 @@ export async function validateOrderClaimToken(token: string): Promise<{
     expiresAt: claimToken.expiresAt,
     claimTokenId: claimToken.id,
   }
-}
-
-/**
- * Masks an email for safe display on the claim preview screen.
- */
-export function maskCustomerEmail(email: string): string {
-  return maskEmail(email)
 }

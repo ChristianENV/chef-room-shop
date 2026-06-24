@@ -6,12 +6,12 @@ Chef Room splits configuration by sensitivity and whether a value changes per en
 
 Static business and product constants safe to commit:
 
-| Group | Examples |
-|-------|----------|
+| Group           | Examples                                                                     |
+| --------------- | ---------------------------------------------------------------------------- |
 | `BUSINESS_VARS` | Legal name, public email/phone, address shown in footer/contact, social URLs |
-| `BRAND_VARS` | Tagline, primary color `#2B3280`, palette tokens |
-| `SHIPPING_VARS` | Origin defaults (Puebla `72000`), package tiers, `extraItemWeightKg` |
-| `APP_LIMITS` | Cart max quantity, quote reuse window, rate expiration hours |
+| `BRAND_VARS`    | Tagline, primary color `#2B3280`, palette tokens                             |
+| `SHIPPING_VARS` | Origin defaults (Puebla `72000`), package tiers, `extraItemWeightKg`         |
+| `APP_LIMITS`    | Cart max quantity, quote reuse window, rate expiration hours                 |
 
 Import in client or server:
 
@@ -23,15 +23,15 @@ import { VARS, BUSINESS_VARS, SHIPPING_VARS } from '@/src/config/vars'
 
 ## `.env` / `.env.local` (not committed, secrets & environment)
 
-| Category | Examples |
-|----------|----------|
-| Database | `DATABASE_URL` |
-| Auth | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_*` |
-| Payments | `CONEKTA_PRIVATE_KEY`, `NEXT_PUBLIC_CONEKTA_PUBLIC_KEY` |
-| Shipping API | `SKYDROPX_CLIENT_ID`, `SKYDROPX_CLIENT_SECRET`, `SKYDROPX_WEBHOOK_SECRET`, `SKYDROPX_MODE` |
-| Email | `RESEND_API_KEY`, `EMAIL_FROM` |
+| Category     | Examples                                                                                                         |
+| ------------ | ---------------------------------------------------------------------------------------------------------------- |
+| Database     | `DATABASE_URL`                                                                                                   |
+| Auth         | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_*`                                                       |
+| Payments     | `CONEKTA_PRIVATE_KEY`, `NEXT_PUBLIC_CONEKTA_PUBLIC_KEY`                                                          |
+| Shipping API | `SKYDROPX_CLIENT_ID`, `SKYDROPX_CLIENT_SECRET`, `SKYDROPX_WEBHOOK_SECRET`                                        |
+| Email        | `RESEND_API_KEY`, `EMAIL_FROM`                                                                                   |
 | Storage (R2) | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_BASE_URL`, `R2_REGION` |
-| App URL | `NEXT_PUBLIC_APP_URL` |
+| App URL      | `NEXT_PUBLIC_APP_URL`                                                                                            |
 
 ### Cloudflare R2 image uploads (server-only)
 
@@ -75,9 +75,6 @@ SKYDROPX_DEFAULT_CONSIGNMENT_NOTE="53102400"
 SKYDROPX_DEFAULT_PACKAGE_TYPE="4G"
 # Teléfono: 10 dígitos MX (sin +52). Ej: 9981234567, no +529981234567
 # SHIPPING_ORIGIN_NAME, SHIPPING_ORIGIN_COMPANY optional overrides
-
-# Mock admin labels without Skydropx credit (dev/test; see docs/skydropx.md)
-# SKYDROPX_MODE=mock
 ```
 
 Defaults in `SHIPPING_VARS.origin` (`vars.ts`) only set city/state/CP — **admin label generation requires** full origin via env before calling Skydropx.
@@ -98,11 +95,11 @@ Server reads overrides in `getDefaultPackageConfig()` (`src/server/shipping/ship
 
 ## Related modules
 
-| Module | Role |
-|--------|------|
-| `src/config/shipping.ts` | Re-exports `SHIPPING_COUNTRY_MX`, `SHIPPING_PACKAGE_TIERS` from `vars` |
-| `src/server/shipping/shipping.config.ts` | Env overrides + `vars` defaults for origin/package |
-| `lib/brand.ts` | Back-compat re-exports from `BRAND_VARS` / `BUSINESS_VARS` |
+| Module                                   | Role                                                                   |
+| ---------------------------------------- | ---------------------------------------------------------------------- |
+| `src/config/shipping.ts`                 | Re-exports `SHIPPING_COUNTRY_MX`, `SHIPPING_PACKAGE_TIERS` from `vars` |
+| `src/server/shipping/shipping.config.ts` | Env overrides + `vars` defaults for origin/package                     |
+| `lib/brand.ts`                           | Back-compat re-exports from `BRAND_VARS` / `BUSINESS_VARS`             |
 
 ## Rules of thumb
 

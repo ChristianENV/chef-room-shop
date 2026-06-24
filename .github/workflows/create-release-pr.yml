@@ -1,0 +1,99 @@
+name: Create Release PR
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  create-release-pr:
+    name: create-release-pr
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check whether dev is ahead of main
+        id: ahead
+        run: |
+          git fetch origin main dev
+          count="$(git rev-list --count origin/main..origin/dev)"
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          if [ "$count" = "0" ]; then
+            echo "dev is not ahead of main. No release PR needed."
+          else
+            echo "dev is $count commit(s) ahead of main."
+          fi
+
+      - name: Create or update release PR
+        if: steps.ahead.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_TITLE="Release: dev to main"
+          PR_BODY_FILE="$(mktemp)"
+          cat > "$PR_BODY_FILE" <<'EOF'
+          ## Release PR
+
+          This PR accumulates all validated changes from `dev` for production release into `main`.
+
+          - Source: `dev`
+          - Target: `main`
+          - Deploy target after merge: `chefroom.mx`
+          - Non-production validation branch: `dev` / `np.chefroom.mx`
+
+          ## Rules
+
+          - Do not open feature branches directly into `main`.
+          - Production releases must go through this PR.
+          - Tags are created after merge to `main` by a separate workflow.
+
+          ## Validation
+
+          Required checks must pass before merge:
+          - format
+          - lint
+          - typecheck
+          - test
+          - build
+          - validate-pr-target
+          EOF
+
+          find_existing_release_pr() {
+            gh pr list \
+              --base main \
+              --state open \
+              --json number,headRefName,baseRefName \
+              --jq '.[] | select(.headRefName == "dev" and .baseRefName == "main") | .number' \
+              | head -n 1
+          }
+
+          EXISTING_PR_NUMBER="$(find_existing_release_pr)"
+
+          if [ -n "$EXISTING_PR_NUMBER" ]; then
+            echo "Found existing release PR #$EXISTING_PR_NUMBER. Updating title/body."
+            gh pr edit "$EXISTING_PR_NUMBER" --title "$PR_TITLE" --body-file "$PR_BODY_FILE"
+            exit 0
+          fi
+
+          echo "Creating release PR dev -> main"
+          if gh pr create --base main --head dev --title "$PR_TITLE" --body-file "$PR_BODY_FILE"; then
+            exit 0
+          fi
+
+          echo "gh pr create failed; checking for an existing release PR."
+          EXISTING_PR_NUMBER="$(find_existing_release_pr)"
+          if [ -n "$EXISTING_PR_NUMBER" ]; then
+            echo "Found existing release PR #$EXISTING_PR_NUMBER. Updating title/body."
+            gh pr edit "$EXISTING_PR_NUMBER" --title "$PR_TITLE" --body-file "$PR_BODY_FILE"
+            exit 0
+          fi
+
+          echo "Failed to create or update release PR."
+          exit 1

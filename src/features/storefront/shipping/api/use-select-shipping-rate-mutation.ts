@@ -14,10 +14,7 @@ export function useSelectShippingRateMutation() {
   return useMutation({
     mutationFn: (rateId: string) => selectShippingRate(rateId),
     onSuccess: (payload) => {
-      queryClient.setQueryData(
-        shippingQueryKeys.quoteById(payload.quote.id),
-        payload.quote,
-      )
+      queryClient.setQueryData(shippingQueryKeys.quoteById(payload.quote.id), payload.quote)
       void queryClient.invalidateQueries({ queryKey: shippingQueryKeys.all })
     },
   })

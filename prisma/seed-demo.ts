@@ -30,10 +30,7 @@ async function main() {
   const users = await seedDemoUsers(prisma, auth)
   const catalog = await seedDemoCatalog(prisma)
 
-  const customerEmails = Array.from(
-    { length: 20 },
-    (_, i) => `cliente.demo+${i + 1}@chefroom.test`,
-  )
+  const customerEmails = Array.from({ length: 20 }, (_, i) => `cliente.demo+${i + 1}@chefroom.test`)
 
   const commerce = await seedDemoCommerce({
     prisma,

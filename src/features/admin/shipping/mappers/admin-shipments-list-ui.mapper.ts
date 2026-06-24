@@ -15,7 +15,7 @@ import type {
 
 function formatAdminDate(iso: string): string {
   try {
-    return format(new Date(iso), "d MMM yyyy, HH:mm", { locale: es })
+    return format(new Date(iso), 'd MMM yyyy, HH:mm', { locale: es })
   } catch {
     return iso
   }
@@ -53,9 +53,7 @@ export function mapAdminShipmentListItemToTableRow(
   shipment: AdminShipmentListItem,
 ): AdminShipmentsUiTableRow {
   const customerName =
-    shipment.customerName?.trim() ||
-    shipment.customerEmail.split('@')[0]?.trim() ||
-    'Cliente'
+    shipment.customerName?.trim() || shipment.customerEmail.split('@')[0]?.trim() || 'Cliente'
 
   return {
     id: shipment.id,
@@ -68,14 +66,10 @@ export function mapAdminShipmentListItemToTableRow(
     trackingNumber: shipment.trackingNumber?.trim() || '—',
     labelStatus: shipment.labelStatus,
     costLabel:
-      shipment.costCents != null
-        ? formatMoney(shipment.costCents, shipment.currency)
-        : '—',
+      shipment.costCents != null ? formatMoney(shipment.costCents, shipment.currency) : '—',
     currency: shipment.currency,
     createdAtLabel: formatAdminDate(shipment.createdAt),
-    trackingUpdatedAtLabel: formatAdminDate(
-      shipment.trackingUpdatedAt ?? shipment.updatedAt,
-    ),
+    trackingUpdatedAtLabel: formatAdminDate(shipment.trackingUpdatedAt ?? shipment.updatedAt),
   }
 }
 

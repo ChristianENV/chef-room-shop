@@ -3,12 +3,12 @@
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { 
-  ShoppingCart, 
-  Search, 
-  Package, 
-  Palette, 
-  BarChart3, 
+import {
+  ShoppingCart,
+  Search,
+  Package,
+  Palette,
+  BarChart3,
   Database,
   FolderOpen,
   Plus,
@@ -43,32 +43,22 @@ function BaseEmptyState({
   className,
 }: BaseEmptyStateProps) {
   return (
-    <div className={cn(
-      'flex flex-col items-center justify-center py-16 text-center',
-      className
-    )}>
-      <div className="mb-4 rounded-full bg-secondary p-4">
-        {icon}
-      </div>
-      <h3 className="font-sans text-lg font-semibold text-foreground">
-        {title}
-      </h3>
-      <p className="mt-2 max-w-md font-serif text-muted-foreground">
-        {description}
-      </p>
+    <div className={cn('flex flex-col items-center justify-center py-16 text-center', className)}>
+      <div className="mb-4 rounded-full bg-secondary p-4">{icon}</div>
+      <h3 className="font-sans text-lg font-semibold text-foreground">{title}</h3>
+      <p className="mt-2 max-w-md font-serif text-muted-foreground">{description}</p>
       {(action || secondaryAction) && (
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          {action && (
-            action.href ? (
+          {action &&
+            (action.href ? (
               <Button asChild>
                 <Link href={action.href}>{action.label}</Link>
               </Button>
             ) : (
               <Button onClick={action.onClick}>{action.label}</Button>
-            )
-          )}
-          {secondaryAction && (
-            secondaryAction.href ? (
+            ))}
+          {secondaryAction &&
+            (secondaryAction.href ? (
               <Button variant="outline" asChild>
                 <Link href={secondaryAction.href}>{secondaryAction.label}</Link>
               </Button>
@@ -76,8 +66,7 @@ function BaseEmptyState({
               <Button variant="outline" onClick={secondaryAction.onClick}>
                 {secondaryAction.label}
               </Button>
-            )
-          )}
+            ))}
         </div>
       )}
     </div>
@@ -91,10 +80,10 @@ interface EmptyCartStateProps {
   className?: string
 }
 
-export function EmptyCartState({ 
-  onBrowseCatalog, 
+export function EmptyCartState({
+  onBrowseCatalog,
   onStartCustomizing,
-  className 
+  className,
 }: EmptyCartStateProps) {
   return (
     <BaseEmptyState
@@ -123,27 +112,31 @@ interface EmptyCatalogStateProps {
   className?: string
 }
 
-export function EmptyCatalogState({ 
+export function EmptyCatalogState({
   searchTerm,
   onClearFilters,
-  className 
+  className,
 }: EmptyCatalogStateProps) {
   return (
     <BaseEmptyState
       icon={<Search className="h-8 w-8 text-muted-foreground" />}
       title={searchTerm ? `No encontramos "${searchTerm}"` : 'No hay productos'}
       description={
-        searchTerm 
+        searchTerm
           ? 'Intenta con otros terminos de busqueda o revisa los filtros aplicados.'
           : 'No hay productos disponibles con los filtros seleccionados.'
       }
-      action={onClearFilters ? {
-        label: 'Limpiar Filtros',
-        onClick: onClearFilters,
-      } : {
-        label: 'Ver Todo el Catalogo',
-        href: '/shop',
-      }}
+      action={
+        onClearFilters
+          ? {
+              label: 'Limpiar Filtros',
+              onClick: onClearFilters,
+            }
+          : {
+              label: 'Ver Todo el Catalogo',
+              href: '/shop',
+            }
+      }
       className={className}
     />
   )
@@ -155,10 +148,7 @@ interface EmptyOrdersStateProps {
   className?: string
 }
 
-export function EmptyOrdersState({ 
-  onStartShopping,
-  className 
-}: EmptyOrdersStateProps) {
+export function EmptyOrdersState({ onStartShopping, className }: EmptyOrdersStateProps) {
   return (
     <BaseEmptyState
       icon={<Package className="h-8 w-8 text-muted-foreground" />}
@@ -180,9 +170,9 @@ interface EmptySavedDesignsStateProps {
   className?: string
 }
 
-export function EmptySavedDesignsState({ 
+export function EmptySavedDesignsState({
   onStartDesigning,
-  className 
+  className,
 }: EmptySavedDesignsStateProps) {
   return (
     <BaseEmptyState
@@ -207,11 +197,11 @@ interface EmptyAdminTableStateProps {
   className?: string
 }
 
-export function EmptyAdminTableState({ 
+export function EmptyAdminTableState({
   entityName,
   onAdd,
   addLabel,
-  className 
+  className,
 }: EmptyAdminTableStateProps) {
   return (
     <Card className={cn('border-border bg-card', className)}>
@@ -220,10 +210,14 @@ export function EmptyAdminTableState({
           icon={<Database className="h-8 w-8 text-muted-foreground" />}
           title={`No hay ${entityName}`}
           description={`Aun no se han creado ${entityName}. Comienza agregando el primero.`}
-          action={onAdd ? {
-            label: addLabel || `Agregar ${entityName}`,
-            onClick: onAdd,
-          } : undefined}
+          action={
+            onAdd
+              ? {
+                  label: addLabel || `Agregar ${entityName}`,
+                  onClick: onAdd,
+                }
+              : undefined
+          }
         />
       </CardContent>
     </Card>
@@ -236,9 +230,9 @@ interface EmptyAnalyticsStateProps {
   className?: string
 }
 
-export function EmptyAnalyticsState({ 
+export function EmptyAnalyticsState({
   period = 'este periodo',
-  className 
+  className,
 }: EmptyAnalyticsStateProps) {
   return (
     <Card className={cn('border-border bg-card', className)}>
@@ -265,12 +259,7 @@ interface EmptyFolderStateProps {
   className?: string
 }
 
-export function EmptyFolderState({ 
-  title,
-  description,
-  action,
-  className 
-}: EmptyFolderStateProps) {
+export function EmptyFolderState({ title, description, action, className }: EmptyFolderStateProps) {
   return (
     <BaseEmptyState
       icon={<FolderOpen className="h-8 w-8 text-muted-foreground" />}

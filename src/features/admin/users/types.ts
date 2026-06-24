@@ -30,11 +30,7 @@ export type AdminUsersListVariables = {
 
 export type AdminUserRoleFilter = 'all' | 'CUSTOMER' | 'ADMIN' | 'SUPERADMIN'
 
-export type AdminUserStatusFilter =
-  | 'all'
-  | 'ACTIVE'
-  | 'SUSPENDED'
-  | 'PENDING_VERIFICATION'
+export type AdminUserStatusFilter = 'all' | 'ACTIVE' | 'SUSPENDED' | 'PENDING_VERIFICATION'
 
 export type AdminUsersUiTableRow = {
   id: string

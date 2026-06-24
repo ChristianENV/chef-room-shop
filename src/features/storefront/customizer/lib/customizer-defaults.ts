@@ -45,15 +45,30 @@ export const FALLBACK_PERSONALIZATION_ZONES: FallbackPersonalizationZone[] = [
     slug: 'espalda',
     name: 'Espalda',
     options: [
-      { slug: 'logo', name: 'Logo', kind: 'logo', description: 'Logo grande centrado en la espalda.' },
-      { slug: 'texto', name: 'Texto', kind: 'texto', description: 'Texto del restaurante o marca.' },
+      {
+        slug: 'logo',
+        name: 'Logo',
+        kind: 'logo',
+        description: 'Logo grande centrado en la espalda.',
+      },
+      {
+        slug: 'texto',
+        name: 'Texto',
+        kind: 'texto',
+        description: 'Texto del restaurante o marca.',
+      },
     ],
   },
   {
     slug: 'manga-izquierda',
     name: 'Manga izquierda',
     options: [
-      { slug: 'bordado', name: 'Bordado', kind: 'bordado', description: 'Bordado premium en la manga.' },
+      {
+        slug: 'bordado',
+        name: 'Bordado',
+        kind: 'bordado',
+        description: 'Bordado premium en la manga.',
+      },
       { slug: 'logo', name: 'Logo', kind: 'logo', description: 'Logo pequeño en la manga.' },
     ],
   },
@@ -61,7 +76,12 @@ export const FALLBACK_PERSONALIZATION_ZONES: FallbackPersonalizationZone[] = [
     slug: 'manga-derecha',
     name: 'Manga derecha',
     options: [
-      { slug: 'bordado', name: 'Bordado', kind: 'bordado', description: 'Bordado premium en la manga.' },
+      {
+        slug: 'bordado',
+        name: 'Bordado',
+        kind: 'bordado',
+        description: 'Bordado premium en la manga.',
+      },
       { slug: 'logo', name: 'Logo', kind: 'logo', description: 'Logo pequeño en la manga.' },
     ],
   },

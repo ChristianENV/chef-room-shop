@@ -4,14 +4,7 @@ import { routes } from '@/src/config/routes'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { 
-  CheckCircle2, 
-  Save, 
-  ShoppingCart, 
-  Copy,
-  ExternalLink,
-  Download,
-} from 'lucide-react'
+import { CheckCircle2, Save, ShoppingCart, Copy, ExternalLink, Download } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -25,13 +18,13 @@ interface OrderSuccessStateProps {
   className?: string
 }
 
-export function OrderSuccessState({ 
+export function OrderSuccessState({
   orderNumber,
   email,
   estimatedDelivery,
   onViewOrder,
   onContinueShopping,
-  className 
+  className,
 }: OrderSuccessStateProps) {
   return (
     <Card className={cn('border-success/30 bg-card', className)}>
@@ -40,34 +33,26 @@ export function OrderSuccessState({
           <div className="mb-4 rounded-full bg-success/10 p-4">
             <CheckCircle2 className="h-10 w-10 text-success" />
           </div>
-          <h2 className="font-sans text-2xl font-bold text-foreground">
-            Pedido confirmado
-          </h2>
-          <p className="mt-2 font-serif text-muted-foreground">
-            Gracias por tu compra
-          </p>
-          
+          <h2 className="font-sans text-2xl font-bold text-foreground">Pedido confirmado</h2>
+          <p className="mt-2 font-serif text-muted-foreground">Gracias por tu compra</p>
+
           <div className="mt-6 rounded-lg bg-secondary px-6 py-4">
-            <p className="font-sans text-sm text-muted-foreground">
-              Numero de pedido
-            </p>
-            <p className="font-mono text-xl font-bold text-foreground">
-              {orderNumber}
-            </p>
+            <p className="font-sans text-sm text-muted-foreground">Numero de pedido</p>
+            <p className="font-mono text-xl font-bold text-foreground">{orderNumber}</p>
           </div>
-          
+
           {email && (
             <p className="mt-4 font-serif text-sm text-muted-foreground">
               Enviamos la confirmacion a <strong className="text-foreground">{email}</strong>
             </p>
           )}
-          
+
           {estimatedDelivery && (
             <p className="mt-2 font-serif text-sm text-muted-foreground">
               Entrega estimada: <strong className="text-foreground">{estimatedDelivery}</strong>
             </p>
           )}
-          
+
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button onClick={onViewOrder} asChild={!onViewOrder}>
               {onViewOrder ? (
@@ -76,11 +61,7 @@ export function OrderSuccessState({
                 <Link href={`${routes.account}/orders`}>Ver mi pedido</Link>
               )}
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={onContinueShopping}
-              asChild={!onContinueShopping}
-            >
+            <Button variant="outline" onClick={onContinueShopping} asChild={!onContinueShopping}>
               {onContinueShopping ? (
                 'Seguir comprando'
               ) : (
@@ -104,13 +85,13 @@ interface DesignSavedStateProps {
   className?: string
 }
 
-export function DesignSavedState({ 
+export function DesignSavedState({
   designName,
   designId,
   onViewDesign,
   onContinueEditing,
   onAddToCart,
-  className 
+  className,
 }: DesignSavedStateProps) {
   return (
     <Card className={cn('border-success/30 bg-card', className)}>
@@ -119,16 +100,12 @@ export function DesignSavedState({
           <div className="mb-4 rounded-full bg-success/10 p-4">
             <Save className="h-8 w-8 text-success" />
           </div>
-          <h3 className="font-sans text-lg font-semibold text-foreground">
-            Diseno guardado
-          </h3>
+          <h3 className="font-sans text-lg font-semibold text-foreground">Diseno guardado</h3>
           <p className="mt-2 font-serif text-muted-foreground">
             Tu diseno &quot;{designName}&quot; ha sido guardado exitosamente.
           </p>
-          <p className="mt-1 font-mono text-xs text-muted-foreground">
-            ID: {designId}
-          </p>
-          
+          <p className="mt-1 font-mono text-xs text-muted-foreground">ID: {designId}</p>
+
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             {onAddToCart && (
               <Button onClick={onAddToCart}>
@@ -164,14 +141,14 @@ interface AddedToCartStateProps {
   className?: string
 }
 
-export function AddedToCartState({ 
+export function AddedToCartState({
   productName,
   productImage,
   quantity,
   price,
   onViewCart,
   onContinueShopping,
-  className 
+  className,
 }: AddedToCartStateProps) {
   return (
     <Card className={cn('border-success/30 bg-card', className)}>
@@ -180,18 +157,16 @@ export function AddedToCartState({
           <div className="rounded-full bg-success/10 p-2">
             <CheckCircle2 className="h-5 w-5 text-success" />
           </div>
-          
+
           <div className="flex-1 min-w-0">
-            <h3 className="font-sans font-semibold text-foreground">
-              Agregado al carrito
-            </h3>
-            
+            <h3 className="font-sans font-semibold text-foreground">Agregado al carrito</h3>
+
             <div className="mt-3 flex items-center gap-3">
               {productImage ? (
                 <div className="h-16 w-16 rounded-lg bg-secondary flex items-center justify-center overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img 
-                    src={productImage} 
+                  <img
+                    src={productImage}
                     alt={productName}
                     className="h-full w-full object-cover"
                   />
@@ -205,28 +180,18 @@ export function AddedToCartState({
                 <p className="font-sans text-sm font-medium text-foreground truncate">
                   {productName}
                 </p>
-                <p className="font-serif text-sm text-muted-foreground">
-                  Cantidad: {quantity}
-                </p>
+                <p className="font-serif text-sm text-muted-foreground">Cantidad: {quantity}</p>
                 <p className="font-sans font-semibold text-foreground">
                   ${price.toLocaleString('es-MX')} MXN
                 </p>
               </div>
             </div>
-            
+
             <div className="mt-4 flex flex-wrap gap-2">
               <Button size="sm" onClick={onViewCart} asChild={!onViewCart}>
-                {onViewCart ? (
-                  'Ver carrito'
-                ) : (
-                  <Link href={routes.cart}>Ver carrito</Link>
-                )}
+                {onViewCart ? 'Ver carrito' : <Link href={routes.cart}>Ver carrito</Link>}
               </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={onContinueShopping}
-              >
+              <Button size="sm" variant="outline" onClick={onContinueShopping}>
                 Seguir comprando
               </Button>
             </div>
@@ -249,7 +214,7 @@ interface PaymentReferenceGeneratedStateProps {
   className?: string
 }
 
-export function PaymentReferenceGeneratedState({ 
+export function PaymentReferenceGeneratedState({
   paymentMethod,
   reference,
   amount,
@@ -257,7 +222,7 @@ export function PaymentReferenceGeneratedState({
   barcode,
   onCopyReference,
   onDownloadVoucher,
-  className 
+  className,
 }: PaymentReferenceGeneratedStateProps) {
   const [copied, setCopied] = useState(false)
 
@@ -269,7 +234,7 @@ export function PaymentReferenceGeneratedState({
   }
 
   const isOxxo = paymentMethod === 'oxxo'
-  
+
   return (
     <Card className={cn('border-primary/30 bg-card', className)}>
       <CardContent className="py-8">
@@ -281,12 +246,11 @@ export function PaymentReferenceGeneratedState({
             {isOxxo ? 'Referencia OXXO generada' : 'Datos SPEI generados'}
           </h3>
           <p className="mt-2 font-serif text-muted-foreground">
-            {isOxxo 
+            {isOxxo
               ? 'Presenta esta referencia en cualquier OXXO para completar tu pago.'
-              : 'Realiza la transferencia SPEI a los siguientes datos.'
-            }
+              : 'Realiza la transferencia SPEI a los siguientes datos.'}
           </p>
-          
+
           {/* Reference */}
           <div className="mt-6 w-full max-w-sm">
             <p className="font-sans text-sm text-muted-foreground mb-2">
@@ -296,45 +260,33 @@ export function PaymentReferenceGeneratedState({
               <span className="flex-1 font-mono text-lg font-bold text-foreground">
                 {reference}
               </span>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={handleCopy}
-              >
+              <Button variant="ghost" size="sm" onClick={handleCopy}>
                 <Copy className="h-4 w-4" />
-                <span className="ml-2 sr-only sm:not-sr-only">
-                  {copied ? 'Copiado' : 'Copiar'}
-                </span>
+                <span className="ml-2 sr-only sm:not-sr-only">{copied ? 'Copiado' : 'Copiar'}</span>
               </Button>
             </div>
           </div>
-          
+
           {/* Amount */}
           <div className="mt-4 w-full max-w-sm">
-            <p className="font-sans text-sm text-muted-foreground mb-1">
-              Monto a pagar
-            </p>
+            <p className="font-sans text-sm text-muted-foreground mb-1">Monto a pagar</p>
             <p className="font-sans text-2xl font-bold text-foreground">
               ${amount.toLocaleString('es-MX')} MXN
             </p>
           </div>
-          
+
           {/* Barcode (OXXO) */}
           {isOxxo && barcode && (
             <div className="mt-4 rounded-lg bg-white p-4">
               <div className="h-16 w-48 bg-secondary flex items-center justify-center">
-                <span className="font-mono text-xs text-muted-foreground">
-                  [Codigo de barras]
-                </span>
+                <span className="font-mono text-xs text-muted-foreground">[Codigo de barras]</span>
               </div>
             </div>
           )}
-          
+
           {/* Expiration */}
-          <p className="mt-4 font-serif text-sm text-warning">
-            Expira: {expiresAt}
-          </p>
-          
+          <p className="mt-4 font-serif text-sm text-warning">Expira: {expiresAt}</p>
+
           {/* Actions */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             {onDownloadVoucher && (

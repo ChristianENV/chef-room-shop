@@ -42,18 +42,14 @@ export function CustomizationSummaryCard({ productId, className }: Customization
       <CardContent className="space-y-6">
         {/* Areas Available */}
         <div className="space-y-3">
-          <h4 className="font-sans text-sm font-medium text-muted-foreground">
-            Areas disponibles
-          </h4>
+          <h4 className="font-sans text-sm font-medium text-muted-foreground">Areas disponibles</h4>
           <div className="grid grid-cols-3 gap-2">
             {customizationAreas.map((area) => (
-              <div 
+              <div
                 key={area.id}
                 className="rounded-lg border border-border bg-secondary p-3 text-center"
               >
-                <p className="font-sans text-sm font-medium text-foreground">
-                  {area.name}
-                </p>
+                <p className="font-sans text-sm font-medium text-foreground">{area.name}</p>
                 <p className="mt-0.5 font-serif text-xs text-muted-foreground">
                   {area.description}
                 </p>
@@ -71,7 +67,7 @@ export function CustomizationSummaryCard({ productId, className }: Customization
             {customizationOptions.map((option) => {
               const Icon = option.icon
               return (
-                <div 
+                <div
                   key={option.id}
                   className="flex items-center justify-between rounded-lg border border-border p-3"
                 >
@@ -94,20 +90,12 @@ export function CustomizationSummaryCard({ productId, className }: Customization
 
         {/* Estimated Extra Cost */}
         <div className="flex items-center justify-between rounded-lg bg-primary/5 p-3">
-          <span className="font-serif text-sm text-muted-foreground">
-            Costo estimado adicional
-          </span>
-          <span className="font-sans text-base font-bold text-foreground">
-            Desde $149
-          </span>
+          <span className="font-serif text-sm text-muted-foreground">Costo estimado adicional</span>
+          <span className="font-sans text-base font-bold text-foreground">Desde $149</span>
         </div>
 
         {/* CTA */}
-        <Button 
-          size="lg" 
-          onClick={handleOpenCustomizer}
-          className="w-full font-sans"
-        >
+        <Button size="lg" onClick={handleOpenCustomizer} className="w-full font-sans">
           Abrir configurador
           <ChevronRight className="ml-2 h-4 w-4" />
         </Button>

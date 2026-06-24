@@ -49,16 +49,11 @@ export default function ProductPage() {
 
   const { data: catalogData } = useProductsQuery({ limit: 100 })
 
-  const product = useMemo(
-    () => (detail ? mapProductDetailToUi(detail) : null),
-    [detail],
-  )
+  const product = useMemo(() => (detail ? mapProductDetailToUi(detail) : null), [detail])
 
   const relatedProducts = useMemo(() => {
     if (!catalogData) return []
-    return catalogData.items
-      .filter((item) => item.slug !== slug)
-      .map(mapCatalogProductToCard)
+    return catalogData.items.filter((item) => item.slug !== slug).map(mapCatalogProductToCard)
   }, [catalogData, slug])
 
   const handleCustomize = () => {
@@ -116,9 +111,7 @@ export default function ProductPage() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage className="font-serif text-foreground">
-                {product.name}
-              </BreadcrumbPage>
+              <BreadcrumbPage className="font-serif text-foreground">{product.name}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -134,11 +127,7 @@ export default function ProductPage() {
             }}
           />
 
-          <ProductInfo
-            key={product.id}
-            product={product}
-            onCustomize={handleCustomize}
-          />
+          <ProductInfo key={product.id} product={product} onCustomize={handleCustomize} />
         </div>
 
         {product.customizable && (
@@ -152,10 +141,7 @@ export default function ProductPage() {
         </div>
 
         <div className="border-t border-border">
-          <RelatedProducts
-            currentProductId={product.id}
-            products={relatedProducts}
-          />
+          <RelatedProducts currentProductId={product.id} products={relatedProducts} />
         </div>
       </div>
 

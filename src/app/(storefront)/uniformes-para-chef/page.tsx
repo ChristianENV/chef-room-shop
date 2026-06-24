@@ -59,8 +59,7 @@ const benefits = [
   {
     icon: 'truck',
     title: 'Envio a Todo Mexico',
-    description:
-      'Entrega rapida en 3-5 dias habiles. Envio gratis en pedidos mayores a $999.',
+    description: 'Entrega rapida en 3-5 dias habiles. Envio gratis en pedidos mayores a $999.',
   },
   {
     icon: 'users',
@@ -71,14 +70,12 @@ const benefits = [
   {
     icon: 'award',
     title: 'Garantia de Satisfaccion',
-    description:
-      '30 dias de garantia. Si no quedas satisfecho, te devolvemos tu dinero.',
+    description: '30 dias de garantia. Si no quedas satisfecho, te devolvemos tu dinero.',
   },
   {
     icon: 'clock',
     title: 'Produccion Rapida',
-    description:
-      'Uniformes personalizados listos en 5-7 dias habiles. Opcion express disponible.',
+    description: 'Uniformes personalizados listos en 5-7 dias habiles. Opcion express disponible.',
   },
 ]
 
@@ -92,15 +89,13 @@ const categories = [
   },
   {
     title: 'Mandiles Profesionales',
-    description:
-      'Mandiles tipo bistro, completos y de cintura. Ideales para cocina y servicio.',
+    description: 'Mandiles tipo bistro, completos y de cintura. Ideales para cocina y servicio.',
     href: shopCategoryUrl('mandiles'),
     imagePlaceholder: 'Mandiles de cocina',
   },
   {
     title: 'Pantalones de Chef',
-    description:
-      'Pantalones cargo, clasicos con cuadros y slim. Comodos para largas jornadas.',
+    description: 'Pantalones cargo, clasicos con cuadros y slim. Comodos para largas jornadas.',
     href: shopCategoryUrl('pantalones'),
     imagePlaceholder: 'Pantalones de cocina',
   },

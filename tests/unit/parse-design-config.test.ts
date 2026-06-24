@@ -91,7 +91,10 @@ describe('parseDesignConfigForHydration', () => {
     assert.equal(parsed.selectedVariantId, 'variant-l-blue')
     assert.equal(parsed.quantity, 2)
     assert.equal(parsed.viewMode, '3D')
-    assert.equal(parsed.layers.some((layer) => layer.text === 'Chef Carlos'), true)
+    assert.equal(
+      parsed.layers.some((layer) => layer.text === 'Chef Carlos'),
+      true,
+    )
     assert.equal(parsed.selectedLayerId, 'text-1')
   })
 })

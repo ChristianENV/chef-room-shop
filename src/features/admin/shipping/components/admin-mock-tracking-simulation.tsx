@@ -60,7 +60,7 @@ export function AdminMockTrackingSimulation({
         Simulación mock
       </p>
       <p className="mb-3 font-serif text-xs text-muted-foreground">
-        Solo para guías mock (CRMOCK-*). Requiere SKYDROPX_MODE=mock.
+        Solo para guías mock (CRMOCK-*). Disponible en entornos local/np con simulación Skydropx.
       </p>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <Select value={status} onValueChange={(value) => setStatus(value as MockTrackingStatus)}>

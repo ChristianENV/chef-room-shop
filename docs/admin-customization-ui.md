@@ -15,11 +15,11 @@ Panel administrativo para reglas de personalización por producto. Conectado al 
 
 ## Archivos clave
 
-| Área | Ruta |
-|------|------|
-| Página | `src/app/(admin)/admin/(protected)/customization/page.tsx` |
-| Mapper | `src/features/admin/customization/mappers/admin-customization-ui.mapper.ts` |
-| Tipos UI | `src/features/admin/customization/types/admin-customization-ui.types.ts` |
+| Área     | Ruta                                                                        |
+| -------- | --------------------------------------------------------------------------- |
+| Página   | `src/app/(admin)/admin/(protected)/customization/page.tsx`                  |
+| Mapper   | `src/features/admin/customization/mappers/admin-customization-ui.mapper.ts` |
+| Tipos UI | `src/features/admin/customization/types/admin-customization-ui.types.ts`    |
 
 ## Mapeo BFF ↔ UI
 

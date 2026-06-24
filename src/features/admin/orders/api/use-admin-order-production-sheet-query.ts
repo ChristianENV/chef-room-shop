@@ -8,10 +8,7 @@ import { adminOrdersQueryKeys } from './admin-orders.query-keys'
 /**
  * TanStack Query hook for admin production sheet by order number.
  */
-export function useAdminOrderProductionSheetQuery(
-  orderNumber: string,
-  enabled = true,
-) {
+export function useAdminOrderProductionSheetQuery(orderNumber: string, enabled = true) {
   return useQuery({
     queryKey: adminOrdersQueryKeys.productionSheet(orderNumber),
     queryFn: () => getAdminOrderProductionSheet(orderNumber),

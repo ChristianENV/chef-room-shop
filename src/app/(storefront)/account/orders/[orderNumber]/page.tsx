@@ -46,9 +46,7 @@ function AccountOrderDetailPageContent() {
   const isAuthenticated = Boolean(session?.user)
   const isGuest = !isAuthenticated
   const emailVerified = Boolean(session?.user?.emailVerified)
-  const maskedSessionEmail = session?.user?.email
-    ? maskEmail(session.user.email)
-    : undefined
+  const maskedSessionEmail = session?.user?.email ? maskEmail(session.user.email) : undefined
 
   const profileQuery = useMeProfileQuery({ enabled: isAuthenticated })
   const tokenOrderQuery = useOrderByCheckoutTokenQuery({

@@ -20,12 +20,7 @@ const BADGE_LABELS: Record<ShippingRateBadge, string> = {
   selected: 'Seleccionado',
 }
 
-const BADGE_ORDER: ShippingRateBadge[] = [
-  'recommended',
-  'cheapest',
-  'fastest',
-  'selected',
-]
+const BADGE_ORDER: ShippingRateBadge[] = ['recommended', 'cheapest', 'fastest', 'selected']
 
 type ShippingRateCardProps = {
   rate: ShippingRate
@@ -50,9 +45,7 @@ export function ShippingRateCard({
 }: ShippingRateCardProps) {
   const pricePesos = centsToPesos(rate.amountCents)
   const displayBadges = sortBadges(
-    selected && !badges.includes('selected')
-      ? [...badges, 'selected']
-      : badges,
+    selected && !badges.includes('selected') ? [...badges, 'selected'] : badges,
   )
   const isDisabled = disabled || isSelecting
 
@@ -81,9 +74,7 @@ export function ShippingRateCard({
           aria-hidden
         >
           {selected && !isSelecting && <Check className="h-3 w-3" strokeWidth={3} />}
-          {isSelecting && (
-            <Loader2 className="h-3 w-3 animate-spin text-primary-foreground" />
-          )}
+          {isSelecting && <Loader2 className="h-3 w-3 animate-spin text-primary-foreground" />}
         </div>
 
         <div className="min-w-0 flex-1">
@@ -98,8 +89,7 @@ export function ShippingRateCard({
                 className={cn(
                   'font-sans text-xs',
                   badge === 'recommended' && 'bg-primary hover:bg-primary/90',
-                  badge === 'selected' &&
-                    'border-primary bg-transparent text-primary',
+                  badge === 'selected' && 'border-primary bg-transparent text-primary',
                 )}
               >
                 {BADGE_LABELS[badge]}
@@ -125,11 +115,7 @@ export function ShippingRateCard({
               selected ? 'text-primary' : 'text-muted-foreground',
             )}
           >
-            {isSelecting
-              ? 'Guardando selección…'
-              : selected
-                ? 'Seleccionado'
-                : 'Seleccionar'}
+            {isSelecting ? 'Guardando selección…' : selected ? 'Seleccionado' : 'Seleccionar'}
           </p>
         </div>
       </div>

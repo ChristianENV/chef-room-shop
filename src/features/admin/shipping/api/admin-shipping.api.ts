@@ -11,11 +11,12 @@ import type {
   AdminCancelShippingLabelInput,
   AdminCreateShippingLabelInput,
   AdminShipment,
+  AdminShipmentByOrderNumberPayload,
   AdminSimulateMockShipmentTrackingInput,
 } from '../types'
 
 type ShipmentQueryData = {
-  adminShipmentByOrderNumber: AdminShipment | null
+  adminShipmentByOrderNumber: AdminShipmentByOrderNumberPayload
 }
 
 type CreateLabelData = { adminCreateShippingLabel: AdminShipment }
@@ -30,7 +31,7 @@ type SimulateMockTrackingData = {
  */
 export async function getAdminShipmentByOrderNumber(
   orderNumber: string,
-): Promise<AdminShipment | null> {
+): Promise<AdminShipmentByOrderNumberPayload> {
   const data = await fetchGraphQL<ShipmentQueryData, { orderNumber: string }>({
     query: ADMIN_SHIPMENT_BY_ORDER_NUMBER_QUERY,
     variables: { orderNumber },
@@ -67,9 +68,7 @@ export async function cancelAdminShippingLabel(
 /**
  * Refreshes tracking from Skydropx for an existing shipment.
  */
-export async function refreshAdminShipmentTracking(
-  orderNumber: string,
-): Promise<AdminShipment> {
+export async function refreshAdminShipmentTracking(orderNumber: string): Promise<AdminShipment> {
   const data = await fetchGraphQL<RefreshTrackingData, { orderNumber: string }>({
     query: ADMIN_REFRESH_SHIPMENT_TRACKING_MUTATION,
     variables: { orderNumber },
@@ -78,7 +77,7 @@ export async function refreshAdminShipmentTracking(
 }
 
 /**
- * Simulates mock shipment tracking status (SKYDROPX_MODE=mock only).
+ * Simulates mock shipment tracking status (local/np mock mode only).
  */
 export async function simulateAdminMockShipmentTracking(
   input: AdminSimulateMockShipmentTrackingInput,

@@ -20,10 +20,7 @@ export default async function ClaimOrderAuthorizePage({
   if (!token) {
     return (
       <ClaimAuthorizeShell>
-        <ErrorCard
-          title="Enlace no válido"
-          description="Este enlace ya no es válido."
-        />
+        <ErrorCard title="Enlace no válido" description="Este enlace ya no es válido." />
       </ClaimAuthorizeShell>
     )
   }

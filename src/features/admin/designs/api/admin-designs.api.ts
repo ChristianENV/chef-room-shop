@@ -1,14 +1,7 @@
 import { fetchGraphQL } from '@/src/lib/graphql/fetch-graphql'
 
-import {
-  ADMIN_DESIGN_BY_ID_QUERY,
-  ADMIN_DESIGNS_QUERY,
-} from '../graphql/admin-designs.queries'
-import type {
-  AdminDesignDetail,
-  AdminDesignsListVariables,
-  AdminDesignsPayload,
-} from '../types'
+import { ADMIN_DESIGN_BY_ID_QUERY, ADMIN_DESIGNS_QUERY } from '../graphql/admin-designs.queries'
+import type { AdminDesignDetail, AdminDesignsListVariables, AdminDesignsPayload } from '../types'
 
 type AdminDesignsData = { adminDesigns: AdminDesignsPayload }
 type AdminDesignByIdData = { adminDesignById: AdminDesignDetail | null }

@@ -117,10 +117,13 @@ export function FabricColorsSection({
         </p>
       </div>
 
-      {(usingCatalog ? [{ group: 'Esenciales' as const, items: palette }] : FABRIC_COLOR_GROUPS.map((group) => ({
-        group,
-        items: grouped[group],
-      }))).map(({ group, items }) =>
+      {(usingCatalog
+        ? [{ group: 'Esenciales' as const, items: palette }]
+        : FABRIC_COLOR_GROUPS.map((group) => ({
+            group,
+            items: grouped[group],
+          }))
+      ).map(({ group, items }) =>
         items.length === 0 ? null : (
           <section key={group} className="space-y-3">
             {!usingCatalog ? (

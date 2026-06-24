@@ -1,14 +1,8 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { routes } from '@/src/config/routes'
-import {
-  hasSessionCookieOnRequest,
-  isAdminAuthEnforced,
-} from '@/src/lib/auth/session'
-import {
-  canAccessAdminRoute,
-  isProtectedAdminPath,
-} from '@/src/server/auth/permissions'
+import { hasSessionCookieOnRequest, isAdminAuthEnforced } from '@/src/lib/auth/session'
+import { canAccessAdminRoute, isProtectedAdminPath } from '@/src/server/auth/permissions'
 
 /**
  * Admin route protection (Edge proxy).

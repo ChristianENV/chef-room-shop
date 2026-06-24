@@ -32,11 +32,8 @@ export function requireVerifiedEmailForOrderDetail(context: GraphQLContext): voi
   }
 
   if (!context.currentUser.emailVerified) {
-    throw new GraphQLError(
-      'Verifica tu correo para consultar el detalle de tu pedido.',
-      {
-        extensions: { code: 'EMAIL_NOT_VERIFIED' },
-      },
-    )
+    throw new GraphQLError('Verifica tu correo para consultar el detalle de tu pedido.', {
+      extensions: { code: 'EMAIL_NOT_VERIFIED' },
+    })
   }
 }

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
+import { OrderStatus, ShipmentStatus } from '@prisma/client'
+
 async function loadSkydropxModeModule() {
   await import('./helpers/mock-server-only')
   return import('@/src/server/shipping/skydropx/skydropx.mode')
@@ -16,60 +18,55 @@ async function loadSkydropxProviderModules() {
   return { ...provider, ...mockProvider, ...mappers }
 }
 
-describe('resolveSkydropxMode', () => {
-  it('respects explicit mock mode even in production', async () => {
-    const { resolveSkydropxMode } = await loadSkydropxModeModule()
+describe('resolveSkydropxModeFromEnvironment', () => {
+  it('local resolves to mock', async () => {
+    const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
+    assert.equal(resolveSkydropxModeFromEnvironment({ nodeEnv: 'development' }), 'mock')
+  })
+
+  it('np resolves to mock', async () => {
+    const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
     assert.equal(
-      resolveSkydropxMode({
-        explicitMode: 'mock',
+      resolveSkydropxModeFromEnvironment({
         nodeEnv: 'production',
-        configured: false,
+        vercelEnv: 'preview',
       }),
       'mock',
     )
   })
 
-  it('respects explicit live mode without credentials', async () => {
-    const { resolveSkydropxMode } = await loadSkydropxModeModule()
+  it('prod resolves to live', async () => {
+    const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
     assert.equal(
-      resolveSkydropxMode({
-        explicitMode: 'live',
-        nodeEnv: 'test',
-        configured: false,
-      }),
-      'live',
-    )
-  })
-
-  it('defaults to live in production without credentials', async () => {
-    const { resolveSkydropxMode } = await loadSkydropxModeModule()
-    assert.equal(
-      resolveSkydropxMode({
+      resolveSkydropxModeFromEnvironment({
         nodeEnv: 'production',
-        configured: false,
+        vercelEnv: 'production',
       }),
       'live',
     )
   })
 
-  it('defaults to mock in non-production without credentials', async () => {
-    const { resolveSkydropxMode } = await loadSkydropxModeModule()
+  it('production runtime cannot use mock', async () => {
+    const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
     assert.equal(
-      resolveSkydropxMode({
-        nodeEnv: 'test',
-        configured: false,
+      resolveSkydropxModeFromEnvironment({
+        nodeEnv: 'production',
+        vercelEnv: 'production',
       }),
-      'mock',
+      'live',
     )
+  })
+
+  it('NODE_ENV=production without staging signals fails safe to live', async () => {
+    const { resolveSkydropxModeFromEnvironment } = await loadSkydropxModeModule()
+    assert.equal(resolveSkydropxModeFromEnvironment({ nodeEnv: 'production' }), 'live')
   })
 })
 
 describe('mock Skydropx shipment provider', () => {
   it('returns deterministic tracking and label data', async () => {
-    const {
-      buildMockSkydropxShipmentResponse,
-      parseSkydropxShipmentResponse,
-    } = await loadSkydropxProviderModules()
+    const { buildMockSkydropxShipmentResponse, parseSkydropxShipmentResponse } =
+      await loadSkydropxProviderModules()
 
     const raw = buildMockSkydropxShipmentResponse({
       orderNumber: 'CR-2026-000099',
@@ -114,15 +111,11 @@ describe('mock Skydropx shipment provider', () => {
 
 describe('mock admin label persistence shape', () => {
   it('maps mock provider response to the same DB fields as live flow', async () => {
-    const {
-      buildMockSkydropxShipmentResponse,
-      parseSkydropxShipmentResponse,
-    } = await loadSkydropxProviderModules()
+    const { buildMockSkydropxShipmentResponse, parseSkydropxShipmentResponse } =
+      await loadSkydropxProviderModules()
 
     const orderNumber = 'CR-2026-PERSIST-001'
-    const parsed = parseSkydropxShipmentResponse(
-      buildMockSkydropxShipmentResponse({ orderNumber }),
-    )
+    const parsed = parseSkydropxShipmentResponse(buildMockSkydropxShipmentResponse({ orderNumber }))
 
     assert.ok(parsed.providerShipmentId)
     assert.ok(parsed.providerLabelId)
@@ -146,16 +139,24 @@ describe('mock admin label persistence shape', () => {
     ])
   })
 
-  it('preserves current order status transition when tracking is present', async () => {
-    const {
-      buildMockSkydropxShipmentResponse,
-      parseSkydropxShipmentResponse,
-    } = await loadSkydropxProviderModules()
+  it('does not infer shipped status from mock tracking number alone', async () => {
+    const { buildMockSkydropxShipmentResponse, parseSkydropxShipmentResponse } =
+      await loadSkydropxProviderModules()
+    const { deriveAdminLabelCreationStatuses } =
+      await import('@/src/server/graphql/modules/admin-shipping/admin-shipping-label-status')
 
     const parsed = parseSkydropxShipmentResponse(
       buildMockSkydropxShipmentResponse({ orderNumber: 'CR-2026-STATUS-001' }),
     )
 
     assert.ok(parsed.trackingNumber?.trim())
+
+    const statuses = deriveAdminLabelCreationStatuses({
+      isMockMode: true,
+      hasTracking: true,
+    })
+
+    assert.equal(statuses.orderStatus, OrderStatus.READY_TO_SHIP)
+    assert.equal(statuses.shipmentStatus, ShipmentStatus.LABEL_CREATED)
   })
 })

@@ -44,9 +44,7 @@ export async function getCroppedCanvas(
   const image = await loadImage(imageSrc)
 
   // Intermediate canvas large enough to hold the rotated source without clipping.
-  const diagonal = Math.ceil(
-    Math.sqrt(image.width * image.width + image.height * image.height),
-  )
+  const diagonal = Math.ceil(Math.sqrt(image.width * image.width + image.height * image.height))
 
   const rotationCanvas = document.createElement('canvas')
   rotationCanvas.width = diagonal
@@ -101,9 +99,7 @@ export async function getCroppedRectCanvas(
 ): Promise<HTMLCanvasElement> {
   const image = await loadImage(imageSrc)
 
-  const diagonal = Math.ceil(
-    Math.sqrt(image.width * image.width + image.height * image.height),
-  )
+  const diagonal = Math.ceil(Math.sqrt(image.width * image.width + image.height * image.height))
 
   const rotationCanvas = document.createElement('canvas')
   rotationCanvas.width = diagonal
@@ -159,10 +155,7 @@ export async function getCroppedRectCanvas(
 /**
  * Exports canvas to JPEG with an opaque white background (for PNG transparency).
  */
-export async function canvasToJpegBlob(
-  canvas: HTMLCanvasElement,
-  quality: number,
-): Promise<Blob> {
+export async function canvasToJpegBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
   const flat = document.createElement('canvas')
   flat.width = canvas.width
   flat.height = canvas.height

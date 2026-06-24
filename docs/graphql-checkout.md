@@ -55,7 +55,11 @@ query CheckoutResultByToken($token: String!) {
     paymentStatus
     totalCents
     paymentMethod
-    items { name quantity totalPriceCents }
+    items {
+      name
+      quantity
+      totalPriceCents
+    }
     paymentReference
     paymentExpiresAt
     cashPaymentLocations
@@ -117,7 +121,11 @@ query OrderByNumber($orderNumber: String!, $email: String!) {
     status
     paymentStatus
     totalCents
-    items { name quantity totalPriceCents }
+    items {
+      name
+      quantity
+      totalPriceCents
+    }
   }
 }
 ```
@@ -128,12 +136,12 @@ Returns `null` if the order does not exist or the email does not match `customer
 
 ## Guest vs authenticated
 
-| Context | Owner | Guest session |
-|---------|--------|----------------|
-| Logged in | `userId` on order + addresses | — |
-| Guest | `guestSessionId` | Must exist via `chefroom_guest` cookie (not created at checkout if missing) |
+| Context   | Owner                         | Guest session                                                               |
+| --------- | ----------------------------- | --------------------------------------------------------------------------- |
+| Logged in | `userId` on order + addresses | —                                                                           |
+| Guest     | `guestSessionId`              | Must exist via `chefroom_guest` cookie (not created at checkout if missing) |
 
-If there is no active guest session: *Tu carrito está vacío o expiró.*
+If there is no active guest session: _Tu carrito está vacío o expiró._
 
 ## Server flow (`completeCheckout`)
 
@@ -158,8 +166,8 @@ If there is no active guest session: *Tu carrito está vacío o expiró.*
 
 ## Server env
 
-| Variable | Purpose |
-|----------|---------|
+| Variable                          | Purpose                                                                                   |
+| --------------------------------- | ----------------------------------------------------------------------------------------- |
 | `ALLOW_CHECKOUT_WITHOUT_SHIPPING` | If `true`, `shippingRateId` optional and `shippingCents = 0`. **Not for production MVP.** |
 
 Client dev flag `NEXT_PUBLIC_ALLOW_CHECKOUT_WITHOUT_SHIPPING` only affects UI validation — server always enforces `ALLOW_CHECKOUT_WITHOUT_SHIPPING`.

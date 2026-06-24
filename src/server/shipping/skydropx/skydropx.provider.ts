@@ -3,10 +3,7 @@ import 'server-only'
 import { createSkydropxShipment } from './skydropx.client'
 import { isSkydropxMockMode } from './skydropx.mode'
 import { createMockSkydropxShipment } from './skydropx.mock-provider'
-import type {
-  SkydropxCreateShipmentRequest,
-  SkydropxShipmentResponse,
-} from './skydropx.types'
+import type { SkydropxCreateShipmentRequest, SkydropxShipmentResponse } from './skydropx.types'
 
 export type SkydropxShipmentProviderContext = {
   orderNumber?: string
@@ -39,13 +36,9 @@ const mockSkydropxShipmentProvider: SkydropxShipmentProvider = {
  * Selects live Skydropx API or deterministic mock responses for label creation.
  */
 export function createShippingProvider(): SkydropxShipmentProvider {
-  return isSkydropxMockMode()
-    ? mockSkydropxShipmentProvider
-    : liveSkydropxShipmentProvider
+  return isSkydropxMockMode() ? mockSkydropxShipmentProvider : liveSkydropxShipmentProvider
 }
 
-export function createShippingProviderForMode(
-  mode: 'live' | 'mock',
-): SkydropxShipmentProvider {
+export function createShippingProviderForMode(mode: 'live' | 'mock'): SkydropxShipmentProvider {
   return mode === 'mock' ? mockSkydropxShipmentProvider : liveSkydropxShipmentProvider
 }

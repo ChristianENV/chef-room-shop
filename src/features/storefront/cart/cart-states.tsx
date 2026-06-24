@@ -15,16 +15,11 @@ interface EmptyCartStateProps {
 
 export function EmptyCartState({ className }: EmptyCartStateProps) {
   return (
-    <div className={cn(
-      'flex flex-col items-center justify-center py-16 text-center',
-      className
-    )}>
+    <div className={cn('flex flex-col items-center justify-center py-16 text-center', className)}>
       <div className="mb-6 rounded-full bg-secondary p-6">
         <ShoppingBag className="h-12 w-12 text-muted-foreground" />
       </div>
-      <h2 className="font-sans text-2xl font-bold text-foreground">
-        Tu carrito está vacío
-      </h2>
+      <h2 className="font-sans text-2xl font-bold text-foreground">Tu carrito está vacío</h2>
       <p className="mt-2 max-w-md font-serif text-muted-foreground">
         Explora la tienda o diseña tu uniforme personalizado.
       </p>
@@ -58,14 +53,11 @@ export function CartSkeleton({ itemCount = 2, className }: CartSkeletonProps) {
       {/* Items Column */}
       <div className="space-y-4 lg:col-span-2">
         {Array.from({ length: itemCount }).map((_, i) => (
-          <div 
-            key={i} 
-            className="rounded-lg border border-border bg-card p-4 md:p-6"
-          >
+          <div key={i} className="rounded-lg border border-border bg-card p-4 md:p-6">
             <div className="flex flex-col gap-4 sm:flex-row">
               {/* Image Skeleton */}
               <Skeleton className="h-32 w-32 flex-shrink-0 rounded-lg sm:h-36 sm:w-36" />
-              
+
               {/* Content Skeleton */}
               <div className="flex flex-1 flex-col">
                 <Skeleton className="h-3 w-20" />
@@ -125,25 +117,18 @@ interface CartErrorStateProps {
   className?: string
 }
 
-export function CartErrorState({ 
+export function CartErrorState({
   message = 'No pudimos cargar tu carrito. Por favor intenta de nuevo.',
   onRetry,
-  className 
+  className,
 }: CartErrorStateProps) {
   return (
-    <div className={cn(
-      'flex flex-col items-center justify-center py-16 text-center',
-      className
-    )}>
+    <div className={cn('flex flex-col items-center justify-center py-16 text-center', className)}>
       <div className="mb-6 rounded-full bg-destructive/10 p-6">
         <AlertCircle className="h-12 w-12 text-destructive" />
       </div>
-      <h2 className="font-sans text-xl font-bold text-foreground">
-        Error al cargar el carrito
-      </h2>
-      <p className="mt-2 max-w-md font-serif text-muted-foreground">
-        {message}
-      </p>
+      <h2 className="font-sans text-xl font-bold text-foreground">Error al cargar el carrito</h2>
+      <p className="mt-2 max-w-md font-serif text-muted-foreground">{message}</p>
       {onRetry && (
         <Button onClick={onRetry} variant="outline" className="mt-6">
           <RefreshCw className="mr-2 h-4 w-4" />
@@ -163,23 +148,21 @@ interface StickyCheckoutBarProps {
 
 export function StickyCheckoutBar({ total, itemCount, className }: StickyCheckoutBarProps) {
   return (
-    <div className={cn(
-      'fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card p-4 shadow-lg lg:hidden',
-      className
-    )}>
+    <div
+      className={cn(
+        'fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card p-4 shadow-lg lg:hidden',
+        className,
+      )}
+    >
       <div className="flex items-center justify-between">
         <div>
           <p className="font-serif text-sm text-muted-foreground">
             {itemCount} {itemCount === 1 ? 'artículo' : 'artículos'}
           </p>
-          <p className="font-sans text-xl font-bold text-foreground">
-            {formatCurrencyMXN(total)}
-          </p>
+          <p className="font-sans text-xl font-bold text-foreground">{formatCurrencyMXN(total)}</p>
         </div>
         <Button asChild size="lg" className="font-sans font-semibold">
-          <Link href={routes.checkout}>
-            Continuar
-          </Link>
+          <Link href={routes.checkout}>Continuar</Link>
         </Button>
       </div>
     </div>

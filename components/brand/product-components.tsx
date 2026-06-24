@@ -13,46 +13,46 @@ interface ProductCardProps {
   className?: string
 }
 
-export function ProductCard({ 
-  product, 
-  variant = 'default',
-  className 
-}: ProductCardProps) {
+export function ProductCard({ product, variant = 'default', className }: ProductCardProps) {
   const isCompact = variant === 'compact'
   const isFeatured = variant === 'featured'
 
   return (
-    <Card className={cn(
-      'group overflow-hidden border-border bg-card transition-all duration-300 hover:shadow-lg',
-      isFeatured && 'md:col-span-2',
-      className
-    )}>
-      <div className={cn(
-        'relative overflow-hidden bg-secondary',
-        isCompact ? 'aspect-square' : 'aspect-[4/5]'
-      )}>
+    <Card
+      className={cn(
+        'group overflow-hidden border-border bg-card transition-all duration-300 hover:shadow-lg',
+        isFeatured && 'md:col-span-2',
+        className,
+      )}
+    >
+      <div
+        className={cn(
+          'relative overflow-hidden bg-secondary',
+          isCompact ? 'aspect-square' : 'aspect-[4/5]',
+        )}
+      >
         <ProductImageDisplay
           images={product.images}
           alt={product.name}
           className="absolute inset-0"
           placeholderIconClassName={isCompact ? 'h-12 w-12' : 'h-16 w-16'}
         />
-        
+
         {/* Badge */}
         {product.badge && (
           <div className="absolute left-3 top-3">
             <ProductBadge type={product.badge} />
           </div>
         )}
-        
+
         {/* Wishlist Button */}
-        <button 
+        <button
           className="absolute right-3 top-3 rounded-full bg-card/90 p-2 opacity-0 shadow-sm transition-all duration-200 hover:bg-card group-hover:opacity-100"
           aria-label="Agregar a favoritos"
         >
           <Heart className="h-4 w-4 text-foreground" />
         </button>
-        
+
         {/* Quick Customization CTA */}
         {product.customizable && (
           <div className="absolute inset-x-0 bottom-0 translate-y-full bg-primary p-3 text-center text-sm font-medium text-primary-foreground transition-transform duration-300 group-hover:translate-y-0">
@@ -60,21 +60,23 @@ export function ProductCard({
           </div>
         )}
       </div>
-      
+
       <CardContent className={cn('p-4', isCompact && 'p-3')}>
         {/* Category */}
         <p className="font-serif text-xs uppercase tracking-wider text-muted-foreground">
           {product.category}
         </p>
-        
+
         {/* Product Name */}
-        <h3 className={cn(
-          'mt-1 font-sans font-medium text-foreground line-clamp-2',
-          isCompact ? 'text-sm' : 'text-base'
-        )}>
+        <h3
+          className={cn(
+            'mt-1 font-sans font-medium text-foreground line-clamp-2',
+            isCompact ? 'text-sm' : 'text-base',
+          )}
+        >
           {product.name}
         </h3>
-        
+
         {/* Rating */}
         {!isCompact && (
           <div className="mt-2 flex items-center gap-1">
@@ -85,16 +87,16 @@ export function ProductCard({
             </span>
           </div>
         )}
-        
+
         {/* Price */}
         <div className="mt-2">
-          <PriceDisplay 
-            price={product.price} 
+          <PriceDisplay
+            price={product.price}
             originalPrice={product.originalPrice}
             size={isCompact ? 'sm' : 'md'}
           />
         </div>
-        
+
         {/* Color Options */}
         {!isCompact && product.colors.length > 1 && (
           <div className="mt-3 flex gap-1.5">
@@ -123,7 +125,10 @@ interface ProductBadgeProps {
   className?: string
 }
 
-const badgeConfig: Record<ProductBadgeType, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+const badgeConfig: Record<
+  ProductBadgeType,
+  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
+> = {
   nuevo: { label: 'Nuevo', variant: 'default' },
   oferta: { label: 'Oferta', variant: 'destructive' },
   agotado: { label: 'Agotado', variant: 'secondary' },
@@ -133,15 +138,15 @@ const badgeConfig: Record<ProductBadgeType, { label: string; variant: 'default' 
 
 export function ProductBadge({ type, className }: ProductBadgeProps) {
   const config = badgeConfig[type]
-  
+
   return (
-    <Badge 
+    <Badge
       variant={config.variant}
       className={cn(
         'font-sans text-xs uppercase tracking-wider',
         type === 'nuevo' && 'bg-chef-success text-white hover:bg-chef-success/90',
         type === 'popular' && 'bg-primary text-primary-foreground',
-        className
+        className,
       )}
     >
       {config.label}
@@ -176,9 +181,7 @@ export function PriceDisplay({ price, originalPrice, size = 'md', className }: P
           <span className="font-serif text-sm text-muted-foreground line-through">
             ${originalPrice.toLocaleString('es-MX')}
           </span>
-          <span className="font-sans text-xs font-medium text-chef-success">
-            -{discount}%
-          </span>
+          <span className="font-sans text-xs font-medium text-chef-success">-{discount}%</span>
         </>
       )}
     </div>
@@ -191,16 +194,21 @@ interface CustomizationBadgeProps {
 
 export function CustomizationBadge({ className }: CustomizationBadgeProps) {
   return (
-    <div className={cn(
-      'inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5',
-      className
-    )}>
+    <div
+      className={cn(
+        'inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5',
+        className,
+      )}
+    >
       <svg className="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+        />
       </svg>
-      <span className="font-sans text-sm font-medium text-primary">
-        Personalizable
-      </span>
+      <span className="font-sans text-sm font-medium text-primary">Personalizable</span>
     </div>
   )
 }

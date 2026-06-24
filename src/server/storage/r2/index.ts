@@ -26,7 +26,4 @@ export {
 } from './r2.keys'
 export type { DesignPreviewUploadKeys } from './r2.keys'
 export { getR2Client, r2DeleteObject, r2HeadObject } from './r2.client'
-export {
-  createPresignedPutUrlsForKeys,
-  createR2PresignedPutUrl,
-} from './r2.presigned'
+export { createPresignedPutUrlsForKeys, createR2PresignedPutUrl } from './r2.presigned'

@@ -34,7 +34,10 @@ const ADMIN_SHIPMENT_FIELDS = `
 export const ADMIN_SHIPMENT_BY_ORDER_NUMBER_QUERY = /* GraphQL */ `
   query AdminShipmentByOrderNumber($orderNumber: String!) {
     adminShipmentByOrderNumber(orderNumber: $orderNumber) {
-      ${ADMIN_SHIPMENT_FIELDS}
+      isSkydropxMockMode
+      shipment {
+        ${ADMIN_SHIPMENT_FIELDS}
+      }
     }
   }
 `

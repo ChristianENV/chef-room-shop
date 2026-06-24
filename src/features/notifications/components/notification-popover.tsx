@@ -7,11 +7,7 @@ import { Bell } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { routes } from '@/src/config/routes'
 
 import { useMarkAllNotificationsReadMutation } from '../api/use-mark-all-notifications-read-mutation'
@@ -37,10 +33,7 @@ type NotificationPopoverProps = {
   triggerClassName?: string
 }
 
-export function NotificationPopover({
-  isLoggedIn,
-  triggerClassName,
-}: NotificationPopoverProps) {
+export function NotificationPopover({ isLoggedIn, triggerClassName }: NotificationPopoverProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
 
@@ -65,7 +58,8 @@ export function NotificationPopover({
   const unreadCount = unreadQuery.data ?? 0
   const notifications = notificationsQuery.data?.nodes ?? []
   const showLoading =
-    open && (notificationsQuery.isLoading || (notificationsQuery.isFetching && notifications.length === 0))
+    open &&
+    (notificationsQuery.isLoading || (notificationsQuery.isFetching && notifications.length === 0))
 
   const handleSelect = (notification: Notification) => {
     if (!notification.readAt) {
@@ -91,9 +85,7 @@ export function NotificationPopover({
           size="icon"
           className={cn('relative h-9 w-9', triggerClassName)}
           aria-label={
-            unreadCount > 0
-              ? `Notificaciones (${unreadCount} sin leer)`
-              : 'Notificaciones'
+            unreadCount > 0 ? `Notificaciones (${unreadCount} sin leer)` : 'Notificaciones'
           }
           data-testid="customer-notifications-bell"
         >
@@ -110,9 +102,7 @@ export function NotificationPopover({
         <div className="border-b border-white/10 px-4 py-3">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="font-sans text-base font-semibold text-white">
-                Notificaciones
-              </h2>
+              <h2 className="font-sans text-base font-semibold text-white">Notificaciones</h2>
               <p className="mt-0.5 font-serif text-xs text-white/55">
                 Actualizaciones de tu cuenta
               </p>

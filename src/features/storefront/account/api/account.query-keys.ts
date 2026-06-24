@@ -6,8 +6,7 @@ export const accountQueryKeys = {
     [...accountQueryKeys.all, 'orders', params] as const,
   /** Prefix for invalidating every `myOrders` query variant. */
   ordersAll: () => [...accountQueryKeys.all, 'orders'] as const,
-  order: (orderNumber: string) =>
-    [...accountQueryKeys.all, 'order', orderNumber] as const,
+  order: (orderNumber: string) => [...accountQueryKeys.all, 'order', orderNumber] as const,
   verifyPayment: (orderNumber: string) =>
     [...accountQueryKeys.order(orderNumber), 'verify-payment'] as const,
   retryPayment: (orderNumber: string) =>

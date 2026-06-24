@@ -52,14 +52,16 @@ export function ThemeToggle({
       className={cn(
         'transition-colors',
         showLabel ? 'w-full justify-start gap-2' : 'h-9 w-9',
-        className
+        className,
       )}
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       aria-label={label}
       data-testid={testId}
     >
       {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-      {showLabel && <span className="font-sans text-sm">{isDark ? 'Modo claro' : 'Modo oscuro'}</span>}
+      {showLabel && (
+        <span className="font-sans text-sm">{isDark ? 'Modo claro' : 'Modo oscuro'}</span>
+      )}
     </Button>
   )
 }

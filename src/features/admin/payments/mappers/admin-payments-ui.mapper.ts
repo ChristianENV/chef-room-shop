@@ -21,7 +21,7 @@ const PROVIDER_LABELS: Record<string, string> = {
 
 function formatAdminDate(iso: string): string {
   try {
-    return format(new Date(iso), "d MMM yyyy, HH:mm", { locale: es })
+    return format(new Date(iso), 'd MMM yyyy, HH:mm', { locale: es })
   } catch {
     return iso
   }

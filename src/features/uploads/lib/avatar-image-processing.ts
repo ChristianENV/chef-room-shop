@@ -7,11 +7,7 @@
  * cross-browser codec support.
  */
 
-import {
-  type CropArea,
-  canvasToBlob,
-  getCroppedCanvas,
-} from './image-processing'
+import { type CropArea, canvasToBlob, getCroppedCanvas } from './image-processing'
 
 export const AVATAR_SIZE = 256
 export const AVATAR_WEBP_QUALITY = 0.82
