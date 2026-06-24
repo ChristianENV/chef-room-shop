@@ -270,9 +270,13 @@ export type AddressScalarFieldEnum = (typeof AddressScalarFieldEnum)[keyof typeo
 export const ProductTypeScalarFieldEnum = {
   id: 'id',
   slug: 'slug',
+  shopSlug: 'shopSlug',
   nameEs: 'nameEs',
   nameEn: 'nameEn',
+  description: 'description',
   sortOrder: 'sortOrder',
+  isActive: 'isActive',
+  showInNav: 'showInNav',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

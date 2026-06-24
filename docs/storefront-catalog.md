@@ -36,6 +36,15 @@ Defaults: `staleTime` 60s, `retry` 1, `refetchOnWindowFocus` false. Devtools in 
 
 Filter state stores **BFF slugs** in `categories`, `colors`, `sizes`.
 
+## Product categories (`ProductType`)
+
+Catalog categories are stored in `product_types` (Prisma `ProductType`):
+
+- `slug` — internal stable key (e.g. `chef-jacket`, `shoes`)
+- `shopSlug` — public `/shop?category=` value (e.g. `filipinas`, `zapatos`); when null, apps should fall back to `slug`
+- `isActive` / `showInNav` — visibility flags for future dynamic nav and filters
+- Seeded via `pnpm db:seed`; storefront/nav hardcoding will be replaced in a later phase
+
 ## Pages
 
 | Route               | Data                                                                              |
