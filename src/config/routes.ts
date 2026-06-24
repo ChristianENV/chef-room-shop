@@ -26,6 +26,8 @@ export const routes = {
   login: '/login',
   register: '/register',
   verifyEmail: '/verify-email',
+  forgotPassword: '/forgot-password',
+  resetPassword: '/reset-password',
   authSocialComplete: '/auth/social-complete',
   account: '/account',
   accountDesigns: '/account/designs',

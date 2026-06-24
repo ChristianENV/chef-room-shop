@@ -52,7 +52,6 @@ export function LoginForm({
     }
     return null
   })
-  const [forgotMessage, setForgotMessage] = useState<string | null>(null)
 
   const isAdminVariant = variant === 'admin'
   const safeCallbackUrl =
@@ -68,7 +67,6 @@ export function LoginForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    setForgotMessage(null)
     setIsLoading(true)
 
     const parsed = loginSchema.safeParse({ email, password })
@@ -123,7 +121,6 @@ export function LoginForm({
     }
 
     setError(null)
-    setForgotMessage(null)
     setIsGoogleLoading(true)
 
     try {
@@ -135,11 +132,6 @@ export function LoginForm({
       setError(getAuthErrorMessage(err, 'No se pudo iniciar sesión con Google.'))
       setIsGoogleLoading(false)
     }
-  }
-
-  const handleForgotPassword = (e: React.MouseEvent) => {
-    e.preventDefault()
-    setForgotMessage('La recuperación de contraseña estará disponible pronto.')
   }
 
   const busy = isLoading || isGoogleLoading
@@ -161,12 +153,6 @@ export function LoginForm({
         <Alert variant="destructive" className="border-destructive/50 bg-destructive/10">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="font-serif">{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {forgotMessage && (
-        <Alert className="border-border bg-muted/50">
-          <AlertDescription className="font-serif">{forgotMessage}</AlertDescription>
         </Alert>
       )}
 
@@ -195,13 +181,12 @@ export function LoginForm({
             <Label htmlFor="password" className="font-sans text-sm font-medium">
               Contraseña
             </Label>
-            <button
-              type="button"
-              onClick={handleForgotPassword}
+            <Link
+              href={routes.forgotPassword}
               className="font-serif text-xs text-accent hover:underline"
             >
               ¿Olvidaste tu contraseña?
-            </button>
+            </Link>
           </div>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

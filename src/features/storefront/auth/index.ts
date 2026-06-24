@@ -1,4 +1,6 @@
 export { AuthLayout } from './auth-layout'
 export { RegisterForm } from './register-form'
+export { ForgotPasswordForm } from './forgot-password-form'
+export { ResetPasswordForm } from './reset-password-form'
 export { PasswordStrength } from './password-strength'
 export { LoginForm } from '@/components/shared/auth'

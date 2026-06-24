@@ -3,6 +3,7 @@ import { prismaAdapter } from '@better-auth/prisma-adapter'
 import type { PrismaClient } from '@prisma/client'
 
 import { sendBetterAuthVerificationEmail } from './send-verification-email'
+import { sendBetterAuthResetPasswordEmail } from './send-reset-password-email'
 import { ensureCustomerRole } from './roles-core'
 
 /**
@@ -62,6 +63,15 @@ export function buildAuth(database: PrismaClient) {
     trustedOrigins: getBetterAuthTrustedOrigins(),
     emailAndPassword: {
       enabled: true,
+      resetPasswordTokenExpiresIn: 3600,
+      revokeSessionsOnPasswordReset: true,
+      sendResetPassword: async ({ user, url }) => {
+        sendBetterAuthResetPasswordEmail({
+          to: user.email,
+          userId: user.id,
+          resetPasswordUrl: url,
+        })
+      },
     },
     emailVerification: {
       sendOnSignUp: true,

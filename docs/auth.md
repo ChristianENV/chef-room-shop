@@ -88,7 +88,25 @@ Better Auth envía verificación con nuestro `EmailService` (`templateKey: email
 
 **Claim:** `claimOrder` rechaza usuarios con `emailVerified === false` (mensaje en español). UI en `/claim-order` muestra reenvío de verificación.
 
-**Pendiente:** password reset, newsletter.
+**Pendiente:** newsletter.
+
+## Password reset
+
+Better Auth sends reset links via `emailAndPassword.sendResetPassword` (`templateKey: password_reset`).
+
+| Route                     | Purpose                                                            |
+| ------------------------- | ------------------------------------------------------------------ |
+| `/forgot-password`        | Request reset link (generic success message; no email enumeration) |
+| `/reset-password?token=…` | Set a new password after email link                                |
+
+Requires `BETTER_AUTH_URL` / `NEXT_PUBLIC_APP_URL` to match the deployment domain (local, NP, prod).
+
+**Manual QA**
+
+1. Open `/forgot-password` and submit a test email.
+2. Confirm the email link uses the current domain (`localhost`, `np.chefroom.mx`, or `chefroom.mx`).
+3. Open the link, set a new password, and sign in.
+4. If `revokeSessionsOnPasswordReset` is enabled, prior sessions should no longer work.
 
 ## Endpoints
 
