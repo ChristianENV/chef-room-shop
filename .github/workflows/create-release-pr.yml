@@ -37,8 +37,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           PR_TITLE="Release: dev to main"
-          BODY_FILE="$(mktemp)"
-          cat > "$BODY_FILE" <<'EOF'
+          PR_BODY_FILE="$(mktemp)"
+          cat > "$PR_BODY_FILE" <<'EOF'
           ## Release PR
 
           This PR accumulates all validated changes from `dev` for production release into `main`.
@@ -65,13 +65,35 @@ jobs:
           - validate-pr-target
           EOF
 
-          HEAD_REF="${{ github.repository_owner }}:dev"
-          existing="$(gh pr list --base main --head "$HEAD_REF" --state open --json number --jq '.[0].number // empty')"
+          find_existing_release_pr() {
+            gh pr list \
+              --base main \
+              --state open \
+              --json number,headRefName,baseRefName \
+              --jq '.[] | select(.headRefName == "dev" and .baseRefName == "main") | .number' \
+              | head -n 1
+          }
 
-          if [ -n "$existing" ]; then
-            echo "Updating existing release PR #$existing"
-            gh pr edit "$existing" --title "$PR_TITLE" --body-file "$BODY_FILE"
-          else
-            echo "Creating release PR dev -> main"
-            gh pr create --base main --head dev --title "$PR_TITLE" --body-file "$BODY_FILE"
+          EXISTING_PR_NUMBER="$(find_existing_release_pr)"
+
+          if [ -n "$EXISTING_PR_NUMBER" ]; then
+            echo "Found existing release PR #$EXISTING_PR_NUMBER. Updating title/body."
+            gh pr edit "$EXISTING_PR_NUMBER" --title "$PR_TITLE" --body-file "$PR_BODY_FILE"
+            exit 0
           fi
+
+          echo "Creating release PR dev -> main"
+          if gh pr create --base main --head dev --title "$PR_TITLE" --body-file "$PR_BODY_FILE"; then
+            exit 0
+          fi
+
+          echo "gh pr create failed; checking for an existing release PR."
+          EXISTING_PR_NUMBER="$(find_existing_release_pr)"
+          if [ -n "$EXISTING_PR_NUMBER" ]; then
+            echo "Found existing release PR #$EXISTING_PR_NUMBER. Updating title/body."
+            gh pr edit "$EXISTING_PR_NUMBER" --title "$PR_TITLE" --body-file "$PR_BODY_FILE"
+            exit 0
+          fi
+
+          echo "Failed to create or update release PR."
+          exit 1

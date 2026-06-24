@@ -204,6 +204,8 @@ CI does **not** run migrations or Playwright. No production secrets are hardcode
 3. If an open PR already exists with `base: main` and `head: dev`, update its title and body.
 4. Otherwise create one new PR with `head: dev` and `base: main`.
 
+The workflow is idempotent: every push to `dev` updates the existing `dev` → `main` PR instead of creating duplicates.
+
 Does **not** auto-merge, approve, create tags, publish releases, or deploy. The release PR must still be reviewed and merged manually.
 
 ### Validate Release PR
