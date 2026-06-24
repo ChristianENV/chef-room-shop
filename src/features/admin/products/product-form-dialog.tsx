@@ -126,7 +126,7 @@ function ProductFormDrawerBody({
       return
     }
     if (!formValues.productTypeId) {
-      setSaveError('Selecciona un tipo de prenda.')
+      setSaveError('Selecciona una categoría.')
       return
     }
     if (formValues.basePricePesos < 0) {
@@ -241,19 +241,26 @@ function ProductFormDrawerBody({
 
           <Separator />
 
-          <div className="space-y-2">
-            <div>
-              <p className="font-sans text-sm font-medium text-foreground">
-                Modelo 3D del producto
-              </p>
-              <p className="font-serif text-xs text-muted-foreground">
-                Sube un archivo GLB optimizado para usarlo en el customizador.
-              </p>
-            </div>
-            <ProductModel3DUploader productId={productId} initialModel3d={initialModel3d ?? null} />
-          </div>
+          {formValues.customizable ? (
+            <>
+              <div className="space-y-2">
+                <div>
+                  <p className="font-sans text-sm font-medium text-foreground">
+                    Modelo 3D del producto
+                  </p>
+                  <p className="font-serif text-xs text-muted-foreground">
+                    Opcional. Sube un archivo GLB optimizado para el customizador.
+                  </p>
+                </div>
+                <ProductModel3DUploader
+                  productId={productId}
+                  initialModel3d={initialModel3d ?? null}
+                />
+              </div>
 
-          <Separator />
+              <Separator />
+            </>
+          ) : null}
 
           <div className="space-y-2">
             <Label htmlFor="name" className="font-sans">
@@ -321,13 +328,13 @@ function ProductFormDrawerBody({
           </div>
 
           <div className="space-y-2">
-            <Label className="font-sans">Tipo de prenda *</Label>
+            <Label className="font-sans">Categoría *</Label>
             <Select
               value={formValues.productTypeId}
               onValueChange={(v) => updateField('productTypeId', v)}
             >
               <SelectTrigger className="font-sans">
-                <SelectValue placeholder="Seleccionar tipo" />
+                <SelectValue placeholder="Seleccionar categoría" />
               </SelectTrigger>
               <SelectContent>
                 {selectOptions.productTypes.map((opt) => (
@@ -378,7 +385,9 @@ function ProductFormDrawerBody({
             <div>
               <Label className="font-sans">Personalizable</Label>
               <p className="font-serif text-xs text-muted-foreground">
-                Permite bordados y personalizaciones en tienda.
+                {formValues.customizable
+                  ? 'Permite bordados y personalizaciones en tienda.'
+                  : 'Desactivado para productos sin personalización (por ejemplo calzado). Variantes e imágenes siguen disponibles.'}
               </p>
             </div>
             <Switch
@@ -605,9 +614,11 @@ export function ProductFormDialog({
   const productQuery = useAdminProductByIdQuery(productId ?? '', open && isEditing)
   const formOptionsQuery = useAdminProductFormOptionsQuery(open)
 
-  const selectOptions = formOptionsQuery.data
-    ? mapFormOptionsToSelectOptions(formOptionsQuery.data)
-    : null
+  const selectOptions = useMemo(() => {
+    if (!formOptionsQuery.data) return null
+    const selectedProductTypeId = isEditing ? productQuery.data?.productType.id : null
+    return mapFormOptionsToSelectOptions(formOptionsQuery.data, selectedProductTypeId)
+  }, [formOptionsQuery.data, isEditing, productQuery.data?.productType.id])
 
   const initialValues = useMemo(() => {
     if (!open || !formOptionsQuery.data) return null

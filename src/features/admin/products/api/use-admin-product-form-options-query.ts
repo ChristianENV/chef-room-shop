@@ -10,5 +10,6 @@ export function useAdminProductFormOptionsQuery(enabled = true) {
     queryKey: adminProductsQueryKeys.formOptions(),
     queryFn: getAdminProductFormOptions,
     enabled,
+    staleTime: 0,
   })
 }

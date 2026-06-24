@@ -6,6 +6,9 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
 
 1. **Listado** — `useAdminProductsQuery` con filtros servidor (búsqueda, tipo, estado, personalizable, orden).
 2. **Crear / editar** — `ProductFormDialog` (`max-w-5xl`) con `useAdminProductFormOptionsQuery`, `useCreateAdminProductMutation`, `useUpdateAdminProductMutation`.
+   - **Categoría** — dropdown dinámico desde `adminProductFormOptions.productTypes` (`nameEs`, incluye p. ej. Zapatos).
+   - **Personalizable** — switch; desactivar para productos sin customizer (calzado). Variantes e imágenes siguen disponibles.
+   - **Tallas** — selector ordenado por `Size.sortOrder` (incluye 22–30 para calzado; medias tallas solo si existen en seed).
 3. **Variantes** — pestaña Variantes: `upsertAdminProductVariant` / `deleteAdminProductVariant` (color/talla desde form options).
 4. **Imágenes** — `ProductImageUploader` con R2: drag & drop, edición (crop/rotación), WebP/JPG/thumb, reorder vía `reorderAdminProductImages`.
 5. **Archivar** — `archiveAdminProduct` (no borrado destructivo del producto) vía `AlertDialog`.
@@ -77,7 +80,7 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
 - ~~Sin upload real a Cloudinary.~~ **Imágenes vía Cloudflare R2** (`ProductImageUploader`).
 - Sin borrado físico automático de objetos R2 al eliminar `ProductImage` (pendiente).
 - Sin inventario avanzado ni matrices de variantes.
-- Sin CRUD de colores, tallas ni tipos de producto en admin.
+- CRUD de categorías (`ProductType`) en `/admin/categories`; colores/tallas siguen siendo datos de referencia globales.
 - Sin reglas avanzadas de personalización en esta pantalla.
 - Sin página dedicada `/admin/products/[id]` (futuro: enlace desde dialog).
 - `lib/mock-data.ts` sigue usado en otras pantallas (p. ej. customización demo), no en `/admin/products`.

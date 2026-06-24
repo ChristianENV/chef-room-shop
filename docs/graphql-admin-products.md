@@ -10,12 +10,16 @@ Todas las operaciones usan `requireAdminGraphQL` (mismo guard que admin-dashboar
 
 ## Queries
 
-| Query                     | Descripción                              |
-| ------------------------- | ---------------------------------------- |
-| `adminProducts`           | Lista paginada con filtros               |
-| `adminProductById`        | Detalle por UUID                         |
-| `adminProductBySlug`      | Detalle por slug                         |
-| `adminProductFormOptions` | Tipos, colores y tallas para formularios |
+| Query                     | Descripción                                              |
+| ------------------------- | -------------------------------------------------------- |
+| `adminProducts`           | Lista paginada con filtros                               |
+| `adminProductById`        | Detalle por UUID                                         |
+| `adminProductBySlug`      | Detalle por slug                                         |
+| `adminProductFormOptions` | Tipos (`ProductType`), colores y tallas para formularios |
+
+Las **categorías** del formulario provienen de `ProductType` dinámico (`nameEs`, `slug`, `sortOrder`, `isActive`). Tras crear/editar categorías en `/admin/categories`, la query se invalida vía `adminProductsQueryKeys.formOptions()`.
+
+Los productos pueden crearse con `customizable: false` (por ejemplo calzado): no requieren reglas de personalización ni modelo 3D, pero sí admiten variantes color/talla e imágenes.
 
 ### Ejemplo listado
 
@@ -123,7 +127,7 @@ Crear, editar, archivar, duplicar, cambiar estado, variantes (color/talla/precio
 ### Pendiente en UI (siguiente fase)
 
 - Upload Cloudinary real
-- CRUD ProductType / Color / Size
+- CRUD Color / Size
 - Inventario avanzado y reglas de personalización en esta pantalla
 
 ## Pendientes (BFF / producto)
