@@ -201,28 +201,42 @@ async function seedRoles(permissionIds: Map<string, string>) {
   }
 }
 
+async function upsertProductType(type: (typeof PRODUCT_TYPES)[number]) {
+  if (type.shopSlug) {
+    await prisma.productType.updateMany({
+      where: {
+        shopSlug: type.shopSlug,
+        NOT: { slug: type.slug },
+      },
+      data: { shopSlug: null },
+    })
+  }
+
+  await prisma.productType.upsert({
+    where: { slug: type.slug },
+    update: {
+      shopSlug: type.shopSlug,
+      nameEs: type.nameEs,
+      nameEn: type.nameEn,
+      sortOrder: type.sortOrder,
+      isActive: type.isActive,
+      showInNav: type.showInNav,
+    },
+    create: {
+      slug: type.slug,
+      shopSlug: type.shopSlug,
+      nameEs: type.nameEs,
+      nameEn: type.nameEn,
+      sortOrder: type.sortOrder,
+      isActive: type.isActive,
+      showInNav: type.showInNav,
+    },
+  })
+}
+
 async function seedCatalog() {
   for (const type of PRODUCT_TYPES) {
-    await prisma.productType.upsert({
-      where: { slug: type.slug },
-      update: {
-        shopSlug: type.shopSlug,
-        nameEs: type.nameEs,
-        nameEn: type.nameEn,
-        sortOrder: type.sortOrder,
-        isActive: type.isActive,
-        showInNav: type.showInNav,
-      },
-      create: {
-        slug: type.slug,
-        shopSlug: type.shopSlug,
-        nameEs: type.nameEs,
-        nameEn: type.nameEn,
-        sortOrder: type.sortOrder,
-        isActive: type.isActive,
-        showInNav: type.showInNav,
-      },
-    })
+    await upsertProductType(type)
   }
 
   for (const size of SIZES) {
@@ -294,7 +308,7 @@ async function seedDevAdmin() {
     throw new Error('ADMIN role missing — run role seed first')
   }
 
-  const auth = buildAuth(prisma)
+  const auth = buildAuth(prisma, { disableEmailCallbacks: true })
   const name = `${firstName} ${lastName}`.trim()
 
   let user = await prisma.user.findUnique({ where: { email } })

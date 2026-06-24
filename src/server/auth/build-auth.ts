@@ -2,9 +2,12 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from '@better-auth/prisma-adapter'
 import type { PrismaClient } from '@prisma/client'
 
-import { sendBetterAuthVerificationEmail } from './send-verification-email'
-import { sendBetterAuthResetPasswordEmail } from './send-reset-password-email'
 import { ensureCustomerRole } from './roles-core'
+
+export type BuildAuthOptions = {
+  /** Skip transactional email callbacks (Prisma seed / CLI scripts). */
+  disableEmailCallbacks?: boolean
+}
 
 /**
  * Builds trusted origins for Better Auth CSRF / callback validation.
@@ -29,7 +32,8 @@ export function getBetterAuthTrustedOrigins(): string[] {
  * Creates a Better Auth instance bound to the given Prisma client.
  * Used by the app singleton and by `prisma/seed.ts` (no `server-only` import).
  */
-export function buildAuth(database: PrismaClient) {
+export function buildAuth(database: PrismaClient, options: BuildAuthOptions = {}) {
+  const disableEmailCallbacks = options.disableEmailCallbacks ?? false
   const googleClientId = process.env.GOOGLE_CLIENT_ID
   const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET
 
@@ -65,24 +69,30 @@ export function buildAuth(database: PrismaClient) {
       enabled: true,
       resetPasswordTokenExpiresIn: 3600,
       revokeSessionsOnPasswordReset: true,
-      sendResetPassword: async ({ user, url }) => {
-        sendBetterAuthResetPasswordEmail({
-          to: user.email,
-          userId: user.id,
-          resetPasswordUrl: url,
-        })
-      },
+      sendResetPassword: disableEmailCallbacks
+        ? undefined
+        : async ({ user, url }) => {
+            const { sendBetterAuthResetPasswordEmail } = await import('./send-reset-password-email')
+            sendBetterAuthResetPasswordEmail({
+              to: user.email,
+              userId: user.id,
+              resetPasswordUrl: url,
+            })
+          },
     },
     emailVerification: {
-      sendOnSignUp: true,
+      sendOnSignUp: !disableEmailCallbacks,
       autoSignInAfterVerification: true,
-      sendVerificationEmail: async ({ user, url }) => {
-        sendBetterAuthVerificationEmail({
-          to: user.email,
-          userId: user.id,
-          verificationUrl: url,
-        })
-      },
+      sendVerificationEmail: disableEmailCallbacks
+        ? undefined
+        : async ({ user, url }) => {
+            const { sendBetterAuthVerificationEmail } = await import('./send-verification-email')
+            sendBetterAuthVerificationEmail({
+              to: user.email,
+              userId: user.id,
+              verificationUrl: url,
+            })
+          },
     },
     socialProviders,
     user: {
