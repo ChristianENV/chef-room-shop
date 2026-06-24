@@ -93,6 +93,10 @@ mutation CreateCategory {
 - El tipo GraphQL `AdminProductType` incluye los campos de categoría; los formularios actuales solo solicitan un subconjunto (`id`, `slug`, `name`, `sortOrder`, `isActive`).
 - La UI de administración de categorías (listado/CRUD) es una fase posterior.
 
+## UI de administración
+
+Ruta: `/admin/categories` — listado, creación, edición y desactivación desde el dashboard (requiere rol admin).
+
 ## Errores comunes
 
 | Código            | Situación                                                   |
