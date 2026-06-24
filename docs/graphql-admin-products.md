@@ -2,6 +2,8 @@
 
 Gestión de catálogo para el dashboard Chef Room. Requiere sesión **ADMIN** o **SUPERADMIN**. **CUSTOMER** recibe `FORBIDDEN`.
 
+Las **categorías** (`ProductType`) tienen operaciones dedicadas en [graphql-admin-product-types.md](./graphql-admin-product-types.md).
+
 ## Autenticación
 
 Todas las operaciones usan `requireAdminGraphQL` (mismo guard que admin-dashboard / admin-orders).

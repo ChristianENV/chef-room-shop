@@ -397,10 +397,44 @@ export const adminProductsTypeDefs = /* GraphQL */ `
   type AdminProductType {
     id: ID!
     slug: String!
+    shopSlug: String
     name: String!
+    nameEs: String!
+    nameEn: String
+    description: String
+    sortOrder: Int
+    isActive: Boolean!
+    showInNav: Boolean!
+    productCount: Int!
+    activeProductCount: Int!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  input AdminProductTypesListInput {
+    includeInactive: Boolean
+  }
+
+  input CreateAdminProductTypeInput {
+    slug: String!
+    shopSlug: String
+    nameEs: String!
+    nameEn: String
     description: String
     sortOrder: Int
     isActive: Boolean
+    showInNav: Boolean
+  }
+
+  input UpdateAdminProductTypeInput {
+    slug: String
+    shopSlug: String
+    nameEs: String
+    nameEn: String
+    description: String
+    sortOrder: Int
+    isActive: Boolean
+    showInNav: Boolean
   }
 
   type AdminColor {
@@ -1679,6 +1713,8 @@ export const typeDefs = /* GraphQL */ `
     adminProductById(id: ID!): AdminProduct
     adminProductBySlug(slug: String!): AdminProduct
     adminProductFormOptions: AdminProductFormOptions!
+    adminProductTypes(includeInactive: Boolean): [AdminProductType!]!
+    adminProductTypeById(id: ID!): AdminProductType
     adminCustomizationAreas: [AdminCustomizationArea!]!
     adminCustomizationOptions: [AdminCustomizationOption!]!
     adminCustomizationProducts(search: String, customizable: Boolean): [AdminCustomizationProduct!]!
@@ -1742,6 +1778,9 @@ export const typeDefs = /* GraphQL */ `
     adminSimulateMockShipmentTrackingStatus(
       input: AdminSimulateMockShipmentTrackingInput!
     ): AdminShipment!
+    createAdminProductType(input: CreateAdminProductTypeInput!): AdminProductType!
+    updateAdminProductType(id: ID!, input: UpdateAdminProductTypeInput!): AdminProductType!
+    archiveAdminProductType(id: ID!): AdminProductType!
     createAdminProduct(input: AdminProductInput!): AdminProduct!
     updateAdminProduct(id: ID!, input: AdminProductInput!): AdminProduct!
     archiveAdminProduct(id: ID!): AdminProduct!

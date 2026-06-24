@@ -219,7 +219,7 @@ export async function getAdminProductFormOptions(
   ])
 
   return {
-    productTypes: productTypes.map(mapAdminProductTypeToGql),
+    productTypes: productTypes.map((productType) => mapAdminProductTypeToGql(productType)),
     colors: colors.map(mapAdminColorToGql),
     sizes: sizes.map(mapAdminSizeToGql),
   }
