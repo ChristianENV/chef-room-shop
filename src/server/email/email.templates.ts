@@ -194,6 +194,21 @@ export function renderTransactionalTemplate(
       return { subject, html, text }
     }
 
+    case 'password_reset': {
+      const resetUrl = payload.resetPasswordUrl ?? '#'
+      const subject = 'Restablece tu contraseña de Chef Room'
+      const text = `Hola,\n\nRecibimos una solicitud para restablecer la contraseña de tu cuenta Chef Room.\n\nCambia tu contraseña aquí: ${resetUrl}\n\nSi no solicitaste este cambio, puedes ignorar este correo. Tu contraseña actual seguirá siendo válida.\n\nEste enlace estará disponible por tiempo limitado.\n\nChef Room`
+      const html = layoutHtml(`
+        <p>Hola,</p>
+        <h2 style="margin:0 0 16px;font-family:system-ui,sans-serif;font-size:20px;color:#1a1a2e;">Restablece tu contraseña</h2>
+        <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta Chef Room.</p>
+        ${cta(resetUrl, 'Cambiar contraseña')}
+        <p style="font-size:14px;color:#6b7280;">Si no solicitaste este cambio, puedes ignorar este correo. Tu contraseña actual seguirá siendo válida.</p>
+        <p style="font-size:14px;color:#6b7280;">Este enlace estará disponible por tiempo limitado.</p>
+      `)
+      return { subject, html, text }
+    }
+
     case 'order_claim_transfer_authorization': {
       const authorizeUrl = payload.claimUrl ?? payload.links?.claimUrl ?? '#'
       const requestedByEmail = payload.requestedByEmail ?? 'otra cuenta'

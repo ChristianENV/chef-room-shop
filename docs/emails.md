@@ -30,6 +30,7 @@ Server-only layer for order/payment notifications. Checkout and webhooks **never
 | `payment_failed`     | Webhook failed                            | No pudimos confirmar el pago…                |
 | `payment_expired`    | Webhook expired/cancelled                 | Tu referencia de pago expiró…                |
 | `email_verification` | Better Auth `sendVerificationEmail`       | Verifica tu correo en Chef Room              |
+| `password_reset`     | Better Auth `sendResetPassword`           | Restablece tu contraseña de Chef Room        |
 
 HTML uses brand color `#2B3280`, Spanish copy, minimal layout (no React Email).
 
