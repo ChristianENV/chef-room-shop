@@ -42,12 +42,19 @@ import {
   mapFormValuesToAdminProductInput,
   STATUS_LABELS,
 } from './mappers/admin-products-ui.mapper'
+import { validateFormVariantColors, VARIANT_COLOR_SELECT_HELP } from './lib/variant-color-options'
 import { mapFormOptionsToSelectOptions } from './types/admin-products-ui.types'
+import type { AdminProductFormOptions } from './types'
 import type {
   AdminProductStatusUi,
   AdminProductVariantUi,
   ProductFormValues,
 } from './types/admin-products-ui.types'
+import { GraphQLRequestError } from '@/src/lib/graphql/errors'
+import {
+  PRODUCT_TYPE_VARIANT_CONFLICT_MESSAGE,
+  VARIANT_COLOR_NOT_ALLOWED_MESSAGE,
+} from '@/src/config/catalog-color-messages'
 
 interface ProductFormDialogProps {
   open: boolean
@@ -59,7 +66,7 @@ interface ProductFormDialogProps {
 type ProductFormDrawerBodyProps = {
   productId: string | null
   initialValues: ProductFormValues
-  selectOptions: ReturnType<typeof mapFormOptionsToSelectOptions>
+  formOptions: AdminProductFormOptions
   onOpenChange: (open: boolean) => void
   onSaved?: (productId: string) => void
   initialModel3d?: import('./types').AdminProductModel3d | null
@@ -81,7 +88,7 @@ function generateSlug(name: string): string {
 function ProductFormDrawerBody({
   productId,
   initialValues,
-  selectOptions,
+  formOptions,
   onOpenChange,
   onSaved,
   initialModel3d,
@@ -96,6 +103,15 @@ function ProductFormDrawerBody({
   const [formValues, setFormValues] = useState<ProductFormValues>(initialValues)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+
+  const selectOptions = useMemo(
+    () =>
+      mapFormOptionsToSelectOptions(formOptions, {
+        selectedProductTypeId: formValues.productTypeId,
+        existingVariantColorIds: formValues.variants.map((variant) => variant.colorId),
+      }),
+    [formOptions, formValues.productTypeId, formValues.variants],
+  )
 
   const updateField = <K extends keyof ProductFormValues>(key: K, value: ProductFormValues[K]) => {
     setFormValues((prev) => (prev ? { ...prev, [key]: value } : prev))
@@ -134,6 +150,12 @@ function ProductFormDrawerBody({
       return
     }
 
+    const variantColorError = validateFormVariantColors(formValues, formOptions)
+    if (variantColorError) {
+      setSaveError(variantColorError)
+      return
+    }
+
     setIsSaving(true)
     setSaveError(null)
 
@@ -156,10 +178,18 @@ function ProductFormDrawerBody({
       if (savedId) onSaved?.(savedId)
       onOpenChange(false)
     } catch (error) {
-      const message =
-        error instanceof Error && error.message.includes('slug')
-          ? 'Ya existe un producto con ese slug. Prueba otro.'
-          : 'No pudimos guardar el producto. Intenta de nuevo.'
+      let message = 'No pudimos guardar el producto. Intenta de nuevo.'
+      if (error instanceof GraphQLRequestError || error instanceof Error) {
+        const text = error.message
+        if (text.includes('slug')) {
+          message = 'Ya existe un producto con ese slug. Prueba otro.'
+        } else if (
+          text.includes(VARIANT_COLOR_NOT_ALLOWED_MESSAGE) ||
+          text.includes(PRODUCT_TYPE_VARIANT_CONFLICT_MESSAGE)
+        ) {
+          message = text
+        }
+      }
       setSaveError(message)
       if (process.env.NODE_ENV === 'development') {
         console.error('[admin-products-form]', error)
@@ -171,7 +201,12 @@ function ProductFormDrawerBody({
 
   const addVariant = () => {
     if (!formValues) return
-    const defaultColor = selectOptions.colors[0]?.value ?? ''
+    if (!formValues.productTypeId) {
+      setSaveError('Selecciona primero una categoría para agregar variantes.')
+      return
+    }
+    const allowedColors = selectOptions.colors.filter((color) => !color.isInvalidForProductType)
+    const defaultColor = allowedColors[0]?.value ?? ''
     const defaultSize = selectOptions.sizes[0]?.value ?? ''
     const newVariant: AdminProductVariantUi = {
       id: newTempId(),
@@ -405,11 +440,21 @@ function ProductFormDrawerBody({
                 Color, talla, precio y stock por combinación.
               </p>
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={addVariant}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addVariant}
+              disabled={!selectOptions.hasProductTypeSelected}
+            >
               <Plus className="mr-1 h-4 w-4" />
               Agregar
             </Button>
           </div>
+
+          {!selectOptions.hasProductTypeSelected ? (
+            <p className="font-serif text-sm text-muted-foreground">{VARIANT_COLOR_SELECT_HELP}</p>
+          ) : null}
 
           {formValues.variants.length === 0 ? (
             <Card className="border-dashed">
@@ -430,18 +475,31 @@ function ProductFormDrawerBody({
                         <Select
                           value={variant.colorId}
                           onValueChange={(v) => updateVariant(index, { colorId: v })}
+                          disabled={!selectOptions.hasProductTypeSelected}
                         >
                           <SelectTrigger className="font-sans">
-                            <SelectValue />
+                            <SelectValue
+                              placeholder={
+                                selectOptions.hasProductTypeSelected
+                                  ? 'Selecciona color'
+                                  : 'Selecciona categoría primero'
+                              }
+                            />
                           </SelectTrigger>
                           <SelectContent>
-                            {selectOptions.colors.map((c) => (
-                              <SelectItem key={c.value} value={c.value}>
-                                {c.label}
+                            {selectOptions.colors.map((colorOption) => (
+                              <SelectItem key={colorOption.value} value={colorOption.value}>
+                                {colorOption.label}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
+                        {selectOptions.colors.find((c) => c.value === variant.colorId)
+                          ?.isInvalidForProductType ? (
+                          <p className="mt-1 font-serif text-xs text-destructive">
+                            Color no permitido para esta categoría.
+                          </p>
+                        ) : null}
                       </div>
                       <div>
                         <Label className="font-sans text-xs">Talla</Label>
@@ -614,12 +672,6 @@ export function ProductFormDialog({
   const productQuery = useAdminProductByIdQuery(productId ?? '', open && isEditing)
   const formOptionsQuery = useAdminProductFormOptionsQuery(open)
 
-  const selectOptions = useMemo(() => {
-    if (!formOptionsQuery.data) return null
-    const selectedProductTypeId = isEditing ? productQuery.data?.productType.id : null
-    return mapFormOptionsToSelectOptions(formOptionsQuery.data, selectedProductTypeId)
-  }, [formOptionsQuery.data, isEditing, productQuery.data?.productType.id])
-
   const initialValues = useMemo(() => {
     if (!open || !formOptionsQuery.data) return null
     if (isEditing && !productQuery.data) return null
@@ -663,12 +715,12 @@ export function ProductFormDialog({
             <div className="flex flex-1 items-center justify-center py-16">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
-          ) : initialValues && selectOptions ? (
+          ) : initialValues && formOptionsQuery.data ? (
             <ProductFormDrawerBody
               key={formBodyKey}
               productId={productId}
               initialValues={initialValues}
-              selectOptions={selectOptions}
+              formOptions={formOptionsQuery.data}
               onOpenChange={onOpenChange}
               onSaved={onSaved}
               initialModel3d={productQuery.data?.model3d ?? null}

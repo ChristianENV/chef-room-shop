@@ -37,8 +37,8 @@ const formOptions: AdminProductFormOptions = {
     {
       id: 'color-black',
       name: 'Negro',
-      slug: 'negro',
-      hexCode: '#000000',
+      slug: 'black',
+      hexCode: '#111111',
       isActive: true,
       sortOrder: 1,
     },
@@ -99,6 +99,17 @@ describe('admin products ui mapper', () => {
       selectOptions.productTypes.some((option) => option.label === 'Zapatos'),
       true,
     )
+    assert.equal(selectOptions.hasProductTypeSelected, false)
+    assert.deepEqual(selectOptions.colors, [])
+  })
+
+  it('shows only black for shoes when product type is selected', () => {
+    const selectOptions = mapFormOptionsToSelectOptions(formOptions, 'type-shoes')
+
+    assert.equal(selectOptions.hasProductTypeSelected, true)
+    assert.equal(selectOptions.colors.length, 1)
+    assert.equal(selectOptions.colors[0]?.value, 'color-black')
+    assert.equal(selectOptions.colors[0]?.label, 'Negro')
   })
 
   it('sorts sizes by sortOrder for variant selectors', () => {

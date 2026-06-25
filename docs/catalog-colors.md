@@ -57,14 +57,19 @@ Fabric-only colors (e.g. `olive-green`, `petrol-blue`) **do not** map to catalog
 
 ## Enforcement status
 
-**Phase 1 (current):** shared config + documentation + tests. No Prisma migration, no Admin validation, no orphan variant cleanup.
+**Phase 1:** shared config + documentation + tests (`src/config/catalog-colors.ts`).
+
+**Phase 2 (current):** Admin enforcement without Prisma schema changes.
+
+- **Admin product form** filters variant color options by selected `ProductType` (`src/features/admin/products/lib/variant-color-options.ts`).
+- **GraphQL** rejects invalid variant colors on `upsertAdminProductVariant` and blocks `updateAdminProduct` category changes when active variants conflict (`admin-products.variant-colors.ts`).
+- `adminProductFormOptions` still returns all catalog colors; the UI filters client-side by category.
+- **Legacy/orphan variants** (e.g. mandil `chef-blue`) remain in the database but cannot be saved again without fixing the color; they appear in the form with an invalid label until cleaned separately.
 
 **Later phases:**
 
-- Admin product form: filter variant color options by product type
-- Server validation on variant create/update
 - Optional `Color` usage flags in schema
-- Soft-delete non-canonical variant orphans (e.g. mandil `chef-blue`) only after enforcement
+- Soft-delete non-canonical variant orphans only after operational cleanup
 
 ## Canonical seed matrices
 

@@ -10,12 +10,12 @@ Todas las operaciones usan `requireAdminGraphQL` (mismo guard que admin-dashboar
 
 ## Queries
 
-| Query                     | Descripción                                              |
-| ------------------------- | -------------------------------------------------------- |
-| `adminProducts`           | Lista paginada con filtros                               |
-| `adminProductById`        | Detalle por UUID                                         |
-| `adminProductBySlug`      | Detalle por slug                                         |
-| `adminProductFormOptions` | Tipos (`ProductType`), colores y tallas para formularios |
+| Query                     | Descripción                                                                                      |
+| ------------------------- | ------------------------------------------------------------------------------------------------ |
+| `adminProducts`           | Lista paginada con filtros                                                                       |
+| `adminProductById`        | Detalle por UUID                                                                                 |
+| `adminProductBySlug`      | Detalle por slug                                                                                 |
+| `adminProductFormOptions` | Tipos (`ProductType`), colores y tallas para formularios (colores filtrados en UI por categoría) |
 
 Las **categorías** del formulario provienen de `ProductType` dinámico (`nameEs`, `slug`, `sortOrder`, `isActive`). Tras crear/editar categorías en `/admin/categories`, la query se invalida vía `adminProductsQueryKeys.formOptions()`.
 
@@ -85,6 +85,21 @@ Orden default: `updatedAt desc`. Límite default 20, máx 100.
 - Formato auto: `CR-{SLUG}-{COLOR}-{SIZE}` (normalizado).
 - Colisiones → sufijo numérico.
 - Variante única por `(productId, colorId, sizeId)`.
+
+## Reglas de color de variante (Phase 2)
+
+Reglas compartidas: `src/config/catalog-colors.ts` (`PRODUCT_TYPE_VARIANT_COLOR_SLUGS`).
+
+| `productType.slug` | Colores permitidos en variantes            |
+| ------------------ | ------------------------------------------ |
+| `chef-jacket`      | `black`, `white`, `chef-blue`, `warm-gray` |
+| `apron`            | `black`, `white`                           |
+| `pants`            | `black`                                    |
+| `shoes`            | `black`                                    |
+
+- `upsertAdminProductVariant` rechaza combinaciones inválidas con `BAD_USER_INPUT` y mensaje: _El color seleccionado no está permitido para esta categoría de producto._
+- `updateAdminProduct` con cambio de `productTypeId` rechaza si variantes activas usan colores no permitidos en la nueva categoría.
+- Variantes huérfanas existentes (p. ej. mandil `chef-blue`) no se eliminan en esta fase; solo se impide crear/guardar nuevas combinaciones inválidas.
 
 ## Archive vs delete
 
