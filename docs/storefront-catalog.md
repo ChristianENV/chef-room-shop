@@ -54,6 +54,8 @@ Filter state stores **internal ProductType slugs** in `categories`, `colors`, `s
 
 Seeded via `pnpm db:seed`. Admin manages categories at `/admin/categories`.
 
+**STICO Real Safety** (`zapato-stico-real-safety`) is seeded as `DRAFT` under `shoes` / `zapatos` with `customizable: false` and no variants until price, SKU, stock, and images are confirmed. Shoes use color/size variants (not the customizer).
+
 ### Helpers
 
 - `src/features/storefront/catalog/product-type.helpers.ts` — public slug resolution, labels, active/nav filters

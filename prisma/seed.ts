@@ -12,6 +12,7 @@ import { RoleSlug, UserStatus } from '@prisma/client'
 
 import { buildAuth } from '../src/server/auth/build-auth'
 import { createPrismaClient } from '../src/server/db/create-prisma'
+import { seedSticoDraftProduct } from './seed-stico-product'
 
 const prisma = createPrismaClient()
 
@@ -372,6 +373,7 @@ async function main() {
   await seedRoles(permissionIds)
   await seedCatalog()
   await seedCustomization()
+  await seedSticoDraftProduct(prisma)
   await seedDevAdmin()
 
   console.log('Seed completed.')
