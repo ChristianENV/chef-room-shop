@@ -5,6 +5,7 @@ import {
   GARMENT_COLOR_SLUGS,
   MANDIL_COLOR_SLUGS,
   PANT_COLOR_SLUGS,
+  SHOE_COLOR_SLUGS,
   SHOE_SIZE_SLUGS,
 } from './seed-catalog-reference'
 import { assertUniqueVariantMatrix, buildVariantMatrix } from './seed-canonical-variants'
@@ -595,7 +596,7 @@ export const CANONICAL_PRODUCTS: CanonicalProductSeed[] = [
     variants: buildVariantMatrix({
       productCode: 'ZAPATOSTICOREALSAFETY',
       basePriceCents: 99900,
-      colorSlugs: ['black'],
+      colorSlugs: SHOE_COLOR_SLUGS,
       sizeSlugs: SHOE_SIZE_SLUGS,
       preserved: STICO_PRESERVED_VARIANTS,
     }),
