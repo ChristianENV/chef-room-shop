@@ -2,8 +2,16 @@ import { ProductStatus, type Prisma, type PrismaClient } from '@prisma/client'
 
 import { getOrThrow } from './seed-helpers'
 import { CANONICAL_PRODUCTS, type CanonicalProductSeed } from './seed-canonical-products.data'
+import {
+  remediateCanonicalProductVariants,
+  type CanonicalVariantRemediationResult,
+} from './seed-canonical-variant-remediation'
 
 export { CANONICAL_PRODUCTS, CANONICAL_PRODUCT_SLUGS } from './seed-canonical-products.data'
+export {
+  findNonCanonicalActiveVariantKeys,
+  remediateCanonicalProductVariants,
+} from './seed-canonical-variant-remediation'
 
 /**
  * Seeds production-safe canonical catalog products (idempotent upserts).
@@ -55,6 +63,27 @@ export async function seedCanonicalProducts(prisma: PrismaClient): Promise<void>
 
   for (const product of CANONICAL_PRODUCTS) {
     await upsertCanonicalProduct(prisma, product, typeIds, colorIds, sizeIds, areaIds, optionIds)
+  }
+
+  const remediationReports: CanonicalVariantRemediationResult[] = []
+  for (const product of CANONICAL_PRODUCTS) {
+    const row = await prisma.product.findUnique({
+      where: { slug: product.slug },
+      select: { id: true },
+    })
+    if (!row) continue
+    remediationReports.push(await remediateCanonicalProductVariants(prisma, row.id, product))
+  }
+
+  const totalSoftDeleted = remediationReports.reduce((sum, row) => sum + row.softDeleted.length, 0)
+  if (totalSoftDeleted > 0) {
+    console.log(
+      `Canonical variant remediation: soft-deleted ${totalSoftDeleted} non-canonical variant(s).`,
+    )
+    for (const report of remediationReports) {
+      if (report.softDeleted.length === 0) continue
+      console.log(`  ${report.productSlug}: ${report.softDeleted.map((row) => row.sku).join(', ')}`)
+    }
   }
 }
 

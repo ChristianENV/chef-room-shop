@@ -59,17 +59,13 @@ Fabric-only colors (e.g. `olive-green`, `petrol-blue`) **do not** map to catalog
 
 **Phase 1:** shared config + documentation + tests (`src/config/catalog-colors.ts`).
 
-**Phase 2 (current):** Admin enforcement without Prisma schema changes.
+**Phase 2:** Admin enforcement without Prisma schema changes (form filter + GraphQL validation).
 
-- **Admin product form** filters variant color options by selected `ProductType` (`src/features/admin/products/lib/variant-color-options.ts`).
-- **GraphQL** rejects invalid variant colors on `upsertAdminProductVariant` and blocks `updateAdminProduct` category changes when active variants conflict (`admin-products.variant-colors.ts`).
-- `adminProductFormOptions` still returns all catalog colors; the UI filters client-side by category.
-- **Legacy/orphan variants** (e.g. mandil `chef-blue`) remain in the database but cannot be saved again without fixing the color; they appear in the form with an invalid label until cleaned separately.
+**Phase 3 (current):** seed remediation soft-deletes active variants outside the canonical matrix for the five production catalog products. Orphan rows (e.g. mandil `chef-blue`) get `deletedAt` set; disposable `cart_items` pointing at those variants are removed. Order history is never deleted. Admin enforcement prevents recreating invalid combinations.
 
-**Later phases:**
+**Later:**
 
 - Optional `Color` usage flags in schema
-- Soft-delete non-canonical variant orphans only after operational cleanup
 
 ## Canonical seed matrices
 
@@ -81,3 +77,9 @@ Canonical production seed matrices use the shared rules:
 - STICO (`shoes`): black × shoe sizes 22–30
 
 Generated variants use `stockQty: 0` until updated in Admin when stock enforcement applies.
+
+## Seed remediation (Phase 3)
+
+After upserting canonical variants, `seedCanonicalProducts` calls `remediateCanonicalProductVariants` for each canonical product slug. Any **active** variant whose color×size is not in the seed matrix is soft-deleted (`deletedAt`). Cart rows tied only to those variants are removed; orders and order items are untouched.
+
+Audit (read-only): `npx tsx scripts/catalog/audit-canonical-variants.ts`

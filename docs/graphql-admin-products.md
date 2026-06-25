@@ -99,7 +99,7 @@ Reglas compartidas: `src/config/catalog-colors.ts` (`PRODUCT_TYPE_VARIANT_COLOR_
 
 - `upsertAdminProductVariant` rechaza combinaciones inválidas con `BAD_USER_INPUT` y mensaje: _El color seleccionado no está permitido para esta categoría de producto._
 - `updateAdminProduct` con cambio de `productTypeId` rechaza si variantes activas usan colores no permitidos en la nueva categoría.
-- Variantes huérfanas existentes (p. ej. mandil `chef-blue`) no se eliminan en esta fase; solo se impide crear/guardar nuevas combinaciones inválidas.
+- Variantes huérfanas existentes (p. ej. mandil `chef-blue`) se **soft-delete** en `pnpm db:seed` vía `remediateCanonicalProductVariants`; Admin impide recrearlas.
 
 ## Archive vs delete
 

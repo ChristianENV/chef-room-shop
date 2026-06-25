@@ -54,9 +54,9 @@ Filter state stores **internal ProductType slugs** in `categories`, `colors`, `s
 
 Seeded via `pnpm db:seed`. Admin manages categories at `/admin/categories`.
 
-**Canonical products** (`prisma/seed-canonical-products.data.ts`): Filipina Executive, Mandil Profesional Chef, Pantalón Chef Comfort, Zapato STICO Real Safety (ACTIVE). **Filipina Clásica** (`demo-filipina-chef-room`) is seeded as **DRAFT** (0 variants in NP — not storefront-purchasable until variants are added in admin). Archived/test products are **not** in production seed; use `scripts/catalog/delete-archived-test-products.ts` for one-time NP cleanup.
+**Canonical products** (`prisma/seed-canonical-products.data.ts`): Filipina Clásica, Filipina Executive, Mandil Profesional Chef, Pantalón Chef Comfort, Zapato STICO Real Safety — all **ACTIVE** with full variant matrices. Seed remediation soft-deletes any non-canonical active variants (e.g. legacy mandil `chef-blue`). PDP color swatches come from **non-deleted** variants only. Archived/test products are **not** in production seed.
 
-**STICO Real Safety** is seeded `ACTIVE` under `shoes` / `zapatos` with `customizable: false` and black × sizes 22–30 variants (non-customizer PDP flow).
+**STICO Real Safety** is under `shoes` / `zapatos` with `customizable: false` and black × sizes 22–30 variants (non-customizer PDP flow).
 
 ### Helpers
 
