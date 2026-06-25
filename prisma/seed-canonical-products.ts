@@ -130,20 +130,27 @@ async function upsertCanonicalProduct(
   }
 
   for (const variant of product.variants) {
+    const colorId = getOrThrow(colorIds.get(variant.colorSlug), `color ${variant.colorSlug}`)
+    const sizeId = getOrThrow(sizeIds.get(variant.sizeSlug), `size ${variant.sizeSlug}`)
+
     await prisma.productVariant.upsert({
-      where: { sku: variant.sku },
+      where: {
+        productId_colorId_sizeId: {
+          productId: dbProduct.id,
+          colorId,
+          sizeId,
+        },
+      },
       update: {
-        productId: dbProduct.id,
-        colorId: getOrThrow(colorIds.get(variant.colorSlug), `color ${variant.colorSlug}`),
-        sizeId: getOrThrow(sizeIds.get(variant.sizeSlug), `size ${variant.sizeSlug}`),
+        sku: variant.sku,
         stockQty: variant.stockQty,
         priceCents: variant.priceCents,
         deletedAt: null,
       },
       create: {
         productId: dbProduct.id,
-        colorId: getOrThrow(colorIds.get(variant.colorSlug), `color ${variant.colorSlug}`),
-        sizeId: getOrThrow(sizeIds.get(variant.sizeSlug), `size ${variant.sizeSlug}`),
+        colorId,
+        sizeId,
         sku: variant.sku,
         stockQty: variant.stockQty,
         priceCents: variant.priceCents,

@@ -1,5 +1,13 @@
 import { ProductStatus } from '@prisma/client'
 
+import {
+  APPAREL_SIZE_SLUGS,
+  GARMENT_COLOR_SLUGS,
+  MANDIL_COLOR_SLUGS,
+  PANT_COLOR_SLUGS,
+  SHOE_SIZE_SLUGS,
+} from './seed-catalog-reference'
+import { assertUniqueVariantMatrix, buildVariantMatrix } from './seed-canonical-variants'
 import { buildSticoDescription } from './seed-stico-product'
 
 export type CanonicalProductImageSeed = {
@@ -104,6 +112,173 @@ export const STANDARD_CUSTOMIZATION_RULES: CanonicalCustomizationRuleSeed[] = [
   },
 ]
 
+const FILIPINA_EXECUTIVE_PRESERVED_VARIANTS = [
+  {
+    sku: 'DEMO-FIL-CHEFBLUE-L',
+    stockQty: 25,
+    priceCents: 174900,
+    colorSlug: 'chef-blue',
+    sizeSlug: 'l',
+  },
+  {
+    sku: 'DEMO-FIL-CHEFBLUE-M',
+    stockQty: 25,
+    priceCents: 169900,
+    colorSlug: 'chef-blue',
+    sizeSlug: 'm',
+  },
+  {
+    sku: 'DEMO-FIL-CHEFBLUE-S',
+    stockQty: 25,
+    priceCents: 167900,
+    colorSlug: 'chef-blue',
+    sizeSlug: 's',
+  },
+  {
+    sku: 'DEMO-FIL-WHITE-L',
+    stockQty: 25,
+    priceCents: 174900,
+    colorSlug: 'white',
+    sizeSlug: 'l',
+  },
+  {
+    sku: 'DEMO-FIL-WHITE-M',
+    stockQty: 25,
+    priceCents: 169900,
+    colorSlug: 'white',
+    sizeSlug: 'm',
+  },
+  {
+    sku: 'DEMO-FIL-WHITE-S',
+    stockQty: 25,
+    priceCents: 167900,
+    colorSlug: 'white',
+    sizeSlug: 's',
+  },
+] as const satisfies readonly CanonicalProductVariantSeed[]
+
+/** Only black/white mandil rows preserved; chef-blue demo rows are excluded from canonical matrix. */
+const MANDIL_PRESERVED_VARIANTS = [
+  {
+    sku: 'DEMO-MAN-WHITE-L',
+    stockQty: 25,
+    priceCents: 64900,
+    colorSlug: 'white',
+    sizeSlug: 'l',
+  },
+  {
+    sku: 'DEMO-MAN-WHITE-XL',
+    stockQty: 0,
+    priceCents: 89900,
+    colorSlug: 'white',
+    sizeSlug: 'xl',
+  },
+] as const satisfies readonly CanonicalProductVariantSeed[]
+
+const PANTALON_PRESERVED_VARIANTS = [
+  {
+    sku: 'DEMO-PAN-BLACK-L',
+    stockQty: 25,
+    priceCents: 74900,
+    colorSlug: 'black',
+    sizeSlug: 'l',
+  },
+  {
+    sku: 'DEMO-PAN-BLACK-M',
+    stockQty: 25,
+    priceCents: 69900,
+    colorSlug: 'black',
+    sizeSlug: 'm',
+  },
+  {
+    sku: 'DEMO-PAN-BLACK-S',
+    stockQty: 25,
+    priceCents: 67900,
+    colorSlug: 'black',
+    sizeSlug: 's',
+  },
+  {
+    sku: 'DEMO-PAN-BLACK-XL',
+    stockQty: 25,
+    priceCents: 99900,
+    colorSlug: 'black',
+    sizeSlug: 'xl',
+  },
+  {
+    sku: 'DEMO-PAN-BLACK-XS',
+    stockQty: 25,
+    priceCents: 99900,
+    colorSlug: 'black',
+    sizeSlug: 'xs',
+  },
+] as const satisfies readonly CanonicalProductVariantSeed[]
+
+const STICO_PRESERVED_VARIANTS = [
+  {
+    sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-22',
+    stockQty: 10,
+    priceCents: 99900,
+    colorSlug: 'black',
+    sizeSlug: '22',
+  },
+  {
+    sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-23',
+    stockQty: 10,
+    priceCents: 99900,
+    colorSlug: 'black',
+    sizeSlug: '23',
+  },
+  {
+    sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-24',
+    stockQty: 10,
+    priceCents: 99900,
+    colorSlug: 'black',
+    sizeSlug: '24',
+  },
+  {
+    sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-25',
+    stockQty: 10,
+    priceCents: 99900,
+    colorSlug: 'black',
+    sizeSlug: '25',
+  },
+  {
+    sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-26',
+    stockQty: 10,
+    priceCents: 99900,
+    colorSlug: 'black',
+    sizeSlug: '26',
+  },
+  {
+    sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-27',
+    stockQty: 10,
+    priceCents: 99900,
+    colorSlug: 'black',
+    sizeSlug: '27',
+  },
+  {
+    sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-28',
+    stockQty: 10,
+    priceCents: 99900,
+    colorSlug: 'black',
+    sizeSlug: '28',
+  },
+  {
+    sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-29',
+    stockQty: 10,
+    priceCents: 99900,
+    colorSlug: 'black',
+    sizeSlug: '29',
+  },
+  {
+    sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-30',
+    stockQty: 10,
+    priceCents: 99900,
+    colorSlug: 'black',
+    sizeSlug: '30',
+  },
+] as const satisfies readonly CanonicalProductVariantSeed[]
+
 /** Production-safe canonical catalog (exported from NP DB 2026-06-25). */
 export const CANONICAL_PRODUCTS: CanonicalProductSeed[] = [
   {
@@ -114,8 +289,7 @@ export const CANONICAL_PRODUCTS: CanonicalProductSeed[] = [
     description: 'Filipina con branding Chef Room, ideal para equipos de cocina profesional.',
     basePriceCents: 129900,
     customizable: true,
-    // DRAFT: NP DB has 0 variants — not storefront-purchasable until real variants exist.
-    status: ProductStatus.DRAFT,
+    status: ProductStatus.ACTIVE,
     seoTitle: 'Filipina Azul Chef Room',
     seoDescription: 'Filipina azul corporativa personalizable.',
     images: [
@@ -168,7 +342,12 @@ export const CANONICAL_PRODUCTS: CanonicalProductSeed[] = [
         isPrimary: false,
       },
     ],
-    variants: [],
+    variants: buildVariantMatrix({
+      productCode: 'FILIPINACLASICA',
+      basePriceCents: 129900,
+      colorSlugs: GARMENT_COLOR_SLUGS,
+      sizeSlugs: APPAREL_SIZE_SLUGS,
+    }),
     customizationRules: STANDARD_CUSTOMIZATION_RULES,
   },
   {
@@ -249,50 +428,13 @@ export const CANONICAL_PRODUCTS: CanonicalProductSeed[] = [
         isPrimary: false,
       },
     ],
-    variants: [
-      {
-        sku: 'DEMO-FIL-CHEFBLUE-L',
-        stockQty: 25,
-        priceCents: 174900,
-        colorSlug: 'chef-blue',
-        sizeSlug: 'l',
-      },
-      {
-        sku: 'DEMO-FIL-CHEFBLUE-M',
-        stockQty: 25,
-        priceCents: 169900,
-        colorSlug: 'chef-blue',
-        sizeSlug: 'm',
-      },
-      {
-        sku: 'DEMO-FIL-CHEFBLUE-S',
-        stockQty: 25,
-        priceCents: 167900,
-        colorSlug: 'chef-blue',
-        sizeSlug: 's',
-      },
-      {
-        sku: 'DEMO-FIL-WHITE-L',
-        stockQty: 25,
-        priceCents: 174900,
-        colorSlug: 'white',
-        sizeSlug: 'l',
-      },
-      {
-        sku: 'DEMO-FIL-WHITE-M',
-        stockQty: 25,
-        priceCents: 169900,
-        colorSlug: 'white',
-        sizeSlug: 'm',
-      },
-      {
-        sku: 'DEMO-FIL-WHITE-S',
-        stockQty: 25,
-        priceCents: 167900,
-        colorSlug: 'white',
-        sizeSlug: 's',
-      },
-    ],
+    variants: buildVariantMatrix({
+      productCode: 'FILIPINAEXECUTIVE',
+      basePriceCents: 149900,
+      colorSlugs: GARMENT_COLOR_SLUGS,
+      sizeSlugs: APPAREL_SIZE_SLUGS,
+      preserved: FILIPINA_EXECUTIVE_PRESERVED_VARIANTS,
+    }),
     customizationRules: STANDARD_CUSTOMIZATION_RULES,
   },
   {
@@ -340,36 +482,13 @@ export const CANONICAL_PRODUCTS: CanonicalProductSeed[] = [
         isPrimary: false,
       },
     ],
-    variants: [
-      {
-        sku: 'DEMO-MAN-CHEFBLUE-L',
-        stockQty: 25,
-        priceCents: 64900,
-        colorSlug: 'chef-blue',
-        sizeSlug: 'l',
-      },
-      {
-        sku: 'DEMO-MAN-CHEFBLUE-M',
-        stockQty: 25,
-        priceCents: 59900,
-        colorSlug: 'chef-blue',
-        sizeSlug: 'xl',
-      },
-      {
-        sku: 'DEMO-MAN-WHITE-L',
-        stockQty: 25,
-        priceCents: 64900,
-        colorSlug: 'white',
-        sizeSlug: 'l',
-      },
-      {
-        sku: 'DEMO-MAN-WHITE-XL',
-        stockQty: 0,
-        priceCents: 89900,
-        colorSlug: 'white',
-        sizeSlug: 'xl',
-      },
-    ],
+    variants: buildVariantMatrix({
+      productCode: 'MANDILPROFESIONALCHEF',
+      basePriceCents: 89900,
+      colorSlugs: MANDIL_COLOR_SLUGS,
+      sizeSlugs: APPAREL_SIZE_SLUGS,
+      preserved: MANDIL_PRESERVED_VARIANTS,
+    }),
     customizationRules: STANDARD_CUSTOMIZATION_RULES,
   },
   {
@@ -417,43 +536,13 @@ export const CANONICAL_PRODUCTS: CanonicalProductSeed[] = [
         isPrimary: false,
       },
     ],
-    variants: [
-      {
-        sku: 'DEMO-PAN-BLACK-L',
-        stockQty: 25,
-        priceCents: 74900,
-        colorSlug: 'black',
-        sizeSlug: 'l',
-      },
-      {
-        sku: 'DEMO-PAN-BLACK-M',
-        stockQty: 25,
-        priceCents: 69900,
-        colorSlug: 'black',
-        sizeSlug: 'm',
-      },
-      {
-        sku: 'DEMO-PAN-BLACK-S',
-        stockQty: 25,
-        priceCents: 67900,
-        colorSlug: 'black',
-        sizeSlug: 's',
-      },
-      {
-        sku: 'DEMO-PAN-BLACK-XL',
-        stockQty: 25,
-        priceCents: 99900,
-        colorSlug: 'black',
-        sizeSlug: 'xl',
-      },
-      {
-        sku: 'DEMO-PAN-BLACK-XS',
-        stockQty: 25,
-        priceCents: 99900,
-        colorSlug: 'black',
-        sizeSlug: 'xs',
-      },
-    ],
+    variants: buildVariantMatrix({
+      productCode: 'PANTALONCHEFCOMFORT',
+      basePriceCents: 99900,
+      colorSlugs: PANT_COLOR_SLUGS,
+      sizeSlugs: APPAREL_SIZE_SLUGS,
+      preserved: PANTALON_PRESERVED_VARIANTS,
+    }),
     customizationRules: [],
   },
   {
@@ -503,74 +592,20 @@ export const CANONICAL_PRODUCTS: CanonicalProductSeed[] = [
         isPrimary: false,
       },
     ],
-    variants: [
-      {
-        sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-22',
-        stockQty: 10,
-        priceCents: 99900,
-        colorSlug: 'black',
-        sizeSlug: '22',
-      },
-      {
-        sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-23',
-        stockQty: 10,
-        priceCents: 99900,
-        colorSlug: 'black',
-        sizeSlug: '23',
-      },
-      {
-        sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-24',
-        stockQty: 10,
-        priceCents: 99900,
-        colorSlug: 'black',
-        sizeSlug: '24',
-      },
-      {
-        sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-25',
-        stockQty: 10,
-        priceCents: 99900,
-        colorSlug: 'black',
-        sizeSlug: '25',
-      },
-      {
-        sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-26',
-        stockQty: 10,
-        priceCents: 99900,
-        colorSlug: 'black',
-        sizeSlug: '26',
-      },
-      {
-        sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-27',
-        stockQty: 10,
-        priceCents: 99900,
-        colorSlug: 'black',
-        sizeSlug: '27',
-      },
-      {
-        sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-28',
-        stockQty: 10,
-        priceCents: 99900,
-        colorSlug: 'black',
-        sizeSlug: '28',
-      },
-      {
-        sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-29',
-        stockQty: 10,
-        priceCents: 99900,
-        colorSlug: 'black',
-        sizeSlug: '29',
-      },
-      {
-        sku: 'CR-ZAPATOSTICOREALSAFETY-BLACK-30',
-        stockQty: 10,
-        priceCents: 99900,
-        colorSlug: 'black',
-        sizeSlug: '30',
-      },
-    ],
+    variants: buildVariantMatrix({
+      productCode: 'ZAPATOSTICOREALSAFETY',
+      basePriceCents: 99900,
+      colorSlugs: ['black'],
+      sizeSlugs: SHOE_SIZE_SLUGS,
+      preserved: STICO_PRESERVED_VARIANTS,
+    }),
     customizationRules: [],
   },
 ]
+
+for (const product of CANONICAL_PRODUCTS) {
+  assertUniqueVariantMatrix(product.variants)
+}
 
 export const CANONICAL_PRODUCT_SLUGS = CANONICAL_PRODUCTS.map((product) => product.slug)
 
