@@ -54,7 +54,9 @@ Filter state stores **internal ProductType slugs** in `categories`, `colors`, `s
 
 Seeded via `pnpm db:seed`. Admin manages categories at `/admin/categories`.
 
-**STICO Real Safety** (`zapato-stico-real-safety`) is seeded as `DRAFT` under `shoes` / `zapatos` with `customizable: false` and no variants until price, SKU, stock, and images are confirmed. Shoes use color/size variants (not the customizer).
+**Canonical products** (`prisma/seed-canonical-products.data.ts`): Filipina Executive, Mandil Profesional Chef, Pantalón Chef Comfort, Zapato STICO Real Safety (ACTIVE). **Filipina Clásica** (`demo-filipina-chef-room`) is seeded as **DRAFT** (0 variants in NP — not storefront-purchasable until variants are added in admin). Archived/test products are **not** in production seed; use `scripts/catalog/delete-archived-test-products.ts` for one-time NP cleanup.
+
+**STICO Real Safety** is seeded `ACTIVE` under `shoes` / `zapatos` with `customizable: false` and black × sizes 22–30 variants (non-customizer PDP flow).
 
 ### Helpers
 

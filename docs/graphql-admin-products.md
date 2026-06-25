@@ -21,9 +21,9 @@ Las **categorías** del formulario provienen de `ProductType` dinámico (`nameEs
 
 Los productos pueden crearse con `customizable: false` (por ejemplo calzado): no requieren reglas de personalización ni modelo 3D, pero sí admiten variantes color/talla e imágenes.
 
-### Producto STICO (borrador)
+### Producto STICO (catálogo canónico)
 
-`Zapato STICO Real Safety` (`slug: zapato-stico-real-safety`) se siembra en `prisma/seed.ts` como **`DRAFT`** hasta confirmar precio, SKU, stock e imágenes. Usa `ProductType` `shoes` (categoría pública `zapatos`), `customizable: false`, y **sin variantes** en seed. Las variantes previstas son negro × tallas 22–30; créalas en admin cuando existan datos comerciales. `basePriceCents` queda en `0` como marcador de precio pendiente (no es precio de venta).
+`Zapato STICO Real Safety` (`slug: zapato-stico-real-safety`) forma parte del seed canónico en `prisma/seed-canonical-products.data.ts` con estado **`ACTIVE`**, `customizable: false`, variantes negro × tallas 22–30, precio/stock/SKU según datos confirmados en NP. **Filipina Clásica** (`demo-filipina-chef-room`) se siembra como **`DRAFT`** (sin variantes en NP; activar en admin cuando existan tallas/SKU reales). Los productos archivados/de prueba no se siembran en `pnpm db:seed` (solo en `pnpm db:seed:demo` con `ALLOW_DEMO_SEED=true`).
 
 ### Ejemplo listado
 

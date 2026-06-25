@@ -1,11 +1,9 @@
-import { ProductStatus, type PrismaClient } from '@prisma/client'
+/** Stable slug for the STICO canonical product. */
+export const STICO_PRODUCT_SLUG = 'zapato-stico-real-safety'
 
-/** Stable slug for the STICO draft product (storefront/admin). */
-export const STICO_DRAFT_PRODUCT_SLUG = 'zapato-stico-real-safety'
+export const STICO_PRODUCT_TYPE_SLUG = 'shoes'
 
-export const STICO_DRAFT_PRODUCT_TYPE_SLUG = 'shoes'
-
-/** Future variant sizes (black × 22–30). Not seeded until price, SKU, and stock are confirmed. */
+/** Future variant intent documented for admin reference (seeded when DB confirms). */
 export const STICO_INTENDED_VARIANT_SIZE_SLUGS = [
   '22',
   '23',
@@ -20,7 +18,7 @@ export const STICO_INTENDED_VARIANT_SIZE_SLUGS = [
 
 export const STICO_INTENDED_COLOR_SLUG = 'black' as const
 
-export const STICO_DRAFT_SHORT_DESCRIPTION =
+export const STICO_SHORT_DESCRIPTION =
   'Zapato profesional cerrado de talón con suela de caucho Nanotech + cerámica para máximo agarre. Diseñado para entornos de cocina y trabajo donde se requiere resistencia, comodidad y seguridad.'
 
 const STICO_SPECS_LINES = [
@@ -40,12 +38,10 @@ const STICO_FEATURE_BULLETS = [
   'Mayor resistencia',
 ] as const
 
-/**
- * Long description built only from confirmed supplier/product copy.
- */
-export function buildSticoDraftDescription(): string {
+/** Long description built only from confirmed supplier/product copy. */
+export function buildSticoDescription(): string {
   return [
-    STICO_DRAFT_SHORT_DESCRIPTION,
+    STICO_SHORT_DESCRIPTION,
     '',
     'Características:',
     ...STICO_FEATURE_BULLETS.map((line) => `- ${line}`),
@@ -55,45 +51,14 @@ export function buildSticoDraftDescription(): string {
   ].join('\n')
 }
 
-/**
- * Seeds Zapato STICO Real Safety as DRAFT without variants, images, price, SKU, or stock.
- *
- * `basePriceCents` is set to 0 because the schema requires a value and commercial price is TBD.
- */
-export async function seedSticoDraftProduct(prisma: PrismaClient): Promise<void> {
-  const shoesType = await prisma.productType.findUnique({
-    where: { slug: STICO_DRAFT_PRODUCT_TYPE_SLUG },
-  })
+/** @deprecated Use buildSticoDescription */
+export const buildSticoDraftDescription = buildSticoDescription
 
-  if (!shoesType) {
-    throw new Error(
-      `ProductType "${STICO_DRAFT_PRODUCT_TYPE_SLUG}" missing — run catalog seed first`,
-    )
-  }
+/** @deprecated Use STICO_PRODUCT_SLUG */
+export const STICO_DRAFT_PRODUCT_SLUG = STICO_PRODUCT_SLUG
 
-  await prisma.product.upsert({
-    where: { slug: STICO_DRAFT_PRODUCT_SLUG },
-    update: {
-      name: 'Zapato STICO Real Safety',
-      productTypeId: shoesType.id,
-      shortDescription: STICO_DRAFT_SHORT_DESCRIPTION,
-      description: buildSticoDraftDescription(),
-      customizable: false,
-      status: ProductStatus.DRAFT,
-      seoTitle: 'Zapato STICO Real Safety | Chef Room',
-      seoDescription: STICO_DRAFT_SHORT_DESCRIPTION,
-    },
-    create: {
-      slug: STICO_DRAFT_PRODUCT_SLUG,
-      name: 'Zapato STICO Real Safety',
-      productTypeId: shoesType.id,
-      shortDescription: STICO_DRAFT_SHORT_DESCRIPTION,
-      description: buildSticoDraftDescription(),
-      basePriceCents: 0,
-      customizable: false,
-      status: ProductStatus.DRAFT,
-      seoTitle: 'Zapato STICO Real Safety | Chef Room',
-      seoDescription: STICO_DRAFT_SHORT_DESCRIPTION,
-    },
-  })
-}
+/** @deprecated Use STICO_PRODUCT_TYPE_SLUG */
+export const STICO_DRAFT_PRODUCT_TYPE_SLUG = STICO_PRODUCT_TYPE_SLUG
+
+/** @deprecated Use STICO_SHORT_DESCRIPTION */
+export const STICO_DRAFT_SHORT_DESCRIPTION = STICO_SHORT_DESCRIPTION
