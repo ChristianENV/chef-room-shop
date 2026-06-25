@@ -1,40 +1,20 @@
-import type { Product, ProductCategory, ProductColor, ProductImage } from '@/lib/types'
+import type { Product } from '@/lib/types'
 import { centsToPesos } from '@/src/lib/formatters'
 import { getProductMainImageUrl } from '@/src/lib/product/product-images'
 
 import type { ProductVariantOption } from '@/src/features/storefront/products/types'
 
+import { getProductTypeDisplayName, getProductTypePublicSlug } from '../product-type.helpers'
 import type { CatalogProduct, CatalogProductVariant } from '../types'
-
-const PRODUCT_TYPE_TO_CATEGORY: Record<string, ProductCategory> = {
-  'chef-jacket': 'filipinas',
-  apron: 'mandiles',
-  pants: 'pantalones',
-}
 
 const DEFAULT_RATING = 4.8
 
-/**
- * Maps BFF product type slug to legacy storefront category id.
- */
-export function mapProductTypeSlugToCategory(typeSlug: string): ProductCategory {
-  return PRODUCT_TYPE_TO_CATEGORY[typeSlug] ?? 'filipinas'
-}
-
-/**
- * Maps legacy storefront category id to BFF product type slug.
- */
-export function mapCategoryToProductTypeSlug(category: string): string | null {
-  const entry = Object.entries(PRODUCT_TYPE_TO_CATEGORY).find(([, value]) => value === category)
-  return entry?.[0] ?? null
-}
-
-function mapImages(images: CatalogProduct['images']): ProductImage[] {
+function mapImages(images: CatalogProduct['images']): Product['images'] {
   if (images.length === 0) return []
 
   return images
     .map((image) => {
-      const mapped: ProductImage = {
+      const mapped = {
         id: image.id,
         url: image.url?.trim() ?? '',
         alt: image.alt ?? '',
@@ -49,8 +29,8 @@ function mapImages(images: CatalogProduct['images']): ProductImage[] {
     .filter((image) => Boolean(image.url?.trim()))
 }
 
-function uniqueColorsFromVariants(variants: CatalogProductVariant[]): ProductColor[] {
-  const bySlug = new Map<string, ProductColor>()
+function uniqueColorsFromVariants(variants: CatalogProductVariant[]): Product['colors'] {
+  const bySlug = new Map<string, Product['colors'][number]>()
 
   for (const variant of variants) {
     if (!variant.color || !variant.isActive) continue
@@ -103,7 +83,9 @@ export function mapCatalogProductToCard(product: CatalogProduct): Product {
     id: product.id,
     name: product.name,
     slug: product.slug,
-    category: mapProductTypeSlugToCategory(product.productType.slug),
+    category: getProductTypeDisplayName(product.productType),
+    productTypeSlug: product.productType.slug,
+    categoryShopSlug: getProductTypePublicSlug(product.productType),
     price: centsToPesos(product.basePriceCents),
     description: product.shortDescription ?? product.name,
     shortDescription: product.shortDescription ?? '',

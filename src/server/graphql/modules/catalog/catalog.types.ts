@@ -2,9 +2,14 @@
 export type CatalogProductTypeGql = {
   id: string
   slug: string
+  shopSlug: string | null
   name: string
+  nameEs: string
+  nameEn: string | null
   description: string | null
   sortOrder: number | null
+  isActive: boolean
+  showInNav: boolean
 }
 
 export type CatalogProductImageGql = {

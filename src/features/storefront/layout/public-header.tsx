@@ -30,6 +30,7 @@ import {
 import { routes } from '@/src/config/routes'
 import { CartPopover } from '@/src/features/storefront/cart/components/cart-popover'
 import { useCartBadgeCount } from '@/src/features/storefront/cart/api/use-my-cart-query'
+import { useShopNavCategories } from '@/src/features/storefront/catalog/hooks/use-shop-nav-categories'
 import {
   authNav,
   accountNav,
@@ -39,7 +40,6 @@ import {
   mobileShopGroup,
   publicNavItems,
   shopCatalogNavLink,
-  shopDropdownChildren,
   type NavLink,
 } from '@/src/config/navigation.storefront'
 import { getUserDisplayName, type UserDisplayInput } from '@/src/lib/user/user-display'
@@ -248,6 +248,7 @@ function PublicHeaderInner({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
   const cartBadgeCount = useCartBadgeCount()
+  const { categories: shopDropdownChildren } = useShopNavCategories()
 
   const closeMobileMenu = () => setMobileMenuOpen(false)
 

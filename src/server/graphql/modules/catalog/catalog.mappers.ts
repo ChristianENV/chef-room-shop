@@ -85,9 +85,14 @@ export function mapProductTypeToGql(productType: ProductType): CatalogProductTyp
   return {
     id: productType.id,
     slug: productType.slug,
+    shopSlug: productType.shopSlug,
     name: productType.nameEs,
-    description: productType.nameEn,
+    nameEs: productType.nameEs,
+    nameEn: productType.nameEn,
+    description: productType.description,
     sortOrder: productType.sortOrder,
+    isActive: productType.isActive,
+    showInNav: productType.showInNav,
   }
 }
 

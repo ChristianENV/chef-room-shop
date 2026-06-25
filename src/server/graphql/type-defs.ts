@@ -4,9 +4,14 @@ export const catalogTypeDefs = /* GraphQL */ `
   type ProductType {
     id: ID!
     slug: String!
+    shopSlug: String
     name: String!
+    nameEs: String!
+    nameEn: String
     description: String
     sortOrder: Int
+    isActive: Boolean!
+    showInNav: Boolean!
   }
 
   type ProductImage {

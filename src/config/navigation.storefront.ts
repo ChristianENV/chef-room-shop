@@ -1,4 +1,4 @@
-import { routes, shopCategoryUrl } from '@/src/config/routes'
+import { routes } from '@/src/config/routes'
 
 export type NavLink = {
   label: string
@@ -25,20 +25,8 @@ export const shopCatalogNavLink: NavLink = {
   testId: 'storefront-nav-shop-all',
 }
 
-/** Shop categories for navbar dropdown and mobile accordion */
-export const shopDropdownChildren: NavLink[] = [
-  {
-    label: 'Filipinas',
-    href: shopCategoryUrl('filipinas'),
-    testId: 'storefront-nav-shop-filipinas',
-  },
-  { label: 'Mandiles', href: shopCategoryUrl('mandiles'), testId: 'storefront-nav-shop-mandiles' },
-  {
-    label: 'Pantalones',
-    href: shopCategoryUrl('pantalones'),
-    testId: 'storefront-nav-shop-pantalones',
-  },
-]
+/** Shop categories for navbar dropdown — populated dynamically via `useShopNavCategories`. */
+export const shopDropdownChildren: NavLink[] = []
 
 /** Shop links for footer (includes catalog root) */
 export const shopNavChildren: NavLink[] = [

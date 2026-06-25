@@ -1,10 +1,16 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Layers } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
-import { routes } from '@/src/config/routes'
+import { shopCategoryUrl } from '@/src/config/routes'
+import { useCatalogFiltersQuery } from '@/src/features/storefront/catalog/api/use-catalog-filters-query'
+import {
+  getNavProductTypes,
+  getProductTypeDisplayName,
+  getProductTypePublicSlug,
+} from '@/src/features/storefront/catalog/product-type.helpers'
 
 import { LandingMediaImage } from './components/landing-media-image'
 import { LandingReveal, LandingStagger, LandingStaggerItem } from './components/landing-reveal'
@@ -17,48 +23,62 @@ type LandingCategory = {
   subtitle: string
   description: string
   href: string
-  mediaKey: Extract<
-    LandingMediaKey,
-    'categoryFilipinas' | 'categoryMandiles' | 'categoryPantalones'
-  >
+  mediaKey?: LandingMediaKey
   featured?: boolean
 }
 
-const categories: LandingCategory[] = [
-  {
-    id: 'filipinas',
-    title: 'Filipinas',
-    subtitle: 'Uniformes de chef',
-    description:
-      'Ejecutivas, slim fit y clásicas. Bordados, logos y colores a la medida de tu restaurante.',
-    href: routes.chefJackets,
-    mediaKey: 'categoryFilipinas',
-    featured: true,
-  },
-  {
-    id: 'mandiles',
-    title: 'Mandiles',
-    subtitle: 'Protección con estilo',
-    description: 'Funcionales, resistentes y listos para personalizar con tu identidad.',
-    href: routes.aprons,
-    mediaKey: 'categoryMandiles',
-  },
-  {
-    id: 'pantalones',
-    title: 'Pantalones',
-    subtitle: 'Jornadas intensas',
-    description: 'Comodidad y durabilidad para el ritmo de cocina profesional.',
-    href: routes.pants,
-    mediaKey: 'categoryPantalones',
-  },
-]
+const LANDING_MEDIA_BY_PUBLIC_SLUG: Partial<Record<string, LandingMediaKey>> = {
+  filipinas: 'categoryFilipinas',
+  mandiles: 'categoryMandiles',
+  pantalones: 'categoryPantalones',
+}
+
+const LANDING_SUBTITLES: Partial<Record<string, string>> = {
+  filipinas: 'Uniformes de chef',
+  mandiles: 'Protección con estilo',
+  pantalones: 'Jornadas intensas',
+  zapatos: 'Comodidad profesional',
+}
+
+const DEFAULT_SUBTITLE = 'Colección profesional'
+const DEFAULT_DESCRIPTION =
+  'Prendas diseñadas para la exigencia de cocinas de alto nivel, listas para personalizar.'
+
+function buildLandingCategories(
+  productTypes: ReturnType<typeof getNavProductTypes>,
+): LandingCategory[] {
+  return productTypes.map((type, index) => {
+    const publicSlug = getProductTypePublicSlug(type)
+    const title = getProductTypeDisplayName(type)
+    return {
+      id: type.id,
+      title,
+      subtitle: LANDING_SUBTITLES[publicSlug] ?? DEFAULT_SUBTITLE,
+      description: type.description?.trim() || DEFAULT_DESCRIPTION,
+      href: shopCategoryUrl(publicSlug),
+      mediaKey: LANDING_MEDIA_BY_PUBLIC_SLUG[publicSlug],
+      featured: index === 0,
+    }
+  })
+}
 
 interface CategorySectionProps {
   className?: string
 }
 
+function CategoryFallbackVisual({ title }: { title: string }) {
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#181B36] via-[#121421] to-[#0c0f24]">
+      <div className="rounded-full border border-white/10 bg-white/[0.04] p-5">
+        <Layers className="size-8 text-white/50" aria-hidden />
+      </div>
+      <p className="mt-4 px-6 text-center font-serif text-sm text-white/45">{title}</p>
+    </div>
+  )
+}
+
 function CategoryCard({ cat }: { cat: LandingCategory }) {
-  const media = LANDING_MEDIA[cat.mediaKey]
+  const media = cat.mediaKey ? LANDING_MEDIA[cat.mediaKey] : null
   const isFeatured = Boolean(cat.featured)
 
   return (
@@ -78,14 +98,20 @@ function CategoryCard({ cat }: { cat: LandingCategory }) {
             : 'aspect-[16/9] min-h-[200px] lg:h-[280px] lg:min-h-[420px] lg:aspect-auto',
         )}
       >
-        <LandingMediaImage
-          asset={media}
-          fit="cover"
-          overlay="none"
-          className="absolute inset-0 h-full w-full !aspect-auto"
-          imageClassName="transition-transform duration-700 group-hover:scale-[1.04]"
-          sizes={isFeatured ? '(max-width: 1024px) 100vw, 50vw' : '(max-width: 1024px) 100vw, 28vw'}
-        />
+        {media ? (
+          <LandingMediaImage
+            asset={media}
+            fit="cover"
+            overlay="none"
+            className="absolute inset-0 h-full w-full !aspect-auto"
+            imageClassName="transition-transform duration-700 group-hover:scale-[1.04]"
+            sizes={
+              isFeatured ? '(max-width: 1024px) 100vw, 50vw' : '(max-width: 1024px) 100vw, 28vw'
+            }
+          />
+        ) : (
+          <CategoryFallbackVisual title={cat.title} />
+        )}
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[38%] bg-gradient-to-t from-[#0c0f24]/90 via-[#0c0f24]/15 to-transparent lg:h-[32%]" />
 
@@ -127,7 +153,10 @@ function CategoryCard({ cat }: { cat: LandingCategory }) {
 }
 
 export function CategorySection({ className }: CategorySectionProps) {
-  const [filipinas, mandiles, pantalones] = categories
+  const { data } = useCatalogFiltersQuery()
+  const categories = buildLandingCategories(getNavProductTypes(data?.productTypes ?? []))
+  const [featured, ...rest] = categories
+  const useEditorialLayout = categories.length >= 3 && featured != null
 
   return (
     <section className={cn('relative bg-muted/40 py-24 md:py-32', className)}>
@@ -145,17 +174,30 @@ export function CategorySection({ className }: CategorySectionProps) {
           />
         </LandingReveal>
 
-        <LandingStagger className="mt-16 grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-2 lg:grid-rows-2 lg:gap-6">
-          <LandingStaggerItem className="lg:row-span-2">
-            <CategoryCard cat={filipinas} />
-          </LandingStaggerItem>
-          <LandingStaggerItem>
-            <CategoryCard cat={mandiles} />
-          </LandingStaggerItem>
-          <LandingStaggerItem>
-            <CategoryCard cat={pantalones} />
-          </LandingStaggerItem>
-        </LandingStagger>
+        {categories.length === 0 ? (
+          <p className="mt-16 text-center font-serif text-muted-foreground">
+            Las colecciones estarán disponibles pronto.
+          </p>
+        ) : useEditorialLayout ? (
+          <LandingStagger className="mt-16 grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-2 lg:grid-rows-2 lg:gap-6">
+            <LandingStaggerItem className="lg:row-span-2">
+              <CategoryCard cat={featured} />
+            </LandingStaggerItem>
+            {rest.map((cat) => (
+              <LandingStaggerItem key={cat.id}>
+                <CategoryCard cat={cat} />
+              </LandingStaggerItem>
+            ))}
+          </LandingStagger>
+        ) : (
+          <LandingStagger className="mt-16 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+            {categories.map((cat) => (
+              <LandingStaggerItem key={cat.id}>
+                <CategoryCard cat={{ ...cat, featured: false }} />
+              </LandingStaggerItem>
+            ))}
+          </LandingStagger>
+        )}
       </div>
     </section>
   )

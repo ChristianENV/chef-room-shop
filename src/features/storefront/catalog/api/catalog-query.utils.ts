@@ -2,7 +2,6 @@ import type { Product } from '@/lib/types'
 
 import type { FilterState } from '../catalog-filters'
 import type { SortOption } from '../sort-select'
-import { mapProductTypeSlugToCategory } from '../mappers/catalog-ui.mapper'
 import type { ProductsQueryParams } from './catalog-query.types'
 
 /**
@@ -58,10 +57,11 @@ export function applyClientFilters(
   let result = [...products]
 
   if (filters.categories.length > 1) {
-    const allowedCategories = new Set(
-      filters.categories.map((slug) => mapProductTypeSlugToCategory(slug)),
+    const allowedProductTypes = new Set(filters.categories)
+    result = result.filter(
+      (product) =>
+        product.productTypeSlug != null && allowedProductTypes.has(product.productTypeSlug),
     )
-    result = result.filter((p) => allowedCategories.has(p.category))
   }
 
   if (filters.colors.length > 1) {

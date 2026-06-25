@@ -162,6 +162,7 @@ export async function getProductBySlug(
  */
 export async function getProductTypes(prisma: PrismaClient): Promise<CatalogProductTypeGql[]> {
   const rows = await prisma.productType.findMany({
+    where: { isActive: true },
     orderBy: { sortOrder: 'asc' },
   })
   return rows.map(mapProductTypeToGql)

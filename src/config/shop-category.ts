@@ -1,69 +1,74 @@
-import type { ProductCategory } from '@/lib/types'
 import type { FilterState } from '@/src/features/storefront/catalog/catalog-filters'
-import { mapCategoryToProductTypeSlug } from '@/src/features/storefront/catalog/mappers/catalog-ui.mapper'
+import {
+  getProductTypePublicSlug,
+  parseShopCategoryParam,
+  resolveProductTypeSlugFromPublicCategory,
+  type StorefrontProductType,
+} from '@/src/features/storefront/catalog/product-type.helpers'
 
-import { routes, shopCategoryUrl } from './routes'
+import { routes, shopCategoryUrl } from '@/src/config/routes'
 
-export const SHOP_CATEGORY_SLUGS = ['filipinas', 'mandiles', 'pantalones'] as const
-
-export type ShopCategorySlug = (typeof SHOP_CATEGORY_SLUGS)[number]
+/** Public shop category slug from `/shop?category=` (dynamic ProductType.shopSlug or slug). */
+export type ShopCategorySlug = string
 
 /**
- * Validates `?category=` from the shop URL.
+ * Validates and normalizes `?category=` from the shop URL.
  */
 export function parseShopCategorySlug(value: string | null | undefined): ShopCategorySlug | null {
-  if (!value) return null
-  const normalized = value.trim().toLowerCase()
-  return SHOP_CATEGORY_SLUGS.includes(normalized as ShopCategorySlug)
-    ? (normalized as ShopCategorySlug)
-    : null
+  return parseShopCategoryParam(value)
 }
 
 /**
  * Maps shop category query param to BFF `productTypeSlug`.
  */
-export function shopCategoryToProductTypeSlug(category: ShopCategorySlug): string {
-  const slug = mapCategoryToProductTypeSlug(category)
-  return slug ?? 'chef-jacket'
+export function shopCategoryToProductTypeSlug(
+  category: ShopCategorySlug,
+  productTypes: StorefrontProductType[],
+): string | null {
+  return resolveProductTypeSlugFromPublicCategory(category, productTypes)
 }
 
 /**
  * Builds filter state categories array from a shop category param.
  */
-export function shopCategoryToFilterCategories(category: ShopCategorySlug | null): string[] {
+export function shopCategoryToFilterCategories(
+  category: ShopCategorySlug | null,
+  productTypes: StorefrontProductType[],
+): string[] {
   if (!category) return []
-  const productTypeSlug = shopCategoryToProductTypeSlug(category)
+  const productTypeSlug = shopCategoryToProductTypeSlug(category, productTypes)
   return productTypeSlug ? [productTypeSlug] : []
 }
 
 /**
  * Derives shop category param from a single selected product type slug.
  */
-export function filterCategoriesToShopCategory(categories: string[]): ShopCategorySlug | null {
+export function filterCategoriesToShopCategory(
+  categories: string[],
+  productTypes: StorefrontProductType[],
+): ShopCategorySlug | null {
   if (categories.length !== 1) return null
-  const productTypeSlug = categories[0]
-  for (const shopCategory of SHOP_CATEGORY_SLUGS) {
-    if (shopCategoryToProductTypeSlug(shopCategory) === productTypeSlug) {
-      return shopCategory
-    }
-  }
-  return null
+  const productType = productTypes.find((type) => type.slug === categories[0])
+  if (!productType) return null
+  return getProductTypePublicSlug(productType)
 }
 
 /**
  * Resolves shop URL for current filter state (category param only when one type selected).
  */
-export function shopUrlFromFilterState(filters: FilterState): string {
-  const category = filterCategoriesToShopCategory(filters.categories)
+export function shopUrlFromFilterState(
+  filters: FilterState,
+  productTypes: StorefrontProductType[],
+): string {
+  const category = filterCategoriesToShopCategory(filters.categories, productTypes)
   return category ? shopCategoryUrl(category) : routes.shop
 }
 
 /**
- * Shop URL for a legacy product category id (falls back to `/shop` for accesorios).
+ * Shop URL for a product type row.
  */
-export function shopUrlFromProductCategory(category: ProductCategory): string {
-  const slug = parseShopCategorySlug(category)
-  return slug ? shopCategoryUrl(slug) : routes.shop
+export function shopUrlFromProductType(productType: StorefrontProductType): string {
+  return shopCategoryUrl(getProductTypePublicSlug(productType))
 }
 
 export type SearchParamsLike = {
@@ -97,4 +102,15 @@ export function isShopNavHrefActive(
   } catch {
     return false
   }
+}
+
+/**
+ * Shop URL for a mapped storefront product (uses categoryShopSlug when available).
+ */
+export function shopUrlFromProductCategory(product: {
+  categoryShopSlug?: string | null
+  productTypeSlug?: string | null
+}): string {
+  const slug = product.categoryShopSlug?.trim() || product.productTypeSlug?.trim()
+  return slug ? shopCategoryUrl(slug) : routes.shop
 }

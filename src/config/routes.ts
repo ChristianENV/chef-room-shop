@@ -106,14 +106,12 @@ export function verifyEmail(options?: { callbackUrl?: string }) {
 
 export type RoutePath = (typeof routes)[keyof typeof routes]
 
-export type { ShopCategorySlug } from './shop-category'
-
-/** Storefront shop filter: `/shop?category=filipinas|mandiles|pantalones`. */
-export function shopCategoryUrl(category: import('./shop-category').ShopCategorySlug): string {
+/** Storefront shop filter: `/shop?category=filipinas|mandiles|pantalones|zapatos|...`. */
+export function shopCategoryUrl(category: string): string {
   return `${routes.shop}?category=${encodeURIComponent(category)}`
 }
 
 /** Alias for shop catalog links with category filter. */
-export function shopWithCategory(category: import('./shop-category').ShopCategorySlug): string {
+export function shopWithCategory(category: string): string {
   return shopCategoryUrl(category)
 }
