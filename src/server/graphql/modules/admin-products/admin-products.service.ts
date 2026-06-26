@@ -337,9 +337,7 @@ export async function updateAdminProduct(
         status: (parsed.status as ProductStatus) ?? existing.status,
         seoTitle: parsed.seoTitle ?? null,
         seoDescription: parsed.seoDescription ?? null,
-        seoImage: parsed.seoImageId
-          ? { connect: { id: parsed.seoImageId } }
-          : { disconnect: true },
+        seoImage: parsed.seoImageId ? { connect: { id: parsed.seoImageId } } : { disconnect: true },
       },
       include: productInclude,
     })
