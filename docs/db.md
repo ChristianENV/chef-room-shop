@@ -19,7 +19,7 @@ Chef Room uses **Prisma** against **Neon PostgreSQL**. Migrations and seeds run 
    - Prefer the **pooler** hostname from the Neon console (`-pooler` in the host).
    - Do **not** use `channel_binding=require` — it often causes `Error { kind: Closed }` on Windows with Prisma.
    - Add `connect_timeout=15` and `pool_timeout=15` so idle compute wake-up does not drop the first query.
-   - The app normalizes `DATABASE_URL` in `src/server/db/create-prisma.ts` (strips `channel_binding`, adds timeouts if missing).
+   - The app normalizes `DATABASE_URL` in `src/server/db/create-prisma.ts` (strips `channel_binding`, maps `sslmode=require` → `verify-full`, adds timeouts if missing).
 
 3. Prisma CLI reads `DATABASE_URL` from the environment. On Windows PowerShell for a one-off command:
 

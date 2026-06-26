@@ -2,18 +2,28 @@
 
 Gestión de catálogo para el dashboard Chef Room. Requiere sesión **ADMIN** o **SUPERADMIN**. **CUSTOMER** recibe `FORBIDDEN`.
 
+Las **categorías** (`ProductType`) tienen operaciones dedicadas en [graphql-admin-product-types.md](./graphql-admin-product-types.md).
+
 ## Autenticación
 
 Todas las operaciones usan `requireAdminGraphQL` (mismo guard que admin-dashboard / admin-orders).
 
 ## Queries
 
-| Query                     | Descripción                              |
-| ------------------------- | ---------------------------------------- |
-| `adminProducts`           | Lista paginada con filtros               |
-| `adminProductById`        | Detalle por UUID                         |
-| `adminProductBySlug`      | Detalle por slug                         |
-| `adminProductFormOptions` | Tipos, colores y tallas para formularios |
+| Query                     | Descripción                                                                                      |
+| ------------------------- | ------------------------------------------------------------------------------------------------ |
+| `adminProducts`           | Lista paginada con filtros                                                                       |
+| `adminProductById`        | Detalle por UUID                                                                                 |
+| `adminProductBySlug`      | Detalle por slug                                                                                 |
+| `adminProductFormOptions` | Tipos (`ProductType`), colores y tallas para formularios (colores filtrados en UI por categoría) |
+
+Las **categorías** del formulario provienen de `ProductType` dinámico (`nameEs`, `slug`, `sortOrder`, `isActive`). Tras crear/editar categorías en `/admin/categories`, la query se invalida vía `adminProductsQueryKeys.formOptions()`.
+
+Los productos pueden crearse con `customizable: false` (por ejemplo calzado): no requieren reglas de personalización ni modelo 3D, pero sí admiten variantes color/talla e imágenes.
+
+### Producto STICO (catálogo canónico)
+
+`Zapato STICO Real Safety` (`slug: zapato-stico-real-safety`) forma parte del seed canónico en `prisma/seed-canonical-products.data.ts` con estado **`ACTIVE`**, `customizable: false`, variantes negro × tallas 22–30, precio/stock/SKU según datos confirmados en NP. **Filipina Clásica** (`demo-filipina-chef-room`) se siembra como **`DRAFT`** (sin variantes en NP; activar en admin cuando existan tallas/SKU reales). Los productos archivados/de prueba no se siembran en `pnpm db:seed` (solo en `pnpm db:seed:demo` con `ALLOW_DEMO_SEED=true`).
 
 ### Ejemplo listado
 
@@ -76,6 +86,21 @@ Orden default: `updatedAt desc`. Límite default 20, máx 100.
 - Colisiones → sufijo numérico.
 - Variante única por `(productId, colorId, sizeId)`.
 
+## Reglas de color de variante (Phase 2)
+
+Reglas compartidas: `src/config/catalog-colors.ts` (`PRODUCT_TYPE_VARIANT_COLOR_SLUGS`).
+
+| `productType.slug` | Colores permitidos en variantes            |
+| ------------------ | ------------------------------------------ |
+| `chef-jacket`      | `black`, `white`, `chef-blue`, `warm-gray` |
+| `apron`            | `black`, `white`                           |
+| `pants`            | `black`                                    |
+| `shoes`            | `black`                                    |
+
+- `upsertAdminProductVariant` rechaza combinaciones inválidas con `BAD_USER_INPUT` y mensaje: _El color seleccionado no está permitido para esta categoría de producto._
+- `updateAdminProduct` con cambio de `productTypeId` rechaza si variantes activas usan colores no permitidos en la nueva categoría.
+- Variantes huérfanas existentes (p. ej. mandil `chef-blue`) se **soft-delete** en `pnpm db:seed` vía `remediateCanonicalProductVariants`; Admin impide recrearlas.
+
 ## Archive vs delete
 
 - **archiveAdminProduct:** `status = ARCHIVED` y `deletedAt = now` (oculto en storefront y listado admin por defecto).
@@ -121,7 +146,7 @@ Crear, editar, archivar, duplicar, cambiar estado, variantes (color/talla/precio
 ### Pendiente en UI (siguiente fase)
 
 - Upload Cloudinary real
-- CRUD ProductType / Color / Size
+- CRUD Color / Size
 - Inventario avanzado y reglas de personalización en esta pantalla
 
 ## Pendientes (BFF / producto)

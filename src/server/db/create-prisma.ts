@@ -17,6 +17,7 @@ function sleep(ms: number): Promise<void> {
 /**
  * Neon pooler URLs on Windows often break with `channel_binding=require`.
  * Adds timeouts so cold-start / idle compute wake does not drop the pool.
+ * Maps legacy sslmode aliases to verify-full (pg v8 treats require/prefer/verify-ca as verify-full).
  */
 export function normalizeDatabaseUrl(url: string | undefined): string | undefined {
   if (!url) {
@@ -26,6 +27,11 @@ export function normalizeDatabaseUrl(url: string | undefined): string | undefine
   try {
     const parsed = new URL(url)
     parsed.searchParams.delete('channel_binding')
+
+    const sslMode = parsed.searchParams.get('sslmode')
+    if (sslMode === 'require' || sslMode === 'prefer' || sslMode === 'verify-ca') {
+      parsed.searchParams.set('sslmode', 'verify-full')
+    }
 
     const isNeon = parsed.hostname.includes('neon.tech') || parsed.hostname.includes('pooler')
 

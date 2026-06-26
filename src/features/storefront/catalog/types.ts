@@ -2,9 +2,14 @@
 export type CatalogProductType = {
   id: string
   slug: string
+  shopSlug?: string | null
   name: string
+  nameEs?: string | null
+  nameEn?: string | null
   description?: string | null
   sortOrder?: number | null
+  isActive?: boolean
+  showInNav?: boolean
 }
 
 /** Product image from catalog BFF. */

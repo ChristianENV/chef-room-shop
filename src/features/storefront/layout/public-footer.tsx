@@ -7,7 +7,8 @@ import { ChefRoomLogo } from '@/components/brand/chef-room-logo'
 import { BRAND_TAGLINE } from '@/lib/brand'
 import { routes } from '@/src/config/routes'
 import { BUSINESS_VARS } from '@/src/config/vars'
-import { footerCompanyLinks, footerProductLinks } from '@/src/config/navigation.storefront'
+import { footerCompanyLinks } from '@/src/config/navigation.storefront'
+import { FooterProductLinks } from '@/src/features/storefront/layout/footer-product-links'
 
 const footerLegalLinks = [
   { href: routes.privacy, label: 'Aviso de Privacidad' },
@@ -81,8 +82,16 @@ export function PublicFooter({ showNewsletter = true, className }: PublicFooterP
               ) : null}
             </div>
 
+            <div>
+              <h3 className="font-sans text-[11px] font-semibold tracking-[0.15em] uppercase text-muted-foreground">
+                Productos
+              </h3>
+              <ul className="mt-5 space-y-3">
+                <FooterProductLinks />
+              </ul>
+            </div>
+
             {[
-              { title: 'Productos', links: footerProductLinks },
               { title: 'Empresa', links: footerCompanyLinks },
               {
                 title: 'Soporte',

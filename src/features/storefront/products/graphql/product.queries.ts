@@ -21,9 +21,14 @@ export const PRODUCT_BY_SLUG_QUERY = /* GraphQL */ `
       productType {
         id
         slug
+        shopSlug
         name
+        nameEs
+        nameEn
         description
         sortOrder
+        isActive
+        showInNav
       }
       images {
         id

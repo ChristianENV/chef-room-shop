@@ -26,6 +26,8 @@ import { useCatalogFiltersQuery } from '@/src/features/storefront/catalog/api/us
 import { useProductsQuery } from '@/src/features/storefront/catalog/api/use-products-query'
 import { useShopCatalogUrl } from '@/src/features/storefront/catalog/hooks/use-shop-catalog-url'
 import { mapCatalogProductToCard } from '@/src/features/storefront/catalog/mappers/catalog-ui.mapper'
+import { resolveProductTypeByPublicSlug } from '@/src/features/storefront/catalog/product-type.helpers'
+import type { CatalogProductType } from '@/src/features/storefront/catalog/types'
 
 const DEFAULT_FILTERS: FilterState = {
   categories: [],
@@ -37,22 +39,31 @@ const DEFAULT_FILTERS: FilterState = {
   materials: [],
 }
 
-function buildInitialFilters(searchParams: ReturnType<typeof useSearchParams>): FilterState {
+function buildInitialFilters(
+  searchParams: ReturnType<typeof useSearchParams>,
+  productTypes: CatalogProductType[] = [],
+): FilterState {
   const category = parseShopCategorySlug(searchParams.get('category'))
   return {
     ...DEFAULT_FILTERS,
-    categories: shopCategoryToFilterCategories(category),
+    categories: shopCategoryToFilterCategories(category, productTypes),
   }
 }
 
 function ShopPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [filters, setFilters] = useState<FilterState>(() => buildInitialFilters(searchParams))
+  const { data: filtersData, isLoading: isFiltersLoading } = useCatalogFiltersQuery()
+  const productTypes = filtersData?.productTypes ?? []
+
+  const [filters, setFilters] = useState<FilterState>(() =>
+    buildInitialFilters(searchParams, productTypes),
+  )
   const [sortBy, setSortBy] = useState<SortOption>('popular')
 
   const { setFiltersWithUrl, clearFiltersWithUrl } = useShopCatalogUrl({
     setFilters,
+    productTypes,
   })
 
   const productsQueryParams = useMemo(
@@ -68,17 +79,22 @@ function ShopPageContent() {
     refetch: refetchProducts,
   } = useProductsQuery(productsQueryParams)
 
-  const { data: filtersData, isLoading: isFiltersLoading } = useCatalogFiltersQuery()
-
   const filterOptions = useMemo(
     () => (filtersData ? toCatalogFilterOptions(filtersData) : undefined),
     [filtersData],
   )
 
+  const categoryParam = parseShopCategorySlug(searchParams.get('category'))
+  const unknownCategory = useMemo(() => {
+    if (!categoryParam || !filtersData) return false
+    return resolveProductTypeByPublicSlug(categoryParam, filtersData.productTypes) === null
+  }, [categoryParam, filtersData])
+
   const products = useMemo(() => {
+    if (unknownCategory) return []
     const items = productsData?.items.map(mapCatalogProductToCard) ?? []
     return applyClientFilters(items, filters, sortBy)
-  }, [productsData, filters, sortBy])
+  }, [productsData, filters, sortBy, unknownCategory])
 
   const isLoading = isProductsLoading || isFiltersLoading
   const errorMessage = isProductsError
@@ -151,7 +167,10 @@ function ShopPageContent() {
                 }}
               />
             ) : products.length === 0 ? (
-              <CatalogEmptyState variant="no-results" onClearFilters={handleClearFilters} />
+              <CatalogEmptyState
+                variant={unknownCategory ? 'unknown-category' : 'no-results'}
+                onClearFilters={handleClearFilters}
+              />
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
                 {products.map((product) => (

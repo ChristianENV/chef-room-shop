@@ -11,15 +11,17 @@ import {
 } from '@/src/config/shop-category'
 
 import type { FilterState } from '../catalog-filters'
+import type { CatalogProductType } from '../types'
 
 type UseShopCatalogUrlOptions = {
   setFilters: Dispatch<SetStateAction<FilterState>>
+  productTypes?: CatalogProductType[]
 }
 
 /**
  * Keeps `/shop?category=` and catalog filter state in sync (bidirectional).
  */
-export function useShopCatalogUrl({ setFilters }: UseShopCatalogUrlOptions) {
+export function useShopCatalogUrl({ setFilters, productTypes = [] }: UseShopCatalogUrlOptions) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -29,7 +31,7 @@ export function useShopCatalogUrl({ setFilters }: UseShopCatalogUrlOptions) {
     if (pathname !== routes.shop) return
 
     const category = parseShopCategorySlug(searchParams.get('category'))
-    const categories = shopCategoryToFilterCategories(category)
+    const categories = shopCategoryToFilterCategories(category, productTypes)
 
     skipUrlSyncRef.current = true
     setFilters((prev) => {
@@ -42,18 +44,18 @@ export function useShopCatalogUrl({ setFilters }: UseShopCatalogUrlOptions) {
     queueMicrotask(() => {
       skipUrlSyncRef.current = false
     })
-  }, [pathname, searchParams, setFilters])
+  }, [pathname, productTypes, searchParams, setFilters])
 
   const replaceShopUrl = useCallback(
     (nextFilters: FilterState) => {
       if (pathname !== routes.shop || skipUrlSyncRef.current) return
-      const target = shopUrlFromFilterState(nextFilters)
+      const target = shopUrlFromFilterState(nextFilters, productTypes)
       const current =
         searchParams.toString().length > 0 ? `${pathname}?${searchParams.toString()}` : pathname
       if (target === current) return
       router.replace(target)
     },
-    [pathname, router, searchParams],
+    [pathname, productTypes, router, searchParams],
   )
 
   const setFiltersWithUrl = useCallback(

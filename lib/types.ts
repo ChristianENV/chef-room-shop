@@ -1,11 +1,18 @@
 // Chef Room by Bedolla - TypeScript Types
 // Types for products, customization, and UI components
 
+export type ProductCategory = string
+
 export interface Product {
   id: string
   name: string
   slug: string
-  category: ProductCategory
+  /** Spanish display label from ProductType.nameEs */
+  category: string
+  /** Internal ProductType.slug for filtering */
+  productTypeSlug?: string
+  /** Public shop category slug (ProductType.shopSlug ?? slug) */
+  categoryShopSlug?: string
   price: number
   originalPrice?: number
   description: string
@@ -19,8 +26,6 @@ export interface Product {
   rating: number
   reviewCount: number
 }
-
-export type ProductCategory = 'filipinas' | 'mandiles' | 'pantalones' | 'accesorios'
 
 export interface ProductImage {
   id: string

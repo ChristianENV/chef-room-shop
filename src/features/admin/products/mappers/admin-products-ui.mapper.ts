@@ -17,7 +17,7 @@ import type {
   SelectOption,
   StatusBadgeVariant,
 } from '../types/admin-products-ui.types'
-import { mapProductTypeSlugToLabel } from '../types/admin-products-ui.types'
+import { resolveProductTypeLabel } from '../types/admin-products-ui.types'
 
 const BFF_STATUS_BY_UI: Record<AdminProductStatusUi, string> = {
   DRAFT: 'DRAFT',
@@ -56,10 +56,14 @@ export function mapAdminProductStatusToBadgeVariant(status: string): StatusBadge
 }
 
 /**
- * Maps product type slug to Spanish label.
+ * Maps product type fields to Spanish label (dynamic ProductType.nameEs).
  */
-export function mapAdminProductTypeToLabel(slug: string, name?: string): string {
-  return mapProductTypeSlugToLabel(slug, name)
+export function mapAdminProductTypeToLabel(
+  slug: string,
+  name?: string,
+  nameEs?: string | null,
+): string {
+  return resolveProductTypeLabel({ nameEs, name, slug })
 }
 
 function formatDateTime(iso: string): string {
@@ -92,6 +96,7 @@ export function mapAdminProductToTableRow(product: AdminProduct): AdminProductTa
     productTypeLabel: mapAdminProductTypeToLabel(
       product.productType.slug,
       product.productType.name,
+      product.productType.nameEs,
     ),
     basePricePesos,
     basePriceFormatted: formatCurrencyMXN(basePricePesos),
@@ -149,7 +154,10 @@ export function mapAdminProductToFormValues(
   product: AdminProduct | null,
   formOptions?: AdminProductFormOptions,
 ): ProductFormValues {
-  const defaultTypeId = formOptions?.productTypes[0]?.id ?? ''
+  const defaultTypeId =
+    formOptions?.productTypes.find((type) => type.isActive)?.id ??
+    formOptions?.productTypes[0]?.id ??
+    ''
 
   if (!product) {
     return {
@@ -271,10 +279,16 @@ export function buildAdminProductsListVariables(input: {
 export function mapFormOptionsToProductTypeSlugOptions(
   options: AdminProductFormOptions,
 ): SelectOption[] {
-  return options.productTypes.map((t) => ({
-    value: t.slug,
-    label: mapAdminProductTypeToLabel(t.slug, t.name),
-  }))
+  return [...options.productTypes]
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    .map((type) => ({
+      value: type.slug,
+      label: resolveProductTypeLabel({
+        nameEs: type.nameEs,
+        name: type.name,
+        slug: type.slug,
+      }),
+    }))
 }
 
 export { UI_STATUS_BY_BFF, BFF_STATUS_BY_UI, STATUS_LABELS }

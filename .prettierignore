@@ -12,3 +12,4 @@ generated
 pnpm-lock.yaml
 package-lock.json
 .prettierignore
+next-env.d.ts

@@ -2,6 +2,7 @@ export const ADMIN_PRODUCT_TYPE_FIELDS = /* GraphQL */ `
   id
   slug
   name
+  nameEs
   description
   sortOrder
   isActive

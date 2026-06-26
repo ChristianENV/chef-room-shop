@@ -12,6 +12,7 @@ import { RoleSlug, UserStatus } from '@prisma/client'
 
 import { buildAuth } from '../src/server/auth/build-auth'
 import { createPrismaClient } from '../src/server/db/create-prisma'
+import { seedCanonicalProducts } from './seed-canonical-products'
 
 const prisma = createPrismaClient()
 
@@ -69,12 +70,45 @@ const ROLES: {
 ]
 
 const PRODUCT_TYPES = [
-  { slug: 'chef-jacket', nameEs: 'Filipina', nameEn: 'Chef Jacket', sortOrder: 1 },
-  { slug: 'apron', nameEs: 'Mandil', nameEn: 'Apron', sortOrder: 2 },
-  { slug: 'pants', nameEs: 'Pantalón', nameEn: 'Pants', sortOrder: 3 },
+  {
+    slug: 'chef-jacket',
+    shopSlug: 'filipinas',
+    nameEs: 'Filipinas',
+    nameEn: 'Chef jackets',
+    sortOrder: 10,
+    isActive: true,
+    showInNav: true,
+  },
+  {
+    slug: 'apron',
+    shopSlug: 'mandiles',
+    nameEs: 'Mandiles',
+    nameEn: 'Aprons',
+    sortOrder: 20,
+    isActive: true,
+    showInNav: true,
+  },
+  {
+    slug: 'pants',
+    shopSlug: 'pantalones',
+    nameEs: 'Pantalones',
+    nameEn: 'Pants',
+    sortOrder: 30,
+    isActive: true,
+    showInNav: true,
+  },
+  {
+    slug: 'shoes',
+    shopSlug: 'zapatos',
+    nameEs: 'Zapatos',
+    nameEn: 'Shoes',
+    sortOrder: 40,
+    isActive: true,
+    showInNav: true,
+  },
 ] as const
 
-const SIZES = [
+const APPAREL_SIZES = [
   { slug: 'xs', name: 'XS', sortOrder: 1 },
   { slug: 's', name: 'S', sortOrder: 2 },
   { slug: 'm', name: 'M', sortOrder: 3 },
@@ -82,6 +116,20 @@ const SIZES = [
   { slug: 'xl', name: 'XL', sortOrder: 5 },
   { slug: 'xxl', name: 'XXL', sortOrder: 6 },
 ] as const
+
+const SHOE_SIZES = [
+  { slug: '22', name: '22', sortOrder: 220 },
+  { slug: '23', name: '23', sortOrder: 230 },
+  { slug: '24', name: '24', sortOrder: 240 },
+  { slug: '25', name: '25', sortOrder: 250 },
+  { slug: '26', name: '26', sortOrder: 260 },
+  { slug: '27', name: '27', sortOrder: 270 },
+  { slug: '28', name: '28', sortOrder: 280 },
+  { slug: '29', name: '29', sortOrder: 290 },
+  { slug: '30', name: '30', sortOrder: 300 },
+] as const
+
+const SIZES = [...APPAREL_SIZES, ...SHOE_SIZES] as const
 
 const COLORS = [
   { slug: 'chef-blue', name: 'Azul Chef Room', hex: '#2B3280' },
@@ -154,17 +202,42 @@ async function seedRoles(permissionIds: Map<string, string>) {
   }
 }
 
+async function upsertProductType(type: (typeof PRODUCT_TYPES)[number]) {
+  if (type.shopSlug) {
+    await prisma.productType.updateMany({
+      where: {
+        shopSlug: type.shopSlug,
+        NOT: { slug: type.slug },
+      },
+      data: { shopSlug: null },
+    })
+  }
+
+  await prisma.productType.upsert({
+    where: { slug: type.slug },
+    update: {
+      shopSlug: type.shopSlug,
+      nameEs: type.nameEs,
+      nameEn: type.nameEn,
+      sortOrder: type.sortOrder,
+      isActive: type.isActive,
+      showInNav: type.showInNav,
+    },
+    create: {
+      slug: type.slug,
+      shopSlug: type.shopSlug,
+      nameEs: type.nameEs,
+      nameEn: type.nameEn,
+      sortOrder: type.sortOrder,
+      isActive: type.isActive,
+      showInNav: type.showInNav,
+    },
+  })
+}
+
 async function seedCatalog() {
   for (const type of PRODUCT_TYPES) {
-    await prisma.productType.upsert({
-      where: { slug: type.slug },
-      update: {
-        nameEs: type.nameEs,
-        nameEn: type.nameEn,
-        sortOrder: type.sortOrder,
-      },
-      create: type,
-    })
+    await upsertProductType(type)
   }
 
   for (const size of SIZES) {
@@ -236,7 +309,7 @@ async function seedDevAdmin() {
     throw new Error('ADMIN role missing — run role seed first')
   }
 
-  const auth = buildAuth(prisma)
+  const auth = buildAuth(prisma, { disableEmailCallbacks: true })
   const name = `${firstName} ${lastName}`.trim()
 
   let user = await prisma.user.findUnique({ where: { email } })
@@ -300,6 +373,7 @@ async function main() {
   await seedRoles(permissionIds)
   await seedCatalog()
   await seedCustomization()
+  await seedCanonicalProducts(prisma)
   await seedDevAdmin()
 
   console.log('Seed completed.')

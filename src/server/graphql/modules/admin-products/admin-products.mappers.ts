@@ -13,11 +13,13 @@ import type {
   AdminProductGql,
   AdminProductImageGql,
   AdminProductModel3dGql,
-  AdminProductTypeGql,
   AdminProductVariantGql,
   AdminSizeGql,
 } from './admin-products.types'
+import { mapAdminProductTypeToGql } from '../admin-product-types/admin-product-types.mappers'
 import { mapProductModelAssetToGql } from './admin-products.model-3d.service'
+
+export { mapAdminProductTypeToGql }
 
 export type AdminProductWithRelations = Product & {
   productType: ProductType
@@ -28,20 +30,6 @@ export type AdminProductWithRelations = Product & {
 
 function toIso(date: Date | null | undefined): string | null {
   return date ? date.toISOString() : null
-}
-
-/**
- * Maps Prisma product type to admin GraphQL type.
- */
-export function mapAdminProductTypeToGql(productType: ProductType): AdminProductTypeGql {
-  return {
-    id: productType.id,
-    slug: productType.slug,
-    name: productType.nameEs,
-    description: productType.nameEn,
-    sortOrder: productType.sortOrder,
-    isActive: true,
-  }
 }
 
 /**

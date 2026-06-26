@@ -1,4 +1,5 @@
 import type { NamedColor } from '../lib/customizer-defaults'
+import { isKnownCatalogColorSlug } from '@/src/config/catalog-colors'
 
 export type FabricColorGroup = 'Esenciales' | 'Neutros' | 'Contemporáneos'
 
@@ -25,6 +26,36 @@ export const DEFAULT_FABRIC_COLORS = [
   { id: 'wine', name: 'Vino', hex: '#6B1F2A', group: 'Contemporáneos' },
   { id: 'terracotta', name: 'Terracota', hex: '#A3543C', group: 'Contemporáneos' },
 ] as const satisfies readonly FabricColor[]
+
+/**
+ * Explicit fabric id → catalog Color.slug mapping (confirmed hex/name pairs only).
+ * Fabric-only colors are omitted — they must not auto-expand into variant SKUs.
+ */
+export const FABRIC_COLOR_TO_CATALOG_COLOR_SLUG = {
+  'chef-room-blue': 'chef-blue',
+} as const
+
+export type FabricColorCatalogSlugMap = typeof FABRIC_COLOR_TO_CATALOG_COLOR_SLUG
+
+function normalizeFabricColorId(value: string): string {
+  return value.trim().toLowerCase().replace(/_/g, '-')
+}
+
+/**
+ * Resolves a fabric palette id to a catalog Color slug when safely known.
+ * Returns the input when it is already a catalog slug; null when unmapped.
+ */
+export function getCatalogColorSlugForFabricColor(fabricColorIdOrSlug: string): string | null {
+  const normalized = normalizeFabricColorId(fabricColorIdOrSlug)
+  const mapped = FABRIC_COLOR_TO_CATALOG_COLOR_SLUG[normalized as keyof FabricColorCatalogSlugMap]
+  if (mapped) {
+    return mapped
+  }
+  if (isKnownCatalogColorSlug(normalized)) {
+    return normalized
+  }
+  return null
+}
 
 export const FABRIC_COLOR_GROUPS: FabricColorGroup[] = ['Esenciales', 'Neutros', 'Contemporáneos']
 

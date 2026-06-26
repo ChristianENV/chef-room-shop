@@ -1,4 +1,8 @@
 import type { AdminProduct, AdminProductFormOptions } from '../types'
+import {
+  buildVariantColorSelectOptions,
+  resolveProductTypeSlugById,
+} from '../lib/variant-color-options'
 
 export type AdminProductStatusUi = 'DRAFT' | 'ACTIVE' | 'ARCHIVED'
 
@@ -69,43 +73,95 @@ export type SelectOption = {
   label: string
 }
 
+export type ColorSelectOption = SelectOption & {
+  isInvalidForProductType?: boolean
+}
+
+export type MapFormOptionsParams = {
+  selectedProductTypeId?: string | null
+  existingVariantColorIds?: readonly string[]
+}
+
 export type AdminProductFormSelectOptions = {
   productTypes: SelectOption[]
-  colors: SelectOption[]
+  colors: ColorSelectOption[]
   sizes: SelectOption[]
-  colorMeta: Record<string, { name: string; hexCode: string }>
+  hasProductTypeSelected: boolean
+  colorMeta: Record<string, { name: string; hexCode: string; slug: string }>
+}
+
+type ProductTypeLabelSource = {
+  nameEs?: string | null
+  name?: string | null
+  slug?: string
+}
+
+/**
+ * Resolves a ProductType display label from GraphQL fields (prefers nameEs).
+ */
+export function resolveProductTypeLabel(source: ProductTypeLabelSource): string {
+  return source.nameEs?.trim() || source.name?.trim() || source.slug || ''
+}
+
+function compareSortOrder(a: number | null | undefined, b: number | null | undefined): number {
+  return (a ?? 0) - (b ?? 0)
+}
+
+function normalizeMapFormOptionsParams(
+  params?: string | null | MapFormOptionsParams,
+): MapFormOptionsParams {
+  if (params == null || typeof params === 'string') {
+    return { selectedProductTypeId: params ?? null }
+  }
+  return params
 }
 
 export function mapFormOptionsToSelectOptions(
   options: AdminProductFormOptions,
+  params?: string | null | MapFormOptionsParams,
 ): AdminProductFormSelectOptions {
+  const { selectedProductTypeId, existingVariantColorIds } = normalizeMapFormOptionsParams(params)
+
+  const productTypeSlug = resolveProductTypeSlugById(options.productTypes, selectedProductTypeId)
+
   const colorMeta: AdminProductFormSelectOptions['colorMeta'] = {}
-  options.colors.forEach((c) => {
-    colorMeta[c.id] = { name: c.name, hexCode: c.hexCode }
+  options.colors.forEach((color) => {
+    colorMeta[color.id] = { name: color.name, hexCode: color.hexCode, slug: color.slug }
   })
 
   return {
-    productTypes: options.productTypes.map((t) => ({
-      value: t.id,
-      label: mapProductTypeSlugToLabel(t.slug, t.name),
-    })),
-    colors: options.colors.map((c) => ({
-      value: c.id,
-      label: c.name,
-    })),
-    sizes: options.sizes.map((s) => ({
-      value: s.id,
-      label: s.name,
-    })),
+    productTypes: [...options.productTypes]
+      .filter((type) => type.isActive || type.id === selectedProductTypeId)
+      .sort((a, b) => compareSortOrder(a.sortOrder, b.sortOrder))
+      .map((type) => ({
+        value: type.id,
+        label: resolveProductTypeLabel({
+          nameEs: type.nameEs,
+          name: type.name,
+          slug: type.slug,
+        }),
+      })),
+    colors: buildVariantColorSelectOptions({
+      colors: options.colors,
+      productTypeSlug,
+      existingVariantColorIds,
+    }),
+    sizes: [...options.sizes]
+      .sort((a, b) => compareSortOrder(a.sortOrder, b.sortOrder))
+      .map((size) => ({
+        value: size.id,
+        label: size.name,
+      })),
+    hasProductTypeSelected: Boolean(productTypeSlug),
     colorMeta,
   }
 }
 
-export function mapProductTypeSlugToLabel(slug: string, fallbackName?: string): string {
-  const labels: Record<string, string> = {
-    'chef-jacket': 'Filipina',
-    apron: 'Mandil',
-    pants: 'Pantalón',
-  }
-  return labels[slug] ?? fallbackName ?? slug
+/** @deprecated Use resolveProductTypeLabel */
+export function mapProductTypeSlugToLabel(
+  slug: string,
+  fallbackName?: string,
+  nameEs?: string,
+): string {
+  return resolveProductTypeLabel({ nameEs, name: fallbackName, slug })
 }

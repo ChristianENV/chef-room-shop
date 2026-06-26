@@ -26,7 +26,7 @@ async function main() {
 
   await resetDemoData(prisma)
 
-  const auth = buildAuth(prisma)
+  const auth = buildAuth(prisma, { disableEmailCallbacks: true })
   const users = await seedDemoUsers(prisma, auth)
   const catalog = await seedDemoCatalog(prisma)
 

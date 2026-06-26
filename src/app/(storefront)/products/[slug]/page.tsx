@@ -28,13 +28,6 @@ import { mapProductDetailToUi } from '@/src/features/storefront/products/mappers
 import { routes } from '@/src/config/routes'
 import { shopUrlFromProductCategory } from '@/src/config/shop-category'
 
-const categoryNames: Record<string, string> = {
-  filipinas: 'Filipinas',
-  mandiles: 'Mandiles',
-  pantalones: 'Pantalones',
-  accesorios: 'Accesorios',
-}
-
 export default function ProductPage() {
   const router = useRouter()
   const params = useParams()
@@ -103,10 +96,10 @@ export default function ProductPage() {
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink
-                href={shopUrlFromProductCategory(product.category)}
+                href={shopUrlFromProductCategory(product)}
                 className="font-serif text-muted-foreground hover:text-foreground"
               >
-                {categoryNames[product.category] || product.category}
+                {product.category}
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />

@@ -1,10 +1,18 @@
 export type AdminProductTypeGql = {
   id: string
   slug: string
+  shopSlug: string | null
   name: string
+  nameEs: string
+  nameEn: string | null
   description: string | null
   sortOrder: number | null
   isActive: boolean
+  showInNav: boolean
+  productCount: number
+  activeProductCount: number
+  createdAt: string
+  updatedAt: string
 }
 
 export type AdminColorGql = {

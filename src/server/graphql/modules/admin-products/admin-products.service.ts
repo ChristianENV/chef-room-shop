@@ -42,6 +42,10 @@ import {
   variantIdSchema,
   imageIdSchema,
 } from './admin-products.validation'
+import {
+  assertActiveVariantsMatchProductType,
+  assertVariantColorAllowedForProductType,
+} from './admin-products.variant-colors'
 
 const productInclude = {
   productType: true,
@@ -219,7 +223,7 @@ export async function getAdminProductFormOptions(
   ])
 
   return {
-    productTypes: productTypes.map(mapAdminProductTypeToGql),
+    productTypes: productTypes.map((productType) => mapAdminProductTypeToGql(productType)),
     colors: colors.map(mapAdminColorToGql),
     sizes: sizes.map(mapAdminSizeToGql),
   }
@@ -297,6 +301,10 @@ export async function updateAdminProduct(
   })
   if (!productType) {
     throw notFoundError('Tipo de producto')
+  }
+
+  if (parsed.productTypeId !== existing.productTypeId) {
+    await assertActiveVariantsMatchProductType(context.prisma, productId, productType.slug)
   }
 
   let slug = existing.slug
@@ -557,6 +565,11 @@ export async function upsertAdminProductVariant(
       throw notFoundError('Color o talla')
     }
 
+    assertVariantColorAllowedForProductType({
+      productTypeSlug: product.productType.slug,
+      colorSlug: color.slug,
+    })
+
     let sku = existing.sku
     if (parsed.sku?.trim()) {
       sku = await ensureUniqueVariantSku(
@@ -594,6 +607,11 @@ export async function upsertAdminProductVariant(
   if (!color || !size) {
     throw notFoundError('Color o talla')
   }
+
+  assertVariantColorAllowedForProductType({
+    productTypeSlug: product.productType.slug,
+    colorSlug: color.slug,
+  })
 
   const skuBase = parsed.sku?.trim()
     ? parsed.sku.trim().toUpperCase()

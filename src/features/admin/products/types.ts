@@ -2,6 +2,7 @@ export type AdminProductType = {
   id: string
   slug: string
   name: string
+  nameEs?: string | null
   description: string | null
   sortOrder: number | null
   isActive: boolean

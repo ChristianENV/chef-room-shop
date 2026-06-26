@@ -24,7 +24,9 @@ export const PRODUCTS_QUERY = /* GraphQL */ `
         productType {
           id
           slug
+          shopSlug
           name
+          nameEs
         }
         images {
           id
@@ -63,9 +65,14 @@ export const PRODUCT_TYPES_QUERY = /* GraphQL */ `
     productTypes {
       id
       slug
+      shopSlug
       name
+      nameEs
+      nameEn
       description
       sortOrder
+      isActive
+      showInNav
     }
   }
 `

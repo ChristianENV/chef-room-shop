@@ -5,6 +5,7 @@ import {
   Box,
   CreditCard,
   Home,
+  Layers,
   Palette,
   Settings,
   ShoppingCart,
@@ -24,6 +25,7 @@ export type AdminNavItem = {
 export const adminNavItems: AdminNavItem[] = [
   { label: 'Dashboard', href: routes.adminDashboard, icon: Home },
   { label: 'Productos', href: routes.adminProducts, icon: Box },
+  { label: 'Categorías', href: routes.adminCategories, icon: Layers },
   { label: 'Órdenes', href: routes.adminOrders, icon: ShoppingCart },
   { label: 'Personalización', href: routes.adminCustomization, icon: Palette },
   { label: 'Diseños', href: routes.adminDesigns, icon: Sparkles },
