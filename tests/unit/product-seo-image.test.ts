@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
+import type { PrismaClient } from '@prisma/client'
+
 import { GraphQLError } from 'graphql'
 
 import { mapSeoImagePickerOptions } from '@/src/features/admin/products/mappers/admin-products-seo-image.mapper'
@@ -72,8 +74,12 @@ describe('buildProductPageMetadata', () => {
 
     const ogImages = metadata.openGraph?.images
     assert.ok(Array.isArray(ogImages))
-    assert.equal(ogImages[0]?.url, 'https://cdn.example/secondary.webp')
-    assert.equal(metadata.twitter?.images?.[0], 'https://cdn.example/secondary.webp')
+    const firstOgImage = ogImages[0]
+    assert.ok(firstOgImage && typeof firstOgImage === 'object' && 'url' in firstOgImage)
+    assert.equal(firstOgImage.url, 'https://cdn.example/secondary.webp')
+    const twitterImages = metadata.twitter?.images
+    const firstTwitterImage = Array.isArray(twitterImages) ? twitterImages[0] : twitterImages
+    assert.equal(firstTwitterImage, 'https://cdn.example/secondary.webp')
   })
 
   it('falls back to primary image for Open Graph when seoImageId is null', () => {
@@ -86,7 +92,9 @@ describe('buildProductPageMetadata', () => {
 
     const ogImages = metadata.openGraph?.images
     assert.ok(Array.isArray(ogImages))
-    assert.equal(ogImages[0]?.url, 'https://cdn.example/primary.webp')
+    const firstOgImage = ogImages[0]
+    assert.ok(firstOgImage && typeof firstOgImage === 'object' && 'url' in firstOgImage)
+    assert.equal(firstOgImage.url, 'https://cdn.example/primary.webp')
   })
 })
 
@@ -99,7 +107,11 @@ describe('assertSeoImageBelongsToProduct', () => {
       },
     }
 
-    await assertSeoImageBelongsToProduct(prisma, productId, imageA)
+    await assertSeoImageBelongsToProduct(
+      prisma as unknown as Pick<PrismaClient, 'productImage'>,
+      productId,
+      imageA,
+    )
   })
 
   it('rejects seoImageId from another product', async () => {
@@ -113,7 +125,12 @@ describe('assertSeoImageBelongsToProduct', () => {
     }
 
     await assert.rejects(
-      () => assertSeoImageBelongsToProduct(prisma, productId, imageOther),
+      () =>
+        assertSeoImageBelongsToProduct(
+          prisma as unknown as Pick<PrismaClient, 'productImage'>,
+          productId,
+          imageOther,
+        ),
       (error: unknown) => {
         assert.ok(error instanceof GraphQLError)
         assert.match(error.message, /foto existente de este producto/)

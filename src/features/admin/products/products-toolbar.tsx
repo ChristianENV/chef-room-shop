@@ -47,8 +47,8 @@ export function ProductsToolbar({
   hasActiveFilters,
 }: ProductsToolbarProps) {
   return (
-    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <div className="relative w-full lg:w-80">
+    <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="relative min-w-0 w-full lg:max-w-sm lg:flex-1">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           type="search"
@@ -59,7 +59,7 @@ export function ProductsToolbar({
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex min-w-0 flex-wrap items-center gap-3">
         <Select value={productTypeSlug} onValueChange={onProductTypeChange}>
           <SelectTrigger className="w-[150px] font-sans">
             <SelectValue placeholder="Tipo" />

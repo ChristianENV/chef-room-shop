@@ -74,8 +74,8 @@ export function ProductsTable({
   const someSelected = selectedIds.length > 0 && selectedIds.length < rows.length
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border bg-card">
-      <Table>
+    <div className="min-w-0 w-full max-w-full overflow-x-auto rounded-lg border border-border bg-card">
+      <Table className="min-w-[960px]">
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className="w-12">

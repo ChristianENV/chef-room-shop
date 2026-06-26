@@ -163,15 +163,15 @@ export default function AdminProductsPage() {
 
   return (
     <AdminPageConfig breadcrumb={[{ label: 'Productos' }]} environment="DEV">
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+      <div className="min-w-0 w-full max-w-full space-y-6">
+        <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1">
             <h1 className="font-sans text-2xl font-bold text-foreground">Productos</h1>
             <p className="mt-1 font-serif text-sm text-muted-foreground">
               Gestiona filipinas, mandiles, pantalones y sus opciones comerciales.
             </p>
           </div>
-          <Button onClick={handleCreateNew}>
+          <Button onClick={handleCreateNew} className="shrink-0 self-start sm:self-center">
             <Plus className="mr-2 h-4 w-4" />
             Nuevo producto
           </Button>

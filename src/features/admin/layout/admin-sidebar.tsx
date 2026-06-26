@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { ChevronDown, LogOut, Settings } from 'lucide-react'
+import { ChevronDown, LogOut, Settings, Store } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -25,6 +25,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
+import { CHEF_ROOM_ICON_SRC, CHEF_ROOM_LOGO_SRC } from '@/lib/brand'
 import { adminNavItems } from '@/src/config/navigation.admin'
 import { routes } from '@/src/config/routes'
 import { useAdminSignOut } from './use-admin-sign-out'
@@ -54,27 +55,43 @@ function EnvironmentBadge({ environment }: { environment: AdminEnvironment }) {
 
 const LOGO_WIDTH = 963
 const LOGO_HEIGHT = 222
+const ICON_SIZE = 128
 
 function AdminSidebarLogo() {
-  const [imageError, setImageError] = useState(false)
+  const [fullLogoError, setFullLogoError] = useState(false)
+  const [iconLogoError, setIconLogoError] = useState(false)
 
-  if (imageError) {
+  if (fullLogoError && iconLogoError) {
     return (
       <span className="font-sans text-sm font-semibold leading-tight text-sidebar-foreground">
-        Chef Room by Bedolla
+        CR
       </span>
     )
   }
 
   return (
-    <Image
-      src="/chef-room-logo.png"
-      alt="Chef Room by Bedolla"
-      width={LOGO_WIDTH}
-      height={LOGO_HEIGHT}
-      onError={() => setImageError(true)}
-      className="h-7 w-auto max-w-[9.5rem] shrink-0 object-contain object-left mix-blend-screen"
-    />
+    <>
+      {!fullLogoError ? (
+        <Image
+          src={CHEF_ROOM_LOGO_SRC}
+          alt="Chef Room by Bedolla"
+          width={LOGO_WIDTH}
+          height={LOGO_HEIGHT}
+          onError={() => setFullLogoError(true)}
+          className="h-7 w-auto max-w-[9.5rem] shrink-0 object-contain object-left mix-blend-screen group-data-[collapsible=icon]:hidden"
+        />
+      ) : null}
+      {!iconLogoError ? (
+        <Image
+          src={CHEF_ROOM_ICON_SRC}
+          alt="Chef Room"
+          width={ICON_SIZE}
+          height={ICON_SIZE}
+          onError={() => setIconLogoError(true)}
+          className="hidden size-8 shrink-0 object-contain group-data-[collapsible=icon]:block"
+        />
+      ) : null}
+    </>
   )
 }
 
@@ -88,8 +105,8 @@ export function AdminSidebar({ environment = 'DEV' }: AdminSidebarProps) {
 
   return (
     <Sidebar variant="sidebar" collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border p-4">
-        <div className="flex items-center gap-3">
+      <SidebarHeader className="border-b border-sidebar-border p-4 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-3">
+        <div className="flex min-w-0 items-center gap-3 group-data-[collapsible=icon]:justify-center">
           <Link
             href={routes.adminDashboard}
             className="inline-flex shrink-0 transition-opacity hover:opacity-90"
@@ -97,7 +114,7 @@ export function AdminSidebar({ environment = 'DEV' }: AdminSidebarProps) {
           >
             <AdminSidebarLogo />
           </Link>
-          <div className="flex flex-col gap-0.5 group-data-[collapsible=icon]:hidden">
+          <div className="flex min-w-0 flex-col gap-0.5 group-data-[collapsible=icon]:hidden">
             <EnvironmentBadge environment={environment} />
           </div>
         </div>
@@ -127,18 +144,31 @@ export function AdminSidebar({ environment = 'DEV' }: AdminSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-4">
+      <SidebarFooter className="border-t border-sidebar-border p-4 group-data-[collapsible=icon]:px-2">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Ver tienda">
+              <Link href={routes.home}>
+                <Store className="h-4 w-4" />
+                <span className="font-sans">Ver tienda</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="w-full justify-start gap-2 px-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+            <Button variant="ghost" className="mt-2 w-full justify-start gap-2 px-2">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                 A
               </div>
-              <div className="flex flex-1 flex-col items-start text-left group-data-[collapsible=icon]:hidden">
+              <div className="flex min-w-0 flex-1 flex-col items-start text-left group-data-[collapsible=icon]:hidden">
                 <span className="font-sans text-sm font-medium">Admin</span>
-                <span className="font-serif text-xs text-muted-foreground">admin@chefroom.mx</span>
+                <span className="truncate font-serif text-xs text-muted-foreground">
+                  admin@chefroom.mx
+                </span>
               </div>
-              <ChevronDown className="h-4 w-4 text-muted-foreground group-data-[collapsible=icon]:hidden" />
+              <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground group-data-[collapsible=icon]:hidden" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">

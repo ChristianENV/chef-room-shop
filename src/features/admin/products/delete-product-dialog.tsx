@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { AlertTriangle } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -42,18 +42,19 @@ export function DeleteProductDialog({
 }: DeleteProductDialogProps) {
   const [confirmationText, setConfirmationText] = useState('')
 
-  useEffect(() => {
-    if (!open) {
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
       setConfirmationText('')
     }
-  }, [open])
+    onOpenChange(nextOpen)
+  }
 
   if (!product) return null
 
   const canConfirm = isProductDeleteConfirmationValid(confirmationText, product.name)
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogContent data-testid="admin-product-delete-dialog">
         <AlertDialogHeader>
           <div className="flex items-center gap-3">

@@ -20,11 +20,13 @@ export function AdminLayout({
   notificationCount = 0,
 }: AdminLayoutProps) {
   return (
-    <SidebarProvider>
+    <SidebarProvider className="min-h-svh overflow-x-hidden">
       <AdminSidebar environment={environment} />
-      <SidebarInset>
+      <SidebarInset className="min-w-0 overflow-x-hidden">
         <AdminTopbar breadcrumb={breadcrumb} />
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+        <main className="min-w-0 w-full max-w-full flex-1 overflow-x-hidden p-4 md:p-6">
+          {children}
+        </main>
       </SidebarInset>
     </SidebarProvider>
   )
