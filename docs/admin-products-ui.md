@@ -15,9 +15,13 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
    - Variantes legadas con color no permitido se muestran al editar con etiqueta de error; el guardado se rechaza hasta corregir el color o eliminar la variante.
    - El backend valida en `upsertAdminProductVariant`; cambiar categoría con variantes incompatibles bloquea `updateAdminProduct`.
 4. **Imágenes** — `ProductImageUploader` con R2: drag & drop, edición (crop/rotación), WebP/JPG/thumb, reorder vía `reorderAdminProductImages`.
-5. **Archivar** — `archiveAdminProduct` (no borrado destructivo del producto) vía `AlertDialog`.
-6. **Duplicar** — `duplicateAdminProduct` → copia en borrador.
-7. **Estado** — menú “Cambiar estado” → `updateAdminProductStatus` (ACTIVE reactiva y limpia `deletedAt`).
+5. **SEO** — pestaña SEO: título, descripción e **imagen SEO** (`ProductSeoImagePicker`) elegida solo entre fotos ya subidas en Imágenes (sin upload en SEO).
+   - Copy: _Imagen SEO_ / _Selecciona una foto del producto para usarla al compartir esta página._
+   - Si no hay selección: _Si no seleccionas una imagen, se usará la imagen principal del producto._
+   - Campo GraphQL: `seoImageId` (nullable); se persiste con `updateAdminProduct`.
+6. **Archivar** — `archiveAdminProduct` (no borrado destructivo del producto) vía `AlertDialog`.
+7. **Duplicar** — `duplicateAdminProduct` → copia en borrador.
+8. **Estado** — menú “Cambiar estado” → `updateAdminProductStatus` (ACTIVE reactiva y limpia `deletedAt`).
 
 ## Patrón UX: Dialogs vs Drawers
 
@@ -37,6 +41,7 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
 | Hooks                    | `src/features/admin/products/api/*`                                     |
 | Tabla / toolbar / dialog | `src/features/admin/products/products-*.tsx`, `product-form-dialog.tsx` |
 | Imágenes R2              | `src/features/admin/products/components/product-image-*.tsx`            |
+| Imagen SEO (picker)      | `src/features/admin/products/components/product-seo-image-picker.tsx`   |
 
 ## ProductImageUploader
 

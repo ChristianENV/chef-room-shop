@@ -110,6 +110,7 @@ export const catalogTypeDefs = /* GraphQL */ `
     status: String!
     seoTitle: String
     seoDescription: String
+    seoImageId: ID
     productType: ProductType!
     images: [ProductImage!]!
     variants: [ProductVariant!]!
@@ -550,6 +551,7 @@ export const adminProductsTypeDefs = /* GraphQL */ `
     status: String!
     seoTitle: String
     seoDescription: String
+    seoImageId: ID
     deletedAt: String
     createdAt: String!
     updatedAt: String!
@@ -595,6 +597,7 @@ export const adminProductsTypeDefs = /* GraphQL */ `
     status: String
     seoTitle: String
     seoDescription: String
+    seoImageId: ID
   }
 
   input AdminProductVariantInput {

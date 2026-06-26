@@ -37,6 +37,8 @@ import { useDeleteAdminProductVariantMutation } from './api/use-delete-admin-pro
 import { ProductImageUploader } from './components/product-image-uploader'
 import type { ProductImageUploaderHandle } from './components/product-image-uploader.types'
 import { ProductModel3DUploader } from './components/product-model-3d-uploader'
+import { ProductSeoImagePicker } from './components/product-seo-image-picker'
+import { resolveProductOgImageUrl } from '@/src/lib/product-seo-image'
 import {
   mapAdminProductToFormValues,
   mapFormValuesToAdminProductInput,
@@ -616,6 +618,18 @@ function ProductFormDrawerBody({
               className="font-serif"
             />
           </div>
+          <div className="space-y-2">
+            <Label className="font-sans">Imagen SEO</Label>
+            <p className="font-serif text-sm text-muted-foreground">
+              Selecciona una foto del producto para usarla al compartir esta página.
+            </p>
+            <ProductSeoImagePicker
+              images={formValues.images}
+              seoImageId={formValues.seoImageId}
+              onChange={(seoImageId) => updateField('seoImageId', seoImageId)}
+              disabled={isSaving}
+            />
+          </div>
           <Card className="bg-secondary">
             <CardContent className="space-y-1 p-4">
               <p className="font-sans text-lg text-accent">
@@ -629,6 +643,20 @@ function ProductFormDrawerBody({
                   formValues.shortDescription ||
                   'Descripción del producto…'}
               </p>
+              {resolveProductOgImageUrl(
+                formValues.images.map((image) => ({
+                  id: image.id,
+                  url: image.url,
+                  isPrimary: image.isPrimary,
+                  sortOrder: image.sortOrder,
+                })),
+                formValues.seoImageId,
+              ) ? (
+                <p className="font-serif text-xs text-muted-foreground">
+                  Vista previa OG: imagen{' '}
+                  {formValues.seoImageId ? 'SEO seleccionada' : 'principal del producto'}
+                </p>
+              ) : null}
             </CardContent>
           </Card>
         </TabsContent>

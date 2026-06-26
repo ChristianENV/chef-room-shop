@@ -3855,6 +3855,7 @@ export const ProductScalarFieldEnum = {
   customizable: 'customizable',
   seoTitle: 'seoTitle',
   seoDescription: 'seoDescription',
+  seoImageId: 'seoImageId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'

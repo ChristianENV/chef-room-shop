@@ -108,6 +108,7 @@ export type CatalogProductGql = {
   status: string
   seoTitle: string | null
   seoDescription: string | null
+  seoImageId: string | null
   productType: CatalogProductTypeGql
   images: CatalogProductImageGql[]
   variants: CatalogProductVariantGql[]

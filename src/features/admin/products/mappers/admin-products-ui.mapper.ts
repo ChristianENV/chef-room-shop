@@ -171,6 +171,7 @@ export function mapAdminProductToFormValues(
       status: 'DRAFT',
       seoTitle: '',
       seoDescription: '',
+      seoImageId: null,
       variants: [],
       images: [],
     }
@@ -187,6 +188,7 @@ export function mapAdminProductToFormValues(
     status: (UI_STATUS_BY_BFF[product.status] ?? 'DRAFT') as AdminProductStatusUi,
     seoTitle: product.seoTitle ?? '',
     seoDescription: product.seoDescription ?? '',
+    seoImageId: product.seoImageId ?? null,
     variants: product.variants.map(mapAdminProductVariantToUi),
     images: product.images.map(mapAdminProductImageToUi),
   }
@@ -207,6 +209,7 @@ export function mapFormValuesToAdminProductInput(values: ProductFormValues): Adm
     status: BFF_STATUS_BY_UI[values.status],
     seoTitle: values.seoTitle.trim() || null,
     seoDescription: values.seoDescription.trim() || null,
+    seoImageId: values.seoImageId,
   }
 }
 

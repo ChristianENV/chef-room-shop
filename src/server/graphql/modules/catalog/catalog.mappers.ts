@@ -211,6 +211,7 @@ export function mapProductToGql(product: ProductWithRelations): CatalogProductGq
     status: product.status,
     seoTitle: product.seoTitle,
     seoDescription: product.seoDescription,
+    seoImageId: product.seoImageId,
     productType: mapProductTypeToGql(product.productType),
     images: product.images.map(mapProductImageToGql),
     variants: product.variants.map((variant) =>

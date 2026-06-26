@@ -68,12 +68,25 @@ Seeded via `pnpm db:seed`. Admin manages categories at `/admin/categories`.
 
 ## Pages
 
-| Route               | Data                                                                              |
-| ------------------- | --------------------------------------------------------------------------------- |
-| `/shop`             | TanStack: filters + products                                                      |
-| `/products/[slug]`  | TanStack: `useProductQuery` + related from `useProductsQuery`                     |
-| `/customize`        | TanStack: `useCustomizableProductsQuery` + default filipina via `useProductQuery` |
-| `/customize/[slug]` | TanStack: `useProductQuery(slug)` + reglas de personalización                     |
+| Route              | Data                                                                                                             |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `/shop`            | TanStack: filters + products                                                                                     |
+| `/products/[slug]` | Server `generateMetadata` (Prisma `getProductBySlug`) + client `ProductPageClient` (`useProductQuery` + related) |
+
+### PDP metadata (`/products/[slug]`)
+
+Server wrapper (`page.tsx`) calls `buildProductPageMetadata`:
+
+| Field              | Source                                                       |
+| ------------------ | ------------------------------------------------------------ |
+| `title`            | `seoTitle` → `name`                                          |
+| `description`      | `seoDescription` → `shortDescription` → `description`        |
+| OG / Twitter image | `seoImageId` → primary `ProductImage` → first by `sortOrder` |
+
+Resolver: `src/lib/product-seo-image.ts` (`resolveProductOgImageUrl`). No new image upload on storefront — uses existing `ProductImage` URLs from catalog BFF / Prisma.
+
+| `/customize` | TanStack: `useCustomizableProductsQuery` + default filipina via `useProductQuery` |
+| `/customize/[slug]` | TanStack: `useProductQuery(slug)` + reglas de personalización |
 
 Product cards and PDP display **`product.productType.nameEs`** (mapped to `Product.category`) and link to shop using **`categoryShopSlug`**.
 
@@ -92,10 +105,8 @@ Both are client components with loading / error / empty states. User-facing erro
 - Pagination real (cursor/offset UX)
 - Sorting avanzado server-side
 - GraphQL codegen
-- `generateMetadata` for PDP (server wrapper)
 - Wire `CustomizationSummaryCard` to `customizationRules`
 - Real images in cards/gallery
-- `generateMetadata` for PDP (server wrapper)
 
 ## Landing category card images
 

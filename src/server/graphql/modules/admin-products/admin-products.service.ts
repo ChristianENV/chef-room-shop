@@ -42,6 +42,7 @@ import {
   variantIdSchema,
   imageIdSchema,
 } from './admin-products.validation'
+import { assertSeoImageBelongsToProduct } from './admin-products.seo-image'
 import {
   assertActiveVariantsMatchProductType,
   assertVariantColorAllowedForProductType,
@@ -318,6 +319,10 @@ export async function updateAdminProduct(
     }
   }
 
+  if (parsed.seoImageId) {
+    await assertSeoImageBelongsToProduct(context.prisma, productId, parsed.seoImageId)
+  }
+
   const product = await context.prisma.$transaction(async (tx) => {
     const updated = await tx.product.update({
       where: { id: productId },
@@ -332,6 +337,7 @@ export async function updateAdminProduct(
         status: (parsed.status as ProductStatus) ?? existing.status,
         seoTitle: parsed.seoTitle ?? null,
         seoDescription: parsed.seoDescription ?? null,
+        seoImageId: parsed.seoImageId ?? null,
       },
       include: productInclude,
     })

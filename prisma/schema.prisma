@@ -467,12 +467,14 @@ model Product {
   customizable     Boolean       @default(true)
   seoTitle         String?
   seoDescription   String?
+  seoImageId       String?       @unique @db.Uuid
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   deletedAt        DateTime?
 
   productType          ProductType               @relation(fields: [productTypeId], references: [id])
-  images               ProductImage[]
+  images               ProductImage[]            @relation("ProductImages")
+  seoImage             ProductImage?             @relation("ProductSeoImage", fields: [seoImageId], references: [id], onDelete: SetNull)
   variants             ProductVariant[]
   customizationRules   ProductCustomizationRule[]
   cartItems            CartItem[]
@@ -495,7 +497,8 @@ model ProductImage {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product  @relation("ProductImages", fields: [productId], references: [id], onDelete: Cascade)
+  seoForProduct Product? @relation("ProductSeoImage")
 
   @@index([productId, sortOrder])
   @@map("product_images")

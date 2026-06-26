@@ -81,6 +81,7 @@ export const ADMIN_PRODUCT_FIELDS = /* GraphQL */ `
   status
   seoTitle
   seoDescription
+  seoImageId
   deletedAt
   createdAt
   updatedAt

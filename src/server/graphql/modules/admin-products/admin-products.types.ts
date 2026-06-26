@@ -120,6 +120,7 @@ export type AdminProductGql = {
   status: string
   seoTitle: string | null
   seoDescription: string | null
+  seoImageId: string | null
   deletedAt: string | null
   createdAt: string
   updatedAt: string
@@ -172,6 +173,7 @@ export type AdminProductInput = {
   status?: string | null
   seoTitle?: string | null
   seoDescription?: string | null
+  seoImageId?: string | null
 }
 
 export type AdminProductVariantInput = {
