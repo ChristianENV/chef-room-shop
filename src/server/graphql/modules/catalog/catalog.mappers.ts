@@ -93,6 +93,8 @@ export function mapProductTypeToGql(productType: ProductType): CatalogProductTyp
     sortOrder: productType.sortOrder,
     isActive: productType.isActive,
     showInNav: productType.showInNav,
+    cardImageUrl: productType.cardImageUrl,
+    cardImageAlt: productType.cardImageAlt,
   }
 }
 

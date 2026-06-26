@@ -3,6 +3,7 @@ import { fetchGraphQL } from '@/src/lib/graphql/fetch-graphql'
 import {
   ARCHIVE_ADMIN_PRODUCT_TYPE_MUTATION,
   CREATE_ADMIN_PRODUCT_TYPE_MUTATION,
+  REMOVE_ADMIN_PRODUCT_TYPE_IMAGE_MUTATION,
   UPDATE_ADMIN_PRODUCT_TYPE_MUTATION,
 } from '../graphql/admin-product-types.mutations'
 import {
@@ -73,4 +74,15 @@ export async function archiveAdminProductType(id: string): Promise<AdminProductT
     variables: { id },
   })
   return data.archiveAdminProductType
+}
+
+export async function removeAdminProductTypeImage(id: string): Promise<AdminProductType> {
+  const data = await fetchGraphQL<
+    { removeAdminProductTypeImage: AdminProductType },
+    { id: string }
+  >({
+    query: REMOVE_ADMIN_PRODUCT_TYPE_IMAGE_MUTATION,
+    variables: { id },
+  })
+  return data.removeAdminProductTypeImage
 }

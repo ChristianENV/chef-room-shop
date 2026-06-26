@@ -22,7 +22,15 @@ type ProductUploadToken = {
   iat: number
 }
 
-export type UploadToken = AvatarUploadToken | ProductUploadToken
+type ProductTypeCardUploadToken = {
+  v: 1
+  kind: 'productTypeCard'
+  productTypeId: string
+  imageId: string
+  iat: number
+}
+
+export type UploadToken = AvatarUploadToken | ProductUploadToken | ProductTypeCardUploadToken
 
 function encode(payload: UploadToken): string {
   return Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url')
@@ -40,6 +48,10 @@ export function encodeAvatarUploadToken(userId: string): string {
 
 export function encodeProductUploadToken(productId: string, imageId: string): string {
   return encode({ v: 1, kind: 'product', productId, imageId, iat: Date.now() })
+}
+
+export function encodeProductTypeCardUploadToken(productTypeId: string, imageId: string): string {
+  return encode({ v: 1, kind: 'productTypeCard', productTypeId, imageId, iat: Date.now() })
 }
 
 function decode(uploadId: string): UploadToken {
@@ -76,6 +88,19 @@ export function decodeProductUploadToken(uploadId: string): ProductUploadToken {
   if (
     token.kind !== 'product' ||
     typeof token.productId !== 'string' ||
+    typeof token.imageId !== 'string'
+  ) {
+    throw invalidToken()
+  }
+  return token
+}
+
+/** Decodes a product type card image upload token, validating its shape. */
+export function decodeProductTypeCardUploadToken(uploadId: string): ProductTypeCardUploadToken {
+  const token = decode(uploadId)
+  if (
+    token.kind !== 'productTypeCard' ||
+    typeof token.productTypeId !== 'string' ||
     typeof token.imageId !== 'string'
   ) {
     throw invalidToken()

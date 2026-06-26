@@ -43,14 +43,16 @@ Filter state stores **internal ProductType slugs** in `categories`, `colors`, `s
 
 `ProductType` is the **source of truth** for storefront categories (Prisma `product_types`):
 
-| Field       | Purpose                                                                 |
-| ----------- | ----------------------------------------------------------------------- |
-| `slug`      | Internal stable key (e.g. `chef-jacket`, `shoes`) — used in BFF filters |
-| `shopSlug`  | Public `/shop?category=` value (e.g. `filipinas`, `zapatos`)            |
-| `nameEs`    | Spanish label in filters, cards, PDP, nav                               |
-| `sortOrder` | Order for filters, nav, landing                                         |
-| `isActive`  | When `false`, category is hidden from storefront filters                |
-| `showInNav` | When `false`, category is excluded from navbar/footer/landing nav       |
+| Field          | Purpose                                                                                  |
+| -------------- | ---------------------------------------------------------------------------------------- |
+| `slug`         | Internal stable key (e.g. `chef-jacket`, `shoes`) — used in BFF filters                  |
+| `shopSlug`     | Public `/shop?category=` value (e.g. `filipinas`, `zapatos`)                             |
+| `nameEs`       | Spanish label in filters, cards, PDP, nav                                                |
+| `sortOrder`    | Order for filters, nav, landing                                                          |
+| `isActive`     | When `false`, category is hidden from storefront filters                                 |
+| `showInNav`    | When `false`, category is excluded from navbar/footer/landing nav                        |
+| `cardImageUrl` | Optional landing/category card image (R2 WebP URL); takes priority over static fallbacks |
+| `cardImageAlt` | Alt text for the category card image on the landing                                      |
 
 Seeded via `pnpm db:seed`. Admin manages categories at `/admin/categories`.
 
@@ -93,4 +95,14 @@ Both are client components with loading / error / empty states. User-facing erro
 - `generateMetadata` for PDP (server wrapper)
 - Wire `CustomizationSummaryCard` to `customizationRules`
 - Real images in cards/gallery
-- Landing category hero images for new categories (neutral fallback used until media is added)
+- `generateMetadata` for PDP (server wrapper)
+
+## Landing category card images
+
+The landing **Colecciones** section (`CategorySection`) resolves each nav category image in this order:
+
+1. `ProductType.cardImageUrl` from the BFF (`productTypes` query)
+2. Static asset map by `shopSlug` (`landing-media.ts` — e.g. filipinas, mandiles, pantalones)
+3. Neutral premium fallback visual when neither exists
+
+Admins manage card images from `/admin/categories` (R2-backed upload). Storefront exposes `cardImageUrl` and `cardImageAlt` only — not `cardImagePublicId`.

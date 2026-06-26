@@ -1,6 +1,8 @@
 import { Prisma, ProductStatus } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 
+import { deriveSiblingImageKeysFromWebpPublicId, r2DeleteObject } from '@/src/server/storage/r2'
+
 import type { GraphQLContext } from '../../context'
 
 import { requireAdminGraphQL } from '../admin-products/admin-products.auth'
@@ -39,6 +41,7 @@ export type UpdateAdminProductTypeInput = {
   sortOrder?: number | null
   isActive?: boolean | null
   showInNav?: boolean | null
+  cardImageAlt?: string | null
 }
 
 function notFoundError(entity = 'Categoría'): GraphQLError {
@@ -267,6 +270,9 @@ export async function updateAdminProductType(
   if (parsed.showInNav !== undefined && parsed.showInNav !== null) {
     data.showInNav = parsed.showInNav
   }
+  if (parsed.cardImageAlt !== undefined) {
+    data.cardImageAlt = parsed.cardImageAlt
+  }
 
   try {
     const productType = await context.prisma.productType.update({
@@ -318,6 +324,56 @@ export async function archiveAdminProductType(
       showInNav: false,
     },
   })
+
+  const counts = await loadProductTypeCounts(context, [productType.id])
+  return mapAdminProductTypeToGql(productType, counts.get(productType.id))
+}
+
+async function bestEffortDeleteProductTypeCardImage(
+  publicId: string | null | undefined,
+): Promise<void> {
+  if (!publicId) return
+  const keys = deriveSiblingImageKeysFromWebpPublicId(publicId)
+  const targets = [keys.webp, keys.jpg, keys.thumb]
+  await Promise.all(
+    targets.map(async (key) => {
+      try {
+        await r2DeleteObject(key)
+      } catch (err) {
+        console.warn(`[r2] Could not delete product type card image ${key}:`, err)
+      }
+    }),
+  )
+}
+
+/**
+ * Removes the landing card image from a product category and clears stored metadata.
+ */
+export async function removeAdminProductTypeImage(
+  context: GraphQLContext,
+  id: string,
+): Promise<AdminProductTypeGql> {
+  requireAdminGraphQL(context)
+  const productTypeId = productTypeIdSchema.parse(id)
+
+  const existing = await context.prisma.productType.findUnique({
+    where: { id: productTypeId },
+  })
+  if (!existing) {
+    throw notFoundError()
+  }
+
+  const productType = await context.prisma.productType.update({
+    where: { id: productTypeId },
+    data: {
+      cardImageUrl: null,
+      cardImagePublicId: null,
+      cardImageAlt: null,
+      cardImageThumbUrl: null,
+    },
+  })
+
+  void bestEffortDeleteProductTypeCardImage(existing.cardImagePublicId)
 
   const counts = await loadProductTypeCounts(context, [productType.id])
   return mapAdminProductTypeToGql(productType, counts.get(productType.id))

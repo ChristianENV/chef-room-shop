@@ -44,6 +44,10 @@ export type ProductTypeMinAggregateOutputType = {
   sortOrder: number | null
   isActive: boolean | null
   showInNav: boolean | null
+  cardImageUrl: string | null
+  cardImagePublicId: string | null
+  cardImageAlt: string | null
+  cardImageThumbUrl: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -58,6 +62,10 @@ export type ProductTypeMaxAggregateOutputType = {
   sortOrder: number | null
   isActive: boolean | null
   showInNav: boolean | null
+  cardImageUrl: string | null
+  cardImagePublicId: string | null
+  cardImageAlt: string | null
+  cardImageThumbUrl: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -72,6 +80,10 @@ export type ProductTypeCountAggregateOutputType = {
   sortOrder: number
   isActive: number
   showInNav: number
+  cardImageUrl: number
+  cardImagePublicId: number
+  cardImageAlt: number
+  cardImageThumbUrl: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -96,6 +108,10 @@ export type ProductTypeMinAggregateInputType = {
   sortOrder?: true
   isActive?: true
   showInNav?: true
+  cardImageUrl?: true
+  cardImagePublicId?: true
+  cardImageAlt?: true
+  cardImageThumbUrl?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -110,6 +126,10 @@ export type ProductTypeMaxAggregateInputType = {
   sortOrder?: true
   isActive?: true
   showInNav?: true
+  cardImageUrl?: true
+  cardImagePublicId?: true
+  cardImageAlt?: true
+  cardImageThumbUrl?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -124,6 +144,10 @@ export type ProductTypeCountAggregateInputType = {
   sortOrder?: true
   isActive?: true
   showInNav?: true
+  cardImageUrl?: true
+  cardImagePublicId?: true
+  cardImageAlt?: true
+  cardImageThumbUrl?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -225,6 +249,10 @@ export type ProductTypeGroupByOutputType = {
   sortOrder: number
   isActive: boolean
   showInNav: boolean
+  cardImageUrl: string | null
+  cardImagePublicId: string | null
+  cardImageAlt: string | null
+  cardImageThumbUrl: string | null
   createdAt: Date
   updatedAt: Date
   _count: ProductTypeCountAggregateOutputType | null
@@ -262,6 +290,10 @@ export type ProductTypeWhereInput = {
   sortOrder?: Prisma.IntFilter<"ProductType"> | number
   isActive?: Prisma.BoolFilter<"ProductType"> | boolean
   showInNav?: Prisma.BoolFilter<"ProductType"> | boolean
+  cardImageUrl?: Prisma.StringNullableFilter<"ProductType"> | string | null
+  cardImagePublicId?: Prisma.StringNullableFilter<"ProductType"> | string | null
+  cardImageAlt?: Prisma.StringNullableFilter<"ProductType"> | string | null
+  cardImageThumbUrl?: Prisma.StringNullableFilter<"ProductType"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ProductType"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductType"> | Date | string
   products?: Prisma.ProductListRelationFilter
@@ -277,6 +309,10 @@ export type ProductTypeOrderByWithRelationInput = {
   sortOrder?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   showInNav?: Prisma.SortOrder
+  cardImageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  cardImagePublicId?: Prisma.SortOrderInput | Prisma.SortOrder
+  cardImageAlt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cardImageThumbUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   products?: Prisma.ProductOrderByRelationAggregateInput
@@ -295,6 +331,10 @@ export type ProductTypeWhereUniqueInput = Prisma.AtLeast<{
   sortOrder?: Prisma.IntFilter<"ProductType"> | number
   isActive?: Prisma.BoolFilter<"ProductType"> | boolean
   showInNav?: Prisma.BoolFilter<"ProductType"> | boolean
+  cardImageUrl?: Prisma.StringNullableFilter<"ProductType"> | string | null
+  cardImagePublicId?: Prisma.StringNullableFilter<"ProductType"> | string | null
+  cardImageAlt?: Prisma.StringNullableFilter<"ProductType"> | string | null
+  cardImageThumbUrl?: Prisma.StringNullableFilter<"ProductType"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ProductType"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductType"> | Date | string
   products?: Prisma.ProductListRelationFilter
@@ -310,6 +350,10 @@ export type ProductTypeOrderByWithAggregationInput = {
   sortOrder?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   showInNav?: Prisma.SortOrder
+  cardImageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  cardImagePublicId?: Prisma.SortOrderInput | Prisma.SortOrder
+  cardImageAlt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cardImageThumbUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ProductTypeCountOrderByAggregateInput
@@ -332,6 +376,10 @@ export type ProductTypeScalarWhereWithAggregatesInput = {
   sortOrder?: Prisma.IntWithAggregatesFilter<"ProductType"> | number
   isActive?: Prisma.BoolWithAggregatesFilter<"ProductType"> | boolean
   showInNav?: Prisma.BoolWithAggregatesFilter<"ProductType"> | boolean
+  cardImageUrl?: Prisma.StringNullableWithAggregatesFilter<"ProductType"> | string | null
+  cardImagePublicId?: Prisma.StringNullableWithAggregatesFilter<"ProductType"> | string | null
+  cardImageAlt?: Prisma.StringNullableWithAggregatesFilter<"ProductType"> | string | null
+  cardImageThumbUrl?: Prisma.StringNullableWithAggregatesFilter<"ProductType"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ProductType"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ProductType"> | Date | string
 }
@@ -346,6 +394,10 @@ export type ProductTypeCreateInput = {
   sortOrder?: number
   isActive?: boolean
   showInNav?: boolean
+  cardImageUrl?: string | null
+  cardImagePublicId?: string | null
+  cardImageAlt?: string | null
+  cardImageThumbUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.ProductCreateNestedManyWithoutProductTypeInput
@@ -361,6 +413,10 @@ export type ProductTypeUncheckedCreateInput = {
   sortOrder?: number
   isActive?: boolean
   showInNav?: boolean
+  cardImageUrl?: string | null
+  cardImagePublicId?: string | null
+  cardImageAlt?: string | null
+  cardImageThumbUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutProductTypeInput
@@ -376,6 +432,10 @@ export type ProductTypeUpdateInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showInNav?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cardImageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImageThumbUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.ProductUpdateManyWithoutProductTypeNestedInput
@@ -391,6 +451,10 @@ export type ProductTypeUncheckedUpdateInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showInNav?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cardImageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImageThumbUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.ProductUncheckedUpdateManyWithoutProductTypeNestedInput
@@ -406,6 +470,10 @@ export type ProductTypeCreateManyInput = {
   sortOrder?: number
   isActive?: boolean
   showInNav?: boolean
+  cardImageUrl?: string | null
+  cardImagePublicId?: string | null
+  cardImageAlt?: string | null
+  cardImageThumbUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -420,6 +488,10 @@ export type ProductTypeUpdateManyMutationInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showInNav?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cardImageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImageThumbUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -434,6 +506,10 @@ export type ProductTypeUncheckedUpdateManyInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showInNav?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cardImageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImageThumbUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -448,6 +524,10 @@ export type ProductTypeCountOrderByAggregateInput = {
   sortOrder?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   showInNav?: Prisma.SortOrder
+  cardImageUrl?: Prisma.SortOrder
+  cardImagePublicId?: Prisma.SortOrder
+  cardImageAlt?: Prisma.SortOrder
+  cardImageThumbUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -466,6 +546,10 @@ export type ProductTypeMaxOrderByAggregateInput = {
   sortOrder?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   showInNav?: Prisma.SortOrder
+  cardImageUrl?: Prisma.SortOrder
+  cardImagePublicId?: Prisma.SortOrder
+  cardImageAlt?: Prisma.SortOrder
+  cardImageThumbUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -480,6 +564,10 @@ export type ProductTypeMinOrderByAggregateInput = {
   sortOrder?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   showInNav?: Prisma.SortOrder
+  cardImageUrl?: Prisma.SortOrder
+  cardImagePublicId?: Prisma.SortOrder
+  cardImageAlt?: Prisma.SortOrder
+  cardImageThumbUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -525,6 +613,10 @@ export type ProductTypeCreateWithoutProductsInput = {
   sortOrder?: number
   isActive?: boolean
   showInNav?: boolean
+  cardImageUrl?: string | null
+  cardImagePublicId?: string | null
+  cardImageAlt?: string | null
+  cardImageThumbUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -539,6 +631,10 @@ export type ProductTypeUncheckedCreateWithoutProductsInput = {
   sortOrder?: number
   isActive?: boolean
   showInNav?: boolean
+  cardImageUrl?: string | null
+  cardImagePublicId?: string | null
+  cardImageAlt?: string | null
+  cardImageThumbUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -569,6 +665,10 @@ export type ProductTypeUpdateWithoutProductsInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showInNav?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cardImageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImageThumbUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -583,6 +683,10 @@ export type ProductTypeUncheckedUpdateWithoutProductsInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showInNav?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cardImageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardImageThumbUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -628,6 +732,10 @@ export type ProductTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   sortOrder?: boolean
   isActive?: boolean
   showInNav?: boolean
+  cardImageUrl?: boolean
+  cardImagePublicId?: boolean
+  cardImageAlt?: boolean
+  cardImageThumbUrl?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   products?: boolean | Prisma.ProductType$productsArgs<ExtArgs>
@@ -644,6 +752,10 @@ export type ProductTypeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   sortOrder?: boolean
   isActive?: boolean
   showInNav?: boolean
+  cardImageUrl?: boolean
+  cardImagePublicId?: boolean
+  cardImageAlt?: boolean
+  cardImageThumbUrl?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["productType"]>
@@ -658,6 +770,10 @@ export type ProductTypeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   sortOrder?: boolean
   isActive?: boolean
   showInNav?: boolean
+  cardImageUrl?: boolean
+  cardImagePublicId?: boolean
+  cardImageAlt?: boolean
+  cardImageThumbUrl?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["productType"]>
@@ -672,11 +788,15 @@ export type ProductTypeSelectScalar = {
   sortOrder?: boolean
   isActive?: boolean
   showInNav?: boolean
+  cardImageUrl?: boolean
+  cardImagePublicId?: boolean
+  cardImageAlt?: boolean
+  cardImageThumbUrl?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ProductTypeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "shopSlug" | "nameEs" | "nameEn" | "description" | "sortOrder" | "isActive" | "showInNav" | "createdAt" | "updatedAt", ExtArgs["result"]["productType"]>
+export type ProductTypeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "shopSlug" | "nameEs" | "nameEn" | "description" | "sortOrder" | "isActive" | "showInNav" | "cardImageUrl" | "cardImagePublicId" | "cardImageAlt" | "cardImageThumbUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["productType"]>
 export type ProductTypeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   products?: boolean | Prisma.ProductType$productsArgs<ExtArgs>
   _count?: boolean | Prisma.ProductTypeCountOutputTypeDefaultArgs<ExtArgs>
@@ -699,6 +819,10 @@ export type $ProductTypePayload<ExtArgs extends runtime.Types.Extensions.Interna
     sortOrder: number
     isActive: boolean
     showInNav: boolean
+    cardImageUrl: string | null
+    cardImagePublicId: string | null
+    cardImageAlt: string | null
+    cardImageThumbUrl: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["productType"]>
@@ -1134,6 +1258,10 @@ export interface ProductTypeFieldRefs {
   readonly sortOrder: Prisma.FieldRef<"ProductType", 'Int'>
   readonly isActive: Prisma.FieldRef<"ProductType", 'Boolean'>
   readonly showInNav: Prisma.FieldRef<"ProductType", 'Boolean'>
+  readonly cardImageUrl: Prisma.FieldRef<"ProductType", 'String'>
+  readonly cardImagePublicId: Prisma.FieldRef<"ProductType", 'String'>
+  readonly cardImageAlt: Prisma.FieldRef<"ProductType", 'String'>
+  readonly cardImageThumbUrl: Prisma.FieldRef<"ProductType", 'String'>
   readonly createdAt: Prisma.FieldRef<"ProductType", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ProductType", 'DateTime'>
 }

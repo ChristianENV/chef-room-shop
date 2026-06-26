@@ -277,6 +277,10 @@ export const ProductTypeScalarFieldEnum = {
   sortOrder: 'sortOrder',
   isActive: 'isActive',
   showInNav: 'showInNav',
+  cardImageUrl: 'cardImageUrl',
+  cardImagePublicId: 'cardImagePublicId',
+  cardImageAlt: 'cardImageAlt',
+  cardImageThumbUrl: 'cardImageThumbUrl',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

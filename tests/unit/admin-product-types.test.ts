@@ -22,6 +22,10 @@ const baseProductType = {
   sortOrder: 10,
   isActive: true,
   showInNav: true,
+  cardImageUrl: null,
+  cardImagePublicId: null,
+  cardImageAlt: null,
+  cardImageThumbUrl: null,
   createdAt: new Date('2026-01-01T00:00:00.000Z'),
   updatedAt: new Date('2026-01-02T00:00:00.000Z'),
 }

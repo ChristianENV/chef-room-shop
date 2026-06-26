@@ -12,6 +12,8 @@ export const catalogTypeDefs = /* GraphQL */ `
     sortOrder: Int
     isActive: Boolean!
     showInNav: Boolean!
+    cardImageUrl: String
+    cardImageAlt: String
   }
 
   type ProductImage {
@@ -410,6 +412,10 @@ export const adminProductsTypeDefs = /* GraphQL */ `
     sortOrder: Int
     isActive: Boolean!
     showInNav: Boolean!
+    cardImageUrl: String
+    cardImagePublicId: String
+    cardImageAlt: String
+    cardImageThumbUrl: String
     productCount: Int!
     activeProductCount: Int!
     createdAt: String!
@@ -440,6 +446,7 @@ export const adminProductsTypeDefs = /* GraphQL */ `
     sortOrder: Int
     isActive: Boolean
     showInNav: Boolean
+    cardImageAlt: String
   }
 
   type AdminColor {
@@ -1549,6 +1556,35 @@ export const uploadsTypeDefs = /* GraphQL */ `
     isPrimary: Boolean
     sortOrder: Int
   }
+
+  type ProductTypeCardImageUploadPayload {
+    uploadId: String!
+    imageId: ID!
+    keys: UploadKeys!
+    publicUrls: UploadPublicUrls!
+    presignedUrls: UploadPresignedUrls!
+    expiresAt: String!
+  }
+
+  input CreateAdminProductTypeImageUploadInput {
+    productTypeId: ID!
+    imageId: ID
+    webpSizeBytes: Int!
+    jpgSizeBytes: Int
+    thumbSizeBytes: Int
+    originalFileName: String
+    originalContentType: String
+    altText: String
+  }
+
+  input ConfirmAdminProductTypeImageUploadInput {
+    uploadId: String!
+    altText: String
+  }
+
+  type ConfirmAdminProductTypeImageUploadPayload {
+    productType: AdminProductType!
+  }
 `
 
 const orderClaimTypeDefs = /* GraphQL */ `
@@ -1786,6 +1822,7 @@ export const typeDefs = /* GraphQL */ `
     createAdminProductType(input: CreateAdminProductTypeInput!): AdminProductType!
     updateAdminProductType(id: ID!, input: UpdateAdminProductTypeInput!): AdminProductType!
     archiveAdminProductType(id: ID!): AdminProductType!
+    removeAdminProductTypeImage(id: ID!): AdminProductType!
     createAdminProduct(input: AdminProductInput!): AdminProduct!
     updateAdminProduct(id: ID!, input: AdminProductInput!): AdminProduct!
     archiveAdminProduct(id: ID!): AdminProduct!
@@ -1810,6 +1847,12 @@ export const typeDefs = /* GraphQL */ `
     confirmAvatarUpload(input: ConfirmAvatarUploadInput!): UserAvatarPayload!
     createProductImageUpload(input: CreateProductImageUploadInput!): ProductImageUploadPayload!
     confirmProductImageUpload(input: ConfirmProductImageUploadInput!): ProductImage!
+    createAdminProductTypeImageUpload(
+      input: CreateAdminProductTypeImageUploadInput!
+    ): ProductTypeCardImageUploadPayload!
+    confirmAdminProductTypeImageUpload(
+      input: ConfirmAdminProductTypeImageUploadInput!
+    ): ConfirmAdminProductTypeImageUploadPayload!
     createAdminProductModelUpload(
       input: CreateAdminProductModelUploadInput!
     ): ProductModelUploadPayload!

@@ -26,13 +26,24 @@ export function requireAvatarUploadActor(context: GraphQLContext): string {
  * @throws GraphQLError UNAUTHENTICATED or FORBIDDEN.
  */
 export function requireProductImageUploadActor(context: GraphQLContext): CurrentUser {
+  return requireAdminUploadActor(context, 'No tienes permiso para subir imágenes de producto.')
+}
+
+/**
+ * Product type (category) card image uploads require an admin (ADMIN or SUPERADMIN).
+ */
+export function requireProductTypeCardImageUploadActor(context: GraphQLContext): CurrentUser {
+  return requireAdminUploadActor(context, 'No tienes permiso para subir imágenes de categoría.')
+}
+
+function requireAdminUploadActor(context: GraphQLContext, forbiddenMessage: string): CurrentUser {
   if (!context.currentUser) {
     throw new GraphQLError('Debes iniciar sesión para continuar.', {
       extensions: { code: 'UNAUTHENTICATED' },
     })
   }
   if (!canAccessAdmin(context.currentUser)) {
-    throw new GraphQLError('No tienes permiso para subir imágenes de producto.', {
+    throw new GraphQLError(forbiddenMessage, {
       extensions: { code: 'FORBIDDEN' },
     })
   }

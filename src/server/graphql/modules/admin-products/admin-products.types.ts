@@ -9,6 +9,10 @@ export type AdminProductTypeGql = {
   sortOrder: number | null
   isActive: boolean
   showInNav: boolean
+  cardImageUrl: string | null
+  cardImagePublicId: string | null
+  cardImageAlt: string | null
+  cardImageThumbUrl: string | null
   productCount: number
   activeProductCount: number
   createdAt: string

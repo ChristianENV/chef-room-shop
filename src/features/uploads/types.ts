@@ -121,3 +121,35 @@ export type ProductImageUploadVariables = {
   files: ProductImageUploadFiles
   onProgress?: (event: UploadProgressEvent) => void
 }
+
+export type ProductTypeCardImageUploadFiles = {
+  productTypeId: string
+  imageId?: string | null
+  webp: Blob
+  jpg?: Blob | null
+  thumb?: Blob | null
+  originalFileName?: string | null
+  originalContentType?: string | null
+  altText?: string | null
+}
+
+export type CreateProductTypeCardImageUploadInput = {
+  productTypeId: string
+  imageId?: string | null
+  webpSizeBytes: number
+  jpgSizeBytes?: number | null
+  thumbSizeBytes?: number | null
+  originalFileName?: string | null
+  originalContentType?: string | null
+  altText?: string | null
+}
+
+export type ConfirmProductTypeCardImageUploadInput = {
+  uploadId: string
+  altText?: string | null
+}
+
+export type ProductTypeCardImageUploadVariables = {
+  files: ProductTypeCardImageUploadFiles
+  onProgress?: (event: UploadProgressEvent) => void
+}

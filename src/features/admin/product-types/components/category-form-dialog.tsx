@@ -20,6 +20,7 @@ import {
 
 import { useCreateAdminProductTypeMutation } from '../api/use-create-admin-product-type-mutation'
 import { useUpdateAdminProductTypeMutation } from '../api/use-update-admin-product-type-mutation'
+import { CategoryCardImageUploader } from './category-card-image-uploader'
 import {
   mapAdminProductTypeMutationError,
   mapCategoryFormValuesToCreateInput,
@@ -249,6 +250,14 @@ function CategoryFormBody({
             onCheckedChange={(checked) => update('showInNav', checked)}
           />
         </div>
+
+        <CategoryCardImageUploader
+          productTypeId={editingCategory?.id ?? null}
+          imageUrl={editingCategory?.cardImageUrl ?? null}
+          imageAlt={values.cardImageAlt}
+          onAltChange={(alt) => update('cardImageAlt', alt)}
+          disabled={isSaving}
+        />
       </div>
 
       <DialogFooter>

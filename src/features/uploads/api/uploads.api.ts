@@ -6,11 +6,18 @@ import {
   CREATE_AVATAR_UPLOAD_MUTATION,
   CREATE_PRODUCT_IMAGE_UPLOAD_MUTATION,
 } from '../graphql/uploads.mutations'
+import {
+  CONFIRM_ADMIN_PRODUCT_TYPE_IMAGE_UPLOAD_MUTATION,
+  CREATE_ADMIN_PRODUCT_TYPE_IMAGE_UPLOAD_MUTATION,
+} from '../graphql/product-type-image.mutations'
+import type { AdminProductType } from '@/src/features/admin/product-types/types'
 import type {
   AvatarUploadPayload,
   ConfirmProductImageUploadInput,
+  ConfirmProductTypeCardImageUploadInput,
   CreateAvatarUploadInput,
   CreateProductImageUploadInput,
+  CreateProductTypeCardImageUploadInput,
   ProductImage,
   ProductImageUploadPayload,
   StoredUploadContentType,
@@ -53,6 +60,26 @@ export async function confirmProductImageUpload(
     { input: ConfirmProductImageUploadInput }
   >({ query: CONFIRM_PRODUCT_IMAGE_UPLOAD_MUTATION, variables: { input } })
   return data.confirmProductImageUpload
+}
+
+export async function createAdminProductTypeImageUpload(
+  input: CreateProductTypeCardImageUploadInput,
+): Promise<ProductImageUploadPayload> {
+  const data = await fetchGraphQL<
+    { createAdminProductTypeImageUpload: ProductImageUploadPayload },
+    { input: CreateProductTypeCardImageUploadInput }
+  >({ query: CREATE_ADMIN_PRODUCT_TYPE_IMAGE_UPLOAD_MUTATION, variables: { input } })
+  return data.createAdminProductTypeImageUpload
+}
+
+export async function confirmAdminProductTypeImageUpload(
+  input: ConfirmProductTypeCardImageUploadInput,
+): Promise<{ productType: AdminProductType }> {
+  const data = await fetchGraphQL<
+    { confirmAdminProductTypeImageUpload: { productType: AdminProductType } },
+    { input: ConfirmProductTypeCardImageUploadInput }
+  >({ query: CONFIRM_ADMIN_PRODUCT_TYPE_IMAGE_UPLOAD_MUTATION, variables: { input } })
+  return data.confirmAdminProductTypeImageUpload
 }
 
 /**

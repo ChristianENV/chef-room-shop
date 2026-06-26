@@ -10,6 +10,8 @@ export type CatalogProductTypeGql = {
   sortOrder: number | null
   isActive: boolean
   showInNav: boolean
+  cardImageUrl: string | null
+  cardImageAlt: string | null
 }
 
 export type CatalogProductImageGql = {

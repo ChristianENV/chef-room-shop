@@ -9,6 +9,10 @@ export type AdminProductType = {
   sortOrder: number | null
   isActive: boolean
   showInNav: boolean
+  cardImageUrl: string | null
+  cardImagePublicId: string | null
+  cardImageAlt: string | null
+  cardImageThumbUrl: string | null
   productCount: number
   activeProductCount: number
   createdAt: string
@@ -39,4 +43,5 @@ export type UpdateAdminProductTypeInput = {
   sortOrder?: number | null
   isActive?: boolean | null
   showInNav?: boolean | null
+  cardImageAlt?: string | null
 }
