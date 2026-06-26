@@ -62,17 +62,25 @@ Orden default: `updatedAt desc`. Límite default 20, máx 100.
 
 ## Mutations
 
-| Mutation                    | Descripción                                                     |
-| --------------------------- | --------------------------------------------------------------- |
-| `createAdminProduct`        | Crea producto + AuditLog CREATE                                 |
-| `updateAdminProduct`        | Actualiza campos + AuditLog UPDATE                              |
-| `archiveAdminProduct`       | `status: ARCHIVED` + `deletedAt: now`                           |
-| `duplicateAdminProduct`     | Copia producto, imágenes, variantes y reglas de personalización |
-| `updateAdminProductStatus`  | Solo cambia status; ACTIVE limpia `deletedAt`                   |
-| `upsertAdminProductVariant` | Crea/actualiza variante                                         |
-| `deleteAdminProductVariant` | Soft delete (`deletedAt`)                                       |
-| `upsertAdminProductImage`   | URL placeholder (sin Cloudinary)                                |
-| `deleteAdminProductImage`   | Borra imagen; reasigna primary                                  |
+| Mutation                    | Descripción                                                                                           |
+| --------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `createAdminProduct`        | Crea producto + AuditLog CREATE                                                                       |
+| `updateAdminProduct`        | Actualiza campos + AuditLog UPDATE                                                                    |
+| `archiveAdminProduct`       | Soft-delete: `status: ARCHIVED` + `deletedAt: now` (Admin UI: **Eliminar producto**)                  |
+| `duplicateAdminProduct`     | Copia producto, imágenes, variantes y reglas de personalización                                       |
+| `updateAdminProductStatus`  | Solo cambia status; ACTIVE limpia `deletedAt`                                                         |
+| `upsertAdminProductVariant` | Crea/actualiza variante                                                                               |
+| `deleteAdminProductVariant` | Soft delete (`deletedAt`)                                                                             |
+| `upsertAdminProductImage`   | URL placeholder (sin Cloudinary)                                                                      |
+| `deleteAdminProductImage`   | Borra imagen; reasigna primary; si era imagen SEO, `seoImageId` queda en `null` (`onDelete: SetNull`) |
+
+### Imagen SEO (`seoImageId`)
+
+- Campo opcional en `AdminProduct` / `updateAdminProduct` input.
+- Debe ser el `id` de un `ProductImage` **del mismo producto** (galería existente; sin upload nuevo en la pestaña SEO).
+- `seoImageId: null` limpia la selección.
+- Validación: si el id no existe o pertenece a otro producto → `BAD_USER_INPUT` — _La imagen SEO debe ser una foto existente de este producto._
+- Storefront (`productBySlug` + `generateMetadata` en PDP): prioridad **seoImage** → imagen principal → primera por `sortOrder` → sin imagen OG.
 
 ## Reglas de slug
 
@@ -103,9 +111,11 @@ Reglas compartidas: `src/config/catalog-colors.ts` (`PRODUCT_TYPE_VARIANT_COLOR_
 
 ## Archive vs delete
 
-- **archiveAdminProduct:** `status = ARCHIVED` y `deletedAt = now` (oculto en storefront y listado admin por defecto).
+- **Admin “Eliminar producto”** llama `archiveAdminProduct`: `status = ARCHIVED` y `deletedAt = now`. Oculta el producto de la tienda; **no borra** filas de producto, variantes, imágenes, pedidos ni pagos.
+- **No hay mutación Admin de hard-delete** para productos. Borrado físico queda limitado a scripts operativos controlados.
 - **deleteAdminProductVariant:** soft delete; no borra físico (histórico de pedidos).
 - **deleteAdminProductImage:** borrado físico de fila `ProductImage`.
+- Variantes hijas **permanecen en BD** al archivar; el storefront las excluye porque el producto padre ya no es `ACTIVE` / tiene `deletedAt`.
 
 ## Storefront
 

@@ -9,6 +9,10 @@ export const ADMIN_PRODUCT_TYPE_CATEGORY_FIELDS = /* GraphQL */ `
   sortOrder
   isActive
   showInNav
+  cardImageUrl
+  cardImagePublicId
+  cardImageAlt
+  cardImageThumbUrl
   productCount
   activeProductCount
   createdAt

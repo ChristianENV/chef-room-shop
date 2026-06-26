@@ -10,8 +10,9 @@ export function useArchiveAdminProductMutation() {
 
   return useMutation({
     mutationFn: (id: string) => archiveAdminProduct(id),
-    onSuccess: () => {
+    onSuccess: (_product, id) => {
       void queryClient.invalidateQueries({ queryKey: adminProductsQueryKeys.all })
+      void queryClient.invalidateQueries({ queryKey: adminProductsQueryKeys.detail(id) })
     },
   })
 }

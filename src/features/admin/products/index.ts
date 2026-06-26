@@ -39,7 +39,7 @@ export { ProductsTable } from './products-table'
 export { ProductFormDialog } from './product-form-dialog'
 /** @deprecated Use ProductFormDialog */
 export { ProductFormDialog as ProductFormDrawer } from './product-form-dialog'
-export { ArchiveProductDialog } from './archive-product-dialog'
+export { DeleteProductDialog } from './delete-product-dialog'
 export { AdminProductsTableSkeleton } from './components/admin-products-loading'
 export { AdminProductsError } from './components/admin-products-error'
 export { AdminProductsEmpty } from './components/admin-products-empty'

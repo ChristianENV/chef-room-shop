@@ -22,6 +22,10 @@ const sampleProductType: AdminProductType = {
   sortOrder: 10,
   isActive: true,
   showInNav: true,
+  cardImageUrl: null,
+  cardImagePublicId: null,
+  cardImageAlt: null,
+  cardImageThumbUrl: null,
   productCount: 4,
   activeProductCount: 2,
   createdAt: '2026-01-01T00:00:00.000Z',
@@ -56,6 +60,7 @@ describe('admin product types ui mapper', () => {
       sortOrder: 40,
       isActive: true,
       showInNav: true,
+      cardImageAlt: '',
     })
 
     assert.deepEqual(input, {
@@ -80,6 +85,7 @@ describe('admin product types ui mapper', () => {
       sortOrder: 0,
       isActive: true,
       showInNav: true,
+      cardImageAlt: '',
     })
 
     assert.equal(invalid.success, false)

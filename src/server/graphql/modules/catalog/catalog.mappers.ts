@@ -93,6 +93,8 @@ export function mapProductTypeToGql(productType: ProductType): CatalogProductTyp
     sortOrder: productType.sortOrder,
     isActive: productType.isActive,
     showInNav: productType.showInNav,
+    cardImageUrl: productType.cardImageUrl,
+    cardImageAlt: productType.cardImageAlt,
   }
 }
 
@@ -209,6 +211,7 @@ export function mapProductToGql(product: ProductWithRelations): CatalogProductGq
     status: product.status,
     seoTitle: product.seoTitle,
     seoDescription: product.seoDescription,
+    seoImageId: product.seoImageId,
     productType: mapProductTypeToGql(product.productType),
     images: product.images.map(mapProductImageToGql),
     variants: product.variants.map((variant) =>

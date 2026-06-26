@@ -10,7 +10,7 @@ import {
   ProductsToolbar,
   ProductsTable,
   ProductFormDialog,
-  ArchiveProductDialog,
+  DeleteProductDialog,
 } from '@/src/features/admin/products'
 import { AdminProductsTableSkeleton } from '@/src/features/admin/products/components/admin-products-loading'
 import { AdminProductsError } from '@/src/features/admin/products/components/admin-products-error'
@@ -40,8 +40,8 @@ export default function AdminProductsPage() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editingProductId, setEditingProductId] = useState<string | null>(null)
 
-  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false)
-  const [archivingRow, setArchivingRow] = useState<AdminProductTableRow | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deletingRow, setDeletingRow] = useState<AdminProductTableRow | null>(null)
 
   const [actionProductId, setActionProductId] = useState<string | null>(null)
   const [feedback, setFeedback] = useState<string | null>(null)
@@ -126,20 +126,22 @@ export default function AdminProductsPage() {
     })
   }
 
-  const handleArchiveClick = (row: AdminProductTableRow) => {
-    setArchivingRow(row)
-    setArchiveDialogOpen(true)
+  const handleDeleteClick = (row: AdminProductTableRow) => {
+    setDeletingRow(row)
+    setDeleteDialogOpen(true)
   }
 
-  const handleArchiveConfirm = async () => {
-    if (!archivingRow) return
+  const handleDeleteConfirm = async () => {
+    if (!deletingRow) return
     try {
-      await archiveMutation.mutateAsync(archivingRow.id)
-      setFeedback(`"${archivingRow.name}" archivado.`)
-      setArchiveDialogOpen(false)
-      setArchivingRow(null)
+      await archiveMutation.mutateAsync(deletingRow.id)
+      setFeedback(
+        `"${deletingRow.name}" se ocultó de la tienda. El historial de órdenes se conserva.`,
+      )
+      setDeleteDialogOpen(false)
+      setDeletingRow(null)
     } catch (error) {
-      setFeedback('No pudimos archivar el producto.')
+      setFeedback('No pudimos eliminar el producto.')
       if (process.env.NODE_ENV === 'development') console.error(error)
     }
   }
@@ -161,15 +163,15 @@ export default function AdminProductsPage() {
 
   return (
     <AdminPageConfig breadcrumb={[{ label: 'Productos' }]} environment="DEV">
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+      <div className="min-w-0 w-full max-w-full space-y-6">
+        <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1">
             <h1 className="font-sans text-2xl font-bold text-foreground">Productos</h1>
             <p className="mt-1 font-serif text-sm text-muted-foreground">
               Gestiona filipinas, mandiles, pantalones y sus opciones comerciales.
             </p>
           </div>
-          <Button onClick={handleCreateNew}>
+          <Button onClick={handleCreateNew} className="shrink-0 self-start sm:self-center">
             <Plus className="mr-2 h-4 w-4" />
             Nuevo producto
           </Button>
@@ -229,7 +231,7 @@ export default function AdminProductsPage() {
               onSelectOne={handleSelectOne}
               onEdit={handleEdit}
               onDuplicate={handleDuplicate}
-              onArchive={handleArchiveClick}
+              onDelete={handleDeleteClick}
               onStatusChange={handleStatusChange}
               actionProductId={actionProductId}
             />
@@ -248,12 +250,15 @@ export default function AdminProductsPage() {
         onSaved={() => setFeedback('Producto guardado correctamente.')}
       />
 
-      <ArchiveProductDialog
-        open={archiveDialogOpen}
-        onOpenChange={setArchiveDialogOpen}
-        productName={archivingRow?.name ?? null}
-        onConfirm={() => void handleArchiveConfirm()}
-        isArchiving={archiveMutation.isPending}
+      <DeleteProductDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open)
+          if (!open) setDeletingRow(null)
+        }}
+        product={deletingRow ? { id: deletingRow.id, name: deletingRow.name } : null}
+        onConfirm={() => void handleDeleteConfirm()}
+        isDeleting={archiveMutation.isPending}
       />
     </AdminPageConfig>
   )

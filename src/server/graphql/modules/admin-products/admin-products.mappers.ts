@@ -112,6 +112,7 @@ export function mapAdminProductToGql(product: AdminProductWithRelations): AdminP
     status: product.status,
     seoTitle: product.seoTitle,
     seoDescription: product.seoDescription,
+    seoImageId: product.seoImageId,
     deletedAt: toIso(product.deletedAt),
     createdAt: product.createdAt.toISOString(),
     updatedAt: product.updatedAt.toISOString(),

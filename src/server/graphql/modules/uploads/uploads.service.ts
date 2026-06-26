@@ -8,9 +8,12 @@ import {
   PRESIGNED_PUT_TTL_SECONDS,
   buildAvatarObjectKeys,
   buildProductImageObjectKeys,
+  buildProductTypeCardImageObjectKeys,
   buildPublicR2Url,
   buildPublicUrlsForKeys,
   createPresignedPutUrlsForKeys,
+  deriveSiblingImageKeysFromWebpPublicId,
+  r2DeleteObject,
   r2HeadObject,
   requireR2Config,
   validateUploadContentType,
@@ -18,8 +21,13 @@ import {
 } from '@/src/server/storage/r2'
 
 import type { GraphQLContext } from '../../context'
+import { mapAdminProductTypeToGql } from '../admin-product-types/admin-product-types.mappers'
 import { mapUserToAccountUser } from '../account/account.mappers'
-import { requireAvatarUploadActor, requireProductImageUploadActor } from './uploads.auth'
+import {
+  requireAvatarUploadActor,
+  requireProductImageUploadActor,
+  requireProductTypeCardImageUploadActor,
+} from './uploads.auth'
 import {
   mapKeysToGql,
   mapPresignedUrlsToGql,
@@ -30,24 +38,32 @@ import {
 import {
   decodeAvatarUploadToken,
   decodeProductUploadToken,
+  decodeProductTypeCardUploadToken,
   encodeAvatarUploadToken,
   encodeProductUploadToken,
+  encodeProductTypeCardUploadToken,
 } from './uploads.token'
 import type {
   AvatarUploadPayloadGql,
   ConfirmAvatarUploadInput,
   ConfirmProductImageUploadInput,
+  ConfirmProductTypeCardImageUploadInput,
+  ConfirmProductTypeCardImageUploadPayloadGql,
   CreateAvatarUploadInput,
   CreateProductImageUploadInput,
+  CreateProductTypeCardImageUploadInput,
   ProductImageGql,
   ProductImageUploadPayloadGql,
+  ProductTypeCardImageUploadPayloadGql,
   UserAvatarPayloadGql,
 } from './uploads.types'
 import {
   confirmAvatarUploadSchema,
   confirmProductImageUploadSchema,
+  confirmProductTypeCardImageUploadSchema,
   createAvatarUploadSchema,
   createProductImageUploadSchema,
+  createProductTypeCardImageUploadSchema,
 } from './uploads.validation'
 
 const userWithRolesInclude = {
@@ -288,6 +304,126 @@ export async function confirmProductImageUpload(
     })
 
     return mapProductImageToGql(image)
+  } catch (error) {
+    toUploadGraphQLError(error)
+  }
+}
+
+async function bestEffortDeleteR2Keys(keys: {
+  webp: string
+  jpg: string
+  thumb?: string
+}): Promise<void> {
+  const targets = [keys.webp, keys.jpg, keys.thumb].filter((key): key is string => Boolean(key))
+  await Promise.all(
+    targets.map(async (key) => {
+      try {
+        await r2DeleteObject(key)
+      } catch (err) {
+        console.warn(`[r2] Could not delete object ${key}:`, err)
+      }
+    }),
+  )
+}
+
+/**
+ * Issues presigned PUT URLs for a product type (category) landing card image.
+ */
+export async function createAdminProductTypeImageUpload(
+  context: GraphQLContext,
+  input: CreateProductTypeCardImageUploadInput,
+): Promise<ProductTypeCardImageUploadPayloadGql> {
+  requireProductTypeCardImageUploadActor(context)
+  const parsed = createProductTypeCardImageUploadSchema.parse(input)
+
+  const productType = await context.prisma.productType.findUnique({
+    where: { id: parsed.productTypeId },
+    select: { id: true },
+  })
+  if (!productType) {
+    throw notFound('Categoría')
+  }
+
+  try {
+    requireR2Config()
+    if (parsed.originalContentType) {
+      validateUploadContentType(parsed.originalContentType)
+    }
+    validateUploadSize(parsed.webpSizeBytes, 'productType')
+    if (parsed.jpgSizeBytes != null) {
+      validateUploadSize(parsed.jpgSizeBytes, 'productType')
+    }
+    if (parsed.thumbSizeBytes != null) {
+      validateUploadSize(parsed.thumbSizeBytes, 'productType')
+    }
+
+    const imageId = parsed.imageId ?? randomUUID()
+    const keys = buildProductTypeCardImageObjectKeys(parsed.productTypeId, imageId)
+    const presigned = await createPresignedPutUrlsForKeys(keys)
+    const publicUrls = buildPublicUrlsForKeys(keys)
+
+    return {
+      uploadId: encodeProductTypeCardUploadToken(parsed.productTypeId, imageId),
+      imageId,
+      keys: mapKeysToGql(keys),
+      publicUrls: mapPublicUrlsToGql(publicUrls),
+      presignedUrls: mapPresignedUrlsToGql(presigned),
+      expiresAt: expiresAtIso(),
+    }
+  } catch (error) {
+    toUploadGraphQLError(error)
+  }
+}
+
+/**
+ * Confirms a product type card image upload and stores URLs on `ProductType`.
+ */
+export async function confirmAdminProductTypeImageUpload(
+  context: GraphQLContext,
+  input: ConfirmProductTypeCardImageUploadInput,
+): Promise<ConfirmProductTypeCardImageUploadPayloadGql> {
+  requireProductTypeCardImageUploadActor(context)
+  const parsed = confirmProductTypeCardImageUploadSchema.parse(input)
+
+  const token = decodeProductTypeCardUploadToken(parsed.uploadId)
+
+  const existing = await context.prisma.productType.findUnique({
+    where: { id: token.productTypeId },
+  })
+  if (!existing) {
+    throw notFound('Categoría')
+  }
+
+  try {
+    requireR2Config()
+    const keys = buildProductTypeCardImageObjectKeys(token.productTypeId, token.imageId)
+
+    const exists = await r2HeadObject(keys.webp)
+    if (!exists) {
+      throw objectNotUploaded()
+    }
+
+    const imageUrl = buildPublicR2Url(keys.webp)
+    const thumbUrl = keys.thumb ? buildPublicR2Url(keys.thumb) : null
+
+    const productType = await context.prisma.productType.update({
+      where: { id: token.productTypeId },
+      data: {
+        cardImageUrl: imageUrl,
+        cardImagePublicId: keys.webp,
+        cardImageThumbUrl: thumbUrl,
+        cardImageAlt: parsed.altText ?? existing.cardImageAlt ?? null,
+      },
+    })
+
+    if (existing.cardImagePublicId && existing.cardImagePublicId !== keys.webp) {
+      const previousKeys = deriveSiblingImageKeysFromWebpPublicId(existing.cardImagePublicId)
+      void bestEffortDeleteR2Keys(previousKeys)
+    }
+
+    return {
+      productType: mapAdminProductTypeToGql(productType),
+    }
   } catch (error) {
     toUploadGraphQLError(error)
   }

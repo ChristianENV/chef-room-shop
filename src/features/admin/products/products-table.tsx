@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { MoreHorizontal, Eye, Pencil, Copy, Archive, Palette, CheckCircle2 } from 'lucide-react'
+import { MoreHorizontal, Eye, Pencil, Copy, Trash2, Palette, CheckCircle2 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -36,7 +36,7 @@ interface ProductsTableProps {
   onSelectOne: (id: string, checked: boolean) => void
   onEdit: (row: AdminProductTableRow) => void
   onDuplicate: (row: AdminProductTableRow) => void
-  onArchive: (row: AdminProductTableRow) => void
+  onDelete: (row: AdminProductTableRow) => void
   onStatusChange: (row: AdminProductTableRow, status: AdminProductStatusUi) => void
   actionProductId?: string | null
 }
@@ -66,7 +66,7 @@ export function ProductsTable({
   onSelectOne,
   onEdit,
   onDuplicate,
-  onArchive,
+  onDelete,
   onStatusChange,
   actionProductId,
 }: ProductsTableProps) {
@@ -74,8 +74,8 @@ export function ProductsTable({
   const someSelected = selectedIds.length > 0 && selectedIds.length < rows.length
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border bg-card">
-      <Table>
+    <div className="min-w-0 w-full max-w-full overflow-x-auto rounded-lg border border-border bg-card">
+      <Table className="min-w-[960px]">
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className="w-12">
@@ -206,9 +206,13 @@ export function ProductsTable({
                       </DropdownMenuSub>
                       <DropdownMenuSeparator />
                       {row.status !== 'ARCHIVED' ? (
-                        <DropdownMenuItem onClick={() => onArchive(row)}>
-                          <Archive className="mr-2 h-4 w-4" />
-                          Archivar
+                        <DropdownMenuItem
+                          data-testid="admin-product-delete-button"
+                          onClick={() => onDelete(row)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Eliminar producto
                         </DropdownMenuItem>
                       ) : (
                         <DropdownMenuItem onClick={() => onStatusChange(row, 'ACTIVE')}>

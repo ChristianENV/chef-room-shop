@@ -249,6 +249,7 @@ export type ProductImageWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"ProductImage"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductImage"> | Date | string
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
+  seoForProduct?: Prisma.XOR<Prisma.ProductNullableScalarRelationFilter, Prisma.ProductWhereInput> | null
 }
 
 export type ProductImageOrderByWithRelationInput = {
@@ -262,6 +263,7 @@ export type ProductImageOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   product?: Prisma.ProductOrderByWithRelationInput
+  seoForProduct?: Prisma.ProductOrderByWithRelationInput
 }
 
 export type ProductImageWhereUniqueInput = Prisma.AtLeast<{
@@ -278,6 +280,7 @@ export type ProductImageWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"ProductImage"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductImage"> | Date | string
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
+  seoForProduct?: Prisma.XOR<Prisma.ProductNullableScalarRelationFilter, Prisma.ProductWhereInput> | null
 }, "id">
 
 export type ProductImageOrderByWithAggregationInput = {
@@ -322,6 +325,7 @@ export type ProductImageCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.ProductCreateNestedOneWithoutImagesInput
+  seoForProduct?: Prisma.ProductCreateNestedOneWithoutSeoImageInput
 }
 
 export type ProductImageUncheckedCreateInput = {
@@ -334,6 +338,7 @@ export type ProductImageUncheckedCreateInput = {
   isPrimary?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  seoForProduct?: Prisma.ProductUncheckedCreateNestedOneWithoutSeoImageInput
 }
 
 export type ProductImageUpdateInput = {
@@ -346,6 +351,7 @@ export type ProductImageUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.ProductUpdateOneRequiredWithoutImagesNestedInput
+  seoForProduct?: Prisma.ProductUpdateOneWithoutSeoImageNestedInput
 }
 
 export type ProductImageUncheckedUpdateInput = {
@@ -358,6 +364,7 @@ export type ProductImageUncheckedUpdateInput = {
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  seoForProduct?: Prisma.ProductUncheckedUpdateOneWithoutSeoImageNestedInput
 }
 
 export type ProductImageCreateManyInput = {
@@ -399,6 +406,11 @@ export type ProductImageListRelationFilter = {
   every?: Prisma.ProductImageWhereInput
   some?: Prisma.ProductImageWhereInput
   none?: Prisma.ProductImageWhereInput
+}
+
+export type ProductImageNullableScalarRelationFilter = {
+  is?: Prisma.ProductImageWhereInput | null
+  isNot?: Prisma.ProductImageWhereInput | null
 }
 
 export type ProductImageOrderByRelationAggregateInput = {
@@ -456,6 +468,12 @@ export type ProductImageCreateNestedManyWithoutProductInput = {
   connect?: Prisma.ProductImageWhereUniqueInput | Prisma.ProductImageWhereUniqueInput[]
 }
 
+export type ProductImageCreateNestedOneWithoutSeoForProductInput = {
+  create?: Prisma.XOR<Prisma.ProductImageCreateWithoutSeoForProductInput, Prisma.ProductImageUncheckedCreateWithoutSeoForProductInput>
+  connectOrCreate?: Prisma.ProductImageCreateOrConnectWithoutSeoForProductInput
+  connect?: Prisma.ProductImageWhereUniqueInput
+}
+
 export type ProductImageUncheckedCreateNestedManyWithoutProductInput = {
   create?: Prisma.XOR<Prisma.ProductImageCreateWithoutProductInput, Prisma.ProductImageUncheckedCreateWithoutProductInput> | Prisma.ProductImageCreateWithoutProductInput[] | Prisma.ProductImageUncheckedCreateWithoutProductInput[]
   connectOrCreate?: Prisma.ProductImageCreateOrConnectWithoutProductInput | Prisma.ProductImageCreateOrConnectWithoutProductInput[]
@@ -475,6 +493,16 @@ export type ProductImageUpdateManyWithoutProductNestedInput = {
   update?: Prisma.ProductImageUpdateWithWhereUniqueWithoutProductInput | Prisma.ProductImageUpdateWithWhereUniqueWithoutProductInput[]
   updateMany?: Prisma.ProductImageUpdateManyWithWhereWithoutProductInput | Prisma.ProductImageUpdateManyWithWhereWithoutProductInput[]
   deleteMany?: Prisma.ProductImageScalarWhereInput | Prisma.ProductImageScalarWhereInput[]
+}
+
+export type ProductImageUpdateOneWithoutSeoForProductNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductImageCreateWithoutSeoForProductInput, Prisma.ProductImageUncheckedCreateWithoutSeoForProductInput>
+  connectOrCreate?: Prisma.ProductImageCreateOrConnectWithoutSeoForProductInput
+  upsert?: Prisma.ProductImageUpsertWithoutSeoForProductInput
+  disconnect?: Prisma.ProductImageWhereInput | boolean
+  delete?: Prisma.ProductImageWhereInput | boolean
+  connect?: Prisma.ProductImageWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProductImageUpdateToOneWithWhereWithoutSeoForProductInput, Prisma.ProductImageUpdateWithoutSeoForProductInput>, Prisma.ProductImageUncheckedUpdateWithoutSeoForProductInput>
 }
 
 export type ProductImageUncheckedUpdateManyWithoutProductNestedInput = {
@@ -500,6 +528,7 @@ export type ProductImageCreateWithoutProductInput = {
   isPrimary?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  seoForProduct?: Prisma.ProductCreateNestedOneWithoutSeoImageInput
 }
 
 export type ProductImageUncheckedCreateWithoutProductInput = {
@@ -511,6 +540,7 @@ export type ProductImageUncheckedCreateWithoutProductInput = {
   isPrimary?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  seoForProduct?: Prisma.ProductUncheckedCreateNestedOneWithoutSeoImageInput
 }
 
 export type ProductImageCreateOrConnectWithoutProductInput = {
@@ -521,6 +551,35 @@ export type ProductImageCreateOrConnectWithoutProductInput = {
 export type ProductImageCreateManyProductInputEnvelope = {
   data: Prisma.ProductImageCreateManyProductInput | Prisma.ProductImageCreateManyProductInput[]
   skipDuplicates?: boolean
+}
+
+export type ProductImageCreateWithoutSeoForProductInput = {
+  id?: string
+  url: string
+  publicId?: string | null
+  alt?: string | null
+  sortOrder?: number
+  isPrimary?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  product: Prisma.ProductCreateNestedOneWithoutImagesInput
+}
+
+export type ProductImageUncheckedCreateWithoutSeoForProductInput = {
+  id?: string
+  productId: string
+  url: string
+  publicId?: string | null
+  alt?: string | null
+  sortOrder?: number
+  isPrimary?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ProductImageCreateOrConnectWithoutSeoForProductInput = {
+  where: Prisma.ProductImageWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProductImageCreateWithoutSeoForProductInput, Prisma.ProductImageUncheckedCreateWithoutSeoForProductInput>
 }
 
 export type ProductImageUpsertWithWhereUniqueWithoutProductInput = {
@@ -554,6 +613,41 @@ export type ProductImageScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"ProductImage"> | Date | string
 }
 
+export type ProductImageUpsertWithoutSeoForProductInput = {
+  update: Prisma.XOR<Prisma.ProductImageUpdateWithoutSeoForProductInput, Prisma.ProductImageUncheckedUpdateWithoutSeoForProductInput>
+  create: Prisma.XOR<Prisma.ProductImageCreateWithoutSeoForProductInput, Prisma.ProductImageUncheckedCreateWithoutSeoForProductInput>
+  where?: Prisma.ProductImageWhereInput
+}
+
+export type ProductImageUpdateToOneWithWhereWithoutSeoForProductInput = {
+  where?: Prisma.ProductImageWhereInput
+  data: Prisma.XOR<Prisma.ProductImageUpdateWithoutSeoForProductInput, Prisma.ProductImageUncheckedUpdateWithoutSeoForProductInput>
+}
+
+export type ProductImageUpdateWithoutSeoForProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  alt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  product?: Prisma.ProductUpdateOneRequiredWithoutImagesNestedInput
+}
+
+export type ProductImageUncheckedUpdateWithoutSeoForProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  alt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type ProductImageCreateManyProductInput = {
   id?: string
   url: string
@@ -574,6 +668,7 @@ export type ProductImageUpdateWithoutProductInput = {
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  seoForProduct?: Prisma.ProductUpdateOneWithoutSeoImageNestedInput
 }
 
 export type ProductImageUncheckedUpdateWithoutProductInput = {
@@ -585,6 +680,7 @@ export type ProductImageUncheckedUpdateWithoutProductInput = {
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  seoForProduct?: Prisma.ProductUncheckedUpdateOneWithoutSeoImageNestedInput
 }
 
 export type ProductImageUncheckedUpdateManyWithoutProductInput = {
@@ -611,6 +707,7 @@ export type ProductImageSelect<ExtArgs extends runtime.Types.Extensions.Internal
   createdAt?: boolean
   updatedAt?: boolean
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
+  seoForProduct?: boolean | Prisma.ProductImage$seoForProductArgs<ExtArgs>
 }, ExtArgs["result"]["productImage"]>
 
 export type ProductImageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -654,6 +751,7 @@ export type ProductImageSelectScalar = {
 export type ProductImageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "url" | "publicId" | "alt" | "sortOrder" | "isPrimary" | "createdAt" | "updatedAt", ExtArgs["result"]["productImage"]>
 export type ProductImageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
+  seoForProduct?: boolean | Prisma.ProductImage$seoForProductArgs<ExtArgs>
 }
 export type ProductImageIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
@@ -666,6 +764,7 @@ export type $ProductImagePayload<ExtArgs extends runtime.Types.Extensions.Intern
   name: "ProductImage"
   objects: {
     product: Prisma.$ProductPayload<ExtArgs>
+    seoForProduct: Prisma.$ProductPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1072,6 +1171,7 @@ readonly fields: ProductImageFieldRefs;
 export interface Prisma__ProductImageClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   product<T extends Prisma.ProductDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductDefaultArgs<ExtArgs>>): Prisma.Prisma__ProductClient<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  seoForProduct<T extends Prisma.ProductImage$seoForProductArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductImage$seoForProductArgs<ExtArgs>>): Prisma.Prisma__ProductClient<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1508,6 +1608,25 @@ export type ProductImageDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Limit how many ProductImages to delete.
    */
   limit?: number
+}
+
+/**
+ * ProductImage.seoForProduct
+ */
+export type ProductImage$seoForProductArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Product
+   */
+  select?: Prisma.ProductSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Product
+   */
+  omit?: Prisma.ProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductInclude<ExtArgs> | null
+  where?: Prisma.ProductWhereInput
 }
 
 /**

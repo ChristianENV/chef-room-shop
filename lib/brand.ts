@@ -6,6 +6,7 @@ export const BRAND_NAME = BUSINESS_VARS.legalName
 export const BRAND_SHORT = BUSINESS_VARS.name
 export const BRAND_TAGLINE = BRAND_VARS.tagline
 export const CHEF_ROOM_LOGO_SRC = '/chef-room-logo.png' as const
+export const CHEF_ROOM_ICON_SRC = '/icono-chefroom.png' as const
 
 export const BRAND_COLORS = BRAND_VARS.colors
 

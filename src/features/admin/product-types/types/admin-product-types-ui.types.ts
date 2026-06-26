@@ -7,6 +7,7 @@ export type CategoryFormValues = {
   sortOrder: number
   isActive: boolean
   showInNav: boolean
+  cardImageAlt: string
 }
 
 export type CategoryFormFieldErrors = Partial<

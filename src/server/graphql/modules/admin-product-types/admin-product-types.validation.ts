@@ -47,6 +47,7 @@ export const updateAdminProductTypeInputSchema = z
     sortOrder: z.number().int().min(0).max(9999).optional().nullable(),
     isActive: z.boolean().optional().nullable(),
     showInNav: z.boolean().optional().nullable(),
+    cardImageAlt: z.string().trim().max(200).optional().nullable(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: 'Debes enviar al menos un campo para actualizar.',

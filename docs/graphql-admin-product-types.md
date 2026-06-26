@@ -16,7 +16,11 @@ Requiere sesión **ADMIN** o **SUPERADMIN** (`requireAdminGraphQL`). **CUSTOMER*
 | `description`       | Texto opcional de categoría                             |
 | `sortOrder`         | Orden en listados y navegación futura                   |
 | `isActive`          | Categoría visible/usable (`false` = archivada)          |
-| `showInNav`         | Bandera para navegación de tienda (UI pendiente)        |
+| `showInNav`         | Bandera para navegación de tienda                       |
+| `cardImageUrl`      | URL pública (WebP) de la imagen de tarjeta en landing   |
+| `cardImagePublicId` | Clave R2 del WebP (solo admin)                          |
+| `cardImageAlt`      | Texto alternativo de la imagen de categoría             |
+| `cardImageThumbUrl` | URL del thumbnail WebP (solo admin, opcional)           |
 
 Los productos siguen enlazándose con `Product.productTypeId`.
 
@@ -51,11 +55,18 @@ query AdminProductTypes {
 
 ## Mutations
 
-| Mutation                  | Descripción                                         |
-| ------------------------- | --------------------------------------------------- |
-| `createAdminProductType`  | Crea categoría                                      |
-| `updateAdminProductType`  | Actualiza campos, incl. `isActive` y `showInNav`    |
-| `archiveAdminProductType` | Soft archive: `isActive: false`, `showInNav: false` |
+| Mutation                             | Descripción                                                     |
+| ------------------------------------ | --------------------------------------------------------------- |
+| `createAdminProductType`             | Crea categoría                                                  |
+| `updateAdminProductType`             | Actualiza campos, incl. `isActive`, `showInNav`, `cardImageAlt` |
+| `archiveAdminProductType`            | Soft archive: `isActive: false`, `showInNav: false`             |
+| `removeAdminProductTypeImage`        | Elimina imagen de tarjeta y limpia campos en `ProductType`      |
+| `createAdminProductTypeImageUpload`  | Emite URLs presignadas R2 (webp/jpg/thumb)                      |
+| `confirmAdminProductTypeImageUpload` | Confirma subida y persiste `cardImage*` en `ProductType`        |
+
+Las subidas de imagen requieren **ADMIN/SUPERADMIN** y reutilizan el pipeline R2 de imágenes de producto (procesado WebP/JPG/thumb en el cliente). Claves de objeto:
+
+`product-types/{productTypeId}/card/{imageId}/image.webp`
 
 ### Validación
 
@@ -95,7 +106,9 @@ mutation CreateCategory {
 
 ## UI de administración
 
-Ruta: `/admin/categories` — listado, creación, edición y desactivación desde el dashboard (requiere rol admin).
+Ruta: `/admin/categories` — listado, creación, edición, imagen de tarjeta (subir/cambiar/eliminar + alt text) y desactivación desde el dashboard (requiere rol admin).
+
+La imagen de categoría es opcional al crear; hay que guardar la categoría antes de subir la primera imagen (se necesita el UUID de `ProductType`).
 
 ## Errores comunes
 

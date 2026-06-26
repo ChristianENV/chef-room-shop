@@ -18,6 +18,8 @@ export {
   buildDesignPreviewUploadKeys,
   buildDesignAssetLogoKeys,
   buildProductImageObjectKeys,
+  buildProductTypeCardImageObjectKeys,
+  deriveSiblingImageKeysFromWebpPublicId,
   buildProductModelObjectKey,
   buildPublicR2Url,
   buildPublicUrlsForKeys,

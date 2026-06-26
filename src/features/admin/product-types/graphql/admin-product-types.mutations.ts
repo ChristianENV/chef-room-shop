@@ -16,6 +16,14 @@ export const UPDATE_ADMIN_PRODUCT_TYPE_MUTATION = /* GraphQL */ `
   }
 `
 
+export const REMOVE_ADMIN_PRODUCT_TYPE_IMAGE_MUTATION = /* GraphQL */ `
+  mutation RemoveAdminProductTypeImage($id: ID!) {
+    removeAdminProductTypeImage(id: $id) {
+      ${ADMIN_PRODUCT_TYPE_CATEGORY_FIELDS}
+    }
+  }
+`
+
 export const ARCHIVE_ADMIN_PRODUCT_TYPE_MUTATION = /* GraphQL */ `
   mutation ArchiveAdminProductType($id: ID!) {
     archiveAdminProductType(id: $id) {

@@ -41,6 +41,34 @@ export function buildProductImageObjectKeys(
   }
 }
 
+/**
+ * Object keys for a product type (category) landing card image.
+ * `imageId` is a server-generated UUID for each upload/replace cycle.
+ */
+export function buildProductTypeCardImageObjectKeys(
+  productTypeId: string,
+  imageId: string,
+): Required<R2ObjectKeys> {
+  const base = `product-types/${productTypeId}/card/${imageId}`
+  return {
+    webp: `${base}/image.webp`,
+    jpg: `${base}/image.jpg`,
+    thumb: `${base}/thumb.webp`,
+  }
+}
+
+/** Derives sibling R2 keys (jpg, thumb) from a stored WebP `publicId`. */
+export function deriveSiblingImageKeysFromWebpPublicId(publicId: string): {
+  webp: string
+  jpg: string
+  thumb: string
+} {
+  const webp = publicId.replace(/^\/+/, '')
+  const jpg = webp.replace(/\/image\.webp$/i, '/image.jpg')
+  const thumb = webp.replace(/\/image\.webp$/i, '/thumb.webp')
+  return { webp, jpg, thumb }
+}
+
 /** Object keys for a single design preview view (front or back). */
 export function buildDesignPreviewObjectKeys(
   designId: string,

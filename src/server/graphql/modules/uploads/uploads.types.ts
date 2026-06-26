@@ -1,4 +1,5 @@
 import type { AccountUserGql } from '../account/account.types'
+import type { AdminProductTypeGql } from '../admin-products/admin-products.types'
 
 export type UploadKeysGql = {
   webp: string
@@ -34,6 +35,8 @@ export type ProductImageUploadPayloadGql = {
   presignedUrls: UploadPresignedUrlsGql
   expiresAt: string
 }
+
+export type ProductTypeCardImageUploadPayloadGql = ProductImageUploadPayloadGql
 
 export type UserAvatarPayloadGql = {
   user: AccountUserGql
@@ -76,4 +79,24 @@ export type ConfirmProductImageUploadInput = {
   altText?: string | null
   isPrimary?: boolean | null
   sortOrder?: number | null
+}
+
+export type CreateProductTypeCardImageUploadInput = {
+  productTypeId: string
+  imageId?: string | null
+  webpSizeBytes: number
+  jpgSizeBytes?: number | null
+  thumbSizeBytes?: number | null
+  originalFileName?: string | null
+  originalContentType?: string | null
+  altText?: string | null
+}
+
+export type ConfirmProductTypeCardImageUploadInput = {
+  uploadId: string
+  altText?: string | null
+}
+
+export type ConfirmProductTypeCardImageUploadPayloadGql = {
+  productType: AdminProductTypeGql
 }

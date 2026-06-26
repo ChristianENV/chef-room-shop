@@ -64,6 +64,7 @@ export type ProductFormValues = {
   status: AdminProductStatusUi
   seoTitle: string
   seoDescription: string
+  seoImageId: string | null
   variants: AdminProductVariantUi[]
   images: AdminProductImageUi[]
 }

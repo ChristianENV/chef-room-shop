@@ -434,17 +434,21 @@ model Address {
 // ---------------------------------------------------------------------------
 
 model ProductType {
-  id          String   @id @default(uuid()) @db.Uuid
-  slug        String   @unique
-  shopSlug    String?  @unique
-  nameEs      String
-  nameEn      String?
-  description String?
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-  showInNav   Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                String   @id @default(uuid()) @db.Uuid
+  slug              String   @unique
+  shopSlug          String?  @unique
+  nameEs            String
+  nameEn            String?
+  description       String?
+  sortOrder         Int      @default(0)
+  isActive          Boolean  @default(true)
+  showInNav         Boolean  @default(true)
+  cardImageUrl      String?
+  cardImagePublicId String?
+  cardImageAlt      String?
+  cardImageThumbUrl String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   products Product[]
 
@@ -463,12 +467,14 @@ model Product {
   customizable     Boolean       @default(true)
   seoTitle         String?
   seoDescription   String?
+  seoImageId       String?       @unique @db.Uuid
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   deletedAt        DateTime?
 
   productType          ProductType               @relation(fields: [productTypeId], references: [id])
-  images               ProductImage[]
+  images               ProductImage[]            @relation("ProductImages")
+  seoImage             ProductImage?             @relation("ProductSeoImage", fields: [seoImageId], references: [id], onDelete: SetNull)
   variants             ProductVariant[]
   customizationRules   ProductCustomizationRule[]
   cartItems            CartItem[]
@@ -491,7 +497,8 @@ model ProductImage {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product  @relation("ProductImages", fields: [productId], references: [id], onDelete: Cascade)
+  seoForProduct Product? @relation("ProductSeoImage")
 
   @@index([productId, sortOrder])
   @@map("product_images")

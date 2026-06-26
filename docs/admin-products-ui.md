@@ -15,16 +15,20 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
    - Variantes legadas con color no permitido se muestran al editar con etiqueta de error; el guardado se rechaza hasta corregir el color o eliminar la variante.
    - El backend valida en `upsertAdminProductVariant`; cambiar categoría con variantes incompatibles bloquea `updateAdminProduct`.
 4. **Imágenes** — `ProductImageUploader` con R2: drag & drop, edición (crop/rotación), WebP/JPG/thumb, reorder vía `reorderAdminProductImages`.
-5. **Archivar** — `archiveAdminProduct` (no borrado destructivo del producto) vía `AlertDialog`.
-6. **Duplicar** — `duplicateAdminProduct` → copia en borrador.
-7. **Estado** — menú “Cambiar estado” → `updateAdminProductStatus` (ACTIVE reactiva y limpia `deletedAt`).
+5. **SEO** — pestaña SEO: título, descripción e **imagen SEO** (`ProductSeoImagePicker`) elegida solo entre fotos ya subidas en Imágenes (sin upload en SEO).
+   - Copy: _Imagen SEO_ / _Selecciona una foto del producto para usarla al compartir esta página._
+   - Si no hay selección: _Si no seleccionas una imagen, se usará la imagen principal del producto._
+   - Campo GraphQL: `seoImageId` (nullable); se persiste con `updateAdminProduct`.
+6. **Eliminar producto** — doble confirmación estilo GitHub (`DeleteProductDialog`): el admin escribe el nombre exacto del producto y confirma. Internamente llama `archiveAdminProduct` (soft-delete: `ARCHIVED` + `deletedAt`). **No hay borrado permanente** desde Admin; el historial de órdenes se conserva. El producto desaparece del listado normal (filtro `includeArchived: false`) y de la tienda.
+7. **Duplicar** — `duplicateAdminProduct` → copia en borrador.
+8. **Estado** — menú “Cambiar estado” → `updateAdminProductStatus` (ACTIVE reactiva y limpia `deletedAt`).
 
 ## Patrón UX: Dialogs vs Drawers
 
 | Caso                             | Componente           |
 | -------------------------------- | -------------------- |
 | Formulario crear/editar producto | `ProductFormDialog`  |
-| Confirmación archivar            | `AlertDialog`        |
+| Confirmación eliminar producto   | `AlertDialog`        |
 | Navegación mobile admin          | `Sheet` — sin cambio |
 
 ## Archivos clave
@@ -37,6 +41,7 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
 | Hooks                    | `src/features/admin/products/api/*`                                     |
 | Tabla / toolbar / dialog | `src/features/admin/products/products-*.tsx`, `product-form-dialog.tsx` |
 | Imágenes R2              | `src/features/admin/products/components/product-image-*.tsx`            |
+| Imagen SEO (picker)      | `src/features/admin/products/components/product-seo-image-picker.tsx`   |
 
 ## ProductImageUploader
 
@@ -71,13 +76,31 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
 
 ## Acciones en tabla
 
-- Editar, duplicar, cambiar estado (Borrador / Activo / Archivado), archivar, reactivar (archivado → Activo).
+- Editar, duplicar, cambiar estado (Borrador / Activo / Archivado), **Eliminar producto** (archiva vía `archiveAdminProduct`), reactivar (archivado → Activo).
+
+## Eliminar producto (archivo / soft-delete)
+
+| Aspecto          | Comportamiento                                                                                  |
+| ---------------- | ----------------------------------------------------------------------------------------------- |
+| Acción en menú   | **Eliminar producto** (destructiva)                                                             |
+| Confirmación     | Escribir el **nombre exacto** del producto                                                      |
+| Mutación GraphQL | `archiveAdminProduct` — no existe `deleteAdminProduct` en Admin                                 |
+| Efecto en BD     | `status: ARCHIVED`, `deletedAt: now()` — filas de producto, variantes e imágenes **permanecen** |
+| Storefront       | Producto archivado no aparece en `/shop` ni PDP (`ACTIVE` + `deletedAt: null` requeridos)       |
+| Órdenes          | Historial de pedidos e ítems **se conserva** (sin cascade delete)                               |
+| Variantes        | Permanecen en BD; quedan inaccesibles en tienda porque el producto padre está archivado         |
+
+Copy del diálogo: _El producto se ocultará de la tienda y ya no podrá comprarse. El historial de órdenes se conservará._
 
 ## data-testid
 
-| ID                          | Ubicación           |
-| --------------------------- | ------------------- |
-| `admin-product-form-dialog` | Dialog crear/editar |
+| ID                                        | Ubicación                |
+| ----------------------------------------- | ------------------------ |
+| `admin-product-form-dialog`               | Dialog crear/editar      |
+| `admin-product-delete-dialog`             | Confirmación eliminar    |
+| `admin-product-delete-confirmation-input` | Input nombre en eliminar |
+| `admin-product-delete-confirm-button`     | Botón confirmar eliminar |
+| `admin-product-delete-button`             | Menú acciones → Eliminar |
 
 ## Limitaciones (v1)
 

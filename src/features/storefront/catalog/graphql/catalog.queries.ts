@@ -73,6 +73,8 @@ export const PRODUCT_TYPES_QUERY = /* GraphQL */ `
       sortOrder
       isActive
       showInNav
+      cardImageUrl
+      cardImageAlt
     }
   }
 `

@@ -9,6 +9,10 @@ export type AdminProductTypeGql = {
   sortOrder: number | null
   isActive: boolean
   showInNav: boolean
+  cardImageUrl: string | null
+  cardImagePublicId: string | null
+  cardImageAlt: string | null
+  cardImageThumbUrl: string | null
   productCount: number
   activeProductCount: number
   createdAt: string
@@ -116,6 +120,7 @@ export type AdminProductGql = {
   status: string
   seoTitle: string | null
   seoDescription: string | null
+  seoImageId: string | null
   deletedAt: string | null
   createdAt: string
   updatedAt: string
@@ -168,6 +173,7 @@ export type AdminProductInput = {
   status?: string | null
   seoTitle?: string | null
   seoDescription?: string | null
+  seoImageId?: string | null
 }
 
 export type AdminProductVariantInput = {

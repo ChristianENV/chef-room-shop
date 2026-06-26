@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Layers } from 'lucide-react'
 
@@ -12,10 +13,9 @@ import {
   getProductTypePublicSlug,
 } from '@/src/features/storefront/catalog/product-type.helpers'
 
-import { LandingMediaImage } from './components/landing-media-image'
 import { LandingReveal, LandingStagger, LandingStaggerItem } from './components/landing-reveal'
 import { SectionHeader } from './components/section-header'
-import { LANDING_MEDIA, type LandingMediaKey } from './lib/landing-media'
+import { resolveLandingCategoryCardImage } from './lib/landing-category-card-image'
 
 type LandingCategory = {
   id: string
@@ -23,14 +23,10 @@ type LandingCategory = {
   subtitle: string
   description: string
   href: string
-  mediaKey?: LandingMediaKey
+  imageSrc: string | null
+  imageAlt: string
+  useFallbackVisual: boolean
   featured?: boolean
-}
-
-const LANDING_MEDIA_BY_PUBLIC_SLUG: Partial<Record<string, LandingMediaKey>> = {
-  filipinas: 'categoryFilipinas',
-  mandiles: 'categoryMandiles',
-  pantalones: 'categoryPantalones',
 }
 
 const LANDING_SUBTITLES: Partial<Record<string, string>> = {
@@ -50,13 +46,17 @@ function buildLandingCategories(
   return productTypes.map((type, index) => {
     const publicSlug = getProductTypePublicSlug(type)
     const title = getProductTypeDisplayName(type)
+    const resolved = resolveLandingCategoryCardImage(type, title)
+
     return {
       id: type.id,
       title,
       subtitle: LANDING_SUBTITLES[publicSlug] ?? DEFAULT_SUBTITLE,
       description: type.description?.trim() || DEFAULT_DESCRIPTION,
       href: shopCategoryUrl(publicSlug),
-      mediaKey: LANDING_MEDIA_BY_PUBLIC_SLUG[publicSlug],
+      imageSrc: resolved.src,
+      imageAlt: resolved.alt,
+      useFallbackVisual: resolved.source === 'fallback',
       featured: index === 0,
     }
   })
@@ -78,7 +78,6 @@ function CategoryFallbackVisual({ title }: { title: string }) {
 }
 
 function CategoryCard({ cat }: { cat: LandingCategory }) {
-  const media = cat.mediaKey ? LANDING_MEDIA[cat.mediaKey] : null
   const isFeatured = Boolean(cat.featured)
 
   return (
@@ -98,20 +97,19 @@ function CategoryCard({ cat }: { cat: LandingCategory }) {
             : 'aspect-[16/9] min-h-[200px] lg:h-[280px] lg:min-h-[420px] lg:aspect-auto',
         )}
       >
-        {media ? (
-          <LandingMediaImage
-            asset={media}
-            fit="cover"
-            overlay="none"
-            className="absolute inset-0 h-full w-full !aspect-auto"
-            imageClassName="transition-transform duration-700 group-hover:scale-[1.04]"
+        {cat.imageSrc ? (
+          <Image
+            src={cat.imageSrc}
+            alt={cat.imageAlt}
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
             sizes={
               isFeatured ? '(max-width: 1024px) 100vw, 50vw' : '(max-width: 1024px) 100vw, 28vw'
             }
           />
-        ) : (
+        ) : cat.useFallbackVisual ? (
           <CategoryFallbackVisual title={cat.title} />
-        )}
+        ) : null}
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[38%] bg-gradient-to-t from-[#0c0f24]/90 via-[#0c0f24]/15 to-transparent lg:h-[32%]" />
 

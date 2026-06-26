@@ -44,6 +44,7 @@ export const adminProductInputSchema = z.object({
   status: z.enum(productStatusValues).optional().nullable(),
   seoTitle: z.string().trim().max(160).optional().nullable(),
   seoDescription: z.string().trim().max(320).optional().nullable(),
+  seoImageId: uuidSchema.optional().nullable(),
 })
 
 export const adminProductVariantInputSchema = z.object({

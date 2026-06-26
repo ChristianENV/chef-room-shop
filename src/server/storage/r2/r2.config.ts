@@ -25,6 +25,7 @@ export const STORED_CONTENT_TYPES: Record<'webp' | 'jpg', StoredImageContentType
 export const MAX_UPLOAD_BYTES: Record<UploadKind, number> = {
   avatar: 8 * 1024 * 1024,
   product: 15 * 1024 * 1024,
+  productType: 15 * 1024 * 1024,
   /** WebP design previews from the 3D viewport (per view). */
   design: 3 * 1024 * 1024,
   /** Uploaded logo assets for customizer layers. */

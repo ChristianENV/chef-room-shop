@@ -10,6 +10,8 @@ export type CatalogProductType = {
   sortOrder?: number | null
   isActive?: boolean
   showInNav?: boolean
+  cardImageUrl?: string | null
+  cardImageAlt?: string | null
 }
 
 /** Product image from catalog BFF. */

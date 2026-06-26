@@ -4,6 +4,7 @@ import {
   createAdminProductType,
   getAdminProductTypeById,
   getAdminProductTypes,
+  removeAdminProductTypeImage,
   updateAdminProductType,
 } from '../modules/admin-product-types/admin-product-types.service'
 import type {
@@ -37,5 +38,8 @@ export const adminProductTypesResolvers = {
 
     archiveAdminProductType: (_parent: unknown, args: IdArgs, context: GraphQLContext) =>
       archiveAdminProductType(context, args.id),
+
+    removeAdminProductTypeImage: (_parent: unknown, args: IdArgs, context: GraphQLContext) =>
+      removeAdminProductTypeImage(context, args.id),
   },
 }

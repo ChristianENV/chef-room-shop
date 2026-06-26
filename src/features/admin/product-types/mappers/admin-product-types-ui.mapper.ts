@@ -68,6 +68,7 @@ export function mapAdminProductTypeToFormValues(productType: AdminProductType): 
     sortOrder: productType.sortOrder ?? 0,
     isActive: productType.isActive,
     showInNav: productType.showInNav,
+    cardImageAlt: productType.cardImageAlt ?? '',
   }
 }
 
@@ -83,6 +84,7 @@ export function buildDefaultCategoryFormValues(
     sortOrder: resolveNextCategorySortOrder(productTypes),
     isActive: true,
     showInNav: true,
+    cardImageAlt: '',
   }
 }
 
@@ -149,6 +151,7 @@ export function mapCategoryFormValuesToUpdateInput(
     sortOrder: Math.trunc(values.sortOrder),
     isActive: values.isActive,
     showInNav: values.showInNav,
+    cardImageAlt: normalizeOptionalText(values.cardImageAlt),
   }
 }
 
