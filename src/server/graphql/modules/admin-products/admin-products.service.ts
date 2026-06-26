@@ -327,7 +327,7 @@ export async function updateAdminProduct(
     const updated = await tx.product.update({
       where: { id: productId },
       data: {
-        productTypeId: parsed.productTypeId,
+        productType: { connect: { id: parsed.productTypeId } },
         slug,
         name: parsed.name,
         shortDescription: parsed.shortDescription ?? null,
@@ -337,7 +337,9 @@ export async function updateAdminProduct(
         status: (parsed.status as ProductStatus) ?? existing.status,
         seoTitle: parsed.seoTitle ?? null,
         seoDescription: parsed.seoDescription ?? null,
-        seoImageId: parsed.seoImageId ?? null,
+        seoImage: parsed.seoImageId
+          ? { connect: { id: parsed.seoImageId } }
+          : { disconnect: true },
       },
       include: productInclude,
     })
