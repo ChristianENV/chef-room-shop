@@ -3,6 +3,7 @@ import {
   buildVariantColorSelectOptions,
   resolveProductTypeSlugById,
 } from '../lib/variant-color-options'
+import { filterVariantSizesForProductType } from '../lib/variant-matrix'
 
 export type AdminProductStatusUi = 'DRAFT' | 'ACTIVE' | 'ARCHIVED'
 
@@ -75,6 +76,7 @@ export type SelectOption = {
 }
 
 export type ColorSelectOption = SelectOption & {
+  hexCode?: string
   isInvalidForProductType?: boolean
 }
 
@@ -147,7 +149,7 @@ export function mapFormOptionsToSelectOptions(
       productTypeSlug,
       existingVariantColorIds,
     }),
-    sizes: [...options.sizes]
+    sizes: filterVariantSizesForProductType(options.sizes, productTypeSlug)
       .sort((a, b) => compareSortOrder(a.sortOrder, b.sortOrder))
       .map((size) => ({
         value: size.id,

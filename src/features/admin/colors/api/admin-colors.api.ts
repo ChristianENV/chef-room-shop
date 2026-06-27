@@ -13,9 +13,7 @@ import type {
   UpdateAdminColorInput,
 } from '../types'
 
-export async function getAdminColors(
-  variables?: AdminColorsListVariables,
-): Promise<AdminColor[]> {
+export async function getAdminColors(variables?: AdminColorsListVariables): Promise<AdminColor[]> {
   const data = await fetchGraphQL<{ adminColors: AdminColor[] }, AdminColorsListVariables>({
     query: ADMIN_COLORS_QUERY,
     variables,

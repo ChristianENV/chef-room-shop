@@ -41,19 +41,19 @@ Blocked when the color is referenced by **active** product variants (`ProductVar
 
 ## Type `AdminColor`
 
-| Field            | Type    |
-| ---------------- | ------- |
-| `id`             | ID!     |
-| `slug`           | String! |
-| `name`           | String! |
-| `hexCode`        | String! |
+| Field            | Type     |
+| ---------------- | -------- |
+| `id`             | ID!      |
+| `slug`           | String!  |
+| `name`           | String!  |
+| `hexCode`        | String!  |
 | `isFabricColor`  | Boolean! |
 | `isProductColor` | Boolean! |
 | `isGeneralColor` | Boolean! |
 | `isActive`       | Boolean! |
-| `sortOrder`      | Int!    |
-| `createdAt`      | String! |
-| `updatedAt`      | String! |
+| `sortOrder`      | Int!     |
+| `createdAt`      | String!  |
+| `updatedAt`      | String!  |
 
 ## Relationship to product variants
 
@@ -63,14 +63,14 @@ Blocked when the color is referenced by **active** product variants (`ProductVar
 
 ## Files
 
-| Layer    | Path |
-| -------- | ---- |
-| Service  | `src/server/graphql/modules/admin-colors/admin-colors.service.ts` |
-| Guards   | `src/server/graphql/modules/admin-colors/admin-colors.guards.ts` |
+| Layer      | Path                                                                 |
+| ---------- | -------------------------------------------------------------------- |
+| Service    | `src/server/graphql/modules/admin-colors/admin-colors.service.ts`    |
+| Guards     | `src/server/graphql/modules/admin-colors/admin-colors.guards.ts`     |
 | Validation | `src/server/graphql/modules/admin-colors/admin-colors.validation.ts` |
-| Resolver | `src/server/graphql/resolvers/admin-colors.resolver.ts` |
-| Admin UI | `src/features/admin/colors/` |
-| Page     | `src/app/(admin)/admin/(protected)/colors/page.tsx` |
+| Resolver   | `src/server/graphql/resolvers/admin-colors.resolver.ts`              |
+| Admin UI   | `src/features/admin/colors/`                                         |
+| Page       | `src/app/(admin)/admin/(protected)/colors/page.tsx`                  |
 
 ## Example
 

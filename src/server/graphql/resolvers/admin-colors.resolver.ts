@@ -19,11 +19,7 @@ export const adminColorsResolvers = {
         context as Parameters<typeof createAdminColor>[0],
         args.input as Parameters<typeof createAdminColor>[1],
       ),
-    updateAdminColor: (
-      _parent: unknown,
-      args: { id: string; input: unknown },
-      context: unknown,
-    ) =>
+    updateAdminColor: (_parent: unknown, args: { id: string; input: unknown }, context: unknown) =>
       updateAdminColor(
         context as Parameters<typeof updateAdminColor>[0],
         args.id,

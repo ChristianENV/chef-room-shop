@@ -40,7 +40,10 @@ export function AdminColorsTable({
   actionColorId,
 }: AdminColorsTableProps) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-border" data-testid="admin-colors-table">
+    <div
+      className="overflow-x-auto rounded-lg border border-border"
+      data-testid="admin-colors-table"
+    >
       <Table className="min-w-[960px]">
         <TableHeader>
           <TableRow>

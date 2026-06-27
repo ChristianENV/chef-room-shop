@@ -36,24 +36,24 @@ General colors (`isGeneralColor=true`) are non-textile sellable colors (e.g. `bl
 
 ## Color scopes (Prisma)
 
-| Field            | Meaning                                      |
-| ---------------- | -------------------------------------------- |
-| `isFabricColor`  | Usable in customizer / design tinting        |
-| `isProductColor` | Usable as product variant SKU color          |
-| `isGeneralColor` | General sellable color (e.g. accessories)  |
+| Field            | Meaning                                       |
+| ---------------- | --------------------------------------------- |
+| `isFabricColor`  | Usable in customizer / design tinting         |
+| `isProductColor` | Usable as product variant SKU color           |
+| `isGeneralColor` | General sellable color (e.g. accessories)     |
 | `isActive`       | Visible/selectable; `false` = archived/hidden |
-| `sortOrder`      | Admin list ordering                          |
+| `sortOrder`      | Admin list ordering                           |
 
 Helpers: `src/lib/color-scopes.ts`
 
 ## Shared configuration
 
-| File                               | Role                                                             |
-| ---------------------------------- | ---------------------------------------------------------------- |
-| `src/config/catalog-colors.ts`     | Runtime + seed source of truth for per-type variant color rules  |
-| `prisma/seed-colors.data.ts`       | Product + fabric-only color seed rows                            |
-| `prisma/seed-catalog-reference.ts` | Re-exports shared rules for Prisma seeds                         |
-| `fabric-colors.ts`                 | Customizer fabric palette + fabric→catalog mapping               |
+| File                               | Role                                                            |
+| ---------------------------------- | --------------------------------------------------------------- |
+| `src/config/catalog-colors.ts`     | Runtime + seed source of truth for per-type variant color rules |
+| `prisma/seed-colors.data.ts`       | Product + fabric-only color seed rows                           |
+| `prisma/seed-catalog-reference.ts` | Re-exports shared rules for Prisma seeds                        |
+| `fabric-colors.ts`                 | Customizer fabric palette + fabric→catalog mapping              |
 
 ## Fabric → catalog mapping
 
@@ -75,11 +75,11 @@ Admins can create/edit/deactivate colors with scope flags. Deactivation sets `is
 
 When to set scopes:
 
-| Use case                         | Flags                                              |
-| -------------------------------- | -------------------------------------------------- |
-| Customizer-only fabric           | `isFabricColor` only                               |
-| Sellable variant (filipina, etc.) | `isFabricColor` + `isProductColor` (+ rules)     |
-| Shoes/accessories general black  | `isProductColor` + `isGeneralColor`                |
+| Use case                          | Flags                                        |
+| --------------------------------- | -------------------------------------------- |
+| Customizer-only fabric            | `isFabricColor` only                         |
+| Sellable variant (filipina, etc.) | `isFabricColor` + `isProductColor` (+ rules) |
+| Shoes/accessories general black   | `isProductColor` + `isGeneralColor`          |
 
 See `docs/graphql-admin-colors.md` for GraphQL operations.
 

@@ -3,13 +3,8 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, it } from 'node:test'
 
-import {
-  SEED_FABRIC_ONLY_COLORS,
-  SEED_PRODUCT_COLORS,
-} from '@/prisma/seed-colors.data'
-import {
-  buildVariantColorSelectOptions,
-} from '@/src/features/admin/products/lib/variant-color-options'
+import { SEED_FABRIC_ONLY_COLORS, SEED_PRODUCT_COLORS } from '@/prisma/seed-colors.data'
+import { buildVariantColorSelectOptions } from '@/src/features/admin/products/lib/variant-color-options'
 import {
   createAdminColorInputSchema,
   HEX_COLOR_REGEX,
@@ -67,8 +62,22 @@ describe('color scope helpers', () => {
   it('identifies fabric, product and general scopes', () => {
     assert.equal(isFabricColor({ isFabricColor: true }), true)
     assert.equal(isProductColor({ isProductColor: true }), true)
-    assert.equal(hasAtLeastOneColorScope({ isFabricColor: false, isProductColor: true, isGeneralColor: false }), true)
-    assert.equal(hasAtLeastOneColorScope({ isFabricColor: false, isProductColor: false, isGeneralColor: false }), false)
+    assert.equal(
+      hasAtLeastOneColorScope({
+        isFabricColor: false,
+        isProductColor: true,
+        isGeneralColor: false,
+      }),
+      true,
+    )
+    assert.equal(
+      hasAtLeastOneColorScope({
+        isFabricColor: false,
+        isProductColor: false,
+        isGeneralColor: false,
+      }),
+      false,
+    )
   })
 
   it('filters active product and fabric colors', () => {
@@ -166,7 +175,10 @@ describe('variant color selector excludes fabric-only colors', () => {
       productTypeSlug: 'chef-jacket',
     })
 
-    assert.deepEqual(options.map((row) => row.value), ['color-black'])
+    assert.deepEqual(
+      options.map((row) => row.value),
+      ['color-black'],
+    )
   })
 
   it('excludes inactive product colors for new variants', () => {
@@ -175,7 +187,10 @@ describe('variant color selector excludes fabric-only colors', () => {
       productTypeSlug: 'chef-jacket',
     })
 
-    assert.equal(options.some((row) => row.value === 'color-inactive-white'), false)
+    assert.equal(
+      options.some((row) => row.value === 'color-inactive-white'),
+      false,
+    )
   })
 
   it('keeps legacy inactive selection visible when editing', () => {

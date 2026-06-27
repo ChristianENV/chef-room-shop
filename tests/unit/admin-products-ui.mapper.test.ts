@@ -116,13 +116,23 @@ describe('admin products ui mapper', () => {
     assert.equal(selectOptions.colors[0]?.label, 'Negro')
   })
 
-  it('sorts sizes by sortOrder for variant selectors', () => {
-    const selectOptions = mapFormOptionsToSelectOptions(formOptions)
-
+  it('sorts sizes by sortOrder for variant selectors when product type is selected', () => {
+    const jacketOptions = mapFormOptionsToSelectOptions(formOptions, 'type-jacket')
     assert.deepEqual(
-      selectOptions.sizes.map((size) => size.label),
-      ['M', '22', '30'],
+      jacketOptions.sizes.map((size) => size.label),
+      ['M'],
     )
+
+    const shoeOptions = mapFormOptionsToSelectOptions(formOptions, 'type-shoes')
+    assert.deepEqual(
+      shoeOptions.sizes.map((size) => size.label),
+      ['22', '30'],
+    )
+  })
+
+  it('returns no sizes until a product type is selected', () => {
+    const selectOptions = mapFormOptionsToSelectOptions(formOptions)
+    assert.deepEqual(selectOptions.sizes, [])
   })
 
   it('preserves customizable=false when mapping product to form values', () => {

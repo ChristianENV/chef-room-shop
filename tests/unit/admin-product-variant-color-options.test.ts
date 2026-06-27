@@ -131,7 +131,10 @@ describe('admin product variant color options', () => {
       selectedProductTypeId: 'type-jacket',
     })
     assert.equal(jacketOptions.colors.length, 4)
-    assert.equal(jacketOptions.colors.some((color) => color.value === 'color-olive'), false)
+    assert.equal(
+      jacketOptions.colors.some((color) => color.value === 'color-olive'),
+      false,
+    )
   })
 
   it('keeps invalid legacy colors visible with invalid label when editing', () => {

@@ -1,9 +1,8 @@
 ﻿'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Plus, Trash2, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
-import { formatCurrencyMXN } from '@/src/lib/formatters'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -37,6 +36,7 @@ import { useDeleteAdminProductVariantMutation } from './api/use-delete-admin-pro
 import { ProductImageUploader } from './components/product-image-uploader'
 import type { ProductImageUploaderHandle } from './components/product-image-uploader.types'
 import { ProductModel3DUploader } from './components/product-model-3d-uploader'
+import { ProductVariantEditor } from './components/product-variant-editor'
 import { ProductSeoImagePicker } from './components/product-seo-image-picker'
 import { resolveProductOgImageUrl } from '@/src/lib/product-seo-image'
 import {
@@ -44,7 +44,7 @@ import {
   mapFormValuesToAdminProductInput,
   STATUS_LABELS,
 } from './mappers/admin-products-ui.mapper'
-import { validateFormVariantColors, VARIANT_COLOR_SELECT_HELP } from './lib/variant-color-options'
+import { validateFormVariantColors } from './lib/variant-color-options'
 import {
   PRODUCT_FORM_CLOSE_BLOCKED_MESSAGE,
   PRODUCT_FORM_SAVE_STATUS_MESSAGE,
@@ -231,56 +231,16 @@ function ProductFormDrawerBody({
     }
   }
 
-  const addVariant = () => {
-    if (!formValues) return
-    if (!formValues.productTypeId) {
-      setSaveError('Selecciona primero una categoría para agregar variantes.')
-      return
+  const removePersistedVariant = async (variant: AdminProductVariantUi): Promise<boolean> => {
+    if (!productId) return false
+    try {
+      await deleteVariant.mutateAsync({ id: variant.id, productId })
+      return true
+    } catch (error) {
+      setSaveError('No pudimos eliminar la variante.')
+      if (process.env.NODE_ENV === 'development') console.error(error)
+      return false
     }
-    const allowedColors = selectOptions.colors.filter((color) => !color.isInvalidForProductType)
-    const defaultColor = allowedColors[0]?.value ?? ''
-    const defaultSize = selectOptions.sizes[0]?.value ?? ''
-    const newVariant: AdminProductVariantUi = {
-      id: newTempId(),
-      sku: '',
-      variantName: null,
-      colorId: defaultColor,
-      sizeId: defaultSize,
-      colorName: '',
-      sizeName: '',
-      pricePesos: formValues.basePricePesos,
-      stockQty: 0,
-      isActive: true,
-      isPersisted: false,
-    }
-    updateField('variants', [...formValues.variants, newVariant])
-  }
-
-  const updateVariant = (index: number, patch: Partial<AdminProductVariantUi>) => {
-    if (!formValues) return
-    const next = formValues.variants.map((v, i) => (i === index ? { ...v, ...patch } : v))
-    updateField('variants', next)
-  }
-
-  const removeVariant = async (index: number) => {
-    if (!formValues) return
-    const variant = formValues.variants[index]
-    if (!variant) return
-
-    if (variant.isPersisted && productId) {
-      try {
-        await deleteVariant.mutateAsync({ id: variant.id, productId })
-      } catch (error) {
-        setSaveError('No pudimos eliminar la variante.')
-        if (process.env.NODE_ENV === 'development') console.error(error)
-        return
-      }
-    }
-
-    updateField(
-      'variants',
-      formValues.variants.filter((_, i) => i !== index),
-    )
   }
 
   return (
@@ -476,166 +436,25 @@ function ProductFormDrawerBody({
         </TabsContent>
 
         <TabsContent value="variants" className="space-y-4 pt-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-sans font-medium">Variantes</h4>
-              <p className="font-serif text-sm text-muted-foreground">
-                Color, talla, precio y stock por combinación.
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={addVariant}
-              disabled={isFormPending || !selectOptions.hasProductTypeSelected}
-            >
-              <Plus className="mr-1 h-4 w-4" />
-              Agregar
-            </Button>
+          <div>
+            <h4 className="font-sans font-medium">Variantes</h4>
+            <p className="font-serif text-sm text-muted-foreground">
+              Color, talla, precio y stock por combinación.
+            </p>
           </div>
 
-          {!selectOptions.hasProductTypeSelected ? (
-            <p className="font-serif text-sm text-muted-foreground">{VARIANT_COLOR_SELECT_HELP}</p>
-          ) : null}
-
-          {formValues.variants.length === 0 ? (
-            <Card className="border-dashed">
-              <CardContent className="py-8 text-center">
-                <p className="font-serif text-sm text-muted-foreground">
-                  Sin variantes. Puedes agregarlas después de guardar.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-3">
-              {formValues.variants.map((variant, index) => (
-                <Card key={variant.id}>
-                  <CardContent className="space-y-3 p-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label className="font-sans text-xs">Color</Label>
-                        <Select
-                          value={variant.colorId}
-                          onValueChange={(v) => updateVariant(index, { colorId: v })}
-                          disabled={isFormPending || !selectOptions.hasProductTypeSelected}
-                        >
-                          <SelectTrigger className="font-sans">
-                            <SelectValue
-                              placeholder={
-                                selectOptions.hasProductTypeSelected
-                                  ? 'Selecciona color'
-                                  : 'Selecciona categoría primero'
-                              }
-                            />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {selectOptions.colors.map((colorOption) => (
-                              <SelectItem key={colorOption.value} value={colorOption.value}>
-                                {colorOption.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {selectOptions.colors.find((c) => c.value === variant.colorId)
-                          ?.isInvalidForProductType ? (
-                          <p className="mt-1 font-serif text-xs text-destructive">
-                            Color no permitido para esta categoría.
-                          </p>
-                        ) : null}
-                      </div>
-                      <div>
-                        <Label className="font-sans text-xs">Talla</Label>
-                        <Select
-                          value={variant.sizeId}
-                          onValueChange={(v) => updateVariant(index, { sizeId: v })}
-                          disabled={isFormPending}
-                        >
-                          <SelectTrigger className="font-sans">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {selectOptions.sizes.map((s) => (
-                              <SelectItem key={s.value} value={s.value}>
-                                {s.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div>
-                        <Label className="font-sans text-xs">SKU (opcional)</Label>
-                        <Input
-                          value={variant.sku}
-                          disabled={isFormPending}
-                          onChange={(e) =>
-                            updateVariant(index, { sku: e.target.value.toUpperCase() })
-                          }
-                          className="font-mono text-xs uppercase"
-                        />
-                      </div>
-                      <div>
-                        <Label className="font-sans text-xs">Precio (MXN)</Label>
-                        <Input
-                          type="number"
-                          min={0}
-                          value={variant.pricePesos}
-                          disabled={isFormPending}
-                          onChange={(e) =>
-                            updateVariant(index, {
-                              pricePesos: Math.max(0, Number(e.target.value)),
-                            })
-                          }
-                          className="font-sans"
-                        />
-                      </div>
-                      <div>
-                        <Label className="font-sans text-xs">Stock</Label>
-                        <Input
-                          type="number"
-                          min={0}
-                          value={variant.stockQty}
-                          disabled={isFormPending}
-                          onChange={(e) =>
-                            updateVariant(index, {
-                              stockQty: Math.max(0, Number(e.target.value)),
-                            })
-                          }
-                          className="font-sans"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={variant.isActive}
-                          disabled={isFormPending}
-                          onCheckedChange={(checked) => updateVariant(index, { isActive: checked })}
-                        />
-                        <Label className="font-sans text-xs">Activa</Label>
-                        <span className="font-serif text-xs text-muted-foreground">
-                          {formatCurrencyMXN(variant.pricePesos)}
-                        </span>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive"
-                        disabled={isFormPending}
-                        onClick={() => void removeVariant(index)}
-                      >
-                        <Trash2 className="mr-1 h-4 w-4" />
-                        Quitar
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          <ProductVariantEditor
+            variants={formValues.variants}
+            productName={formValues.name}
+            productSlug={formValues.slug}
+            basePricePesos={formValues.basePricePesos}
+            selectOptions={selectOptions}
+            formOptions={formOptions}
+            disabled={isFormPending}
+            newTempId={newTempId}
+            onVariantsChange={(variants) => updateField('variants', variants)}
+            onRemovePersistedVariant={removePersistedVariant}
+          />
         </TabsContent>
 
         <TabsContent value="seo" className="space-y-4 pt-4">

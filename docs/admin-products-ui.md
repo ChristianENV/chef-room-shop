@@ -13,9 +13,13 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
    - **Categoría** — dropdown dinámico desde `adminProductFormOptions.productTypes` (`nameEs`, incluye p. ej. Zapatos).
    - **Personalizable** — switch; desactivar para productos sin customizer (calzado). Variantes e imágenes siguen disponibles.
    - **Tallas** — selector ordenado por `Size.sortOrder` (incluye 22–30 para calzado; medias tallas solo si existen en seed).
-3. **Variantes** — pestaña Variantes: `upsertAdminProductVariant` / `deleteAdminProductVariant`.
-   - **Colores** — filtrados por categoría (`ProductType.slug`) según `src/config/catalog-colors.ts`. Solo colores con `isProductColor=true` y activos aparecen para variantes nuevas; colores solo de tela (`isFabricColor` sin variante) no contaminan el selector. CRUD de colores en `/admin/colors`.
-   - Mandiles: solo negro/blanco. Pantalones y zapatos: solo negro. Filipinas: negro, blanco, chef-blue, warm-gray.
+3. **Variantes** — pestaña Variantes con editor visual:
+   - **Escritorio (lg+)** — matriz color × talla (`ProductVariantMatrix`): swatch + nombre por fila, tallas en columnas, celda con toggle y editor compacto (SKU, precio, stock, activa).
+   - **Móvil** — lista de tarjetas (`ProductVariantList`) con swatch, talla, SKU, precio, stock y estado.
+   - **Acciones masivas** — _Generar variantes faltantes_, _Aplicar precio base_ (solo variantes con precio 0), _Stock inicial_ (variantes nuevas no persistidas → stock 0).
+   - **Defaults al generar** — precio = precio base del producto, stock = 0, SKU determinístico `CR-{SLUG}-{COLOR}-{SIZE}`, sin sobrescribir variantes existentes.
+   - **Colores** — filtrados por categoría (`ProductType.slug`) según `src/config/catalog-colors.ts`. Solo colores con `isProductColor=true` y activos aparecen para variantes nuevas; colores solo de tela no aparecen. CRUD de colores en `/admin/colors`.
+   - **Tallas** — zapatos (`shoes`) muestran 22–30; resto de categorías usan tallas de ropa (XS–XXL), ordenadas por `sortOrder`.
    - Variantes legadas con color no permitido se muestran al editar con etiqueta de error; el guardado se rechaza hasta corregir el color o eliminar la variante.
    - El backend valida en `upsertAdminProductVariant`; cambiar categoría con variantes incompatibles bloquea `updateAdminProduct`.
 4. **Imágenes** — `ProductImageUploader` con R2: drag & drop, edición (crop/rotación), WebP/JPG/thumb, reorder vía `reorderAdminProductImages`.
@@ -114,12 +118,15 @@ Copy del diálogo: _El producto se ocultará de la tienda y ya no podrá comprar
 | `admin-product-delete-confirmation-input` | Input nombre en eliminar   |
 | `admin-product-delete-confirm-button`     | Botón confirmar eliminar   |
 | `admin-product-delete-button`             | Menú acciones → Eliminar   |
+| `admin-product-variant-editor`            | Editor de variantes        |
+| `admin-product-variant-matrix`            | Matriz desktop             |
+| `admin-product-variant-list`              | Lista mobile               |
+| `admin-product-variant-generate-missing`  | Generar variantes          |
 
 ## Limitaciones (v1)
 
 - ~~Sin upload real a Cloudinary.~~ **Imágenes vía Cloudflare R2** (`ProductImageUploader`).
 - Sin borrado físico automático de objetos R2 al eliminar `ProductImage` (pendiente).
-- Sin inventario avanzado ni matrices de variantes.
 - CRUD de categorías (`ProductType`) en `/admin/categories`; colores en `/admin/colors`; tallas siguen siendo datos de referencia globales.
 - Sin reglas avanzadas de personalización en esta pantalla.
 - Sin página dedicada `/admin/products/[id]` (futuro: enlace desde dialog).

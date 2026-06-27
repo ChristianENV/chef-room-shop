@@ -192,7 +192,11 @@ function ColorFormBody({
         <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
           Cancelar
         </Button>
-        <Button onClick={() => void handleSubmit()} disabled={isSaving} data-testid="admin-color-form-submit">
+        <Button
+          onClick={() => void handleSubmit()}
+          disabled={isSaving}
+          data-testid="admin-color-form-submit"
+        >
           {isSaving ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

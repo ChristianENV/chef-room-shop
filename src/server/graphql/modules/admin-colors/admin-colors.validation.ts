@@ -85,9 +85,7 @@ export const updateAdminColorInputSchema = z
   })
   .superRefine((value, ctx) => {
     const hasScopeInput =
-      value.isFabricColor != null ||
-      value.isProductColor != null ||
-      value.isGeneralColor != null
+      value.isFabricColor != null || value.isProductColor != null || value.isGeneralColor != null
     if (!hasScopeInput) return
 
     const scopes = parseScopeFlags({

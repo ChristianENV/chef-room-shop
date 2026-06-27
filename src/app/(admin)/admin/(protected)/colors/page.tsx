@@ -41,10 +41,7 @@ export default function AdminColorsPage() {
   const colors = colorsQuery.data ?? []
   const tableRows = useMemo(() => colors.map(mapAdminColorToTableRow), [colors])
 
-  const formInitialValues = useMemo(
-    () => mapAdminColorToFormValues(editingColor),
-    [editingColor],
-  )
+  const formInitialValues = useMemo(() => mapAdminColorToFormValues(editingColor), [editingColor])
 
   const handleCreate = () => {
     setEditingColor(null)
