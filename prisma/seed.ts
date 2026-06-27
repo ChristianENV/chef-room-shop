@@ -131,12 +131,7 @@ const SHOE_SIZES = [
 
 const SIZES = [...APPAREL_SIZES, ...SHOE_SIZES] as const
 
-const COLORS = [
-  { slug: 'chef-blue', name: 'Azul Chef Room', hex: '#2B3280' },
-  { slug: 'white', name: 'Blanco', hex: '#FFFFFF' },
-  { slug: 'black', name: 'Negro', hex: '#111111' },
-  { slug: 'warm-gray', name: 'Gris cálido', hex: '#E2E0DB' },
-] as const
+import { SEED_ALL_COLORS } from './seed-colors.data'
 
 const CUSTOMIZATION_AREAS = [
   { slug: 'chest', nameEs: 'Pecho', nameEn: 'Chest', sortOrder: 1 },
@@ -248,10 +243,18 @@ async function seedCatalog() {
     })
   }
 
-  for (const color of COLORS) {
+  for (const color of SEED_ALL_COLORS) {
     await prisma.color.upsert({
       where: { slug: color.slug },
-      update: { name: color.name, hex: color.hex },
+      update: {
+        name: color.name,
+        hex: color.hex,
+        isFabricColor: color.isFabricColor,
+        isProductColor: color.isProductColor,
+        isGeneralColor: color.isGeneralColor,
+        isActive: color.isActive,
+        sortOrder: color.sortOrder,
+      },
       create: color,
     })
   }

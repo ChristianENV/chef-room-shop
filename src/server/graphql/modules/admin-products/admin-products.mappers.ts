@@ -8,8 +8,8 @@ import type {
   Size,
 } from '@prisma/client'
 
+import { mapAdminColorToGql } from '../admin-colors/admin-colors.mappers'
 import type {
-  AdminColorGql,
   AdminProductGql,
   AdminProductImageGql,
   AdminProductModel3dGql,
@@ -19,7 +19,7 @@ import type {
 import { mapAdminProductTypeToGql } from '../admin-product-types/admin-product-types.mappers'
 import { mapProductModelAssetToGql } from './admin-products.model-3d.service'
 
-export { mapAdminProductTypeToGql }
+export { mapAdminProductTypeToGql, mapAdminColorToGql }
 
 export type AdminProductWithRelations = Product & {
   productType: ProductType
@@ -30,20 +30,6 @@ export type AdminProductWithRelations = Product & {
 
 function toIso(date: Date | null | undefined): string | null {
   return date ? date.toISOString() : null
-}
-
-/**
- * Maps Prisma color to admin GraphQL type.
- */
-export function mapAdminColorToGql(color: Color): AdminColorGql {
-  return {
-    id: color.id,
-    name: color.name,
-    slug: color.slug,
-    hexCode: color.hex,
-    isActive: true,
-    sortOrder: null,
-  }
 }
 
 /**

@@ -14,7 +14,7 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
    - **Personalizable** — switch; desactivar para productos sin customizer (calzado). Variantes e imágenes siguen disponibles.
    - **Tallas** — selector ordenado por `Size.sortOrder` (incluye 22–30 para calzado; medias tallas solo si existen en seed).
 3. **Variantes** — pestaña Variantes: `upsertAdminProductVariant` / `deleteAdminProductVariant`.
-   - **Colores** — filtrados por categoría (`ProductType.slug`) según `src/config/catalog-colors.ts`. Sin categoría seleccionada no se muestran colores (`Selecciona primero una categoría para ver los colores disponibles.`).
+   - **Colores** — filtrados por categoría (`ProductType.slug`) según `src/config/catalog-colors.ts`. Solo colores con `isProductColor=true` y activos aparecen para variantes nuevas; colores solo de tela (`isFabricColor` sin variante) no contaminan el selector. CRUD de colores en `/admin/colors`.
    - Mandiles: solo negro/blanco. Pantalones y zapatos: solo negro. Filipinas: negro, blanco, chef-blue, warm-gray.
    - Variantes legadas con color no permitido se muestran al editar con etiqueta de error; el guardado se rechaza hasta corregir el color o eliminar la variante.
    - El backend valida en `upsertAdminProductVariant`; cambiar categoría con variantes incompatibles bloquea `updateAdminProduct`.
@@ -120,7 +120,7 @@ Copy del diálogo: _El producto se ocultará de la tienda y ya no podrá comprar
 - ~~Sin upload real a Cloudinary.~~ **Imágenes vía Cloudflare R2** (`ProductImageUploader`).
 - Sin borrado físico automático de objetos R2 al eliminar `ProductImage` (pendiente).
 - Sin inventario avanzado ni matrices de variantes.
-- CRUD de categorías (`ProductType`) en `/admin/categories`; colores/tallas siguen siendo datos de referencia globales.
+- CRUD de categorías (`ProductType`) en `/admin/categories`; colores en `/admin/colors`; tallas siguen siendo datos de referencia globales.
 - Sin reglas avanzadas de personalización en esta pantalla.
 - Sin página dedicada `/admin/products/[id]` (futuro: enlace desde dialog).
 - `lib/mock-data.ts` sigue usado en otras pantallas (p. ej. customización demo), no en `/admin/products`.

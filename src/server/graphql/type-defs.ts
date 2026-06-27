@@ -455,6 +455,37 @@ export const adminProductsTypeDefs = /* GraphQL */ `
     name: String!
     slug: String!
     hexCode: String!
+    isFabricColor: Boolean!
+    isProductColor: Boolean!
+    isGeneralColor: Boolean!
+    isActive: Boolean!
+    sortOrder: Int!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  input AdminColorsListInput {
+    includeInactive: Boolean
+  }
+
+  input CreateAdminColorInput {
+    slug: String!
+    name: String!
+    hex: String!
+    isFabricColor: Boolean
+    isProductColor: Boolean
+    isGeneralColor: Boolean
+    isActive: Boolean
+    sortOrder: Int
+  }
+
+  input UpdateAdminColorInput {
+    slug: String
+    name: String
+    hex: String
+    isFabricColor: Boolean
+    isProductColor: Boolean
+    isGeneralColor: Boolean
     isActive: Boolean
     sortOrder: Int
   }
@@ -1757,6 +1788,8 @@ export const typeDefs = /* GraphQL */ `
     adminProductById(id: ID!): AdminProduct
     adminProductBySlug(slug: String!): AdminProduct
     adminProductFormOptions: AdminProductFormOptions!
+    adminColors(includeInactive: Boolean): [AdminColor!]!
+    adminColorById(id: ID!): AdminColor
     adminProductTypes(includeInactive: Boolean): [AdminProductType!]!
     adminProductTypeById(id: ID!): AdminProductType
     adminCustomizationAreas: [AdminCustomizationArea!]!
@@ -1826,6 +1859,9 @@ export const typeDefs = /* GraphQL */ `
     updateAdminProductType(id: ID!, input: UpdateAdminProductTypeInput!): AdminProductType!
     archiveAdminProductType(id: ID!): AdminProductType!
     removeAdminProductTypeImage(id: ID!): AdminProductType!
+    createAdminColor(input: CreateAdminColorInput!): AdminColor!
+    updateAdminColor(id: ID!, input: UpdateAdminColorInput!): AdminColor!
+    archiveAdminColor(id: ID!): AdminColor!
     createAdminProduct(input: AdminProductInput!): AdminProduct!
     updateAdminProduct(id: ID!, input: AdminProductInput!): AdminProduct!
     archiveAdminProduct(id: ID!): AdminProduct!

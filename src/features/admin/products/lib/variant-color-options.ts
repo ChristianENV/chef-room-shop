@@ -40,7 +40,12 @@ export function buildVariantColorSelectOptions(params: {
   const legacyIds = new Set(existingVariantColorIds.filter(Boolean))
 
   return colors
-    .filter((color) => allowed.has(color.slug) || legacyIds.has(color.id))
+    .filter((color) => {
+      if (legacyIds.has(color.id)) return true
+      if (!color.isActive) return false
+      if (!color.isProductColor) return false
+      return allowed.has(color.slug)
+    })
     .sort((a, b) => a.name.localeCompare(b.name, 'es'))
     .map((color) => {
       const isInvalidForProductType = !allowed.has(color.slug)

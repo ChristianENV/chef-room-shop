@@ -1,0 +1,6 @@
+export { AdminColorsTable } from './components/admin-colors-table'
+export { AdminColorsTableSkeleton } from './components/admin-colors-loading'
+export { AdminColorsError } from './components/admin-colors-error'
+export { AdminColorsEmpty } from './components/admin-colors-empty'
+export { ColorFormDialog } from './components/color-form-dialog'
+export { ArchiveColorDialog } from './components/archive-color-dialog'

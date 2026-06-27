@@ -13,6 +13,9 @@ export const ADMIN_COLOR_FIELDS = /* GraphQL */ `
   name
   slug
   hexCode
+  isFabricColor
+  isProductColor
+  isGeneralColor
   isActive
   sortOrder
 `

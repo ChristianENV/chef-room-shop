@@ -219,7 +219,10 @@ export async function getAdminProductFormOptions(
 
   const [productTypes, colors, sizes] = await Promise.all([
     context.prisma.productType.findMany({ orderBy: { sortOrder: 'asc' } }),
-    context.prisma.color.findMany({ orderBy: { name: 'asc' } }),
+    context.prisma.color.findMany({
+      where: { isProductColor: true },
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    }),
     context.prisma.size.findMany({ orderBy: { sortOrder: 'asc' } }),
   ])
 

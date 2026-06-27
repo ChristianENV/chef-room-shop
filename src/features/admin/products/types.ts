@@ -13,8 +13,11 @@ export type AdminColor = {
   name: string
   slug: string
   hexCode: string
+  isFabricColor: boolean
+  isProductColor: boolean
+  isGeneralColor: boolean
   isActive: boolean
-  sortOrder: number | null
+  sortOrder: number
 }
 
 export type AdminSize = {

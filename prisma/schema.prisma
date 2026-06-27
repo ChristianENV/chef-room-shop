@@ -545,12 +545,17 @@ model ProductModelAsset {
 }
 
 model Color {
-  id        String   @id @default(uuid()) @db.Uuid
-  slug      String   @unique
-  name      String
-  hex       String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(uuid()) @db.Uuid
+  slug           String   @unique
+  name           String
+  hex            String
+  isFabricColor  Boolean  @default(false)
+  isProductColor Boolean  @default(true)
+  isGeneralColor Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   variants ProductVariant[]
 
