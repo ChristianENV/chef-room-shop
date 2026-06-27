@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Plus, Trash2, Loader2 } from 'lucide-react'
 
 import { formatCurrencyMXN } from '@/src/lib/formatters'
@@ -45,6 +45,12 @@ import {
   STATUS_LABELS,
 } from './mappers/admin-products-ui.mapper'
 import { validateFormVariantColors, VARIANT_COLOR_SELECT_HELP } from './lib/variant-color-options'
+import {
+  PRODUCT_FORM_CLOSE_BLOCKED_MESSAGE,
+  PRODUCT_FORM_SAVE_STATUS_MESSAGE,
+  resolveProductFormPendingState,
+  shouldBlockProductFormDialogClose,
+} from './lib/product-form-dialog-guards'
 import { mapFormOptionsToSelectOptions } from './types/admin-products-ui.types'
 import type { AdminProductFormOptions } from './types'
 import type {
@@ -69,7 +75,9 @@ type ProductFormDrawerBodyProps = {
   productId: string | null
   initialValues: ProductFormValues
   formOptions: AdminProductFormOptions
-  onOpenChange: (open: boolean) => void
+  onRequestClose: () => void
+  onPendingChange?: (pending: boolean) => void
+  onCloseBlocked?: () => void
   onSaved?: (productId: string) => void
   initialModel3d?: import('./types').AdminProductModel3d | null
 }
@@ -91,7 +99,9 @@ function ProductFormDrawerBody({
   productId,
   initialValues,
   formOptions,
-  onOpenChange,
+  onRequestClose,
+  onPendingChange,
+  onCloseBlocked,
   onSaved,
   initialModel3d,
 }: ProductFormDrawerBodyProps) {
@@ -105,6 +115,26 @@ function ProductFormDrawerBody({
   const [formValues, setFormValues] = useState<ProductFormValues>(initialValues)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [isImageUploadBusy, setIsImageUploadBusy] = useState(false)
+  const [isModel3dBusy, setIsModel3dBusy] = useState(false)
+
+  const isFormPending = resolveProductFormPendingState({
+    isSaving,
+    isImageUploadBusy,
+    isModel3dBusy,
+  })
+
+  useEffect(() => {
+    onPendingChange?.(isFormPending)
+  }, [isFormPending, onPendingChange])
+
+  const handleRequestClose = useCallback(() => {
+    if (shouldBlockProductFormDialogClose(isFormPending, false)) {
+      onCloseBlocked?.()
+      return
+    }
+    onRequestClose()
+  }, [isFormPending, onCloseBlocked, onRequestClose])
 
   const selectOptions = useMemo(
     () =>
@@ -178,7 +208,7 @@ function ProductFormDrawerBody({
       }
 
       if (savedId) onSaved?.(savedId)
-      onOpenChange(false)
+      onRequestClose()
     } catch (error) {
       let message = 'No pudimos guardar el producto. Intenta de nuevo.'
       if (error instanceof GraphQLRequestError || error instanceof Error) {
@@ -257,13 +287,13 @@ function ProductFormDrawerBody({
     <>
       <Tabs defaultValue="general" className="mt-6 flex-1">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="general" className="font-sans text-xs">
+          <TabsTrigger value="general" className="font-sans text-xs" disabled={isFormPending}>
             General
           </TabsTrigger>
-          <TabsTrigger value="variants" className="font-sans text-xs">
+          <TabsTrigger value="variants" className="font-sans text-xs" disabled={isFormPending}>
             Variantes
           </TabsTrigger>
-          <TabsTrigger value="seo" className="font-sans text-xs">
+          <TabsTrigger value="seo" className="font-sans text-xs" disabled={isFormPending}>
             SEO
           </TabsTrigger>
         </TabsList>
@@ -273,7 +303,8 @@ function ProductFormDrawerBody({
             ref={imageUploaderRef}
             productId={productId}
             initialImages={formValues.images}
-            disabled={isSaving}
+            disabled={isFormPending}
+            onBusyChange={setIsImageUploadBusy}
           />
 
           <Separator />
@@ -292,6 +323,8 @@ function ProductFormDrawerBody({
                 <ProductModel3DUploader
                   productId={productId}
                   initialModel3d={initialModel3d ?? null}
+                  disabled={isFormPending}
+                  onBusyChange={setIsModel3dBusy}
                 />
               </div>
 
@@ -306,6 +339,7 @@ function ProductFormDrawerBody({
             <Input
               id="name"
               value={formValues.name}
+              disabled={isFormPending}
               onChange={(e) => {
                 const name = e.target.value
                 setFormValues((prev) =>
@@ -330,6 +364,7 @@ function ProductFormDrawerBody({
             <Input
               id="slug"
               value={formValues.slug}
+              disabled={isFormPending}
               onChange={(e) => updateField('slug', e.target.value)}
               placeholder="filipina-executive"
               className="font-mono text-sm"
@@ -346,6 +381,7 @@ function ProductFormDrawerBody({
             <Input
               id="shortDescription"
               value={formValues.shortDescription}
+              disabled={isFormPending}
               onChange={(e) => updateField('shortDescription', e.target.value)}
               className="font-serif"
             />
@@ -358,6 +394,7 @@ function ProductFormDrawerBody({
             <Textarea
               id="description"
               value={formValues.description}
+              disabled={isFormPending}
               onChange={(e) => updateField('description', e.target.value)}
               rows={4}
               className="font-serif"
@@ -369,6 +406,7 @@ function ProductFormDrawerBody({
             <Select
               value={formValues.productTypeId}
               onValueChange={(v) => updateField('productTypeId', v)}
+              disabled={isFormPending}
             >
               <SelectTrigger className="font-sans">
                 <SelectValue placeholder="Seleccionar categoría" />
@@ -394,6 +432,7 @@ function ProductFormDrawerBody({
                 min={0}
                 step={1}
                 value={formValues.basePricePesos}
+                disabled={isFormPending}
                 onChange={(e) => updateField('basePricePesos', Math.max(0, Number(e.target.value)))}
                 className="font-sans"
               />
@@ -403,6 +442,7 @@ function ProductFormDrawerBody({
               <Select
                 value={formValues.status}
                 onValueChange={(v) => updateField('status', v as AdminProductStatusUi)}
+                disabled={isFormPending}
               >
                 <SelectTrigger className="font-sans">
                   <SelectValue />
@@ -429,6 +469,7 @@ function ProductFormDrawerBody({
             </div>
             <Switch
               checked={formValues.customizable}
+              disabled={isFormPending}
               onCheckedChange={(checked) => updateField('customizable', checked)}
             />
           </div>
@@ -447,7 +488,7 @@ function ProductFormDrawerBody({
               variant="outline"
               size="sm"
               onClick={addVariant}
-              disabled={!selectOptions.hasProductTypeSelected}
+              disabled={isFormPending || !selectOptions.hasProductTypeSelected}
             >
               <Plus className="mr-1 h-4 w-4" />
               Agregar
@@ -477,7 +518,7 @@ function ProductFormDrawerBody({
                         <Select
                           value={variant.colorId}
                           onValueChange={(v) => updateVariant(index, { colorId: v })}
-                          disabled={!selectOptions.hasProductTypeSelected}
+                          disabled={isFormPending || !selectOptions.hasProductTypeSelected}
                         >
                           <SelectTrigger className="font-sans">
                             <SelectValue
@@ -508,6 +549,7 @@ function ProductFormDrawerBody({
                         <Select
                           value={variant.sizeId}
                           onValueChange={(v) => updateVariant(index, { sizeId: v })}
+                          disabled={isFormPending}
                         >
                           <SelectTrigger className="font-sans">
                             <SelectValue />
@@ -527,6 +569,7 @@ function ProductFormDrawerBody({
                         <Label className="font-sans text-xs">SKU (opcional)</Label>
                         <Input
                           value={variant.sku}
+                          disabled={isFormPending}
                           onChange={(e) =>
                             updateVariant(index, { sku: e.target.value.toUpperCase() })
                           }
@@ -539,6 +582,7 @@ function ProductFormDrawerBody({
                           type="number"
                           min={0}
                           value={variant.pricePesos}
+                          disabled={isFormPending}
                           onChange={(e) =>
                             updateVariant(index, {
                               pricePesos: Math.max(0, Number(e.target.value)),
@@ -553,6 +597,7 @@ function ProductFormDrawerBody({
                           type="number"
                           min={0}
                           value={variant.stockQty}
+                          disabled={isFormPending}
                           onChange={(e) =>
                             updateVariant(index, {
                               stockQty: Math.max(0, Number(e.target.value)),
@@ -566,6 +611,7 @@ function ProductFormDrawerBody({
                       <div className="flex items-center gap-2">
                         <Switch
                           checked={variant.isActive}
+                          disabled={isFormPending}
                           onCheckedChange={(checked) => updateVariant(index, { isActive: checked })}
                         />
                         <Label className="font-sans text-xs">Activa</Label>
@@ -578,6 +624,7 @@ function ProductFormDrawerBody({
                         variant="ghost"
                         size="sm"
                         className="text-destructive"
+                        disabled={isFormPending}
                         onClick={() => void removeVariant(index)}
                       >
                         <Trash2 className="mr-1 h-4 w-4" />
@@ -599,6 +646,7 @@ function ProductFormDrawerBody({
             <Input
               id="seoTitle"
               value={formValues.seoTitle}
+              disabled={isFormPending}
               onChange={(e) => updateField('seoTitle', e.target.value)}
               className="font-sans"
             />
@@ -613,6 +661,7 @@ function ProductFormDrawerBody({
             <Textarea
               id="seoDescription"
               value={formValues.seoDescription}
+              disabled={isFormPending}
               onChange={(e) => updateField('seoDescription', e.target.value)}
               rows={3}
               className="font-serif"
@@ -627,7 +676,7 @@ function ProductFormDrawerBody({
               images={formValues.images}
               seoImageId={formValues.seoImageId}
               onChange={(seoImageId) => updateField('seoImageId', seoImageId)}
-              disabled={isSaving}
+              disabled={isFormPending}
             />
           </div>
           <Card className="bg-secondary">
@@ -662,6 +711,15 @@ function ProductFormDrawerBody({
         </TabsContent>
       </Tabs>
 
+      {isSaving ? (
+        <p
+          className="mt-4 font-serif text-sm text-muted-foreground"
+          data-testid="admin-product-form-save-status"
+        >
+          {PRODUCT_FORM_SAVE_STATUS_MESSAGE}
+        </p>
+      ) : null}
+
       {saveError ? (
         <Alert variant="destructive" className="mt-4">
           <AlertDescription className="font-serif">{saveError}</AlertDescription>
@@ -669,14 +727,18 @@ function ProductFormDrawerBody({
       ) : null}
 
       <DialogFooter className="mt-6 gap-2 sm:justify-end">
-        <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
+        <Button variant="outline" onClick={handleRequestClose} disabled={isFormPending}>
           Cancelar
         </Button>
-        <Button onClick={() => void handleSubmit()} disabled={isSaving}>
+        <Button
+          data-testid="admin-product-form-submit"
+          onClick={() => void handleSubmit()}
+          disabled={isFormPending}
+        >
           {isSaving ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Guardando…
+              Guardando...
             </>
           ) : isEditing ? (
             'Guardar cambios'
@@ -696,9 +758,30 @@ export function ProductFormDialog({
   onSaved,
 }: ProductFormDialogProps) {
   const isEditing = !!productId
+  const [formPending, setFormPending] = useState(false)
+  const [closeBlockedMessage, setCloseBlockedMessage] = useState<string | null>(null)
 
   const productQuery = useAdminProductByIdQuery(productId ?? '', open && isEditing)
   const formOptionsQuery = useAdminProductFormOptionsQuery(open)
+
+  const handleDialogOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (shouldBlockProductFormDialogClose(formPending, nextOpen)) {
+        setCloseBlockedMessage(PRODUCT_FORM_CLOSE_BLOCKED_MESSAGE)
+        return
+      }
+      setCloseBlockedMessage(null)
+      if (!nextOpen) {
+        setFormPending(false)
+      }
+      onOpenChange(nextOpen)
+    },
+    [formPending, onOpenChange],
+  )
+
+  const handleRequestClose = useCallback(() => {
+    handleDialogOpenChange(false)
+  }, [handleDialogOpenChange])
 
   const initialValues = useMemo(() => {
     if (!open || !formOptionsQuery.data) return null
@@ -714,10 +797,23 @@ export function ProductFormDialog({
     open && (formOptionsQuery.isPending || (isEditing && productQuery.isPending) || !initialValues)
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
       <DialogContent
         data-testid="admin-product-form-dialog"
+        showCloseButton={!formPending}
         className="flex max-h-[min(92vh,900px)] max-w-[min(96vw,64rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-5xl"
+        onPointerDownOutside={(event) => {
+          if (formPending) {
+            event.preventDefault()
+            setCloseBlockedMessage(PRODUCT_FORM_CLOSE_BLOCKED_MESSAGE)
+          }
+        }}
+        onEscapeKeyDown={(event) => {
+          if (formPending) {
+            event.preventDefault()
+            setCloseBlockedMessage(PRODUCT_FORM_CLOSE_BLOCKED_MESSAGE)
+          }
+        }}
       >
         <DialogHeader className="border-b border-border px-6 py-4 text-left">
           <DialogTitle className="font-sans">
@@ -731,6 +827,12 @@ export function ProductFormDialog({
         </DialogHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+          {closeBlockedMessage ? (
+            <Alert className="mb-4">
+              <AlertDescription className="font-serif">{closeBlockedMessage}</AlertDescription>
+            </Alert>
+          ) : null}
+
           {formOptionsQuery.isError ? (
             <Alert variant="destructive" className="mt-4">
               <AlertDescription className="font-serif">
@@ -749,7 +851,9 @@ export function ProductFormDialog({
               productId={productId}
               initialValues={initialValues}
               formOptions={formOptionsQuery.data}
-              onOpenChange={onOpenChange}
+              onRequestClose={handleRequestClose}
+              onPendingChange={setFormPending}
+              onCloseBlocked={() => setCloseBlockedMessage(PRODUCT_FORM_CLOSE_BLOCKED_MESSAGE)}
               onSaved={onSaved}
               initialModel3d={productQuery.data?.model3d ?? null}
             />

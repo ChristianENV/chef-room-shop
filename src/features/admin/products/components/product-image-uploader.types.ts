@@ -30,4 +30,5 @@ export type ProductImageUploaderItem = {
 export type ProductImageUploaderHandle = {
   uploadPendingImages: (productId: string) => Promise<void>
   hasPendingUploads: () => boolean
+  isBusy: () => boolean
 }

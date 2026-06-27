@@ -8,9 +8,13 @@ import type {
   AdminProductVariant,
   AdminProductsListVariables,
 } from '../types'
+import {
+  resolveAdminProductsListFilter,
+  type AdminProductsVisibilityFilter,
+} from '../lib/admin-products-list-filters'
 import type {
-  AdminProductImageUi,
   AdminProductStatusUi,
+  AdminProductImageUi,
   AdminProductTableRow,
   AdminProductVariantUi,
   ProductFormValues,
@@ -220,8 +224,8 @@ export function buildAdminProductsListVariables(input: {
   search: string
   productTypeSlug: string
   statusFilter: string
+  visibilityFilter: AdminProductsVisibilityFilter
   customizableOnly: boolean
-  includeArchived: boolean
   sortBy: string
 }): AdminProductsListVariables {
   const filter: AdminProductsListVariables['filter'] = {}
@@ -232,16 +236,21 @@ export function buildAdminProductsListVariables(input: {
   if (input.productTypeSlug !== 'all') {
     filter.productTypeSlug = input.productTypeSlug
   }
-  if (input.statusFilter !== 'all') {
-    filter.status = input.statusFilter
+
+  const resolved = resolveAdminProductsListFilter({
+    visibilityFilter: input.visibilityFilter,
+    statusFilter: input.statusFilter,
+  })
+
+  if (resolved.status) {
+    filter.status = resolved.status
   }
+  if (resolved.includeArchived) {
+    filter.includeArchived = true
+  }
+
   if (input.customizableOnly) {
     filter.customizable = true
-  }
-  const needsArchived =
-    input.includeArchived || input.statusFilter === 'ARCHIVED' || input.statusFilter === 'all'
-  if (needsArchived) {
-    filter.includeArchived = true
   }
 
   const sort: AdminProductsListVariables['sort'] = { direction: 'desc' }
@@ -293,5 +302,6 @@ export function mapFormOptionsToProductTypeSlugOptions(
       }),
     }))
 }
-
 export { UI_STATUS_BY_BFF, BFF_STATUS_BY_UI, STATUS_LABELS }
+export { ADMIN_PRODUCTS_VISIBILITY_LABELS } from '../lib/admin-products-list-filters'
+export type { AdminProductsVisibilityFilter } from '../lib/admin-products-list-filters'

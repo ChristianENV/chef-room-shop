@@ -4,7 +4,11 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
 
 ## Flujo operativo
 
-1. **Listado** — `useAdminProductsQuery` con filtros servidor (búsqueda, tipo, estado, personalizable, orden).
+1. **Listado** — `useAdminProductsQuery` con filtros servidor (búsqueda, tipo, visibilidad, estado, personalizable, orden).
+   - **Por defecto** muestra solo productos **activos** (`visibilityFilter: active`, estado `ACTIVE`, sin archivados).
+   - Pestañas **Activos / Ocultos / Todos** (`admin-products-visibility-filter`) para alternar el catálogo visible vs archivado/oculto.
+   - **Ocultos** — productos con `status: ARCHIVED` (soft-delete vía `archiveAdminProduct`); requiere `includeArchived: true` en GraphQL.
+   - **Borradores** siguen accesibles desde **Activos** usando el filtro de estado **Borrador**.
 2. **Crear / editar** — `ProductFormDialog` (`max-w-5xl`) con `useAdminProductFormOptionsQuery`, `useCreateAdminProductMutation`, `useUpdateAdminProductMutation`.
    - **Categoría** — dropdown dinámico desde `adminProductFormOptions.productTypes` (`nameEs`, incluye p. ej. Zapatos).
    - **Personalizable** — switch; desactivar para productos sin customizer (calzado). Variantes e imágenes siguen disponibles.
@@ -19,7 +23,8 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
    - Copy: _Imagen SEO_ / _Selecciona una foto del producto para usarla al compartir esta página._
    - Si no hay selección: _Si no seleccionas una imagen, se usará la imagen principal del producto._
    - Campo GraphQL: `seoImageId` (nullable); se persiste con `updateAdminProduct`.
-6. **Eliminar producto** — doble confirmación estilo GitHub (`DeleteProductDialog`): el admin escribe el nombre exacto del producto y confirma. Internamente llama `archiveAdminProduct` (soft-delete: `ARCHIVED` + `deletedAt`). **No hay borrado permanente** desde Admin; el historial de órdenes se conserva. El producto desaparece del listado normal (filtro `includeArchived: false`) y de la tienda.
+   - **Guardado** — mientras hay operaciones pendientes (producto, variantes, imágenes o modelo 3D), el diálogo muestra **Guardando...**, deshabilita tabs/campos/botones y **bloquea el cierre** (X, Escape, clic fuera, Cancelar). Mensaje: _Espera a que termine el guardado antes de cerrar._ Estado: _Guardando producto y sincronizando variantes…_
+6. **Eliminar producto** — doble confirmación estilo GitHub (`DeleteProductDialog`): el admin escribe el nombre exacto del producto y confirma. Internamente llama `archiveAdminProduct` (soft-delete: `ARCHIVED` + `deletedAt`). **No hay borrado permanente** desde Admin; el historial de órdenes se conserva. El producto desaparece del listado **Activos** y de la tienda; usar pestaña **Ocultos** para verlo archivado.
 7. **Duplicar** — `duplicateAdminProduct` → copia en borrador.
 8. **Estado** — menú “Cambiar estado” → `updateAdminProductStatus` (ACTIVE reactiva y limpia `deletedAt`).
 
@@ -37,6 +42,8 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
 | ------------------------ | ----------------------------------------------------------------------- |
 | Página                   | `src/app/(admin)/admin/(protected)/products/page.tsx`                   |
 | Mapper UI                | `src/features/admin/products/mappers/admin-products-ui.mapper.ts`       |
+| Filtros listado          | `src/features/admin/products/lib/admin-products-list-filters.ts`        |
+| Guardas formulario       | `src/features/admin/products/lib/product-form-dialog-guards.ts`         |
 | Tipos UI                 | `src/features/admin/products/types/admin-products-ui.types.ts`          |
 | Hooks                    | `src/features/admin/products/api/*`                                     |
 | Tabla / toolbar / dialog | `src/features/admin/products/products-*.tsx`, `product-form-dialog.tsx` |
@@ -94,13 +101,19 @@ Copy del diálogo: _El producto se ocultará de la tienda y ya no podrá comprar
 
 ## data-testid
 
-| ID                                        | Ubicación                |
-| ----------------------------------------- | ------------------------ |
-| `admin-product-form-dialog`               | Dialog crear/editar      |
-| `admin-product-delete-dialog`             | Confirmación eliminar    |
-| `admin-product-delete-confirmation-input` | Input nombre en eliminar |
-| `admin-product-delete-confirm-button`     | Botón confirmar eliminar |
-| `admin-product-delete-button`             | Menú acciones → Eliminar |
+| ID                                        | Ubicación                  |
+| ----------------------------------------- | -------------------------- |
+| `admin-product-form-dialog`               | Dialog crear/editar        |
+| `admin-product-form-submit`               | Botón guardar producto     |
+| `admin-product-form-save-status`          | Mensaje guardando          |
+| `admin-products-visibility-filter`        | Tabs Activos/Ocultos/Todos |
+| `admin-products-visibility-active`        | Tab Activos                |
+| `admin-products-visibility-hidden`        | Tab Ocultos                |
+| `admin-products-visibility-all`           | Tab Todos                  |
+| `admin-product-delete-dialog`             | Confirmación eliminar      |
+| `admin-product-delete-confirmation-input` | Input nombre en eliminar   |
+| `admin-product-delete-confirm-button`     | Botón confirmar eliminar   |
+| `admin-product-delete-button`             | Menú acciones → Eliminar   |
 
 ## Limitaciones (v1)
 
@@ -128,6 +141,8 @@ Ver checklist en `docs/graphql-admin-products.md` (sección UI conectada).
 ## Subir modelo 3D GLB
 
 Solo se acepta `.glb`. Flujo desde **Admin → Editar Producto → pestaña General → sección "Modelo 3D del producto"**:
+
+El uploader usa clases del tema admin (`bg-card`, `bg-muted`, `border-border`, `text-primary`) y soporta **dark mode** (sin fondos blancos fijos).
 
 1. Guardar el producto primero (se requiere `productId`).
 2. Arrastrar o seleccionar el `.glb` (máximo 120 MB original).
