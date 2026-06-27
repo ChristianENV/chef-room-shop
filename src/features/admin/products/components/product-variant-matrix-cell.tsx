@@ -1,5 +1,6 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -22,16 +23,16 @@ type ProductVariantMatrixCellProps = {
   onChange: (patch: Partial<AdminProductVariantUi>) => void
 }
 
-export function ProductVariantMatrixCell({
+function MatrixCellShell({
   state,
-  variant,
-  disabled = false,
-  onToggle,
-  onChange,
-}: ProductVariantMatrixCellProps) {
-  const enabled = state === 'active' || state === 'inactive' || state === 'invalid'
-
-  const cellContent = (
+  disabled,
+  children,
+}: {
+  state: VariantCellState
+  disabled: boolean
+  children: ReactNode
+}) {
+  return (
     <div
       className={cn(
         'flex min-h-[72px] flex-col items-center justify-center gap-1 rounded-md border p-2 text-center transition-colors',
@@ -42,44 +43,84 @@ export function ProductVariantMatrixCell({
         !disabled && state !== 'missing' && 'hover:bg-accent/40',
       )}
     >
-      <Checkbox
-        checked={enabled}
-        disabled={disabled || state === 'invalid'}
-        onCheckedChange={(checked) => onToggle(checked === true)}
-        onClick={(event) => event.stopPropagation()}
-        aria-label={enabled ? VARIANT_MATRIX_EDIT_CELL : VARIANT_MATRIX_STATE_MISSING}
-      />
-      {variant && enabled ? (
-        <>
-          <span className="font-mono text-[10px] text-muted-foreground">{variant.stockQty} u.</span>
-          <span className="font-sans text-[11px] font-medium">${variant.pricePesos}</span>
-        </>
-      ) : (
-        <span className="font-serif text-[10px] text-muted-foreground">
-          {state === 'invalid'
-            ? VARIANT_MATRIX_STATE_INVALID
-            : state === 'inactive'
-              ? VARIANT_MATRIX_STATE_INACTIVE
-              : VARIANT_MATRIX_STATE_MISSING}
-        </span>
-      )}
+      {children}
     </div>
   )
+}
 
-  if (!variant || state === 'missing') {
-    return cellContent
+function MatrixCellDetails({
+  state,
+  variant,
+  enabled,
+}: {
+  state: VariantCellState
+  variant?: AdminProductVariantUi
+  enabled: boolean
+}) {
+  if (variant && enabled) {
+    return (
+      <>
+        <span className="font-mono text-[10px] text-muted-foreground">{variant.stockQty} u.</span>
+        <span className="font-sans text-[11px] font-medium">${variant.pricePesos}</span>
+      </>
+    )
   }
 
   return (
-    <Popover>
-      <PopoverTrigger asChild disabled={disabled}>
-        <button type="button" className="w-full text-left" aria-label={VARIANT_MATRIX_EDIT_CELL}>
-          {cellContent}
-        </button>
-      </PopoverTrigger>
-      <PopoverContent className="w-72" align="center">
-        <ProductVariantCellEditor variant={variant} disabled={disabled} onChange={onChange} />
-      </PopoverContent>
-    </Popover>
+    <span className="font-serif text-[10px] text-muted-foreground">
+      {state === 'invalid'
+        ? VARIANT_MATRIX_STATE_INVALID
+        : state === 'inactive'
+          ? VARIANT_MATRIX_STATE_INACTIVE
+          : VARIANT_MATRIX_STATE_MISSING}
+    </span>
+  )
+}
+
+export function ProductVariantMatrixCell({
+  state,
+  variant,
+  disabled = false,
+  onToggle,
+  onChange,
+}: ProductVariantMatrixCellProps) {
+  const enabled = state === 'active' || state === 'inactive' || state === 'invalid'
+
+  const checkbox = (
+    <Checkbox
+      checked={enabled}
+      disabled={disabled || state === 'invalid'}
+      onCheckedChange={(checked) => onToggle(checked === true)}
+      aria-label={enabled ? VARIANT_MATRIX_EDIT_CELL : VARIANT_MATRIX_STATE_MISSING}
+    />
+  )
+
+  if (!variant || state === 'missing') {
+    return (
+      <MatrixCellShell state={state} disabled={disabled}>
+        {checkbox}
+        <MatrixCellDetails state={state} variant={variant} enabled={enabled} />
+      </MatrixCellShell>
+    )
+  }
+
+  return (
+    <MatrixCellShell state={state} disabled={disabled}>
+      {checkbox}
+      <Popover>
+        <PopoverTrigger asChild disabled={disabled}>
+          <button
+            type="button"
+            className="flex w-full flex-col items-center gap-1 rounded-sm text-center outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label={VARIANT_MATRIX_EDIT_CELL}
+          >
+            <MatrixCellDetails state={state} variant={variant} enabled={enabled} />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-72" align="center">
+          <ProductVariantCellEditor variant={variant} disabled={disabled} onChange={onChange} />
+        </PopoverContent>
+      </Popover>
+    </MatrixCellShell>
   )
 }
