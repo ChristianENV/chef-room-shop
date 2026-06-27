@@ -132,7 +132,7 @@ describe('admin color validation', () => {
   })
 })
 
-describe('variant color selector excludes fabric-only colors', () => {
+describe('variant color selector by product type scopes', () => {
   const colors = [
     {
       id: 'color-black',
@@ -169,16 +169,25 @@ describe('variant color selector excludes fabric-only colors', () => {
     },
   ] as const
 
-  it('excludes fabric-only colors from jacket variant dropdown', () => {
+  it('includes active fabric-only colors for chef-jacket variant dropdown', () => {
     const options = buildVariantColorSelectOptions({
       colors,
       productTypeSlug: 'chef-jacket',
     })
 
     assert.deepEqual(
-      options.map((row) => row.value),
-      ['color-black'],
+      options.map((row) => row.value).sort(),
+      ['color-black', 'color-olive'],
     )
+  })
+
+  it('excludes fabric-only colors from apron variant dropdown', () => {
+    const options = buildVariantColorSelectOptions({
+      colors,
+      productTypeSlug: 'apron',
+    })
+
+    assert.deepEqual(options.map((row) => row.value), ['color-black'])
   })
 
   it('excludes inactive product colors for new variants', () => {

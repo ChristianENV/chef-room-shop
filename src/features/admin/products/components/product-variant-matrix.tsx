@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  VARIANT_MATRIX_HELPER,
   VARIANT_MATRIX_LABEL_COLOR,
   VARIANT_MATRIX_LABEL_SIZE,
   VARIANT_MATRIX_TITLE,
@@ -40,7 +41,13 @@ export function ProductVariantMatrix({
 }: ProductVariantMatrixProps) {
   return (
     <div className="hidden lg:block" data-testid="admin-product-variant-matrix">
-      <p className="mb-3 font-sans text-sm font-medium text-foreground">{VARIANT_MATRIX_TITLE}</p>
+      <p className="mb-1 font-sans text-sm font-medium text-foreground">{VARIANT_MATRIX_TITLE}</p>
+      <p
+        className="mb-3 font-serif text-xs text-muted-foreground"
+        data-testid="admin-product-variant-matrix-helper"
+      >
+        {VARIANT_MATRIX_HELPER}
+      </p>
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="min-w-full border-collapse text-sm">
           <thead>

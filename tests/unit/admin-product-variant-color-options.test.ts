@@ -130,10 +130,10 @@ describe('admin product variant color options', () => {
     const jacketOptions = mapFormOptionsToSelectOptions(formOptions, {
       selectedProductTypeId: 'type-jacket',
     })
-    assert.equal(jacketOptions.colors.length, 4)
+    assert.equal(jacketOptions.colors.length, 5)
     assert.equal(
       jacketOptions.colors.some((color) => color.value === 'color-olive'),
-      false,
+      true,
     )
   })
 

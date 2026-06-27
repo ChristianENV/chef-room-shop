@@ -46,6 +46,7 @@ import { assertSeoImageBelongsToProduct } from './admin-products.seo-image'
 import {
   assertActiveVariantsMatchProductType,
   assertVariantColorAllowedForProductType,
+  toVariantColorEligibilityInput,
 } from './admin-products.variant-colors'
 
 const productInclude = {
@@ -576,7 +577,7 @@ export async function upsertAdminProductVariant(
 
     assertVariantColorAllowedForProductType({
       productTypeSlug: product.productType.slug,
-      colorSlug: color.slug,
+      color: toVariantColorEligibilityInput(color),
     })
 
     let sku = existing.sku
@@ -619,7 +620,7 @@ export async function upsertAdminProductVariant(
 
   assertVariantColorAllowedForProductType({
     productTypeSlug: product.productType.slug,
-    colorSlug: color.slug,
+    color: toVariantColorEligibilityInput(color),
   })
 
   const skuBase = parsed.sku?.trim()

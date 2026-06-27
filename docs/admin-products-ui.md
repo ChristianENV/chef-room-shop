@@ -14,11 +14,11 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
    - **Personalizable** — switch; desactivar para productos sin customizer (calzado). Variantes e imágenes siguen disponibles.
    - **Tallas** — selector ordenado por `Size.sortOrder` (incluye 22–30 para calzado; medias tallas solo si existen en seed).
 3. **Variantes** — pestaña Variantes con editor visual:
-   - **Escritorio (lg+)** — matriz color × talla (`ProductVariantMatrix`): swatch + nombre por fila, tallas en columnas, celda con toggle y editor compacto (SKU, precio, stock, activa).
+   - **Escritorio (lg+)** — matriz color × talla (`ProductVariantMatrix`): swatch + nombre por fila, tallas en columnas. Cada celda muestra badge de estado (`Activa`, `Faltante`, `Inactiva`, `Inválida`), stock, precio y acciones explícitas: **Crear**, **Editar**, **Desactivar** / **Reactivar**. Switch **Activa** solo cambia el estado activo (no abre el editor). Texto de ayuda: _Usa Crear para agregar una variante faltante o Editar para ajustar SKU, precio y stock._
    - **Móvil** — lista de tarjetas (`ProductVariantList`) con swatch, talla, SKU, precio, stock y estado.
    - **Acciones masivas** — _Generar variantes faltantes_, _Aplicar precio base_ (solo variantes con precio 0), _Stock inicial_ (variantes nuevas no persistidas → stock 0).
    - **Defaults al generar** — precio = precio base del producto, stock = 0, SKU determinístico `CR-{SLUG}-{COLOR}-{SIZE}`, sin sobrescribir variantes existentes.
-   - **Colores** — filtrados por categoría (`ProductType.slug`) según `src/config/catalog-colors.ts`. Solo colores con `isProductColor=true` y activos aparecen para variantes nuevas; colores solo de tela no aparecen. CRUD de colores en `/admin/colors`.
+   - **Colores** — reglas por categoría vía `src/config/variant-color-eligibility.ts`. **Filipinas (`chef-jacket`)** incluyen todos los colores de tela activos (`isFabricColor=true`). Mandil, Pantalón y Zapato siguen restringidos por `PRODUCT_TYPE_VARIANT_COLOR_SLUGS` y `isProductColor=true`. CRUD de colores en `/admin/colors`.
    - **Tallas** — zapatos (`shoes`) muestran 22–30; resto de categorías usan tallas de ropa (XS–XXL), ordenadas por `sortOrder`.
    - Variantes legadas con color no permitido se muestran al editar con etiqueta de error; el guardado se rechaza hasta corregir el color o eliminar la variante.
    - El backend valida en `upsertAdminProductVariant`; cambiar categoría con variantes incompatibles bloquea `updateAdminProduct`.

@@ -26,13 +26,26 @@ export const VARIANT_MATRIX_LABEL_STOCK = 'Stock'
 
 export const VARIANT_MATRIX_LABEL_SKU = 'SKU'
 
-export const VARIANT_MATRIX_LABEL_ACTIVE = 'Variante activa'
+export const VARIANT_MATRIX_LABEL_ACTIVE = 'Activa'
 
-export const VARIANT_MATRIX_STATE_MISSING = 'Variante faltante'
+export const VARIANT_MATRIX_STATE_MISSING = 'Faltante'
 
-export const VARIANT_MATRIX_STATE_INACTIVE = 'Variante inactiva'
+export const VARIANT_MATRIX_STATE_INACTIVE = 'Inactiva'
 
-export const VARIANT_MATRIX_STATE_INVALID = 'Color no permitido para esta categoría'
+export const VARIANT_MATRIX_STATE_INVALID = 'Inválida'
+
+export const VARIANT_MATRIX_ACTION_CREATE = 'Crear'
+
+export const VARIANT_MATRIX_ACTION_EDIT = 'Editar'
+
+export const VARIANT_MATRIX_ACTION_DEACTIVATE = 'Desactivar'
+
+export const VARIANT_MATRIX_ACTION_REACTIVATE = 'Reactivar'
+
+export const VARIANT_MATRIX_SWITCH_ACTIVE = 'Activa'
+
+export const VARIANT_MATRIX_HELPER =
+  'Usa Crear para agregar una variante faltante o Editar para ajustar SKU, precio y stock.'
 
 export const VARIANT_MATRIX_EDIT_CELL = 'Editar variante'
 

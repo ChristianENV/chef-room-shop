@@ -1,7 +1,4 @@
-import {
-  getAllowedVariantColorSlugsForProductType,
-  isVariantColorAllowedForProductType,
-} from '@/src/config/catalog-colors'
+import { isVariantColorEligibleForProductType } from '@/src/config/variant-color-eligibility'
 import {
   PRODUCT_TYPE_VARIANT_CONFLICT_MESSAGE,
   VARIANT_COLOR_INVALID_LABEL,
@@ -25,6 +22,10 @@ export function resolveProductTypeSlugById(
   return productTypes.find((type) => type.id === productTypeId)?.slug ?? null
 }
 
+function compareSortOrder(a: number | null | undefined, b: number | null | undefined): number {
+  return (a ?? 0) - (b ?? 0)
+}
+
 /**
  * Variant color dropdown options filtered by product type, with legacy invalid colors retained when editing.
  */
@@ -36,19 +37,21 @@ export function buildVariantColorSelectOptions(params: {
   const { colors, productTypeSlug, existingVariantColorIds = [] } = params
   if (!productTypeSlug) return []
 
-  const allowed = new Set(getAllowedVariantColorSlugsForProductType(productTypeSlug))
   const legacyIds = new Set(existingVariantColorIds.filter(Boolean))
 
   return colors
     .filter((color) => {
       if (legacyIds.has(color.id)) return true
-      if (!color.isActive) return false
-      if (!color.isProductColor) return false
-      return allowed.has(color.slug)
+      return isVariantColorEligibleForProductType({ productTypeSlug, color })
     })
-    .sort((a, b) => a.name.localeCompare(b.name, 'es'))
+    .sort(
+      (a, b) => compareSortOrder(a.sortOrder, b.sortOrder) || a.name.localeCompare(b.name, 'es'),
+    )
     .map((color) => {
-      const isInvalidForProductType = !allowed.has(color.slug)
+      const isInvalidForProductType = !isVariantColorEligibleForProductType({
+        productTypeSlug,
+        color,
+      })
       return {
         value: color.id,
         label: isInvalidForProductType
@@ -75,9 +78,9 @@ export function validateFormVariantColors(
     const color = formOptions.colors.find((row) => row.id === variant.colorId)
     if (!color) continue
     if (
-      !isVariantColorAllowedForProductType({
+      !isVariantColorEligibleForProductType({
         productTypeSlug,
-        colorSlug: color.slug,
+        color,
       })
     ) {
       return PRODUCT_TYPE_VARIANT_CONFLICT_MESSAGE
@@ -95,8 +98,8 @@ export function isVariantColorIdInvalidForProductType(params: {
   if (!params.productTypeSlug) return false
   const color = params.colors.find((row) => row.id === params.colorId)
   if (!color) return false
-  return !isVariantColorAllowedForProductType({
+  return !isVariantColorEligibleForProductType({
     productTypeSlug: params.productTypeSlug,
-    colorSlug: color.slug,
+    color,
   })
 }

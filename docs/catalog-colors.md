@@ -15,20 +15,23 @@ The palette includes many tones (Esenciales, Neutros, Contemporáneos) that are 
 
 ### Product / variant colors
 
-Product variant colors are **sellable SKU** dimensions: `Product` + `Color` + `Size` → `ProductVariant`. They are stored in the database `colors` table with `isProductColor=true` and referenced by `ProductVariant.colorId`.
+Product variant colors are **sellable SKU** dimensions: `Product` + `Color` + `Size` → `ProductVariant`. They are stored in the database `colors` table and referenced by `ProductVariant.colorId`.
 
-Variant colors must be allowed **per product type**. Rules are defined in:
+Variant colors must be allowed **per product type**. Base slug rules live in:
 
 - `src/config/catalog-colors.ts` → `PRODUCT_TYPE_VARIANT_COLOR_SLUGS`
+- `src/config/variant-color-eligibility.ts` → ProductType-aware resolver (scopes + Filipinas exception)
 
-| Product type (`ProductType.slug`) | Allowed variant colors                     |
-| --------------------------------- | ------------------------------------------ |
-| `chef-jacket`                     | `black`, `white`, `chef-blue`, `warm-gray` |
-| `apron`                           | `black`, `white`                           |
-| `pants`                           | `black`                                    |
-| `shoes`                           | `black`                                    |
+| Product type (`ProductType.slug`) | Allowed variant colors                                                                       |
+| --------------------------------- | -------------------------------------------------------------------------------------------- |
+| `chef-jacket` (Filipinas)         | All **active fabric colors** (`isFabricColor=true`) plus explicit product colors when needed |
+| `apron`                           | `black`, `white` (`isProductColor=true` only)                                                |
+| `pants`                           | `black` (`isProductColor=true` only)                                                         |
+| `shoes`                           | `black` (`isProductColor=true` only)                                                         |
 
-**Adding a fabric color to the DB does not automatically make it a valid variant color.** The Admin product form and GraphQL validation still enforce `PRODUCT_TYPE_VARIANT_COLOR_SLUGS`.
+**Filipinas exception:** active fabric colors from Admin Colors / customizer palette may be used as sellable variant colors. Fabric-only colors do **not** automatically appear for Mandil, Pantalón, Zapato, or other types.
+
+Frontend matrix, Admin form filters, and GraphQL validation all use `isVariantColorEligibleForProductType()`.
 
 ### General colors
 
@@ -48,12 +51,13 @@ Helpers: `src/lib/color-scopes.ts`
 
 ## Shared configuration
 
-| File                               | Role                                                            |
-| ---------------------------------- | --------------------------------------------------------------- |
-| `src/config/catalog-colors.ts`     | Runtime + seed source of truth for per-type variant color rules |
-| `prisma/seed-colors.data.ts`       | Product + fabric-only color seed rows                           |
-| `prisma/seed-catalog-reference.ts` | Re-exports shared rules for Prisma seeds                        |
-| `fabric-colors.ts`                 | Customizer fabric palette + fabric→catalog mapping              |
+| File                                      | Role                                                |
+| ----------------------------------------- | --------------------------------------------------- |
+| `src/config/catalog-colors.ts`            | Slug allowlists per product type (seed + reference) |
+| `src/config/variant-color-eligibility.ts` | ProductType + scope resolver for Admin variants     |
+| `prisma/seed-colors.data.ts`              | Product + fabric-only color seed rows               |
+| `prisma/seed-catalog-reference.ts`        | Re-exports shared rules for Prisma seeds            |
+| `fabric-colors.ts`                        | Customizer fabric palette + fabric→catalog mapping  |
 
 ## Fabric → catalog mapping
 
@@ -65,7 +69,7 @@ Customizer fabric ids and catalog slugs are not always identical. Only **explici
 
 `warm-gray` uses the same slug in both fabric palette and catalog.
 
-Fabric-only DB slugs (e.g. `olive-green`, `chef-room-blue`) **do not** map to catalog variant colors and must **not** be added to `PRODUCT_TYPE_VARIANT_COLOR_SLUGS` automatically.
+Fabric-only DB slugs (e.g. `olive-green`, `chef-room-blue`) **do not** map to catalog variant colors for restricted product types. For **Filipinas (`chef-jacket`)**, active fabric colors are eligible variant colors without adding them to `PRODUCT_TYPE_VARIANT_COLOR_SLUGS`.
 
 ## Admin Color Management
 

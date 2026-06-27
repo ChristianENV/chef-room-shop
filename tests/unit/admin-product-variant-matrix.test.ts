@@ -133,7 +133,7 @@ describe('variant matrix size filtering', () => {
 })
 
 describe('variant matrix color rows', () => {
-  it('builds rows from allowed ProductType colors', () => {
+  it('builds rows from allowed ProductType colors including fabric colors for chef-jacket', () => {
     const selectColors = buildVariantColorSelectOptions({
       colors,
       productTypeSlug: 'chef-jacket',
@@ -144,29 +144,42 @@ describe('variant matrix color rows', () => {
       colorMeta: {
         'color-black': { name: 'Negro', hexCode: '#111111', slug: 'black' },
         'color-white': { name: 'Blanco', hexCode: '#FFFFFF', slug: 'white' },
+        'color-olive': { name: 'Verde olivo', hexCode: '#4B5A3C', slug: 'olive-green' },
       },
       variants: [],
     })
 
-    assert.equal(rows.length, 2)
+    assert.equal(rows.length, 3)
+    assert.equal(
+      rows.some((row) => row.value === 'color-olive'),
+      true,
+    )
     assert.equal(
       rows.every((row) => row.hexCode.startsWith('#')),
       true,
     )
   })
 
-  it('excludes fabric-only and inactive colors for new variants', () => {
+  it('excludes inactive colors for new chef-jacket variants', () => {
     const selectColors = buildVariantColorSelectOptions({
       colors,
       productTypeSlug: 'chef-jacket',
     })
 
     assert.equal(
-      selectColors.some((color) => color.value === 'color-olive'),
+      selectColors.some((color) => color.value === 'color-inactive'),
       false,
     )
+  })
+
+  it('excludes fabric-only colors for apron', () => {
+    const selectColors = buildVariantColorSelectOptions({
+      colors,
+      productTypeSlug: 'apron',
+    })
+
     assert.equal(
-      selectColors.some((color) => color.value === 'color-inactive'),
+      selectColors.some((color) => color.value === 'color-olive'),
       false,
     )
   })
@@ -377,6 +390,26 @@ describe('variant editor UI wiring', () => {
     assert.match(dialogSource, /isFormPending/)
     assert.match(dialogSource, /PRODUCT_FORM_SAVE_STATUS_MESSAGE/)
     assert.match(dialogSource, /showCloseButton=\{!formPending\}/)
+  })
+
+  it('uses explicit matrix cell actions and separates active switch from editor', () => {
+    const cellSource = readFileSync(
+      resolve('src/features/admin/products/components/product-variant-matrix-cell.tsx'),
+      'utf8',
+    )
+    const matrixSource = readFileSync(
+      resolve('src/features/admin/products/components/product-variant-matrix.tsx'),
+      'utf8',
+    )
+
+    assert.match(cellSource, /admin-product-variant-cell-create/)
+    assert.match(cellSource, /VARIANT_MATRIX_ACTION_CREATE/)
+    assert.match(cellSource, /admin-product-variant-cell-edit/)
+    assert.match(cellSource, /VARIANT_MATRIX_ACTION_EDIT/)
+    assert.match(cellSource, /admin-product-variant-cell-active-switch/)
+    assert.match(cellSource, /stopPropagation/)
+    assert.doesNotMatch(cellSource, /<Checkbox/)
+    assert.match(matrixSource, /VARIANT_MATRIX_HELPER/)
   })
 })
 
