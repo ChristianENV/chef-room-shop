@@ -737,44 +737,58 @@ export async function syncAdminProductVariants(
   assertNoDuplicateBatchSkus(resolvedSkus)
 
   const summary = summarizeVariantBatch(parsed.variants)
+  const transactionTimeoutMs = Math.min(
+    60_000,
+    Math.max(15_000, 10_000 + parsed.variants.length * 150),
+  )
 
   try {
-    await context.prisma.$transaction(async (tx) => {
-      for (let index = 0; index < parsed.variants.length; index++) {
-        const variant = parsed.variants[index]!
-        const sku = resolvedSkus[index]!
-        const isActive = variant.isActive !== false
+    await context.prisma.$transaction(
+      async (tx) => {
+        await Promise.all(
+          parsed.variants.map(async (variant, index) => {
+            const sku = resolvedSkus[index]!
+            const isActive = variant.isActive !== false
 
-        if (variant.id) {
-          const current = existingById.get(variant.id)!
-          await tx.productVariant.update({
-            where: { id: variant.id },
-            data: {
-              colorId: variant.colorId,
-              sizeId: variant.sizeId,
-              sku,
-              priceCents: variant.priceCents ?? current.priceCents,
-              stockQty: variant.stockQty ?? current.stockQty,
-              deletedAt: isActive ? null : (current.deletedAt ?? new Date()),
-            },
-          })
-          continue
-        }
+            if (variant.id) {
+              const current = existingById.get(variant.id)!
+              await tx.productVariant.update({
+                where: { id: variant.id },
+                data: {
+                  colorId: variant.colorId,
+                  sizeId: variant.sizeId,
+                  sku,
+                  priceCents: variant.priceCents ?? current.priceCents,
+                  stockQty: variant.stockQty ?? current.stockQty,
+                  deletedAt: isActive ? null : (current.deletedAt ?? new Date()),
+                },
+              })
+              return
+            }
 
-        await tx.productVariant.create({
-          data: {
-            productId: parsed.productId,
-            colorId: variant.colorId,
-            sizeId: variant.sizeId,
-            sku,
-            priceCents: variant.priceCents ?? product.basePriceCents,
-            stockQty: variant.stockQty ?? 0,
-            deletedAt: isActive ? null : new Date(),
-          },
-        })
-      }
-    })
+            await tx.productVariant.create({
+              data: {
+                productId: parsed.productId,
+                colorId: variant.colorId,
+                sizeId: variant.sizeId,
+                sku,
+                priceCents: variant.priceCents ?? product.basePriceCents,
+                stockQty: variant.stockQty ?? 0,
+                deletedAt: isActive ? null : new Date(),
+              },
+            })
+          }),
+        )
+      },
+      { maxWait: 10_000, timeout: transactionTimeoutMs },
+    )
   } catch (error) {
+    if (error instanceof Error && /expired transaction/i.test(error.message)) {
+      throw new GraphQLError(
+        'La sincronización de variantes tardó demasiado. Guarda de nuevo o reduce el número de cambios.',
+        { extensions: { code: 'INTERNAL_SERVER_ERROR' } },
+      )
+    }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       throw conflictError('Conflicto de SKU o variante duplicada. Revisa los datos del lote.')
     }
