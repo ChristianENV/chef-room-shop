@@ -93,7 +93,7 @@ export function ProductImageDropzone({
           compact ? 'gap-2 px-4 py-6' : 'gap-3 px-6 py-10',
           'focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
           disabled || remaining === 0
-            ? 'cursor-not-allowed border-border/60 bg-muted/30 opacity-60'
+            ? 'cursor-not-allowed border-border/60 bg-muted/40'
             : isDragging
               ? 'cursor-copy border-primary bg-primary/5'
               : 'cursor-pointer border-border hover:border-primary/50 hover:bg-accent/30',

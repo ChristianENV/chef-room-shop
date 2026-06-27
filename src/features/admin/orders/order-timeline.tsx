@@ -25,11 +25,11 @@ const statusIconMap: Record<AdminOrderStatusFilter, React.ComponentType<{ classN
 
 const statusColorMap: Record<AdminOrderStatusFilter, string> = {
   'pendiente-pago': 'bg-warning text-warning-foreground',
-  pagado: 'bg-success text-white',
+  pagado: 'bg-success text-success-foreground',
   'en-produccion': 'bg-accent text-accent-foreground',
   'listo-envio': 'bg-primary text-primary-foreground',
   enviado: 'bg-muted text-muted-foreground',
-  entregado: 'bg-success text-white',
+  entregado: 'bg-success text-success-foreground',
   cancelado: 'bg-destructive text-destructive-foreground',
 }
 

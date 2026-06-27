@@ -132,8 +132,8 @@ function ColorPickerCard({
       className={cn(
         'flex flex-col items-center gap-2 rounded-xl border p-3 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         selected
-          ? 'border-primary bg-primary/5 ring-2 ring-primary/40'
-          : 'border-border bg-card hover:border-primary/30 hover:bg-accent/20',
+          ? 'border-primary bg-primary/10 ring-2 ring-primary ring-offset-2 ring-offset-background'
+          : 'border-border bg-card hover:border-primary/40 hover:bg-accent/30',
         selected && locked && 'cursor-not-allowed opacity-90',
       )}
     >

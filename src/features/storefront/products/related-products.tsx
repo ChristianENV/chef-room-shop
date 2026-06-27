@@ -55,7 +55,7 @@ function RelatedProductCard({ product }: { product: Product }) {
             <Badge
               className={cn(
                 'absolute left-2 top-2 text-xs',
-                product.badge === 'nuevo' && 'bg-success text-white',
+                product.badge === 'nuevo' && 'bg-success text-success-foreground',
                 product.badge === 'popular' && 'bg-primary text-primary-foreground',
                 product.badge === 'oferta' && 'bg-destructive text-destructive-foreground',
               )}

@@ -97,8 +97,8 @@ export function ProductImageSortableCard({
         )}
 
         {item.status === 'uploaded' && (
-          <div className="absolute inset-0 flex items-center justify-center bg-emerald-500/10 opacity-0 transition-opacity group-hover:opacity-100">
-            <CheckCircle2 className="h-8 w-8 text-emerald-600" aria-hidden />
+          <div className="absolute inset-0 flex items-center justify-center bg-success/10 opacity-0 transition-opacity group-hover:opacity-100">
+            <CheckCircle2 className="h-8 w-8 text-success" aria-hidden />
           </div>
         )}
 

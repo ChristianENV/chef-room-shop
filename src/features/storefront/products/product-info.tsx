@@ -176,7 +176,7 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
                   selectedColor === color.id
                     ? 'border-primary ring-2 ring-primary ring-offset-2 ring-offset-background'
                     : 'border-border hover:border-muted-foreground',
-                  !color.available && 'cursor-not-allowed opacity-40',
+                  !color.available && 'cursor-not-allowed opacity-55 saturate-50',
                 )}
                 style={{ backgroundColor: color.hex }}
                 title={color.name}
@@ -215,7 +215,7 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
                     selectedSize === size
                       ? 'border-primary bg-primary text-primary-foreground'
                       : 'border-border bg-card text-foreground hover:border-muted-foreground',
-                    !sizeAvailable && 'cursor-not-allowed opacity-40',
+                    !sizeAvailable && 'cursor-not-allowed opacity-55',
                   )}
                 >
                   {size}
@@ -252,7 +252,7 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
               <Plus className="h-4 w-4" />
             </button>
           </div>
-          <span className="font-serif text-sm text-muted-foreground">
+          <span className="font-serif text-sm text-foreground/80">
             {product.stock > 10 ? 'En stock' : `Solo quedan ${product.stock}`}
           </span>
         </div>
@@ -342,15 +342,15 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
       <div className="grid grid-cols-1 gap-3 border-t border-border pt-6 sm:grid-cols-3">
         <div className="flex items-center gap-2">
           <Shield className="h-5 w-5 text-success" />
-          <span className="font-serif text-sm text-muted-foreground">Pago seguro</span>
+          <span className="font-serif text-sm text-foreground/75">Pago seguro</span>
         </div>
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-success" />
-          <span className="font-serif text-sm text-muted-foreground">Produccion profesional</span>
+          <span className="font-serif text-sm text-foreground/75">Produccion profesional</span>
         </div>
         <div className="flex items-center gap-2">
           <HeadphonesIcon className="h-5 w-5 text-success" />
-          <span className="font-serif text-sm text-muted-foreground">Soporte personalizado</span>
+          <span className="font-serif text-sm text-foreground/75">Soporte personalizado</span>
         </div>
       </div>
     </div>

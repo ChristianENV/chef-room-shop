@@ -168,8 +168,8 @@ export function ProductModel3DUploader({
         data-state="no-product"
         className={`rounded-lg border border-dashed p-6 text-center ${PANEL_CARD}`}
       >
-        <Box className="mx-auto mb-3 h-8 w-8 text-muted-foreground/50" />
-        <p className="text-sm font-medium text-muted-foreground">
+        <Box className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
+        <p className="text-sm font-medium text-foreground/80">
           Guarda el producto para subir un modelo 3D.
         </p>
       </div>
@@ -186,7 +186,7 @@ export function ProductModel3DUploader({
             </div>
             <div className="min-w-0 flex-1">
               <div className="mb-1 flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
                 <span
                   className="truncate text-sm font-medium"
                   data-testid="admin-product-model-filename"
@@ -197,7 +197,7 @@ export function ProductModel3DUploader({
                   GLB
                 </Badge>
                 {result.isActive && (
-                  <Badge className="shrink-0 bg-emerald-100 text-xs text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                  <Badge className="shrink-0 bg-success/15 text-xs text-success dark:bg-success/20 dark:text-success">
                     Activo
                   </Badge>
                 )}
@@ -205,7 +205,7 @@ export function ProductModel3DUploader({
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                 <span>Tamaño: {formatBytes(result.sizeBytes)}</span>
                 {result.originalSizeBytes && result.originalSizeBytes > result.sizeBytes && (
-                  <span className="text-emerald-600 dark:text-emerald-400">
+                  <span className="text-success">
                     Original: {formatBytes(result.originalSizeBytes)} → optimizado{' '}
                     {result.compressionRatio
                       ? `(ahorro ${formatPercent(result.compressionRatio)})`
@@ -253,10 +253,10 @@ export function ProductModel3DUploader({
         {warnings.length > 0 && (
           <Alert
             variant="default"
-            className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40"
+            className="border-warning/30 bg-warning/10 dark:border-warning/40 dark:bg-warning/15"
           >
-            <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            <AlertDescription className="text-xs text-amber-700 dark:text-amber-200">
+            <AlertTriangle className="h-4 w-4 text-warning" />
+            <AlertDescription className="text-xs text-foreground/90">
               {warnings.map((w, i) => (
                 <p key={i}>{w}</p>
               ))}
@@ -296,7 +296,7 @@ export function ProductModel3DUploader({
               </div>
               <div className={STAT_BOX}>
                 <p className="text-xs text-muted-foreground">Ahorro est.</p>
-                <p className="mt-0.5 font-mono text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                <p className="mt-0.5 font-mono text-sm font-semibold text-success">
                   {compressionRatio != null ? formatPercent(compressionRatio) : '—'}
                 </p>
               </div>
@@ -362,7 +362,7 @@ export function ProductModel3DUploader({
         data-testid="admin-product-model-dropzone"
         className={`group relative p-8 text-center ${DROPZONE_BASE} ${
           disabled
-            ? 'cursor-not-allowed opacity-60'
+            ? 'cursor-not-allowed border-border/60 bg-muted/40'
             : isDragging
               ? `${DROPZONE_DRAG} cursor-pointer`
               : `${DROPZONE_IDLE} cursor-pointer`
@@ -406,7 +406,7 @@ export function ProductModel3DUploader({
               </span>
             </p>
           </div>
-          <p className="text-xs text-muted-foreground/70">
+          <p className="text-xs text-muted-foreground">
             Solo .glb · Recomendado {'<'} 12 MB · Máx 25 MB optimizado
           </p>
         </div>
@@ -415,10 +415,10 @@ export function ProductModel3DUploader({
       {warnings.length > 0 && (
         <Alert
           variant="default"
-          className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40"
+          className="border-warning/30 bg-warning/10 dark:border-warning/40 dark:bg-warning/15"
         >
-          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-          <AlertDescription className="text-xs text-amber-700 dark:text-amber-200">
+          <AlertTriangle className="h-4 w-4 text-warning" />
+          <AlertDescription className="text-xs text-foreground/90">
             {warnings.map((w, i) => (
               <p key={i}>{w}</p>
             ))}

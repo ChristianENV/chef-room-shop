@@ -66,7 +66,7 @@ export function ProductSeoImagePicker({
               </span>
             ) : null}
             {option.isPrimary ? (
-              <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 font-sans text-[10px] text-white">
+              <span className="absolute bottom-1 left-1 rounded bg-primary/90 px-1.5 py-0.5 font-sans text-[10px] text-primary-foreground">
                 Principal
               </span>
             ) : null}
