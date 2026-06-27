@@ -2,9 +2,10 @@ import type { PrismaClient } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 
 import {
-  isKnownCatalogColorSlug,
-  isVariantColorAllowedForProductType,
-} from '@/src/config/catalog-colors'
+  isValidVariantColorRecord,
+  isVariantColorEligibleForProductType,
+  type VariantColorEligibilityInput,
+} from '@/src/config/variant-color-eligibility'
 import {
   PRODUCT_TYPE_VARIANT_CONFLICT_MESSAGE,
   VARIANT_COLOR_NOT_ALLOWED_MESSAGE,
@@ -23,28 +24,46 @@ function badUserInputError(
   })
 }
 
+export function toVariantColorEligibilityInput(color: {
+  slug: string
+  name: string
+  hex: string
+  isFabricColor: boolean
+  isProductColor: boolean
+  isActive: boolean
+}): VariantColorEligibilityInput {
+  return {
+    slug: color.slug,
+    name: color.name,
+    hexCode: color.hex,
+    isFabricColor: color.isFabricColor,
+    isProductColor: color.isProductColor,
+    isActive: color.isActive,
+  }
+}
+
 /**
- * Ensures a color slug is allowed for the product type (sellable variant rules).
+ * Ensures a color is allowed for the product type (sellable variant rules).
  */
 export function assertVariantColorAllowedForProductType(params: {
   productTypeSlug: string
-  colorSlug: string
+  color: VariantColorEligibilityInput
 }): void {
-  const colorSlug = params.colorSlug.trim().toLowerCase()
-
-  if (!isKnownCatalogColorSlug(colorSlug)) {
-    throw badUserInputError(VARIANT_COLOR_UNKNOWN_MESSAGE, { colorSlug })
+  if (!isValidVariantColorRecord(params.color)) {
+    throw badUserInputError(VARIANT_COLOR_UNKNOWN_MESSAGE, {
+      colorSlug: params.color.slug.trim().toLowerCase(),
+    })
   }
 
   if (
-    !isVariantColorAllowedForProductType({
+    !isVariantColorEligibleForProductType({
       productTypeSlug: params.productTypeSlug,
-      colorSlug,
+      color: params.color,
     })
   ) {
     throw badUserInputError(VARIANT_COLOR_NOT_ALLOWED_MESSAGE, {
       productTypeSlug: params.productTypeSlug.trim().toLowerCase(),
-      colorSlug,
+      colorSlug: params.color.slug.trim().toLowerCase(),
     })
   }
 }
@@ -63,14 +82,14 @@ export async function assertActiveVariantsMatchProductType(
   })
 
   const invalidSlugs = variants
-    .map((variant) => variant.color.slug)
     .filter(
-      (colorSlug) =>
-        !isVariantColorAllowedForProductType({
+      (variant) =>
+        !isVariantColorEligibleForProductType({
           productTypeSlug,
-          colorSlug,
+          color: toVariantColorEligibilityInput(variant.color),
         }),
     )
+    .map((variant) => variant.color.slug)
 
   if (invalidSlugs.length > 0) {
     throw badUserInputError(PRODUCT_TYPE_VARIANT_CONFLICT_MESSAGE, {

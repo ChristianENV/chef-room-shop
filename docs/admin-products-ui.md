@@ -4,22 +4,38 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
 
 ## Flujo operativo
 
-1. **Listado** — `useAdminProductsQuery` con filtros servidor (búsqueda, tipo, estado, personalizable, orden).
+1. **Listado** — `useAdminProductsQuery` con filtros servidor (búsqueda, tipo, visibilidad, estado, personalizable, orden).
+   - **Por defecto** muestra solo productos **activos** (`visibilityFilter: active`, estado `ACTIVE`, sin archivados).
+   - Pestañas **Activos / Ocultos / Todos** (`admin-products-visibility-filter`) para alternar el catálogo visible vs archivado/oculto.
+   - **Ocultos** — productos con `status: ARCHIVED` (soft-delete vía `archiveAdminProduct`); requiere `includeArchived: true` en GraphQL.
+   - **Borradores** siguen accesibles desde **Activos** usando el filtro de estado **Borrador**.
 2. **Crear / editar** — `ProductFormDialog` (`max-w-5xl`) con `useAdminProductFormOptionsQuery`, `useCreateAdminProductMutation`, `useUpdateAdminProductMutation`.
    - **Categoría** — dropdown dinámico desde `adminProductFormOptions.productTypes` (`nameEs`, incluye p. ej. Zapatos).
    - **Personalizable** — switch; desactivar para productos sin customizer (calzado). Variantes e imágenes siguen disponibles.
    - **Tallas** — selector ordenado por `Size.sortOrder` (incluye 22–30 para calzado; medias tallas solo si existen en seed).
-3. **Variantes** — pestaña Variantes: `upsertAdminProductVariant` / `deleteAdminProductVariant`.
-   - **Colores** — filtrados por categoría (`ProductType.slug`) según `src/config/catalog-colors.ts`. Sin categoría seleccionada no se muestran colores (`Selecciona primero una categoría para ver los colores disponibles.`).
-   - Mandiles: solo negro/blanco. Pantalones y zapatos: solo negro. Filipinas: negro, blanco, chef-blue, warm-gray.
+3. **Variantes** — pestaña Variantes con editor visual:
+   - **Seleccionar colores** — diálogo con grid visual de tarjetas (swatch grande circular + nombre debajo). Toggle por tarjeta, búsqueda _Buscar color..._, footer **Cancelar** / **Aplicar colores**. Colores con variantes existentes quedan bloqueados. Chips compactos junto al botón (máx. 5 visibles + _+ N colores_).
+   - **Escritorio (lg+)** — matriz color × talla con filas visibles = defaults de categoría + colores aplicados + colores con variantes existentes. Celdas: **Crear**, **Editar**, **Desactivar** / **Reactivar** (sin switch).
+   - **Móvil** — lista de tarjetas (`ProductVariantList`) con swatch, talla, SKU, precio, stock y estado.
+   - **Stock masivo / Precio masivo** (`ProductVariantBulkTools`) — encima de la matriz. Campo **Cantidad** + **Aplicar a**: _Todas las variantes visibles_, _Solo variantes activas_, _Color seleccionado_, _Talla seleccionada_, _Celdas seleccionadas_; selects opcionales de color/talla; checkbox _Crear variantes faltantes al aplicar stock_; botón **Aplicar stock**. Precio: campo + **Aplicar precio base** / **Aplicar precio personalizado**.
+     - El stock debe ser entero no negativo; el precio no negativo.
+     - **Solo edición local**: aplicar stock/precio **no llama a la API** y no sobrescribe SKU (precio no toca stock y viceversa).
+     - Por defecto solo afecta variantes existentes/activas. Con _Crear variantes faltantes_ activado, las celdas visibles sin variante se crean en borrador con precio base, stock indicado y SKU determinístico `CR-{SLUG}-{COLOR}-{SIZE}`. _Solo variantes activas_ nunca crea variantes nuevas.
+   - **Selección de celdas** — cada celda tiene un checkbox de selección (no abre el editor); las celdas seleccionadas se resaltan. La barra muestra _N celdas seleccionadas_ + _Limpiar selección_ y habilita el alcance _Celdas seleccionadas_. Crear/Editar/Desactivar/Reactivar siguen funcionando aparte (sin anidar elementos interactivos).
+   - **Acciones masivas** — _Generar variantes faltantes_ (solo filas visibles/seleccionadas), _Aplicar precio base_, _Stock inicial_.
+   - **Defaults al generar** — precio = precio base del producto, stock = 0, SKU determinístico `CR-{SLUG}-{COLOR}-{SIZE}`, sin sobrescribir variantes existentes.
+   - **Colores** — pool completo desde `adminProductFormOptions` (activos con `isProductColor` o `isFabricColor`). Elegibilidad por categoría en `src/config/variant-color-eligibility.ts`. Filipinas pueden seleccionar colores de tela activos manualmente; no se agregan todos automáticamente.
+   - **Tallas** — zapatos (`shoes`) muestran 22–30; resto de categorías usan tallas de ropa (XS–XXL), ordenadas por `sortOrder`.
    - Variantes legadas con color no permitido se muestran al editar con etiqueta de error; el guardado se rechaza hasta corregir el color o eliminar la variante.
-   - El backend valida en `upsertAdminProductVariant`; cambiar categoría con variantes incompatibles bloquea `updateAdminProduct`.
+   - El backend valida en `upsertAdminProductVariant` y en `syncAdminProductVariants`; cambiar categoría con variantes incompatibles bloquea `updateAdminProduct`.
+   - **Guardado en lote** — al guardar, todas las ediciones locales de variantes se envían en **una sola** mutación `syncAdminProductVariants` (atómica, dentro de transacción). Ya no se hace una llamada por variante. Si el lote falla (p. ej. SKU duplicado o color inválido), el diálogo permanece abierto y muestra el error sin escribir nada.
 4. **Imágenes** — `ProductImageUploader` con R2: drag & drop, edición (crop/rotación), WebP/JPG/thumb, reorder vía `reorderAdminProductImages`.
 5. **SEO** — pestaña SEO: título, descripción e **imagen SEO** (`ProductSeoImagePicker`) elegida solo entre fotos ya subidas en Imágenes (sin upload en SEO).
    - Copy: _Imagen SEO_ / _Selecciona una foto del producto para usarla al compartir esta página._
    - Si no hay selección: _Si no seleccionas una imagen, se usará la imagen principal del producto._
    - Campo GraphQL: `seoImageId` (nullable); se persiste con `updateAdminProduct`.
-6. **Eliminar producto** — doble confirmación estilo GitHub (`DeleteProductDialog`): el admin escribe el nombre exacto del producto y confirma. Internamente llama `archiveAdminProduct` (soft-delete: `ARCHIVED` + `deletedAt`). **No hay borrado permanente** desde Admin; el historial de órdenes se conserva. El producto desaparece del listado normal (filtro `includeArchived: false`) y de la tienda.
+   - **Guardado** — mientras hay operaciones pendientes (producto, lote de variantes, imágenes o modelo 3D), el diálogo muestra un **overlay de carga a pantalla completa** (`ProductFormSavingOverlay`) que cubre todo el diálogo, deshabilita tabs/campos/botones y **bloquea el cierre** (X, Escape, clic fuera, Cancelar). Estado único derivado `isProductFormBusy = isSaving || isSavingVariantsBatch || isImageUploadBusy || isModel3dBusy`. Copy del overlay: _Guardando producto_ / _Estamos sincronizando la información del producto. No cierres esta ventana._ con pasos: _Guardando datos generales..._, _Sincronizando variantes..._, _Actualizando imágenes..._, _Guardando modelo 3D..._, _Finalizando..._ Si el guardado falla, se quita el overlay y se muestra el error. Mensaje de cierre bloqueado: _Espera a que termine el guardado antes de cerrar._
+6. **Eliminar producto** — doble confirmación estilo GitHub (`DeleteProductDialog`): el admin escribe el nombre exacto del producto y confirma. Internamente llama `archiveAdminProduct` (soft-delete: `ARCHIVED` + `deletedAt`). **No hay borrado permanente** desde Admin; el historial de órdenes se conserva. El producto desaparece del listado **Activos** y de la tienda; usar pestaña **Ocultos** para verlo archivado.
 7. **Duplicar** — `duplicateAdminProduct` → copia en borrador.
 8. **Estado** — menú “Cambiar estado” → `updateAdminProductStatus` (ACTIVE reactiva y limpia `deletedAt`).
 
@@ -37,6 +53,8 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
 | ------------------------ | ----------------------------------------------------------------------- |
 | Página                   | `src/app/(admin)/admin/(protected)/products/page.tsx`                   |
 | Mapper UI                | `src/features/admin/products/mappers/admin-products-ui.mapper.ts`       |
+| Filtros listado          | `src/features/admin/products/lib/admin-products-list-filters.ts`        |
+| Guardas formulario       | `src/features/admin/products/lib/product-form-dialog-guards.ts`         |
 | Tipos UI                 | `src/features/admin/products/types/admin-products-ui.types.ts`          |
 | Hooks                    | `src/features/admin/products/api/*`                                     |
 | Tabla / toolbar / dialog | `src/features/admin/products/products-*.tsx`, `product-form-dialog.tsx` |
@@ -68,6 +86,7 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
 - `useArchiveAdminProductMutation`
 - `useDuplicateAdminProductMutation`
 - `useUpdateAdminProductStatusMutation`
+- `useSyncAdminProductVariantsMutation` (lote del formulario)
 - `useUpsertAdminProductVariantMutation`
 - `useDeleteAdminProductVariantMutation`
 - `useDeleteAdminProductImageMutation`
@@ -94,20 +113,36 @@ Copy del diálogo: _El producto se ocultará de la tienda y ya no podrá comprar
 
 ## data-testid
 
-| ID                                        | Ubicación                |
-| ----------------------------------------- | ------------------------ |
-| `admin-product-form-dialog`               | Dialog crear/editar      |
-| `admin-product-delete-dialog`             | Confirmación eliminar    |
-| `admin-product-delete-confirmation-input` | Input nombre en eliminar |
-| `admin-product-delete-confirm-button`     | Botón confirmar eliminar |
-| `admin-product-delete-button`             | Menú acciones → Eliminar |
+| ID                                        | Ubicación                  |
+| ----------------------------------------- | -------------------------- |
+| `admin-product-form-dialog`               | Dialog crear/editar        |
+| `admin-product-form-submit`               | Botón guardar producto     |
+| `admin-product-form-save-status`          | Mensaje guardando          |
+| `admin-products-visibility-filter`        | Tabs Activos/Ocultos/Todos |
+| `admin-products-visibility-active`        | Tab Activos                |
+| `admin-products-visibility-hidden`        | Tab Ocultos                |
+| `admin-products-visibility-all`           | Tab Todos                  |
+| `admin-product-delete-dialog`             | Confirmación eliminar      |
+| `admin-product-delete-confirmation-input` | Input nombre en eliminar   |
+| `admin-product-delete-confirm-button`     | Botón confirmar eliminar   |
+| `admin-product-delete-button`             | Menú acciones → Eliminar   |
+| `admin-product-form-saving-overlay`       | Overlay de guardado        |
+| `admin-product-form-saving-stage`         | Paso actual del guardado   |
+| `admin-product-variant-editor`            | Editor de variantes        |
+| `admin-product-variant-bulk-tools`        | Stock/Precio masivo        |
+| `admin-product-bulk-apply-stock`          | Botón aplicar stock        |
+| `admin-product-bulk-create-missing`       | Checkbox crear faltantes   |
+| `admin-product-bulk-clear-selection`      | Limpiar selección celdas   |
+| `admin-product-variant-cell-select`       | Checkbox selección celda   |
+| `admin-product-variant-matrix`            | Matriz desktop             |
+| `admin-product-variant-list`              | Lista mobile               |
+| `admin-product-variant-generate-missing`  | Generar variantes          |
 
 ## Limitaciones (v1)
 
 - ~~Sin upload real a Cloudinary.~~ **Imágenes vía Cloudflare R2** (`ProductImageUploader`).
 - Sin borrado físico automático de objetos R2 al eliminar `ProductImage` (pendiente).
-- Sin inventario avanzado ni matrices de variantes.
-- CRUD de categorías (`ProductType`) en `/admin/categories`; colores/tallas siguen siendo datos de referencia globales.
+- CRUD de categorías (`ProductType`) en `/admin/categories`; colores en `/admin/colors`; tallas siguen siendo datos de referencia globales.
 - Sin reglas avanzadas de personalización en esta pantalla.
 - Sin página dedicada `/admin/products/[id]` (futuro: enlace desde dialog).
 - `lib/mock-data.ts` sigue usado en otras pantallas (p. ej. customización demo), no en `/admin/products`.
@@ -128,6 +163,8 @@ Ver checklist en `docs/graphql-admin-products.md` (sección UI conectada).
 ## Subir modelo 3D GLB
 
 Solo se acepta `.glb`. Flujo desde **Admin → Editar Producto → pestaña General → sección "Modelo 3D del producto"**:
+
+El uploader usa clases del tema admin (`bg-card`, `bg-muted`, `border-border`, `text-primary`) y soporta **dark mode** (sin fondos blancos fijos).
 
 1. Guardar el producto primero (se requiere `productId`).
 2. Arrastrar o seleccionar el `.glb` (máximo 120 MB original).

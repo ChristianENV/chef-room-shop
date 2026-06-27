@@ -16,6 +16,9 @@ const catalogColors = [
     name: 'Negro',
     slug: 'black',
     hexCode: '#111111',
+    isFabricColor: true,
+    isProductColor: true,
+    isGeneralColor: true,
     isActive: true,
     sortOrder: 1,
   },
@@ -24,6 +27,9 @@ const catalogColors = [
     name: 'Blanco',
     slug: 'white',
     hexCode: '#FFFFFF',
+    isFabricColor: true,
+    isProductColor: true,
+    isGeneralColor: false,
     isActive: true,
     sortOrder: 2,
   },
@@ -32,6 +38,9 @@ const catalogColors = [
     name: 'Azul Chef Room',
     slug: 'chef-blue',
     hexCode: '#2B3280',
+    isFabricColor: true,
+    isProductColor: true,
+    isGeneralColor: false,
     isActive: true,
     sortOrder: 3,
   },
@@ -40,8 +49,22 @@ const catalogColors = [
     name: 'Gris cálido',
     slug: 'warm-gray',
     hexCode: '#E2E0DB',
+    isFabricColor: true,
+    isProductColor: true,
+    isGeneralColor: false,
     isActive: true,
     sortOrder: 4,
+  },
+  {
+    id: 'color-olive',
+    name: 'Verde olivo',
+    slug: 'olive-green',
+    hexCode: '#4B5A3C',
+    isFabricColor: true,
+    isProductColor: false,
+    isGeneralColor: false,
+    isActive: true,
+    sortOrder: 100,
   },
 ] as const
 
@@ -107,7 +130,11 @@ describe('admin product variant color options', () => {
     const jacketOptions = mapFormOptionsToSelectOptions(formOptions, {
       selectedProductTypeId: 'type-jacket',
     })
-    assert.equal(jacketOptions.colors.length, 4)
+    assert.equal(jacketOptions.colors.length, 5)
+    assert.equal(
+      jacketOptions.colors.some((color) => color.value === 'color-olive'),
+      true,
+    )
   })
 
   it('keeps invalid legacy colors visible with invalid label when editing', () => {

@@ -10,6 +10,7 @@ import {
   getAdminProductFormOptions,
   getAdminProducts,
   reorderAdminProductImages,
+  syncAdminProductVariants,
   updateAdminProduct,
   updateAdminProductStatus,
   upsertAdminProductImage,
@@ -24,6 +25,7 @@ import {
 import type {
   AdminProductImageInput,
   AdminProductInput,
+  AdminProductVariantBatchInput,
   AdminProductVariantInput,
   AdminProductsListInput,
   ConfirmAdminProductModelUploadInput,
@@ -94,6 +96,12 @@ export const adminProductsResolvers = {
 
     deleteAdminProductVariant: (_parent: unknown, args: VariantIdArgs, context: GraphQLContext) =>
       deleteAdminProductVariant(context, args.id),
+
+    syncAdminProductVariants: (
+      _parent: unknown,
+      args: { productId: string; variants: AdminProductVariantBatchInput[] },
+      context: GraphQLContext,
+    ) => syncAdminProductVariants(context, args.productId, args.variants),
 
     upsertAdminProductImage: (_parent: unknown, args: ImageInputArgs, context: GraphQLContext) =>
       upsertAdminProductImage(context, args.input),

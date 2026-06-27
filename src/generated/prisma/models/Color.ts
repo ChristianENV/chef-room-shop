@@ -20,8 +20,18 @@ export type ColorModel = runtime.Types.Result.DefaultSelection<Prisma.$ColorPayl
 
 export type AggregateColor = {
   _count: ColorCountAggregateOutputType | null
+  _avg: ColorAvgAggregateOutputType | null
+  _sum: ColorSumAggregateOutputType | null
   _min: ColorMinAggregateOutputType | null
   _max: ColorMaxAggregateOutputType | null
+}
+
+export type ColorAvgAggregateOutputType = {
+  sortOrder: number | null
+}
+
+export type ColorSumAggregateOutputType = {
+  sortOrder: number | null
 }
 
 export type ColorMinAggregateOutputType = {
@@ -29,6 +39,11 @@ export type ColorMinAggregateOutputType = {
   slug: string | null
   name: string | null
   hex: string | null
+  isFabricColor: boolean | null
+  isProductColor: boolean | null
+  isGeneralColor: boolean | null
+  isActive: boolean | null
+  sortOrder: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -38,6 +53,11 @@ export type ColorMaxAggregateOutputType = {
   slug: string | null
   name: string | null
   hex: string | null
+  isFabricColor: boolean | null
+  isProductColor: boolean | null
+  isGeneralColor: boolean | null
+  isActive: boolean | null
+  sortOrder: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -47,17 +67,35 @@ export type ColorCountAggregateOutputType = {
   slug: number
   name: number
   hex: number
+  isFabricColor: number
+  isProductColor: number
+  isGeneralColor: number
+  isActive: number
+  sortOrder: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
 
+export type ColorAvgAggregateInputType = {
+  sortOrder?: true
+}
+
+export type ColorSumAggregateInputType = {
+  sortOrder?: true
+}
+
 export type ColorMinAggregateInputType = {
   id?: true
   slug?: true
   name?: true
   hex?: true
+  isFabricColor?: true
+  isProductColor?: true
+  isGeneralColor?: true
+  isActive?: true
+  sortOrder?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -67,6 +105,11 @@ export type ColorMaxAggregateInputType = {
   slug?: true
   name?: true
   hex?: true
+  isFabricColor?: true
+  isProductColor?: true
+  isGeneralColor?: true
+  isActive?: true
+  sortOrder?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -76,6 +119,11 @@ export type ColorCountAggregateInputType = {
   slug?: true
   name?: true
   hex?: true
+  isFabricColor?: true
+  isProductColor?: true
+  isGeneralColor?: true
+  isActive?: true
+  sortOrder?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -119,6 +167,18 @@ export type ColorAggregateArgs<ExtArgs extends runtime.Types.Extensions.Internal
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: ColorAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: ColorSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: ColorMinAggregateInputType
@@ -149,6 +209,8 @@ export type ColorGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   _count?: ColorCountAggregateInputType | true
+  _avg?: ColorAvgAggregateInputType
+  _sum?: ColorSumAggregateInputType
   _min?: ColorMinAggregateInputType
   _max?: ColorMaxAggregateInputType
 }
@@ -158,9 +220,16 @@ export type ColorGroupByOutputType = {
   slug: string
   name: string
   hex: string
+  isFabricColor: boolean
+  isProductColor: boolean
+  isGeneralColor: boolean
+  isActive: boolean
+  sortOrder: number
   createdAt: Date
   updatedAt: Date
   _count: ColorCountAggregateOutputType | null
+  _avg: ColorAvgAggregateOutputType | null
+  _sum: ColorSumAggregateOutputType | null
   _min: ColorMinAggregateOutputType | null
   _max: ColorMaxAggregateOutputType | null
 }
@@ -188,6 +257,11 @@ export type ColorWhereInput = {
   slug?: Prisma.StringFilter<"Color"> | string
   name?: Prisma.StringFilter<"Color"> | string
   hex?: Prisma.StringFilter<"Color"> | string
+  isFabricColor?: Prisma.BoolFilter<"Color"> | boolean
+  isProductColor?: Prisma.BoolFilter<"Color"> | boolean
+  isGeneralColor?: Prisma.BoolFilter<"Color"> | boolean
+  isActive?: Prisma.BoolFilter<"Color"> | boolean
+  sortOrder?: Prisma.IntFilter<"Color"> | number
   createdAt?: Prisma.DateTimeFilter<"Color"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Color"> | Date | string
   variants?: Prisma.ProductVariantListRelationFilter
@@ -198,6 +272,11 @@ export type ColorOrderByWithRelationInput = {
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
   hex?: Prisma.SortOrder
+  isFabricColor?: Prisma.SortOrder
+  isProductColor?: Prisma.SortOrder
+  isGeneralColor?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
+  sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   variants?: Prisma.ProductVariantOrderByRelationAggregateInput
@@ -211,6 +290,11 @@ export type ColorWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ColorWhereInput | Prisma.ColorWhereInput[]
   name?: Prisma.StringFilter<"Color"> | string
   hex?: Prisma.StringFilter<"Color"> | string
+  isFabricColor?: Prisma.BoolFilter<"Color"> | boolean
+  isProductColor?: Prisma.BoolFilter<"Color"> | boolean
+  isGeneralColor?: Prisma.BoolFilter<"Color"> | boolean
+  isActive?: Prisma.BoolFilter<"Color"> | boolean
+  sortOrder?: Prisma.IntFilter<"Color"> | number
   createdAt?: Prisma.DateTimeFilter<"Color"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Color"> | Date | string
   variants?: Prisma.ProductVariantListRelationFilter
@@ -221,11 +305,18 @@ export type ColorOrderByWithAggregationInput = {
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
   hex?: Prisma.SortOrder
+  isFabricColor?: Prisma.SortOrder
+  isProductColor?: Prisma.SortOrder
+  isGeneralColor?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
+  sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ColorCountOrderByAggregateInput
+  _avg?: Prisma.ColorAvgOrderByAggregateInput
   _max?: Prisma.ColorMaxOrderByAggregateInput
   _min?: Prisma.ColorMinOrderByAggregateInput
+  _sum?: Prisma.ColorSumOrderByAggregateInput
 }
 
 export type ColorScalarWhereWithAggregatesInput = {
@@ -236,6 +327,11 @@ export type ColorScalarWhereWithAggregatesInput = {
   slug?: Prisma.StringWithAggregatesFilter<"Color"> | string
   name?: Prisma.StringWithAggregatesFilter<"Color"> | string
   hex?: Prisma.StringWithAggregatesFilter<"Color"> | string
+  isFabricColor?: Prisma.BoolWithAggregatesFilter<"Color"> | boolean
+  isProductColor?: Prisma.BoolWithAggregatesFilter<"Color"> | boolean
+  isGeneralColor?: Prisma.BoolWithAggregatesFilter<"Color"> | boolean
+  isActive?: Prisma.BoolWithAggregatesFilter<"Color"> | boolean
+  sortOrder?: Prisma.IntWithAggregatesFilter<"Color"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Color"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Color"> | Date | string
 }
@@ -245,6 +341,11 @@ export type ColorCreateInput = {
   slug: string
   name: string
   hex: string
+  isFabricColor?: boolean
+  isProductColor?: boolean
+  isGeneralColor?: boolean
+  isActive?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   variants?: Prisma.ProductVariantCreateNestedManyWithoutColorInput
@@ -255,6 +356,11 @@ export type ColorUncheckedCreateInput = {
   slug: string
   name: string
   hex: string
+  isFabricColor?: boolean
+  isProductColor?: boolean
+  isGeneralColor?: boolean
+  isActive?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   variants?: Prisma.ProductVariantUncheckedCreateNestedManyWithoutColorInput
@@ -265,6 +371,11 @@ export type ColorUpdateInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   hex?: Prisma.StringFieldUpdateOperationsInput | string
+  isFabricColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isProductColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isGeneralColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   variants?: Prisma.ProductVariantUpdateManyWithoutColorNestedInput
@@ -275,6 +386,11 @@ export type ColorUncheckedUpdateInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   hex?: Prisma.StringFieldUpdateOperationsInput | string
+  isFabricColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isProductColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isGeneralColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   variants?: Prisma.ProductVariantUncheckedUpdateManyWithoutColorNestedInput
@@ -285,6 +401,11 @@ export type ColorCreateManyInput = {
   slug: string
   name: string
   hex: string
+  isFabricColor?: boolean
+  isProductColor?: boolean
+  isGeneralColor?: boolean
+  isActive?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -294,6 +415,11 @@ export type ColorUpdateManyMutationInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   hex?: Prisma.StringFieldUpdateOperationsInput | string
+  isFabricColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isProductColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isGeneralColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -303,6 +429,11 @@ export type ColorUncheckedUpdateManyInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   hex?: Prisma.StringFieldUpdateOperationsInput | string
+  isFabricColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isProductColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isGeneralColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -312,8 +443,17 @@ export type ColorCountOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
   hex?: Prisma.SortOrder
+  isFabricColor?: Prisma.SortOrder
+  isProductColor?: Prisma.SortOrder
+  isGeneralColor?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
+  sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type ColorAvgOrderByAggregateInput = {
+  sortOrder?: Prisma.SortOrder
 }
 
 export type ColorMaxOrderByAggregateInput = {
@@ -321,6 +461,11 @@ export type ColorMaxOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
   hex?: Prisma.SortOrder
+  isFabricColor?: Prisma.SortOrder
+  isProductColor?: Prisma.SortOrder
+  isGeneralColor?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
+  sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -330,8 +475,17 @@ export type ColorMinOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
   hex?: Prisma.SortOrder
+  isFabricColor?: Prisma.SortOrder
+  isProductColor?: Prisma.SortOrder
+  isGeneralColor?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
+  sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type ColorSumOrderByAggregateInput = {
+  sortOrder?: Prisma.SortOrder
 }
 
 export type ColorScalarRelationFilter = {
@@ -358,6 +512,11 @@ export type ColorCreateWithoutVariantsInput = {
   slug: string
   name: string
   hex: string
+  isFabricColor?: boolean
+  isProductColor?: boolean
+  isGeneralColor?: boolean
+  isActive?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -367,6 +526,11 @@ export type ColorUncheckedCreateWithoutVariantsInput = {
   slug: string
   name: string
   hex: string
+  isFabricColor?: boolean
+  isProductColor?: boolean
+  isGeneralColor?: boolean
+  isActive?: boolean
+  sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -392,6 +556,11 @@ export type ColorUpdateWithoutVariantsInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   hex?: Prisma.StringFieldUpdateOperationsInput | string
+  isFabricColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isProductColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isGeneralColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -401,6 +570,11 @@ export type ColorUncheckedUpdateWithoutVariantsInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   hex?: Prisma.StringFieldUpdateOperationsInput | string
+  isFabricColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isProductColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isGeneralColor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -441,6 +615,11 @@ export type ColorSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   slug?: boolean
   name?: boolean
   hex?: boolean
+  isFabricColor?: boolean
+  isProductColor?: boolean
+  isGeneralColor?: boolean
+  isActive?: boolean
+  sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   variants?: boolean | Prisma.Color$variantsArgs<ExtArgs>
@@ -452,6 +631,11 @@ export type ColorSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   slug?: boolean
   name?: boolean
   hex?: boolean
+  isFabricColor?: boolean
+  isProductColor?: boolean
+  isGeneralColor?: boolean
+  isActive?: boolean
+  sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["color"]>
@@ -461,6 +645,11 @@ export type ColorSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   slug?: boolean
   name?: boolean
   hex?: boolean
+  isFabricColor?: boolean
+  isProductColor?: boolean
+  isGeneralColor?: boolean
+  isActive?: boolean
+  sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["color"]>
@@ -470,11 +659,16 @@ export type ColorSelectScalar = {
   slug?: boolean
   name?: boolean
   hex?: boolean
+  isFabricColor?: boolean
+  isProductColor?: boolean
+  isGeneralColor?: boolean
+  isActive?: boolean
+  sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ColorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "hex" | "createdAt" | "updatedAt", ExtArgs["result"]["color"]>
+export type ColorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "hex" | "isFabricColor" | "isProductColor" | "isGeneralColor" | "isActive" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["color"]>
 export type ColorInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   variants?: boolean | Prisma.Color$variantsArgs<ExtArgs>
   _count?: boolean | Prisma.ColorCountOutputTypeDefaultArgs<ExtArgs>
@@ -492,6 +686,11 @@ export type $ColorPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     slug: string
     name: string
     hex: string
+    isFabricColor: boolean
+    isProductColor: boolean
+    isGeneralColor: boolean
+    isActive: boolean
+    sortOrder: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["color"]>
@@ -922,6 +1121,11 @@ export interface ColorFieldRefs {
   readonly slug: Prisma.FieldRef<"Color", 'String'>
   readonly name: Prisma.FieldRef<"Color", 'String'>
   readonly hex: Prisma.FieldRef<"Color", 'String'>
+  readonly isFabricColor: Prisma.FieldRef<"Color", 'Boolean'>
+  readonly isProductColor: Prisma.FieldRef<"Color", 'Boolean'>
+  readonly isGeneralColor: Prisma.FieldRef<"Color", 'Boolean'>
+  readonly isActive: Prisma.FieldRef<"Color", 'Boolean'>
+  readonly sortOrder: Prisma.FieldRef<"Color", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Color", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Color", 'DateTime'>
 }

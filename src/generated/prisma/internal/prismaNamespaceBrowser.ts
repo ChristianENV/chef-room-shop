@@ -358,6 +358,11 @@ export const ColorScalarFieldEnum = {
   slug: 'slug',
   name: 'name',
   hex: 'hex',
+  isFabricColor: 'isFabricColor',
+  isProductColor: 'isProductColor',
+  isGeneralColor: 'isGeneralColor',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

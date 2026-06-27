@@ -25,6 +25,7 @@ import {
   mapAdminProductToTableRow,
   mapFormOptionsToProductTypeSlugOptions,
 } from '@/src/features/admin/products/mappers/admin-products-ui.mapper'
+import type { AdminProductsVisibilityFilter } from '@/src/features/admin/products/lib/admin-products-list-filters'
 import type { AdminProductTableRow } from '@/src/features/admin/products/types/admin-products-ui.types'
 import type { AdminProductStatusUi } from '@/src/features/admin/products/types/admin-products-ui.types'
 
@@ -32,7 +33,8 @@ export default function AdminProductsPage() {
   const [search, setSearch] = useState('')
   const deferredSearch = useDeferredValue(search)
   const [productTypeSlug, setProductTypeSlug] = useState('all')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [visibilityFilter, setVisibilityFilter] = useState<AdminProductsVisibilityFilter>('active')
+  const [statusFilter, setStatusFilter] = useState('ACTIVE')
   const [customizableOnly, setCustomizableOnly] = useState(false)
   const [sortBy, setSortBy] = useState('updated')
 
@@ -52,11 +54,11 @@ export default function AdminProductsPage() {
         search: deferredSearch,
         productTypeSlug,
         statusFilter,
+        visibilityFilter,
         customizableOnly,
-        includeArchived: false,
         sortBy,
       }),
-    [deferredSearch, productTypeSlug, statusFilter, customizableOnly, sortBy],
+    [deferredSearch, productTypeSlug, statusFilter, visibilityFilter, customizableOnly, sortBy],
   )
 
   const productsQuery = useAdminProductsQuery(listVariables)
@@ -79,13 +81,15 @@ export default function AdminProductsPage() {
   const hasActiveFilters =
     search.trim().length > 0 ||
     productTypeSlug !== 'all' ||
-    statusFilter !== 'all' ||
+    visibilityFilter !== 'active' ||
+    statusFilter !== 'ACTIVE' ||
     customizableOnly
 
   const clearFilters = () => {
     setSearch('')
     setProductTypeSlug('all')
-    setStatusFilter('all')
+    setVisibilityFilter('active')
+    setStatusFilter('ACTIVE')
     setCustomizableOnly(false)
   }
 
@@ -189,6 +193,8 @@ export default function AdminProductsPage() {
           productTypeSlug={productTypeSlug}
           onProductTypeChange={setProductTypeSlug}
           productTypeOptions={productTypeFilterOptions}
+          visibilityFilter={visibilityFilter}
+          onVisibilityChange={setVisibilityFilter}
           statusFilter={statusFilter}
           onStatusChange={setStatusFilter}
           customizableOnly={customizableOnly}

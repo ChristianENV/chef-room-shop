@@ -19,12 +19,39 @@ function assertGraphQLError(error: unknown, message: string): void {
   assert.equal(error.extensions?.code, 'BAD_USER_INPUT')
 }
 
+const chefBlue = {
+  slug: 'chef-blue',
+  name: 'Azul Chef Room',
+  hexCode: '#2B3280',
+  isFabricColor: true,
+  isProductColor: true,
+  isActive: true,
+}
+
+const oliveGreen = {
+  slug: 'olive-green',
+  name: 'Verde olivo',
+  hexCode: '#4B5A3C',
+  isFabricColor: true,
+  isProductColor: false,
+  isActive: true,
+}
+
 describe('assertVariantColorAllowedForProductType', () => {
   it('allows chef-jacket + chef-blue', () => {
     assert.doesNotThrow(() =>
       assertVariantColorAllowedForProductType({
         productTypeSlug: 'chef-jacket',
-        colorSlug: 'chef-blue',
+        color: chefBlue,
+      }),
+    )
+  })
+
+  it('allows chef-jacket + active fabric-only color', () => {
+    assert.doesNotThrow(() =>
+      assertVariantColorAllowedForProductType({
+        productTypeSlug: 'chef-jacket',
+        color: oliveGreen,
       }),
     )
   })
@@ -34,7 +61,21 @@ describe('assertVariantColorAllowedForProductType', () => {
       () =>
         assertVariantColorAllowedForProductType({
           productTypeSlug: 'apron',
-          colorSlug: 'chef-blue',
+          color: chefBlue,
+        }),
+      (error) => {
+        assertGraphQLError(error, VARIANT_COLOR_NOT_ALLOWED_MESSAGE)
+        return true
+      },
+    )
+  })
+
+  it('rejects apron + fabric-only color', () => {
+    assert.throws(
+      () =>
+        assertVariantColorAllowedForProductType({
+          productTypeSlug: 'apron',
+          color: oliveGreen,
         }),
       (error) => {
         assertGraphQLError(error, VARIANT_COLOR_NOT_ALLOWED_MESSAGE)
@@ -48,7 +89,14 @@ describe('assertVariantColorAllowedForProductType', () => {
       () =>
         assertVariantColorAllowedForProductType({
           productTypeSlug: 'shoes',
-          colorSlug: 'warm-gray',
+          color: {
+            slug: 'warm-gray',
+            name: 'Gris cálido',
+            hexCode: '#E2E0DB',
+            isFabricColor: true,
+            isProductColor: true,
+            isActive: true,
+          },
         }),
       (error) => {
         assertGraphQLError(error, VARIANT_COLOR_NOT_ALLOWED_MESSAGE)
@@ -62,7 +110,14 @@ describe('assertVariantColorAllowedForProductType', () => {
       () =>
         assertVariantColorAllowedForProductType({
           productTypeSlug: 'pants',
-          colorSlug: 'white',
+          color: {
+            slug: 'white',
+            name: 'Blanco',
+            hexCode: '#FFFFFF',
+            isFabricColor: true,
+            isProductColor: true,
+            isActive: true,
+          },
         }),
       (error) => {
         assertGraphQLError(error, VARIANT_COLOR_NOT_ALLOWED_MESSAGE)
@@ -76,7 +131,14 @@ describe('assertVariantColorAllowedForProductType', () => {
       () =>
         assertVariantColorAllowedForProductType({
           productTypeSlug: 'unknown-type',
-          colorSlug: 'black',
+          color: {
+            slug: 'black',
+            name: 'Negro',
+            hexCode: '#111111',
+            isFabricColor: true,
+            isProductColor: true,
+            isActive: true,
+          },
         }),
       (error) => {
         assertGraphQLError(error, VARIANT_COLOR_NOT_ALLOWED_MESSAGE)
@@ -85,12 +147,19 @@ describe('assertVariantColorAllowedForProductType', () => {
     )
   })
 
-  it('rejects unknown catalog color slugs', () => {
+  it('rejects invalid color records', () => {
     assert.throws(
       () =>
         assertVariantColorAllowedForProductType({
           productTypeSlug: 'chef-jacket',
-          colorSlug: 'olive-green',
+          color: {
+            slug: 'olive-green',
+            name: '',
+            hexCode: '#4B5A3C',
+            isFabricColor: true,
+            isProductColor: false,
+            isActive: true,
+          },
         }),
       (error) => {
         assertGraphQLError(error, VARIANT_COLOR_UNKNOWN_MESSAGE)
@@ -106,7 +175,14 @@ describe('assertActiveVariantsMatchProductType', () => {
       productVariant: {
         findMany: async () => [
           {
-            color: { slug: 'chef-blue' },
+            color: {
+              slug: 'chef-blue',
+              name: 'Azul Chef Room',
+              hex: '#2B3280',
+              isFabricColor: true,
+              isProductColor: true,
+              isActive: true,
+            },
           },
         ],
       },

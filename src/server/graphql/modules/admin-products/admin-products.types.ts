@@ -24,8 +24,13 @@ export type AdminColorGql = {
   name: string
   slug: string
   hexCode: string
+  isFabricColor: boolean
+  isProductColor: boolean
+  isGeneralColor: boolean
   isActive: boolean
-  sortOrder: number | null
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
 }
 
 export type AdminSizeGql = {
@@ -186,6 +191,25 @@ export type AdminProductVariantInput = {
   priceCents?: number | null
   stockQty?: number | null
   isActive?: boolean | null
+}
+
+export type AdminProductVariantBatchInput = {
+  id?: string | null
+  colorId: string
+  sizeId: string
+  sku?: string | null
+  variantName?: string | null
+  priceCents?: number | null
+  stockQty?: number | null
+  isActive?: boolean | null
+}
+
+export type AdminProductVariantBatchPayloadGql = {
+  productId: string
+  createdCount: number
+  updatedCount: number
+  archivedCount: number
+  variants: AdminProductVariantGql[]
 }
 
 export type AdminProductImageInput = {

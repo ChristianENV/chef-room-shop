@@ -7,6 +7,7 @@ import {
   DELETE_ADMIN_PRODUCT_VARIANT_MUTATION,
   DUPLICATE_ADMIN_PRODUCT_MUTATION,
   REORDER_ADMIN_PRODUCT_IMAGES_MUTATION,
+  SYNC_ADMIN_PRODUCT_VARIANTS_MUTATION,
   UPDATE_ADMIN_PRODUCT_MUTATION,
   UPDATE_ADMIN_PRODUCT_STATUS_MUTATION,
   UPSERT_ADMIN_PRODUCT_IMAGE_MUTATION,
@@ -27,6 +28,8 @@ import type {
   AdminProductsListVariables,
   AdminProductsPayload,
   AdminProductVariant,
+  AdminProductVariantBatchInput,
+  AdminProductVariantBatchPayload,
   AdminProductVariantInput,
 } from '../types'
 
@@ -129,6 +132,20 @@ export async function upsertAdminProductVariant(
     variables: { input },
   })
   return data.upsertAdminProductVariant
+}
+
+export async function syncAdminProductVariants(
+  productId: string,
+  variants: AdminProductVariantBatchInput[],
+): Promise<AdminProductVariantBatchPayload> {
+  const data = await fetchGraphQL<
+    { syncAdminProductVariants: AdminProductVariantBatchPayload },
+    { productId: string; variants: AdminProductVariantBatchInput[] }
+  >({
+    query: SYNC_ADMIN_PRODUCT_VARIANTS_MUTATION,
+    variables: { productId, variants },
+  })
+  return data.syncAdminProductVariants
 }
 
 export async function deleteAdminProductVariant(id: string): Promise<boolean> {

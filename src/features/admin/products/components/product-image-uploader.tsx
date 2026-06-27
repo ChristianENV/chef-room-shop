@@ -41,6 +41,7 @@ export type ProductImageUploaderProps = {
   productId: string | null
   initialImages?: AdminProductImageUi[]
   disabled?: boolean
+  onBusyChange?: (busy: boolean) => void
 }
 
 function newLocalKey(): string {
@@ -115,7 +116,10 @@ type EditorContext = {
 export const ProductImageUploader = forwardRef<
   ProductImageUploaderHandle,
   ProductImageUploaderProps
->(function ProductImageUploader({ productId, initialImages = [], disabled = false }, ref) {
+>(function ProductImageUploader(
+  { productId, initialImages = [], disabled = false, onBusyChange },
+  ref,
+) {
   const uploadMutation = useProductImageUploadMutation()
   const deleteMutation = useDeleteAdminProductImageMutation()
   const reorderMutation = useReorderAdminProductImagesMutation()
@@ -434,9 +438,23 @@ export const ProductImageUploader = forwardRef<
     [items, uploadSingleItem],
   )
 
+  const pendingCount = useMemo(() => items.filter((i) => i.status === 'pending').length, [items])
+
+  const isUploaderBusy = useMemo(
+    () =>
+      isApplying ||
+      items.some((item) => ['processing', 'uploading', 'pending'].includes(item.status)),
+    [isApplying, items],
+  )
+
+  useEffect(() => {
+    onBusyChange?.(isUploaderBusy)
+  }, [isUploaderBusy, onBusyChange])
+
   useImperativeHandle(ref, () => ({
     uploadPendingImages,
     hasPendingUploads: () => items.some((i) => i.status === 'pending' && i.processed),
+    isBusy: () => isUploaderBusy,
   }))
 
   const confirmDelete = useCallback(async () => {
@@ -463,8 +481,6 @@ export const ProductImageUploader = forwardRef<
 
   const showCreateHint = !productId
   const canAddMore = items.length < MAX_PRODUCT_IMAGES
-
-  const pendingCount = useMemo(() => items.filter((i) => i.status === 'pending').length, [items])
 
   return (
     <div className="space-y-4">

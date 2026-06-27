@@ -59,6 +59,22 @@ export const adminProductVariantInputSchema = z.object({
   isActive: z.boolean().optional().nullable(),
 })
 
+export const adminProductVariantBatchInputSchema = z.object({
+  id: uuidSchema.optional().nullable(),
+  colorId: uuidSchema,
+  sizeId: uuidSchema,
+  sku: z.string().trim().max(80).optional().nullable(),
+  variantName: z.string().trim().max(120).optional().nullable(),
+  priceCents: z.number().int().min(0).optional().nullable(),
+  stockQty: z.number().int().min(0).optional().nullable(),
+  isActive: z.boolean().optional().nullable(),
+})
+
+export const syncAdminProductVariantsSchema = z.object({
+  productId: uuidSchema,
+  variants: z.array(adminProductVariantBatchInputSchema).max(400),
+})
+
 export const adminProductImageInputSchema = z.object({
   id: uuidSchema.optional().nullable(),
   productId: uuidSchema,
