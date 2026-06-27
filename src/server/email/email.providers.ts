@@ -16,15 +16,28 @@ export async function sendWithEmailProvider(
   const logicalProvider = resolveActiveEmailProvider(config)
 
   switch (logicalProvider) {
+    case 'disabled':
+      return { logicalProvider, result: sendWithDisabled() }
     case 'console':
       return { logicalProvider, result: await sendWithConsole(input) }
     case 'resend':
       return { logicalProvider, result: await sendWithResend(input, config) }
     case 'mailtrap':
       return { logicalProvider, result: await sendWithMailtrap(input, config) }
-    default:
-      return { logicalProvider: 'console', result: await sendWithConsole(input) }
+    default: {
+      // Exhaustiveness guard — should never be reached.
+      const _exhaustive: never = logicalProvider
+      return { logicalProvider: 'console', result: await sendWithConsole(_exhaustive as never) }
+    }
   }
+}
+
+/**
+ * Silent no-op — used in test / CI / DISABLE_EMAIL_SENDS=true.
+ * Returns a deterministic fake ID so callers can still track the record.
+ */
+function sendWithDisabled(): ProviderSendResult {
+  return { providerMessageId: `disabled_${Date.now()}` }
 }
 
 /**

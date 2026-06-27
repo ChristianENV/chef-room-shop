@@ -12,8 +12,14 @@ export type TransactionalEmailTemplate =
   | 'shipping_update'
   | 'delivered'
 
-/** Configured delivery channel (may map to Prisma `EmailProvider.OTHER`). */
-export type LogicalEmailProvider = 'console' | 'resend' | 'mailtrap'
+/**
+ * Configured delivery channel.
+ * - `disabled` — silent no-op used in test / CI / DISABLE_EMAIL_SENDS=true. Nothing is sent or logged.
+ * - `console`  — logs to server stdout; safe for local dev.
+ * - `resend`   — Resend API (production/NP only).
+ * - `mailtrap` — Mailtrap Sending API (optional staging channel).
+ */
+export type LogicalEmailProvider = 'disabled' | 'console' | 'resend' | 'mailtrap'
 
 export type SendTransactionalEmailInput = {
   to: string

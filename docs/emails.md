@@ -2,35 +2,69 @@
 
 Server-only layer for order/payment notifications. Checkout and webhooks **never fail** if email delivery fails.
 
-## Environment
+## Safety guardrails
 
-| Variable         | Default                            | Description                                  |
-| ---------------- | ---------------------------------- | -------------------------------------------- |
-| `EMAIL_PROVIDER` | `console`                          | `console` \| `resend` \| `mailtrap`          |
-| `EMAIL_FROM`     | `Chef Room <no-reply@chefroom.mx>` | Sender header                                |
-| `RESEND_API_KEY` | —                                  | Required when `EMAIL_PROVIDER=resend` (prod) |
-| `MAILTRAP_TOKEN` | —                                  | Mailtrap Sending API token (optional)        |
+Real email providers (`resend`, `mailtrap`) are **always blocked** when any of the following conditions is true:
+
+| Condition                  | Effect                                       |
+| -------------------------- | -------------------------------------------- |
+| `NODE_ENV=test`            | Forces provider to `disabled` (silent no-op) |
+| `CI=true`                  | Forces provider to `disabled`                |
+| `DISABLE_EMAIL_SENDS=true` | Forces provider to `disabled`                |
+
+These guards are checked in `resolveActiveEmailProvider` (`email.config.ts`) **before** any provider-specific logic. If a real provider was configured, a server-side warning is logged:
+
+```
+[email] Email provider disabled in test/CI environment. Configured provider "resend" will NOT be used.
+```
+
+This means automated tests and CI pipelines **can never accidentally send real emails**, regardless of what `EMAIL_PROVIDER` or API keys are set.
+
+## Environment variables
+
+| Variable              | Default                            | Description                                                |
+| --------------------- | ---------------------------------- | ---------------------------------------------------------- |
+| `EMAIL_PROVIDER`      | `console`                          | `console` \| `resend` \| `mailtrap`                        |
+| `EMAIL_FROM`          | `Chef Room <no-reply@chefroom.mx>` | Sender header                                              |
+| `RESEND_API_KEY`      | —                                  | Required when `EMAIL_PROVIDER=resend` (prod)               |
+| `MAILTRAP_TOKEN`      | —                                  | Mailtrap Sending API token (optional)                      |
+| `DISABLE_EMAIL_SENDS` | —                                  | Set to `true` to disable all real sends in any environment |
 
 **Build** passes without keys. Missing Resend key in **production** throws only when sending with `EMAIL_PROVIDER=resend`. In development, missing keys fall back to **console**.
 
 ## Providers
 
-| Logical    | Prisma `EmailProvider` | Behavior                                                |
-| ---------- | ---------------------- | ------------------------------------------------------- |
-| `console`  | `OTHER`                | Logs to server console (`metadataJson.logicalProvider`) |
-| `resend`   | `RESEND`               | [Resend](https://resend.com) API                        |
-| `mailtrap` | `OTHER`                | Mailtrap Sending API (`send.api.mailtrap.io`)           |
+| Logical    | Prisma `EmailProvider` | Behavior                                                                      |
+| ---------- | ---------------------- | ----------------------------------------------------------------------------- |
+| `disabled` | `OTHER`                | Silent no-op. No DB record skipped but no external call. Used in test / CI.   |
+| `console`  | `OTHER`                | Logs to server console (`[email:console]`). Safe for local dev.               |
+| `resend`   | `RESEND`               | [Resend](https://resend.com) API. Only used outside test/CI with key present. |
+| `mailtrap` | `OTHER`                | Mailtrap Sending API (`send.api.mailtrap.io`). Optional staging channel.      |
 
-## Templates (v1)
+## Environment behavior summary
 
-| `templateKey`        | Trigger                                   | Subject pattern                              |
-| -------------------- | ----------------------------------------- | -------------------------------------------- |
-| `order_created`      | After `createCheckoutOrder` (post-commit) | Recibimos tu pedido {orderNumber}            |
-| `payment_confirmed`  | Webhook paid                              | Pago confirmado para tu pedido {orderNumber} |
-| `payment_failed`     | Webhook failed                            | No pudimos confirmar el pago…                |
-| `payment_expired`    | Webhook expired/cancelled                 | Tu referencia de pago expiró…                |
-| `email_verification` | Better Auth `sendVerificationEmail`       | Verifica tu correo en Chef Room              |
-| `password_reset`     | Better Auth `sendResetPassword`           | Restablece tu contraseña de Chef Room        |
+| Environment                | Effective provider    | When                                         |
+| -------------------------- | --------------------- | -------------------------------------------- |
+| `NODE_ENV=test`            | `disabled` (always)   | Automated unit/integration tests             |
+| `CI=true`                  | `disabled` (always)   | GitHub Actions / any CI runner               |
+| `DISABLE_EMAIL_SENDS=true` | `disabled` (always)   | Manual opt-out for scripts/seeds             |
+| Local dev (default)        | `console`             | `EMAIL_PROVIDER` not set or unrecognized     |
+| Local dev (explicit)       | `resend` / `mailtrap` | Keys present; only for manual smoke tests    |
+| Production/NP              | `resend` / `mailtrap` | `NODE_ENV=production`; throws if key missing |
+
+## Templates
+
+| `templateKey`                        | Trigger                                         | Subject pattern                              |
+| ------------------------------------ | ----------------------------------------------- | -------------------------------------------- |
+| `order_created`                      | After `createCheckoutOrder` (post-commit)       | Recibimos tu pedido {orderNumber}            |
+| `payment_confirmed`                  | Conekta webhook: paid                           | Pago confirmado para tu pedido {orderNumber} |
+| `payment_failed`                     | Conekta webhook: failed                         | No pudimos confirmar el pago…                |
+| `payment_expired`                    | Conekta webhook: expired/cancelled              | Tu referencia de pago expiró…                |
+| `email_verification`                 | Better Auth `sendVerificationEmail`             | Verifica tu correo en Chef Room              |
+| `password_reset`                     | Better Auth `sendResetPassword`                 | Restablece tu contraseña de Chef Room        |
+| `shipping_update`                    | Skydropx webhook: shipped                       | Tu pedido está en camino                     |
+| `delivered`                          | Skydropx webhook: delivered                     | Tu pedido fue entregado                      |
+| `order_claim_transfer_authorization` | `requestOrderClaimTransfer` (guest order claim) | Solicitud de transferencia de pedido         |
 
 HTML uses brand color `#2B3280`, Spanish copy, minimal layout (no React Email).
 
@@ -102,14 +136,24 @@ EMAIL_FROM="Chef Room <onboarding@resend.dev>"
 
 Filter `email_messages` by `orderId` or `templateKey`. On failure, `status` = `FAILED` and `metadataJson.errorMessage` explains why.
 
+## Testing emails manually (non-test environment)
+
+To verify real email delivery locally without accidentally sending in CI:
+
+1. Use a dedicated test inbox (Mailtrap sandbox or personal address).
+2. Set `EMAIL_PROVIDER=resend` (or `mailtrap`) + API key in `.env.local`.
+3. Ensure `NODE_ENV` is **not** `test` and `CI` is not `true`.
+4. Trigger the flow (e.g. place a test checkout order).
+5. Inspect the email in your test inbox and the `email_messages` table in Prisma Studio.
+
+> **Never** commit real API keys. Never run real-provider tests in automated CI.
+
 ## Not in v1
 
-- Password reset / Better Auth verification emails
 - Newsletter
 - React Email components
 - Background queue / retries
 - Admin email log UI
-- Shipping / CFDI emails
 
 ## Related
 
