@@ -148,6 +148,25 @@ export type AdminProductVariantInput = {
   isActive?: boolean | null
 }
 
+export type AdminProductVariantBatchInput = {
+  id?: string | null
+  colorId: string
+  sizeId: string
+  sku?: string | null
+  variantName?: string | null
+  priceCents?: number | null
+  stockQty?: number | null
+  isActive?: boolean | null
+}
+
+export type AdminProductVariantBatchPayload = {
+  productId: string
+  createdCount: number
+  updatedCount: number
+  archivedCount: number
+  variants: AdminProductVariant[]
+}
+
 export type AdminProductImageInput = {
   id?: string | null
   productId: string

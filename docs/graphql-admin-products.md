@@ -69,10 +69,43 @@ Orden default: `updatedAt desc`. Límite default 20, máx 100.
 | `archiveAdminProduct`       | Soft-delete: `status: ARCHIVED` + `deletedAt: now` (Admin UI: **Eliminar producto**)                  |
 | `duplicateAdminProduct`     | Copia producto, imágenes, variantes y reglas de personalización                                       |
 | `updateAdminProductStatus`  | Solo cambia status; ACTIVE limpia `deletedAt`                                                         |
-| `upsertAdminProductVariant` | Crea/actualiza variante                                                                               |
+| `upsertAdminProductVariant` | Crea/actualiza una variante (acción puntual)                                                          |
+| `syncAdminProductVariants`  | **Lote atómico** de variantes en una sola llamada (usado por el formulario de producto)               |
 | `deleteAdminProductVariant` | Soft delete (`deletedAt`)                                                                             |
 | `upsertAdminProductImage`   | URL placeholder (sin Cloudinary)                                                                      |
 | `deleteAdminProductImage`   | Borra imagen; reasigna primary; si era imagen SEO, `seoImageId` queda en `null` (`onDelete: SetNull`) |
+
+### Sincronización de variantes en lote (`syncAdminProductVariants`)
+
+El formulario de producto guarda **todas** las variantes locales en **una sola** mutación, no una llamada por variante.
+
+```graphql
+mutation SyncAdminProductVariants($productId: ID!, $variants: [AdminProductVariantBatchInput!]!) {
+  syncAdminProductVariants(productId: $productId, variants: $variants) {
+    productId
+    createdCount
+    updatedCount
+    archivedCount
+    variants {
+      id
+      sku
+      stockQty
+      priceCents
+      isActive
+    }
+  }
+}
+```
+
+`AdminProductVariantBatchInput`: `id` (null = crear), `colorId!`, `sizeId!`, `sku`, `variantName`, `priceCents`, `stockQty`, `isActive`.
+
+Reglas:
+
+- **Atómico**: corre dentro de una transacción Prisma. Si cualquier variante es inválida, **falla todo el lote** y no se escribe nada.
+- **Validación previa a escribir**: color y talla deben existir; el color debe ser elegible para la categoría (los colores de tela solo en `chef-jacket`); sin celdas color/talla duplicadas; sin SKUs duplicados en el lote (`BAD_USER_INPUT`).
+- **No hard-delete**: `isActive: false` aplica soft-delete (`deletedAt`); `isActive: true` reactiva (`deletedAt: null`).
+- **SKU**: si se omite, se usa el SKU existente o se genera `CR-{SLUG}-{COLOR}-{SIZE}`. Conflictos de unicidad en BD (`P2002`) revierten todo el lote con `CONFLICT`.
+- Devuelve `createdCount` / `updatedCount` / `archivedCount` y las variantes activas actualizadas para refrescar el estado local.
 
 ### Imagen SEO (`seoImageId`)
 
@@ -146,7 +179,7 @@ La pantalla admin de productos ya consume el BFF (sin `lib/mock-data`).
 - `useCreateAdminProductMutation` / `useUpdateAdminProductMutation`
 - `useArchiveAdminProductMutation` / `useDuplicateAdminProductMutation`
 - `useUpdateAdminProductStatusMutation`
-- `useUpsertAdminProductVariantMutation` / `useDeleteAdminProductVariantMutation`
+- `useSyncAdminProductVariantsMutation` (lote del formulario) / `useUpsertAdminProductVariantMutation` / `useDeleteAdminProductVariantMutation`
 - `useUpsertAdminProductImageMutation` / `useDeleteAdminProductImageMutation`
 
 ### Acciones disponibles en UI

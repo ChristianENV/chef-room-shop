@@ -31,17 +31,19 @@ import { useAdminProductByIdQuery } from './api/use-admin-product-by-id-query'
 import { useAdminProductFormOptionsQuery } from './api/use-admin-product-form-options-query'
 import { useCreateAdminProductMutation } from './api/use-create-admin-product-mutation'
 import { useUpdateAdminProductMutation } from './api/use-update-admin-product-mutation'
-import { useUpsertAdminProductVariantMutation } from './api/use-upsert-admin-product-variant-mutation'
+import { useSyncAdminProductVariantsMutation } from './api/use-sync-admin-product-variants-mutation'
 import { useDeleteAdminProductVariantMutation } from './api/use-delete-admin-product-variant-mutation'
 import { ProductImageUploader } from './components/product-image-uploader'
 import type { ProductImageUploaderHandle } from './components/product-image-uploader.types'
 import { ProductModel3DUploader } from './components/product-model-3d-uploader'
 import { ProductVariantEditor } from './components/product-variant-editor'
 import { ProductSeoImagePicker } from './components/product-seo-image-picker'
+import { ProductFormSavingOverlay } from './components/product-form-saving-overlay'
 import { resolveProductOgImageUrl } from '@/src/lib/product-seo-image'
 import {
   mapAdminProductToFormValues,
   mapFormValuesToAdminProductInput,
+  mapFormVariantsToBatchInput,
   STATUS_LABELS,
 } from './mappers/admin-products-ui.mapper'
 import { validateFormVariantColors } from './lib/variant-color-options'
@@ -50,6 +52,7 @@ import {
   PRODUCT_FORM_SAVE_STATUS_MESSAGE,
   resolveProductFormPendingState,
   shouldBlockProductFormDialogClose,
+  type ProductFormSaveStage,
 } from './lib/product-form-dialog-guards'
 import { mapFormOptionsToSelectOptions } from './types/admin-products-ui.types'
 import type { AdminProductFormOptions } from './types'
@@ -77,6 +80,7 @@ type ProductFormDrawerBodyProps = {
   formOptions: AdminProductFormOptions
   onRequestClose: () => void
   onPendingChange?: (pending: boolean) => void
+  onSaveStageChange?: (stage: ProductFormSaveStage) => void
   onCloseBlocked?: () => void
   onSaved?: (productId: string) => void
   initialModel3d?: import('./types').AdminProductModel3d | null
@@ -101,6 +105,7 @@ function ProductFormDrawerBody({
   formOptions,
   onRequestClose,
   onPendingChange,
+  onSaveStageChange,
   onCloseBlocked,
   onSaved,
   initialModel3d,
@@ -108,18 +113,20 @@ function ProductFormDrawerBody({
   const isEditing = !!productId
   const createMutation = useCreateAdminProductMutation()
   const updateMutation = useUpdateAdminProductMutation()
-  const upsertVariant = useUpsertAdminProductVariantMutation()
+  const syncVariants = useSyncAdminProductVariantsMutation()
   const deleteVariant = useDeleteAdminProductVariantMutation()
   const imageUploaderRef = useRef<ProductImageUploaderHandle>(null)
 
   const [formValues, setFormValues] = useState<ProductFormValues>(initialValues)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [isSavingVariantsBatch, setIsSavingVariantsBatch] = useState(false)
   const [isImageUploadBusy, setIsImageUploadBusy] = useState(false)
   const [isModel3dBusy, setIsModel3dBusy] = useState(false)
 
   const isFormPending = resolveProductFormPendingState({
     isSaving,
+    isSavingVariantsBatch,
     isImageUploadBusy,
     isModel3dBusy,
   })
@@ -127,6 +134,13 @@ function ProductFormDrawerBody({
   useEffect(() => {
     onPendingChange?.(isFormPending)
   }, [isFormPending, onPendingChange])
+
+  const setStage = useCallback(
+    (stage: ProductFormSaveStage) => {
+      onSaveStageChange?.(stage)
+    },
+    [onSaveStageChange],
+  )
 
   const handleRequestClose = useCallback(() => {
     if (shouldBlockProductFormDialogClose(isFormPending, false)) {
@@ -149,20 +163,15 @@ function ProductFormDrawerBody({
     setFormValues((prev) => (prev ? { ...prev, [key]: value } : prev))
   }
 
-  const persistVariants = async (targetProductId: string, values: ProductFormValues) => {
-    for (const variant of values.variants) {
-      if (!variant.colorId || !variant.sizeId) continue
-      await upsertVariant.mutateAsync({
-        id: variant.isPersisted ? variant.id : null,
-        productId: targetProductId,
-        sku: variant.sku.trim() || null,
-        variantName: variant.variantName?.trim() || null,
-        colorId: variant.colorId,
-        sizeId: variant.sizeId,
-        priceCents: Math.round(variant.pricePesos * 100),
-        stockQty: variant.stockQty,
-        isActive: variant.isActive,
-      })
+  const syncVariantsBatch = async (targetProductId: string, values: ProductFormValues) => {
+    const batch = mapFormVariantsToBatchInput(values.variants)
+    if (batch.length === 0) return
+
+    setIsSavingVariantsBatch(true)
+    try {
+      await syncVariants.mutateAsync({ productId: targetProductId, variants: batch })
+    } finally {
+      setIsSavingVariantsBatch(false)
     }
   }
 
@@ -195,18 +204,23 @@ function ProductFormDrawerBody({
       const input = mapFormValuesToAdminProductInput(formValues)
       let savedId = productId
 
+      setStage('general')
       if (isEditing && productId) {
         await updateMutation.mutateAsync({ id: productId, input })
-        await persistVariants(productId, formValues)
+        setStage('variants')
+        await syncVariantsBatch(productId, formValues)
       } else {
         const created = await createMutation.mutateAsync(input)
         savedId = created.id
-        await persistVariants(created.id, formValues)
+        setStage('variants')
+        await syncVariantsBatch(created.id, formValues)
         if (imageUploaderRef.current?.hasPendingUploads()) {
+          setStage('images')
           await imageUploaderRef.current.uploadPendingImages(created.id)
         }
       }
 
+      setStage('finalizing')
       if (savedId) onSaved?.(savedId)
       onRequestClose()
     } catch (error) {
@@ -228,6 +242,7 @@ function ProductFormDrawerBody({
       }
     } finally {
       setIsSaving(false)
+      setStage(null)
     }
   }
 
@@ -580,6 +595,7 @@ export function ProductFormDialog({
 }: ProductFormDialogProps) {
   const isEditing = !!productId
   const [formPending, setFormPending] = useState(false)
+  const [saveStage, setSaveStage] = useState<ProductFormSaveStage>(null)
   const [closeBlockedMessage, setCloseBlockedMessage] = useState<string | null>(null)
 
   const productQuery = useAdminProductByIdQuery(productId ?? '', open && isEditing)
@@ -674,12 +690,15 @@ export function ProductFormDialog({
               formOptions={formOptionsQuery.data}
               onRequestClose={handleRequestClose}
               onPendingChange={setFormPending}
+              onSaveStageChange={setSaveStage}
               onCloseBlocked={() => setCloseBlockedMessage(PRODUCT_FORM_CLOSE_BLOCKED_MESSAGE)}
               onSaved={onSaved}
               initialModel3d={productQuery.data?.model3d ?? null}
             />
           ) : null}
         </div>
+
+        {formPending ? <ProductFormSavingOverlay stage={saveStage} /> : null}
       </DialogContent>
     </Dialog>
   )

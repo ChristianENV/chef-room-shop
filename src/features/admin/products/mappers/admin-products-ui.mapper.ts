@@ -6,6 +6,7 @@ import type {
   AdminProductImage,
   AdminProductInput,
   AdminProductVariant,
+  AdminProductVariantBatchInput,
   AdminProductsListVariables,
 } from '../types'
 import {
@@ -215,6 +216,27 @@ export function mapFormValuesToAdminProductInput(values: ProductFormValues): Adm
     seoDescription: values.seoDescription.trim() || null,
     seoImageId: values.seoImageId,
   }
+}
+
+/**
+ * Maps local form variants to a single batch input for syncAdminProductVariants.
+ * Only variants with a color and size are included. New variants omit id.
+ */
+export function mapFormVariantsToBatchInput(
+  variants: readonly AdminProductVariantUi[],
+): AdminProductVariantBatchInput[] {
+  return variants
+    .filter((variant) => Boolean(variant.colorId) && Boolean(variant.sizeId))
+    .map((variant) => ({
+      id: variant.isPersisted ? variant.id : null,
+      colorId: variant.colorId,
+      sizeId: variant.sizeId,
+      sku: variant.sku.trim() || null,
+      variantName: variant.variantName?.trim() || null,
+      priceCents: Math.round(variant.pricePesos * 100),
+      stockQty: variant.stockQty,
+      isActive: variant.isActive,
+    }))
 }
 
 /**

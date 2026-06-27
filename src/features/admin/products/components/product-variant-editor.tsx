@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
+import { ProductVariantBulkTools, type BulkApplyRequest } from './product-variant-bulk-tools'
 import { ProductVariantColorSelector } from './product-variant-color-selector'
 import { ProductVariantList } from './product-variant-list'
 import { ProductVariantMatrix } from './product-variant-matrix'
@@ -25,7 +26,9 @@ import {
   resolveProductSlugForVariants,
   sortVariantsForDisplay,
   upsertVariantPatch,
+  variantMatrixKey,
 } from '../lib/variant-matrix'
+import { applyBulkPrice, applyBulkStock, resolveBulkTargetCells } from '../lib/variant-matrix-bulk'
 import {
   buildVariantColorPoolOptions,
   buildVisibleMatrixColorRows,
@@ -71,6 +74,7 @@ export function ProductVariantEditor({
 }: ProductVariantEditorProps) {
   const productTypeSlug = resolveProductTypeSlugById(formOptions.productTypes, productTypeId)
   const [selectedColorIds, setSelectedColorIds] = useState<string[]>([])
+  const [selectedCellKeys, setSelectedCellKeys] = useState<Set<string>>(() => new Set())
 
   const colorPool = useMemo(
     () =>
@@ -249,6 +253,73 @@ export function ProductVariantEditor({
     setVariants(applyInitialStockToNewVariants(variants, 0))
   }
 
+  const handleToggleCellSelect = (colorId: string, sizeId: string) => {
+    const key = variantMatrixKey(colorId, sizeId)
+    setSelectedCellKeys((current) => {
+      const next = new Set(current)
+      if (next.has(key)) {
+        next.delete(key)
+      } else {
+        next.add(key)
+      }
+      return next
+    })
+  }
+
+  const handleClearSelection = () => {
+    setSelectedCellKeys(new Set())
+  }
+
+  const handleApplyBulkStock = (stockQty: number, request: BulkApplyRequest) => {
+    const targetCells = resolveBulkTargetCells({
+      scope: request.scope,
+      colors: matrixColors,
+      sizes: matrixSizes,
+      targetColorId: request.targetColorId,
+      targetSizeId: request.targetSizeId,
+      selectedKeys: selectedCellKeys,
+    })
+    setVariants(
+      applyBulkStock({
+        variants,
+        targetCells,
+        scope: request.scope,
+        stockQty,
+        createMissing: request.createMissing,
+        colorMeta: selectOptions.colorMeta,
+        sizeMeta,
+        productSlug: resolvedProductSlug,
+        basePricePesos,
+        newId: newTempId,
+      }),
+    )
+  }
+
+  const handleApplyBulkPrice = (pricePesos: number, request: BulkApplyRequest) => {
+    const targetCells = resolveBulkTargetCells({
+      scope: request.scope,
+      colors: matrixColors,
+      sizes: matrixSizes,
+      targetColorId: request.targetColorId,
+      targetSizeId: request.targetSizeId,
+      selectedKeys: selectedCellKeys,
+    })
+    setVariants(
+      applyBulkPrice({
+        variants,
+        targetCells,
+        scope: request.scope,
+        pricePesos,
+        createMissing: false,
+        colorMeta: selectOptions.colorMeta,
+        sizeMeta,
+        productSlug: resolvedProductSlug,
+        basePricePesos,
+        newId: newTempId,
+      }),
+    )
+  }
+
   if (!selectOptions.hasProductTypeSelected || !productTypeSlug) {
     return (
       <Card className="border-dashed" data-testid="admin-product-variant-empty">
@@ -326,16 +397,30 @@ export function ProductVariantEditor({
           </CardContent>
         </Card>
       ) : (
-        <ProductVariantMatrix
-          colors={matrixColors}
-          sizes={matrixSizes}
-          variants={variants}
-          disabled={disabled}
-          onToggleCell={(colorId, sizeId, enabled) =>
-            void handleToggleCell(colorId, sizeId, enabled)
-          }
-          onChangeCell={handleChangeCell}
-        />
+        <>
+          <ProductVariantBulkTools
+            colors={matrixColors}
+            sizes={matrixSizes}
+            selectedCellCount={selectedCellKeys.size}
+            basePricePesos={basePricePesos}
+            disabled={disabled}
+            onApplyStock={handleApplyBulkStock}
+            onApplyPrice={handleApplyBulkPrice}
+            onClearSelection={handleClearSelection}
+          />
+          <ProductVariantMatrix
+            colors={matrixColors}
+            sizes={matrixSizes}
+            variants={variants}
+            disabled={disabled}
+            selectedCellKeys={selectedCellKeys}
+            onToggleCellSelect={handleToggleCellSelect}
+            onToggleCell={(colorId, sizeId, enabled) =>
+              void handleToggleCell(colorId, sizeId, enabled)
+            }
+            onChangeCell={handleChangeCell}
+          />
+        </>
       )}
 
       <ProductVariantList

@@ -25,6 +25,7 @@ import type {
   AdminProductImageGql,
   AdminProductImageInput,
   AdminProductInput,
+  AdminProductVariantBatchPayloadGql,
   AdminProductVariantGql,
   AdminProductVariantInput,
   AdminProductsListInput,
@@ -38,10 +39,16 @@ import {
   parseAdminProductsListInput,
   productIdSchema,
   productSlugSchema,
+  syncAdminProductVariantsSchema,
   updateAdminProductStatusSchema,
   variantIdSchema,
   imageIdSchema,
 } from './admin-products.validation'
+import {
+  assertNoDuplicateBatchCells,
+  assertNoDuplicateBatchSkus,
+  summarizeVariantBatch,
+} from './admin-products.variant-batch'
 import { assertSeoImageBelongsToProduct } from './admin-products.seo-image'
 import {
   assertActiveVariantsMatchProductType,
@@ -650,6 +657,144 @@ export async function upsertAdminProductVariant(
       throw conflictError('Ya existe una variante con este color y talla.')
     }
     throw error
+  }
+}
+
+/**
+ * Synchronizes all product variants in a single atomic transaction.
+ * Validates every variant before writing; any invalid variant fails the whole batch.
+ */
+export async function syncAdminProductVariants(
+  context: GraphQLContext,
+  productId: string,
+  variants: unknown,
+): Promise<AdminProductVariantBatchPayloadGql> {
+  requireAdminGraphQL(context)
+  const parsed = syncAdminProductVariantsSchema.parse({ productId, variants })
+
+  const product = await context.prisma.product.findUnique({
+    where: { id: parsed.productId },
+    include: { productType: true },
+  })
+  if (!product) {
+    throw notFoundError()
+  }
+
+  assertNoDuplicateBatchCells(parsed.variants)
+
+  // --- Validate all referenced colors and sizes exist (before writing) ---
+  const colorIds = [...new Set(parsed.variants.map((variant) => variant.colorId))]
+  const sizeIds = [...new Set(parsed.variants.map((variant) => variant.sizeId))]
+
+  const [colors, sizes] = await Promise.all([
+    context.prisma.color.findMany({ where: { id: { in: colorIds } } }),
+    context.prisma.size.findMany({ where: { id: { in: sizeIds } } }),
+  ])
+
+  const colorById = new Map(colors.map((color) => [color.id, color]))
+  const sizeById = new Map(sizes.map((size) => [size.id, size]))
+
+  for (const variant of parsed.variants) {
+    const color = colorById.get(variant.colorId)
+    const size = sizeById.get(variant.sizeId)
+    if (!color || !size) {
+      throw notFoundError('Color o talla')
+    }
+
+    // Enforces color eligibility (fabric-only colors limited to chef-jacket, etc.)
+    assertVariantColorAllowedForProductType({
+      productTypeSlug: product.productType.slug,
+      color: toVariantColorEligibilityInput(color),
+    })
+  }
+
+  // --- Load existing variants for this product to resolve update vs create ---
+  const existing = await context.prisma.productVariant.findMany({
+    where: { productId: parsed.productId },
+  })
+  const existingById = new Map(existing.map((variant) => [variant.id, variant]))
+
+  for (const variant of parsed.variants) {
+    if (variant.id && !existingById.has(variant.id)) {
+      throw notFoundError('Variante')
+    }
+  }
+
+  // --- Resolve deterministic SKUs and fail on duplicates before writing ---
+  const resolvedSkus = parsed.variants.map((variant) => {
+    if (variant.sku?.trim()) {
+      return variant.sku.trim().toUpperCase()
+    }
+    const existingVariant = variant.id ? existingById.get(variant.id) : undefined
+    if (existingVariant?.sku) {
+      return existingVariant.sku
+    }
+    const color = colorById.get(variant.colorId)!
+    const size = sizeById.get(variant.sizeId)!
+    return buildVariantSkuBase(product.slug, color.slug, size.slug)
+  })
+
+  assertNoDuplicateBatchSkus(resolvedSkus)
+
+  const summary = summarizeVariantBatch(parsed.variants)
+
+  try {
+    await context.prisma.$transaction(async (tx) => {
+      for (let index = 0; index < parsed.variants.length; index++) {
+        const variant = parsed.variants[index]!
+        const sku = resolvedSkus[index]!
+        const isActive = variant.isActive !== false
+
+        if (variant.id) {
+          const current = existingById.get(variant.id)!
+          await tx.productVariant.update({
+            where: { id: variant.id },
+            data: {
+              colorId: variant.colorId,
+              sizeId: variant.sizeId,
+              sku,
+              priceCents: variant.priceCents ?? current.priceCents,
+              stockQty: variant.stockQty ?? current.stockQty,
+              deletedAt: isActive ? null : (current.deletedAt ?? new Date()),
+            },
+          })
+          continue
+        }
+
+        await tx.productVariant.create({
+          data: {
+            productId: parsed.productId,
+            colorId: variant.colorId,
+            sizeId: variant.sizeId,
+            sku,
+            priceCents: variant.priceCents ?? product.basePriceCents,
+            stockQty: variant.stockQty ?? 0,
+            deletedAt: isActive ? null : new Date(),
+          },
+        })
+      }
+    })
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      throw conflictError('Conflicto de SKU o variante duplicada. Revisa los datos del lote.')
+    }
+    throw error
+  }
+
+  const refreshed = await context.prisma.productVariant.findMany({
+    where: { productId: parsed.productId, deletedAt: null },
+    include: { color: true, size: true },
+    orderBy: { sku: 'asc' },
+  })
+
+  return {
+    productId: parsed.productId,
+    createdCount: summary.createdCount,
+    updatedCount: summary.updatedCount,
+    archivedCount: summary.archivedCount,
+    variants: refreshed.map((variant) =>
+      mapAdminProductVariantToGql(variant, product.basePriceCents),
+    ),
   }
 }
 

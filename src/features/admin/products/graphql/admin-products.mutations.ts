@@ -58,6 +58,20 @@ export const DELETE_ADMIN_PRODUCT_VARIANT_MUTATION = /* GraphQL */ `
   }
 `
 
+export const SYNC_ADMIN_PRODUCT_VARIANTS_MUTATION = /* GraphQL */ `
+  mutation SyncAdminProductVariants($productId: ID!, $variants: [AdminProductVariantBatchInput!]!) {
+    syncAdminProductVariants(productId: $productId, variants: $variants) {
+      productId
+      createdCount
+      updatedCount
+      archivedCount
+      variants {
+        ${ADMIN_PRODUCT_VARIANT_FIELDS}
+      }
+    }
+  }
+`
+
 export const UPSERT_ADMIN_PRODUCT_IMAGE_MUTATION = /* GraphQL */ `
   mutation UpsertAdminProductImage($input: AdminProductImageInput!) {
     upsertAdminProductImage(input: $input) {

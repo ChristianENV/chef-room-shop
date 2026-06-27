@@ -7,7 +7,7 @@ import {
   VARIANT_MATRIX_TITLE,
 } from '../lib/variant-matrix-messages'
 import type { VariantMatrixColorRow, VariantMatrixSizeColumn } from '../lib/variant-matrix'
-import { findVariantAt, resolveVariantCellState } from '../lib/variant-matrix'
+import { findVariantAt, resolveVariantCellState, variantMatrixKey } from '../lib/variant-matrix'
 import type { AdminProductVariantUi } from '../types/admin-products-ui.types'
 import { ProductVariantMatrixCell } from './product-variant-matrix-cell'
 
@@ -16,6 +16,8 @@ type ProductVariantMatrixProps = {
   sizes: VariantMatrixSizeColumn[]
   variants: AdminProductVariantUi[]
   disabled?: boolean
+  selectedCellKeys?: ReadonlySet<string>
+  onToggleCellSelect?: (colorId: string, sizeId: string) => void
   onToggleCell: (colorId: string, sizeId: string, enabled: boolean) => void
   onChangeCell: (colorId: string, sizeId: string, patch: Partial<AdminProductVariantUi>) => void
 }
@@ -36,6 +38,8 @@ export function ProductVariantMatrix({
   sizes,
   variants,
   disabled = false,
+  selectedCellKeys,
+  onToggleCellSelect,
   onToggleCell,
   onChangeCell,
 }: ProductVariantMatrixProps) {
@@ -86,12 +90,21 @@ export function ProductVariantMatrix({
                     Boolean(color.isInvalidForProductType),
                   )
 
+                  const cellKey = variantMatrixKey(color.value, size.value)
+
                   return (
                     <td key={size.value} className="px-2 py-2 align-top">
                       <ProductVariantMatrixCell
                         state={state}
                         variant={variant}
                         disabled={disabled}
+                        selectable={Boolean(onToggleCellSelect)}
+                        selected={selectedCellKeys?.has(cellKey) ?? false}
+                        onToggleSelect={
+                          onToggleCellSelect
+                            ? () => onToggleCellSelect(color.value, size.value)
+                            : undefined
+                        }
                         onToggle={(enabled) => onToggleCell(color.value, size.value, enabled)}
                         onChange={(patch) => onChangeCell(color.value, size.value, patch)}
                       />

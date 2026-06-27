@@ -78,6 +78,55 @@ export const VARIANT_MATRIX_COLOR_PICKER_MORE = (count: number) => `+ ${count} c
 export const VARIANT_MATRIX_HELPER =
   'Usa Crear para agregar una variante faltante o Editar para ajustar SKU, precio y stock.'
 
+// --- Bulk stock / price tools ---
+
+export const VARIANT_BULK_STOCK_TITLE = 'Stock masivo'
+
+export const VARIANT_BULK_QUANTITY_LABEL = 'Cantidad'
+
+export const VARIANT_BULK_APPLY_TO_LABEL = 'Aplicar a'
+
+export const VARIANT_BULK_SCOPE_ALL_VISIBLE = 'Todas las variantes visibles'
+
+export const VARIANT_BULK_SCOPE_ACTIVE_ONLY = 'Solo variantes activas'
+
+export const VARIANT_BULK_SCOPE_COLOR = 'Color seleccionado'
+
+export const VARIANT_BULK_SCOPE_SIZE = 'Talla seleccionada'
+
+export const VARIANT_BULK_SCOPE_CELLS = 'Celdas seleccionadas'
+
+export const VARIANT_BULK_COLOR_LABEL = 'Color'
+
+export const VARIANT_BULK_SIZE_LABEL = 'Talla'
+
+export const VARIANT_BULK_APPLY_STOCK = 'Aplicar stock'
+
+export const VARIANT_BULK_CREATE_MISSING = 'Crear variantes faltantes al aplicar stock'
+
+export const VARIANT_BULK_PRICE_TITLE = 'Precio masivo'
+
+export const VARIANT_BULK_APPLY_BASE_PRICE = 'Aplicar precio base'
+
+export const VARIANT_BULK_APPLY_CUSTOM_PRICE = 'Aplicar precio personalizado'
+
+export const VARIANT_BULK_INVALID_STOCK = 'Ingresa un stock entero no negativo.'
+
+export const VARIANT_BULK_INVALID_PRICE = 'Ingresa un precio no negativo.'
+
+export const VARIANT_BULK_SELECT_COLOR = 'Selecciona un color para aplicar.'
+
+export const VARIANT_BULK_SELECT_SIZE = 'Selecciona una talla para aplicar.'
+
+export const VARIANT_BULK_NO_CELLS_SELECTED = 'Selecciona al menos una celda.'
+
+export const VARIANT_BULK_CELLS_SELECTED = (count: number) =>
+  count === 1 ? '1 celda seleccionada' : `${count} celdas seleccionadas`
+
+export const VARIANT_BULK_CLEAR_SELECTION = 'Limpiar selección'
+
+export const VARIANT_BULK_SELECT_CELL = 'Seleccionar celda'
+
 export const VARIANT_MATRIX_EDIT_CELL = 'Editar variante'
 
 export const VARIANT_MATRIX_ENABLE_CELL = 'Activar variante'

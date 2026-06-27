@@ -652,6 +652,25 @@ export const adminProductsTypeDefs = /* GraphQL */ `
     sortOrder: Int
     isPrimary: Boolean
   }
+
+  input AdminProductVariantBatchInput {
+    id: ID
+    colorId: ID!
+    sizeId: ID!
+    sku: String
+    variantName: String
+    priceCents: Int
+    stockQty: Int
+    isActive: Boolean
+  }
+
+  type AdminProductVariantBatchPayload {
+    productId: ID!
+    createdCount: Int!
+    updatedCount: Int!
+    archivedCount: Int!
+    variants: [AdminProductVariant!]!
+  }
 `
 
 export const adminCustomizationTypeDefs = /* GraphQL */ `
@@ -1869,6 +1888,10 @@ export const typeDefs = /* GraphQL */ `
     updateAdminProductStatus(id: ID!, status: String!): AdminProduct!
     upsertAdminProductVariant(input: AdminProductVariantInput!): AdminProductVariant!
     deleteAdminProductVariant(id: ID!): Boolean!
+    syncAdminProductVariants(
+      productId: ID!
+      variants: [AdminProductVariantBatchInput!]!
+    ): AdminProductVariantBatchPayload!
     upsertAdminProductImage(input: AdminProductImageInput!): AdminProductImage!
     deleteAdminProductImage(id: ID!): Boolean!
     reorderAdminProductImages(productId: ID!, imageIds: [ID!]!): [AdminProductImage!]!
