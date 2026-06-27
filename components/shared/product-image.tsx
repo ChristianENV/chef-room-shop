@@ -68,16 +68,14 @@ export function ProductImageDisplay({
   }
 
   return (
-    <div
-      className={cn(fill && 'relative h-full w-full', 'overflow-hidden bg-secondary', className)}
-    >
+    <div className={cn(fill && 'relative h-full w-full', 'overflow-hidden bg-muted', className)}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         key={resolvedSrc}
         src={resolvedSrc!}
         alt={alt}
         className={cn(
-          fill ? 'absolute inset-0 h-full w-full object-cover' : 'h-full w-full object-cover',
+          fill ? 'absolute inset-0 h-full w-full object-contain' : 'h-full w-full object-contain',
           imgClassName,
         )}
         onError={() => setFailed(true)}
@@ -108,7 +106,7 @@ export function ProductImageThumbnail({
       onClick={onClick}
       data-testid={selected ? 'product-gallery-thumbnail-active' : 'product-gallery-thumbnail'}
       className={cn(
-        'relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-border/60 bg-secondary transition-all',
+        'relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-border/60 bg-muted transition-all',
         selected
           ? 'z-10 ring-2 ring-primary ring-offset-2 ring-offset-background opacity-100'
           : 'opacity-80 hover:border-primary/40 hover:opacity-100',

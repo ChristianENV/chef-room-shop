@@ -51,11 +51,12 @@ export function ProductSeoImagePicker({
             aria-pressed={option.isSelected}
             aria-label={option.isSelected ? 'Quitar imagen SEO' : 'Usar como imagen SEO'}
           >
+            <div className="absolute inset-0 bg-muted/50" />
             <Image
               src={option.url}
               alt={option.alt || 'Foto del producto'}
               fill
-              className="object-cover"
+              className="object-contain"
               sizes="120px"
               unoptimized={option.url.startsWith('blob:')}
             />

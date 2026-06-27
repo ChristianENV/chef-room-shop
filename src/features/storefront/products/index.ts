@@ -1,4 +1,5 @@
 export { ProductGallery } from './product-gallery'
+export { ProductLightbox } from './product-lightbox'
 export { ProductInfo } from './product-info'
 export { CustomizationSummaryCard } from './customization-summary-card'
 export { ProductTabs } from './product-tabs'

@@ -72,12 +72,12 @@ export function ProductImageSortableCard({
         isDragging && 'z-10 opacity-80 shadow-lg ring-2 ring-primary/30',
       )}
     >
-      <div className="relative aspect-square bg-secondary/40">
+      <div className="relative aspect-square bg-muted/60">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={item.previewUrl}
           alt={item.alt || `Imagen ${index + 1}`}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-contain"
         />
 
         {index === 0 && (
