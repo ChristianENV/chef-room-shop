@@ -286,6 +286,321 @@ async function seedCustomization() {
   }
 }
 
+type OptionGroupData = {
+  productTypeId: string
+  slug: string
+  name: string
+  description?: string | null
+  inputType: 'SINGLE_SELECT' | 'BOOLEAN'
+  isRequired: boolean
+  isActive: boolean
+  sortOrder: number
+  configJson?: any
+  values: {
+    slug: string
+    label: string
+    description?: string | null
+    priceDeltaCents: number
+    isDefault: boolean
+    isActive: boolean
+    sortOrder: number
+    configJson?: any
+  }[]
+}
+
+async function upsertOptionGroup(data: OptionGroupData) {
+  let group = await prisma.productOptionGroup.findFirst({
+    where: {
+      slug: data.slug,
+      productTypeId: data.productTypeId,
+    },
+  })
+
+  if (!group) {
+    group = await prisma.productOptionGroup.create({
+      data: {
+        productTypeId: data.productTypeId,
+        slug: data.slug,
+        name: data.name,
+        description: data.description,
+        inputType: data.inputType,
+        isRequired: data.isRequired,
+        isActive: data.isActive,
+        sortOrder: data.sortOrder,
+        configJson: data.configJson,
+      },
+    })
+  } else {
+    group = await prisma.productOptionGroup.update({
+      where: { id: group.id },
+      data: {
+        name: data.name,
+        description: data.description,
+        inputType: data.inputType,
+        isRequired: data.isRequired,
+        isActive: data.isActive,
+        sortOrder: data.sortOrder,
+        configJson: data.configJson,
+      },
+    })
+  }
+
+  for (const valueData of data.values) {
+    let value = await prisma.productOptionValue.findFirst({
+      where: {
+        optionGroupId: group.id,
+        slug: valueData.slug,
+      },
+    })
+
+    if (!value) {
+      await prisma.productOptionValue.create({
+        data: {
+          optionGroupId: group.id,
+          slug: valueData.slug,
+          label: valueData.label,
+          description: valueData.description,
+          priceDeltaCents: valueData.priceDeltaCents,
+          isDefault: valueData.isDefault,
+          isActive: valueData.isActive,
+          sortOrder: valueData.sortOrder,
+          configJson: valueData.configJson,
+        },
+      })
+    } else {
+      await prisma.productOptionValue.update({
+        where: { id: value.id },
+        data: {
+          label: valueData.label,
+          description: valueData.description,
+          priceDeltaCents: valueData.priceDeltaCents,
+          isDefault: valueData.isDefault,
+          isActive: valueData.isActive,
+          sortOrder: valueData.sortOrder,
+          configJson: valueData.configJson,
+        },
+      })
+    }
+  }
+}
+
+async function seedProductOptions() {
+  const productTypes = await prisma.productType.findMany({
+    where: {
+      slug: { in: ['chef-jacket', 'pants', 'apron'] },
+    },
+  })
+
+  const chefJacketType = productTypes.find((pt) => pt.slug === 'chef-jacket')
+  const pantsType = productTypes.find((pt) => pt.slug === 'pants')
+  const apronType = productTypes.find((pt) => pt.slug === 'apron')
+
+  if (!chefJacketType || !pantsType || !apronType) {
+    throw new Error('Product types not found for product options seed')
+  }
+
+  // A. Chef jackets / Filipinas: Dry fit option
+  await upsertOptionGroup({
+    productTypeId: chefJacketType.id,
+    slug: 'dry-fit-back',
+    name: 'Dry fit en espalda',
+    description: 'Añade dry fit en el panel trasero de la filipina',
+    inputType: 'SINGLE_SELECT',
+    isRequired: false,
+    isActive: true,
+    sortOrder: 10,
+    configJson: {
+      appliesToPanel: 'back',
+      note: 'Dry fit only applies to back panel',
+    },
+    values: [
+      {
+        slug: 'sin-dry-fit',
+        label: 'Sin dry fit',
+        priceDeltaCents: 0,
+        isDefault: true,
+        isActive: true,
+        sortOrder: 1,
+      },
+      {
+        slug: 'con-dry-fit',
+        label: 'Con dry fit en espalda',
+        description: 'Dry fit aplicado únicamente al panel trasero',
+        priceDeltaCents: 0,
+        isDefault: false,
+        isActive: true,
+        sortOrder: 2,
+      },
+    ],
+  })
+
+  // B. Pants / Pantalón: Pockets option
+  await upsertOptionGroup({
+    productTypeId: pantsType.id,
+    slug: 'pockets',
+    name: 'Bolsas',
+    description: 'Modelo con o sin bolsas cargo',
+    inputType: 'SINGLE_SELECT',
+    isRequired: true,
+    isActive: true,
+    sortOrder: 10,
+    configJson: {
+      notes: 'Cargo style includes side pockets and rear pockets',
+    },
+    values: [
+      {
+        slug: 'sin-bolsas-cargo',
+        label: 'Sin bolsas cargo',
+        description: 'Modelo simple sin bolsas adicionales',
+        priceDeltaCents: 0,
+        isDefault: true,
+        isActive: true,
+        sortOrder: 1,
+      },
+      {
+        slug: 'con-bolsas-cargo',
+        label: 'Con bolsas cargo',
+        description: 'Incluye bolsas laterales y traseras',
+        priceDeltaCents: 0,
+        isDefault: false,
+        isActive: true,
+        sortOrder: 2,
+      },
+    ],
+  })
+
+  // C. Apron / Mandil: Embroidery option
+  await upsertOptionGroup({
+    productTypeId: apronType.id,
+    slug: 'embroidery',
+    name: 'Bordado',
+    description: 'Añade bordado personalizado al mandil',
+    inputType: 'SINGLE_SELECT',
+    isRequired: false,
+    isActive: true,
+    sortOrder: 10,
+    values: [
+      {
+        slug: 'sin-bordado',
+        label: 'Sin bordado',
+        priceDeltaCents: 0,
+        isDefault: true,
+        isActive: true,
+        sortOrder: 1,
+      },
+      {
+        slug: 'con-bordado',
+        label: 'Con bordado',
+        priceDeltaCents: 0,
+        isDefault: false,
+        isActive: true,
+        sortOrder: 2,
+      },
+    ],
+  })
+
+  // C2. Apron / Mandil: Embroidery position
+  await upsertOptionGroup({
+    productTypeId: apronType.id,
+    slug: 'embroidery-position',
+    name: 'Posición del bordado',
+    description: 'Ubicación del bordado en el mandil',
+    inputType: 'SINGLE_SELECT',
+    isRequired: false,
+    isActive: true,
+    sortOrder: 20,
+    values: [
+      {
+        slug: 'derecha',
+        label: 'Derecha',
+        priceDeltaCents: 0,
+        isDefault: true,
+        isActive: true,
+        sortOrder: 1,
+      },
+      {
+        slug: 'izquierda',
+        label: 'Izquierda',
+        priceDeltaCents: 0,
+        isDefault: false,
+        isActive: true,
+        sortOrder: 2,
+      },
+    ],
+  })
+
+  // C3. Apron / Mandil: Embroidery size
+  await upsertOptionGroup({
+    productTypeId: apronType.id,
+    slug: 'embroidery-size',
+    name: 'Tamaño del bordado',
+    description: 'Tamaño del bordado personalizado',
+    inputType: 'SINGLE_SELECT',
+    isRequired: false,
+    isActive: true,
+    sortOrder: 30,
+    values: [
+      {
+        slug: 'chica',
+        label: 'Chica',
+        priceDeltaCents: 0,
+        isDefault: false,
+        isActive: true,
+        sortOrder: 1,
+      },
+      {
+        slug: 'mediana',
+        label: 'Mediana',
+        priceDeltaCents: 0,
+        isDefault: true,
+        isActive: true,
+        sortOrder: 2,
+      },
+      {
+        slug: 'grande',
+        label: 'Grande',
+        priceDeltaCents: 0,
+        isDefault: false,
+        isActive: true,
+        sortOrder: 3,
+      },
+    ],
+  })
+
+  // C4. Apron / Mandil: Apron length
+  await upsertOptionGroup({
+    productTypeId: apronType.id,
+    slug: 'apron-length',
+    name: 'Largo del mandil',
+    description: 'Largo estándar o extendido del mandil',
+    inputType: 'SINGLE_SELECT',
+    isRequired: false,
+    isActive: true,
+    sortOrder: 40,
+    values: [
+      {
+        slug: 'normal',
+        label: 'Largo normal',
+        priceDeltaCents: 0,
+        isDefault: true,
+        isActive: true,
+        sortOrder: 1,
+      },
+      {
+        slug: 'mas-10cm',
+        label: '+10 cm',
+        description: 'Mandil 10 cm más largo',
+        priceDeltaCents: 0,
+        isDefault: false,
+        isActive: true,
+        sortOrder: 2,
+      },
+    ],
+  })
+
+  console.log('Product options seeded successfully.')
+}
+
 /**
  * Optional DEV admin via Better Auth sign-up API (password stored on Account, not User).
  */
@@ -375,6 +690,7 @@ async function main() {
   const permissionIds = await seedPermissions()
   await seedRoles(permissionIds)
   await seedCatalog()
+  await seedProductOptions()
   await seedCustomization()
   await seedCanonicalProducts(prisma)
   await seedDevAdmin()

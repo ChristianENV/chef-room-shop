@@ -673,6 +673,135 @@ export const adminProductsTypeDefs = /* GraphQL */ `
   }
 `
 
+export const adminProductOptionsTypeDefs = /* GraphQL */ `
+  enum ProductOptionInputType {
+    SINGLE_SELECT
+    BOOLEAN
+  }
+
+  type AdminProductOptionValue {
+    id: ID!
+    optionGroupId: ID!
+    slug: String!
+    label: String!
+    description: String
+    priceDeltaCents: Int!
+    isDefault: Boolean!
+    isActive: Boolean!
+    sortOrder: Int!
+    configJson: JSON
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type AdminProductOptionGroup {
+    id: ID!
+    productId: ID
+    productTypeId: ID
+    slug: String!
+    name: String!
+    description: String
+    inputType: ProductOptionInputType!
+    isRequired: Boolean!
+    isActive: Boolean!
+    sortOrder: Int!
+    configJson: JSON
+    values: [AdminProductOptionValue!]!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type AdminProductOptionGroupsPayload {
+    groups: [AdminProductOptionGroup!]!
+    total: Int!
+  }
+
+  type AdminProductOptionGroupPayload {
+    group: AdminProductOptionGroup!
+  }
+
+  type AdminProductOptionValuePayload {
+    value: AdminProductOptionValue!
+  }
+
+  type ArchiveAdminProductOptionGroupPayload {
+    success: Boolean!
+    message: String!
+  }
+
+  type ArchiveAdminProductOptionValuePayload {
+    success: Boolean!
+    message: String!
+  }
+
+  input GetAdminProductOptionGroupsInput {
+    productId: ID
+    productTypeId: ID
+    includeInactive: Boolean
+  }
+
+  input GetAdminProductOptionGroupInput {
+    id: ID!
+  }
+
+  input CreateAdminProductOptionGroupInput {
+    productId: ID
+    productTypeId: ID
+    slug: String!
+    name: String!
+    description: String
+    inputType: ProductOptionInputType!
+    isRequired: Boolean!
+    isActive: Boolean!
+    sortOrder: Int!
+    configJson: JSON
+  }
+
+  input UpdateAdminProductOptionGroupInput {
+    id: ID!
+    slug: String
+    name: String
+    description: String
+    inputType: ProductOptionInputType
+    isRequired: Boolean
+    isActive: Boolean
+    sortOrder: Int
+    configJson: JSON
+  }
+
+  input ArchiveAdminProductOptionGroupInput {
+    id: ID!
+  }
+
+  input CreateAdminProductOptionValueInput {
+    optionGroupId: ID!
+    slug: String!
+    label: String!
+    description: String
+    priceDeltaCents: Int!
+    isDefault: Boolean!
+    isActive: Boolean!
+    sortOrder: Int!
+    configJson: JSON
+  }
+
+  input UpdateAdminProductOptionValueInput {
+    id: ID!
+    slug: String
+    label: String
+    description: String
+    priceDeltaCents: Int
+    isDefault: Boolean
+    isActive: Boolean
+    sortOrder: Int
+    configJson: JSON
+  }
+
+  input ArchiveAdminProductOptionValueInput {
+    id: ID!
+  }
+`
+
 export const adminCustomizationTypeDefs = /* GraphQL */ `
   type AdminCustomizationArea {
     id: ID!
@@ -1807,6 +1936,8 @@ export const typeDefs = /* GraphQL */ `
     adminProductById(id: ID!): AdminProduct
     adminProductBySlug(slug: String!): AdminProduct
     adminProductFormOptions: AdminProductFormOptions!
+    adminProductOptionGroups(input: GetAdminProductOptionGroupsInput!): AdminProductOptionGroupsPayload!
+    adminProductOptionGroupById(input: GetAdminProductOptionGroupInput!): AdminProductOptionGroupPayload!
     adminColors(includeInactive: Boolean): [AdminColor!]!
     adminColorById(id: ID!): AdminColor
     adminProductTypes(includeInactive: Boolean): [AdminProductType!]!
@@ -1895,6 +2026,12 @@ export const typeDefs = /* GraphQL */ `
     upsertAdminProductImage(input: AdminProductImageInput!): AdminProductImage!
     deleteAdminProductImage(id: ID!): Boolean!
     reorderAdminProductImages(productId: ID!, imageIds: [ID!]!): [AdminProductImage!]!
+    createAdminProductOptionGroup(input: CreateAdminProductOptionGroupInput!): AdminProductOptionGroupPayload!
+    updateAdminProductOptionGroup(input: UpdateAdminProductOptionGroupInput!): AdminProductOptionGroupPayload!
+    archiveAdminProductOptionGroup(input: ArchiveAdminProductOptionGroupInput!): ArchiveAdminProductOptionGroupPayload!
+    createAdminProductOptionValue(input: CreateAdminProductOptionValueInput!): AdminProductOptionValuePayload!
+    updateAdminProductOptionValue(input: UpdateAdminProductOptionValueInput!): AdminProductOptionValuePayload!
+    archiveAdminProductOptionValue(input: ArchiveAdminProductOptionValueInput!): ArchiveAdminProductOptionValuePayload!
     createAdminCustomizationRule(input: AdminCustomizationRuleInput!): AdminCustomizationRule!
     updateAdminCustomizationRule(
       id: ID!
@@ -1950,6 +2087,7 @@ export const typeDefs = /* GraphQL */ `
   ${adminOrdersTypeDefs}
   ${adminShippingTypeDefs}
   ${adminProductsTypeDefs}
+  ${adminProductOptionsTypeDefs}
   ${adminCustomizationTypeDefs}
   ${uploadsTypeDefs}
   ${designsTypeDefs}

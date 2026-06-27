@@ -436,6 +436,23 @@ export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
   _max?: Prisma.NestedJsonNullableFilter<$PrismaModel>
 }
 
+export type EnumProductOptionInputTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductOptionInputType | Prisma.EnumProductOptionInputTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductOptionInputType[] | Prisma.ListEnumProductOptionInputTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductOptionInputType[] | Prisma.ListEnumProductOptionInputTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductOptionInputTypeFilter<$PrismaModel> | $Enums.ProductOptionInputType
+}
+
+export type EnumProductOptionInputTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductOptionInputType | Prisma.EnumProductOptionInputTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductOptionInputType[] | Prisma.ListEnumProductOptionInputTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductOptionInputType[] | Prisma.ListEnumProductOptionInputTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductOptionInputTypeWithAggregatesFilter<$PrismaModel> | $Enums.ProductOptionInputType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumProductOptionInputTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumProductOptionInputTypeFilter<$PrismaModel>
+}
+
 export type EnumDesignStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.DesignStatus | Prisma.EnumDesignStatusFieldRefInput<$PrismaModel>
   in?: $Enums.DesignStatus[] | Prisma.ListEnumDesignStatusFieldRefInput<$PrismaModel>
@@ -1184,6 +1201,23 @@ export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
   gt?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   gte?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   not?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel> | Prisma.JsonNullValueFilter
+}
+
+export type NestedEnumProductOptionInputTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductOptionInputType | Prisma.EnumProductOptionInputTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductOptionInputType[] | Prisma.ListEnumProductOptionInputTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductOptionInputType[] | Prisma.ListEnumProductOptionInputTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductOptionInputTypeFilter<$PrismaModel> | $Enums.ProductOptionInputType
+}
+
+export type NestedEnumProductOptionInputTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductOptionInputType | Prisma.EnumProductOptionInputTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductOptionInputType[] | Prisma.ListEnumProductOptionInputTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductOptionInputType[] | Prisma.ListEnumProductOptionInputTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductOptionInputTypeWithAggregatesFilter<$PrismaModel> | $Enums.ProductOptionInputType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumProductOptionInputTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumProductOptionInputTypeFilter<$PrismaModel>
 }
 
 export type NestedEnumDesignStatusFilter<$PrismaModel = never> = {
