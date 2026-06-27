@@ -444,9 +444,11 @@ function ProductFormDrawerBody({
           </div>
 
           <ProductVariantEditor
+            key={formValues.productTypeId || 'no-product-type'}
             variants={formValues.variants}
             productName={formValues.name}
             productSlug={formValues.slug}
+            productTypeId={formValues.productTypeId}
             basePricePesos={formValues.basePricePesos}
             selectOptions={selectOptions}
             formOptions={formOptions}

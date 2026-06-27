@@ -58,6 +58,7 @@ export function buildVariantColorSelectOptions(params: {
           ? `${color.name} — ${VARIANT_COLOR_INVALID_LABEL}`
           : color.name,
         hexCode: color.hexCode,
+        slug: color.slug,
         isInvalidForProductType,
       }
     })

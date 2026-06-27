@@ -42,7 +42,38 @@ export const VARIANT_MATRIX_ACTION_DEACTIVATE = 'Desactivar'
 
 export const VARIANT_MATRIX_ACTION_REACTIVATE = 'Reactivar'
 
-export const VARIANT_MATRIX_SWITCH_ACTIVE = 'Activa'
+export const VARIANT_MATRIX_SELECT_COLORS = 'Seleccionar colores'
+
+export const VARIANT_MATRIX_COLOR_ADD = 'Agregar color'
+
+export const VARIANT_MATRIX_COLOR_REMOVE = 'Quitar color'
+
+export const VARIANT_MATRIX_COLOR_AVAILABLE = 'Colores disponibles'
+
+export const VARIANT_MATRIX_COLOR_SELECTED = 'Colores seleccionados'
+
+export const VARIANT_MATRIX_COLOR_SELECTION_HELPER =
+  'Selecciona los colores que venderá este producto. Después crea las variantes por talla.'
+
+export const VARIANT_MATRIX_COLOR_PICKER_TITLE = 'Selecciona colores para este producto'
+
+export const VARIANT_MATRIX_COLOR_PICKER_DESCRIPTION =
+  'Elige los colores que venderá este producto. Después crea las variantes por talla.'
+
+export const VARIANT_MATRIX_COLOR_PICKER_SEARCH = 'Buscar color...'
+
+export const VARIANT_MATRIX_COLOR_PICKER_EMPTY = 'No hay colores disponibles para esta categoría.'
+
+export const VARIANT_MATRIX_COLOR_PICKER_SELECTED = 'Seleccionado'
+
+export const VARIANT_MATRIX_COLOR_PICKER_LOCKED =
+  'Este color ya tiene variantes y no puede quitarse desde aquí.'
+
+export const VARIANT_MATRIX_COLOR_PICKER_CANCEL = 'Cancelar'
+
+export const VARIANT_MATRIX_COLOR_PICKER_APPLY = 'Aplicar colores'
+
+export const VARIANT_MATRIX_COLOR_PICKER_MORE = (count: number) => `+ ${count} colores`
 
 export const VARIANT_MATRIX_HELPER =
   'Usa Crear para agregar una variante faltante o Editar para ajustar SKU, precio y stock.'

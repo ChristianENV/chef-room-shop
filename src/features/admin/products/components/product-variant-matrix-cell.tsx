@@ -3,9 +3,7 @@
 import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 
 import { ProductVariantCellEditor } from './product-variant-cell-editor'
@@ -18,7 +16,6 @@ import {
   VARIANT_MATRIX_STATE_INACTIVE,
   VARIANT_MATRIX_STATE_INVALID,
   VARIANT_MATRIX_STATE_MISSING,
-  VARIANT_MATRIX_SWITCH_ACTIVE,
 } from '../lib/variant-matrix-messages'
 import type { VariantCellState } from '../lib/variant-matrix'
 import type { AdminProductVariantUi } from '../types/admin-products-ui.types'
@@ -138,68 +135,43 @@ export function ProductVariantMatrixCell({
     )
   }
 
-  const isActive = variant.isActive
-  const switchDisabled = disabled || state === 'invalid'
-
-  return (
-    <MatrixCellShell state={state} disabled={disabled}>
-      {badge}
-      {metrics}
-
-      <div
-        className="flex items-center justify-center gap-1.5"
-        onClick={(event) => event.stopPropagation()}
-        onPointerDown={(event) => event.stopPropagation()}
-      >
-        <Switch
-          id={`variant-active-${variant.id}`}
-          checked={isActive}
-          disabled={switchDisabled}
-          onCheckedChange={(checked) => onToggle(checked === true)}
-          data-testid="admin-product-variant-cell-active-switch"
-          aria-label={VARIANT_MATRIX_SWITCH_ACTIVE}
-        />
-        <Label
-          htmlFor={`variant-active-${variant.id}`}
-          className="font-sans text-[10px] font-medium text-muted-foreground"
-        >
-          {VARIANT_MATRIX_SWITCH_ACTIVE}
-        </Label>
-      </div>
-
-      <Popover>
-        <PopoverTrigger asChild disabled={disabled}>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-7 w-full font-sans text-[11px]"
-            data-testid="admin-product-variant-cell-edit"
-          >
-            {VARIANT_MATRIX_ACTION_EDIT}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-72" align="center">
-          <ProductVariantCellEditor variant={variant} disabled={disabled} onChange={onChange} />
-        </PopoverContent>
-      </Popover>
-
-      {state === 'invalid' ? null : isActive ? (
+  const editorButton = (
+    <Popover>
+      <PopoverTrigger asChild disabled={disabled}>
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           size="sm"
-          className="h-7 w-full font-sans text-[11px] text-muted-foreground"
-          disabled={disabled}
-          onClick={() => onToggle(false)}
-          data-testid="admin-product-variant-cell-deactivate"
+          className="h-7 w-full font-sans text-[11px]"
+          data-testid="admin-product-variant-cell-edit"
         >
-          {VARIANT_MATRIX_ACTION_DEACTIVATE}
+          {VARIANT_MATRIX_ACTION_EDIT}
         </Button>
-      ) : (
+      </PopoverTrigger>
+      <PopoverContent className="w-72" align="center">
+        <ProductVariantCellEditor variant={variant} disabled={disabled} onChange={onChange} />
+      </PopoverContent>
+    </Popover>
+  )
+
+  if (state === 'invalid') {
+    return (
+      <MatrixCellShell state={state} disabled={disabled}>
+        {badge}
+        {metrics}
+        {editorButton}
+      </MatrixCellShell>
+    )
+  }
+
+  if (state === 'inactive') {
+    return (
+      <MatrixCellShell state={state} disabled={disabled}>
+        {badge}
+        {metrics}
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           size="sm"
           className="h-7 w-full font-sans text-[11px]"
           disabled={disabled}
@@ -208,7 +180,27 @@ export function ProductVariantMatrixCell({
         >
           {VARIANT_MATRIX_ACTION_REACTIVATE}
         </Button>
-      )}
+        {editorButton}
+      </MatrixCellShell>
+    )
+  }
+
+  return (
+    <MatrixCellShell state={state} disabled={disabled}>
+      {badge}
+      {metrics}
+      {editorButton}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="h-7 w-full font-sans text-[11px] text-muted-foreground"
+        disabled={disabled}
+        onClick={() => onToggle(false)}
+        data-testid="admin-product-variant-cell-deactivate"
+      >
+        {VARIANT_MATRIX_ACTION_DEACTIVATE}
+      </Button>
     </MatrixCellShell>
   )
 }

@@ -22,16 +22,18 @@ Variant colors must be allowed **per product type**. Base slug rules live in:
 - `src/config/catalog-colors.ts` → `PRODUCT_TYPE_VARIANT_COLOR_SLUGS`
 - `src/config/variant-color-eligibility.ts` → ProductType-aware resolver (scopes + Filipinas exception)
 
-| Product type (`ProductType.slug`) | Allowed variant colors                                                                       |
-| --------------------------------- | -------------------------------------------------------------------------------------------- |
-| `chef-jacket` (Filipinas)         | All **active fabric colors** (`isFabricColor=true`) plus explicit product colors when needed |
-| `apron`                           | `black`, `white` (`isProductColor=true` only)                                                |
-| `pants`                           | `black` (`isProductColor=true` only)                                                         |
-| `shoes`                           | `black` (`isProductColor=true` only)                                                         |
+| Product type (`ProductType.slug`) | Allowed variant colors                                                                                      |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `chef-jacket` (Filipinas)         | Defaults: `black`, `white`, `chef-blue`, `warm-gray`. Admin may **select** additional active fabric colors. |
+| `apron`                           | `black`, `white` (`isProductColor=true` only)                                                               |
+| `pants`                           | `black` (`isProductColor=true` only)                                                                        |
+| `shoes`                           | `black` (`isProductColor=true` only)                                                                        |
 
-**Filipinas exception:** active fabric colors from Admin Colors / customizer palette may be used as sellable variant colors. Fabric-only colors do **not** automatically appear for Mandil, Pantalón, Zapato, or other types.
+**Filipinas exception:** active fabric colors may be added manually via _Seleccionar colores_ in Admin Products. They do **not** auto-populate every fabric row. `_Generar variantes faltantes_` applies only to visible/selected matrix rows.
 
-Frontend matrix, Admin form filters, and GraphQL validation all use `isVariantColorEligibleForProductType()`.
+`adminProductFormOptions` returns active colors where `isProductColor=true` **or** `isFabricColor=true`.
+
+Frontend matrix, color selector, and GraphQL validation use `isVariantColorEligibleForProductType()`.
 
 ### General colors
 
@@ -51,13 +53,14 @@ Helpers: `src/lib/color-scopes.ts`
 
 ## Shared configuration
 
-| File                                      | Role                                                |
-| ----------------------------------------- | --------------------------------------------------- |
-| `src/config/catalog-colors.ts`            | Slug allowlists per product type (seed + reference) |
-| `src/config/variant-color-eligibility.ts` | ProductType + scope resolver for Admin variants     |
-| `prisma/seed-colors.data.ts`              | Product + fabric-only color seed rows               |
-| `prisma/seed-catalog-reference.ts`        | Re-exports shared rules for Prisma seeds            |
-| `fabric-colors.ts`                        | Customizer fabric palette + fabric→catalog mapping  |
+| File                                                       | Role                                                |
+| ---------------------------------------------------------- | --------------------------------------------------- |
+| `src/config/catalog-colors.ts`                             | Slug allowlists per product type (seed + reference) |
+| `src/config/variant-color-eligibility.ts`                  | ProductType + scope resolver for Admin variants     |
+| `src/features/admin/products/lib/variant-matrix-colors.ts` | Visible matrix rows + color selector pool           |
+| `prisma/seed-colors.data.ts`                               | Product + fabric-only color seed rows               |
+| `prisma/seed-catalog-reference.ts`                         | Re-exports shared rules for Prisma seeds            |
+| `fabric-colors.ts`                                         | Customizer fabric palette + fabric→catalog mapping  |
 
 ## Fabric → catalog mapping
 

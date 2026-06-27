@@ -77,6 +77,7 @@ export type SelectOption = {
 
 export type ColorSelectOption = SelectOption & {
   hexCode?: string
+  slug?: string
   isInvalidForProductType?: boolean
 }
 

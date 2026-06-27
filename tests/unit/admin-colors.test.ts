@@ -175,10 +175,7 @@ describe('variant color selector by product type scopes', () => {
       productTypeSlug: 'chef-jacket',
     })
 
-    assert.deepEqual(
-      options.map((row) => row.value).sort(),
-      ['color-black', 'color-olive'],
-    )
+    assert.deepEqual(options.map((row) => row.value).sort(), ['color-black', 'color-olive'])
   })
 
   it('excludes fabric-only colors from apron variant dropdown', () => {
@@ -187,7 +184,10 @@ describe('variant color selector by product type scopes', () => {
       productTypeSlug: 'apron',
     })
 
-    assert.deepEqual(options.map((row) => row.value), ['color-black'])
+    assert.deepEqual(
+      options.map((row) => row.value),
+      ['color-black'],
+    )
   })
 
   it('excludes inactive product colors for new variants', () => {

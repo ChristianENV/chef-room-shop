@@ -7,7 +7,6 @@ import {
   applyBasePriceToEmptyVariants,
   applyInitialStockToNewVariants,
   buildDeterministicVariantSku,
-  buildVariantMatrixColorRows,
   ensureUniqueSkusInForm,
   filterVariantSizesForProductType,
   generateMissingVariants,
@@ -16,6 +15,11 @@ import {
   sortVariantsForDisplay,
 } from '@/src/features/admin/products/lib/variant-matrix'
 import { buildVariantColorSelectOptions } from '@/src/features/admin/products/lib/variant-color-options'
+import {
+  buildVariantColorPoolOptions,
+  buildVisibleMatrixColorRows,
+  resolveVisibleMatrixColorIds,
+} from '@/src/features/admin/products/lib/variant-matrix-colors'
 import { mapFormOptionsToSelectOptions } from '@/src/features/admin/products/types/admin-products-ui.types'
 import type { AdminProductFormOptions } from '@/src/features/admin/products/types'
 import type { AdminProductVariantUi } from '@/src/features/admin/products/types/admin-products-ui.types'
@@ -133,66 +137,78 @@ describe('variant matrix size filtering', () => {
 })
 
 describe('variant matrix color rows', () => {
-  it('builds rows from allowed ProductType colors including fabric colors for chef-jacket', () => {
-    const selectColors = buildVariantColorSelectOptions({
+  it('shows canonical defaults without every fabric color for chef-jacket', () => {
+    const visibleIds = resolveVisibleMatrixColorIds({
+      productTypeSlug: 'chef-jacket',
+      colors,
+      variants: [],
+      selectedColorIds: [],
+    })
+
+    const rows = buildVisibleMatrixColorRows({
+      visibleColorIds: visibleIds,
       colors,
       productTypeSlug: 'chef-jacket',
     })
 
-    const rows = buildVariantMatrixColorRows({
-      colors: selectColors,
-      colorMeta: {
-        'color-black': { name: 'Negro', hexCode: '#111111', slug: 'black' },
-        'color-white': { name: 'Blanco', hexCode: '#FFFFFF', slug: 'white' },
-        'color-olive': { name: 'Verde olivo', hexCode: '#4B5A3C', slug: 'olive-green' },
-      },
-      variants: [],
-    })
-
-    assert.equal(rows.length, 3)
+    assert.equal(rows.length, 2)
     assert.equal(
       rows.some((row) => row.value === 'color-olive'),
-      true,
-    )
-    assert.equal(
-      rows.every((row) => row.hexCode.startsWith('#')),
-      true,
-    )
-  })
-
-  it('excludes inactive colors for new chef-jacket variants', () => {
-    const selectColors = buildVariantColorSelectOptions({
-      colors,
-      productTypeSlug: 'chef-jacket',
-    })
-
-    assert.equal(
-      selectColors.some((color) => color.value === 'color-inactive'),
       false,
     )
   })
 
-  it('excludes fabric-only colors for apron', () => {
-    const selectColors = buildVariantColorSelectOptions({
+  it('adds selected fabric color row for chef-jacket', () => {
+    const visibleIds = resolveVisibleMatrixColorIds({
+      productTypeSlug: 'chef-jacket',
       colors,
-      productTypeSlug: 'apron',
+      variants: [],
+      selectedColorIds: ['color-olive'],
+    })
+
+    const rows = buildVisibleMatrixColorRows({
+      visibleColorIds: visibleIds,
+      colors,
+      productTypeSlug: 'chef-jacket',
     })
 
     assert.equal(
-      selectColors.some((color) => color.value === 'color-olive'),
+      rows.some((row) => row.value === 'color-olive'),
+      true,
+    )
+  })
+
+  it('excludes inactive colors from chef-jacket pool', () => {
+    const pool = buildVariantColorPoolOptions({ colors, productTypeSlug: 'chef-jacket' })
+
+    assert.equal(
+      pool.some((color) => color.value === 'color-inactive'),
+      false,
+    )
+  })
+
+  it('excludes fabric-only colors from apron pool', () => {
+    const pool = buildVariantColorPoolOptions({ colors, productTypeSlug: 'apron' })
+
+    assert.equal(
+      pool.some((color) => color.value === 'color-olive'),
       false,
     )
   })
 })
 
 describe('variant matrix generation', () => {
-  const matrixColors = buildVariantMatrixColorRows({
-    colors: buildVariantColorSelectOptions({ colors, productTypeSlug: 'apron' }),
-    colorMeta: {
-      'color-black': { name: 'Negro', hexCode: '#111111', slug: 'black' },
-      'color-white': { name: 'Blanco', hexCode: '#FFFFFF', slug: 'white' },
-    },
+  const visibleIds = resolveVisibleMatrixColorIds({
+    productTypeSlug: 'apron',
+    colors,
     variants: [],
+    selectedColorIds: [],
+  })
+
+  const matrixColors = buildVisibleMatrixColorRows({
+    visibleColorIds: visibleIds,
+    colors,
+    productTypeSlug: 'apron',
   }).filter((row) => !row.isInvalidForProductType)
 
   const matrixSizes = filterVariantSizesForProductType(sizes, 'apron').map((size) => ({
@@ -392,24 +408,25 @@ describe('variant editor UI wiring', () => {
     assert.match(dialogSource, /showCloseButton=\{!formPending\}/)
   })
 
-  it('uses explicit matrix cell actions and separates active switch from editor', () => {
+  it('uses explicit matrix cell actions and does not render switch plus deactivate', () => {
     const cellSource = readFileSync(
       resolve('src/features/admin/products/components/product-variant-matrix-cell.tsx'),
       'utf8',
     )
-    const matrixSource = readFileSync(
-      resolve('src/features/admin/products/components/product-variant-matrix.tsx'),
+    const selectorSource = readFileSync(
+      resolve('src/features/admin/products/components/product-variant-color-selector.tsx'),
       'utf8',
     )
 
     assert.match(cellSource, /admin-product-variant-cell-create/)
-    assert.match(cellSource, /VARIANT_MATRIX_ACTION_CREATE/)
     assert.match(cellSource, /admin-product-variant-cell-edit/)
-    assert.match(cellSource, /VARIANT_MATRIX_ACTION_EDIT/)
-    assert.match(cellSource, /admin-product-variant-cell-active-switch/)
-    assert.match(cellSource, /stopPropagation/)
-    assert.doesNotMatch(cellSource, /<Checkbox/)
-    assert.match(matrixSource, /VARIANT_MATRIX_HELPER/)
+    assert.match(cellSource, /admin-product-variant-cell-deactivate/)
+    assert.match(cellSource, /admin-product-variant-cell-reactivate/)
+    assert.doesNotMatch(cellSource, /<Switch/)
+    assert.doesNotMatch(cellSource, /admin-product-variant-cell-active-switch/)
+    assert.match(selectorSource, /admin-product-variant-select-colors/)
+    assert.match(selectorSource, /admin-product-variant-color-grid/)
+    assert.doesNotMatch(selectorSource, /PopoverContent/)
   })
 })
 
