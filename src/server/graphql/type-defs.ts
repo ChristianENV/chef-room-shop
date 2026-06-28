@@ -97,6 +97,27 @@ export const catalogTypeDefs = /* GraphQL */ `
     anchorsJson: JSON
   }
 
+  type ProductOptionValue {
+    id: ID!
+    slug: String!
+    label: String!
+    description: String
+    priceDeltaCents: Int!
+    isDefault: Boolean!
+    sortOrder: Int!
+  }
+
+  type ProductOptionGroup {
+    id: ID!
+    slug: String!
+    name: String!
+    description: String
+    inputType: ProductOptionInputType!
+    isRequired: Boolean!
+    sortOrder: Int!
+    values: [ProductOptionValue!]!
+  }
+
   type Product {
     id: ID!
     slug: String!
@@ -115,6 +136,7 @@ export const catalogTypeDefs = /* GraphQL */ `
     images: [ProductImage!]!
     variants: [ProductVariant!]!
     customizationRules: [ProductCustomizationRule!]!
+    optionGroups: [ProductOptionGroup!]!
     model3d: ProductModel3d
   }
 

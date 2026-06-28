@@ -6,6 +6,8 @@ import type {
   ProductCustomizationRule,
   ProductImage,
   ProductModelAsset,
+  ProductOptionGroup,
+  ProductOptionValue,
   ProductType,
   ProductVariant,
   Size,
@@ -17,19 +19,24 @@ import type {
   CatalogProductGql,
   CatalogProductImageGql,
   CatalogProductModel3dGql,
+  CatalogProductOptionGroupGql,
+  CatalogProductOptionValueGql,
   CatalogProductTypeGql,
   CatalogProductVariantGql,
   CatalogSizeGql,
 } from './catalog.types'
 
 type ProductWithRelations = Product & {
-  productType: ProductType
+  productType: ProductType & {
+    optionGroups?: (ProductOptionGroup & { values: ProductOptionValue[] })[]
+  }
   images: ProductImage[]
   variants: (ProductVariant & { color: Color; size: Size })[]
   customizationRules: (ProductCustomizationRule & {
     area: CustomizationArea
     option: CustomizationOption
   })[]
+  optionGroups?: (ProductOptionGroup & { values: ProductOptionValue[] })[]
   modelAssets?: ProductModelAsset[]
 }
 
@@ -194,10 +201,59 @@ export function mapProductModel3dToGql(asset: ProductModelAsset): CatalogProduct
 }
 
 /**
+ * Maps a product option value to the catalog GraphQL type.
+ */
+export function mapProductOptionValueToGql(value: ProductOptionValue): CatalogProductOptionValueGql {
+  return {
+    id: value.id,
+    slug: value.slug,
+    label: value.label,
+    description: value.description,
+    priceDeltaCents: value.priceDeltaCents,
+    isDefault: value.isDefault,
+    sortOrder: value.sortOrder,
+  }
+}
+
+/**
+ * Maps a product option group to the catalog GraphQL type.
+ */
+export function mapProductOptionGroupToGql(
+  group: ProductOptionGroup & { values: ProductOptionValue[] },
+): CatalogProductOptionGroupGql {
+  return {
+    id: group.id,
+    slug: group.slug,
+    name: group.name,
+    description: group.description,
+    inputType: group.inputType,
+    isRequired: group.isRequired,
+    sortOrder: group.sortOrder,
+    values: group.values
+      .filter((v) => v.isActive)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map(mapProductOptionValueToGql),
+  }
+}
+
+/**
  * Maps a Prisma product graph to the catalog GraphQL product type.
  */
 export function mapProductToGql(product: ProductWithRelations): CatalogProductGql {
   const activeModel = (product.modelAssets ?? []).find((a) => a.isActive && !a.deletedAt) ?? null
+
+  // Combine product-specific and product-type option groups
+  const productOptionGroups = (product.optionGroups ?? []).filter((g) => g.isActive)
+  const productTypeOptionGroups = (product.productType.optionGroups ?? []).filter((g) => g.isActive)
+  
+  // Product-specific options take precedence over product-type options
+  const allOptionGroups = [
+    ...productOptionGroups,
+    ...productTypeOptionGroups.filter(
+      (typeGroup) => !productOptionGroups.some((prodGroup) => prodGroup.slug === typeGroup.slug),
+    ),
+  ].sort((a, b) => a.sortOrder - b.sortOrder)
+
   return {
     id: product.id,
     slug: product.slug,
@@ -218,6 +274,7 @@ export function mapProductToGql(product: ProductWithRelations): CatalogProductGq
       mapProductVariantToGql(variant, product.basePriceCents),
     ),
     customizationRules: product.customizationRules.map(mapCustomizationRuleToGql),
+    optionGroups: allOptionGroups.map(mapProductOptionGroupToGql),
     model3d: activeModel ? mapProductModel3dToGql(activeModel) : null,
   }
 }
