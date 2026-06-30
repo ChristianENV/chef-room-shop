@@ -11,7 +11,7 @@ export type {
   ValidatedProductOptionSelection,
 } from './product-options.types'
 
-export { buildProductOptionSnapshots } from './product-options.snapshot'
+export { buildProductOptionSnapshots, buildCommercialOptionsLineKey, parseCommercialOptionsSnapshot } from './product-options.snapshot'
 export { calculateProductOptionsPriceCents } from './product-options.pricing'
 export {
   resolveApplicableProductOptionGroups,

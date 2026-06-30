@@ -8,6 +8,8 @@ import type {
   Product,
   ProductCustomizationRule,
   ProductImage,
+  ProductOptionGroup,
+  ProductOptionValue,
   ProductType,
   ProductVariant,
   Size,
@@ -15,6 +17,7 @@ import type {
 
 import type { AccountDesignGql } from '../account/account.types'
 import type { CatalogProductGql } from '../catalog/catalog.types'
+import type { ProductOptionSelectionInput, ProductOptionSnapshot } from '@/src/server/product-options'
 
 export type CartProductSnapshotGql = {
   productId: string
@@ -71,11 +74,13 @@ export type CartItemGql = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents: number
+  optionPriceCents: number
   totalPriceCents: number
   product: CatalogProductGql | null
   design: AccountDesignGql | null
   productSnapshot: CartProductSnapshotGql
   customizationSnapshot: CartCustomizationSnapshotGql
+  commercialOptionsSnapshot: ProductOptionSnapshot[]
   createdAt: string
   updatedAt: string
 }
@@ -86,6 +91,7 @@ export type CartGql = {
   currency: string
   subtotalCents: number
   customizationTotalCents: number
+  optionTotalCents: number
   shippingCostCents: number
   discountTotalCents: number
   totalCents: number
@@ -100,6 +106,7 @@ export type AddCartItemInput = {
   productVariantId?: string | null
   designId?: string | null
   quantity: number
+  selectedCommercialOptions?: ProductOptionSelectionInput[] | null
 }
 
 export type UpdateCartItemQuantityInput = {
@@ -128,13 +135,16 @@ export type CartConfigSnapshotJson = {
 
 export type CartItemWithRelations = CartItem & {
   product: Product & {
-    productType: ProductType
+    productType: ProductType & {
+      optionGroups?: (ProductOptionGroup & { values: ProductOptionValue[] })[]
+    }
     images: ProductImage[]
     variants: (ProductVariant & { color: Color; size: Size })[]
     customizationRules: (ProductCustomizationRule & {
       area: CustomizationArea
       option: CustomizationOption
     })[]
+    optionGroups?: (ProductOptionGroup & { values: ProductOptionValue[] })[]
   }
   productVariant: (ProductVariant & { color: Color; size: Size }) | null
   design: Design | null

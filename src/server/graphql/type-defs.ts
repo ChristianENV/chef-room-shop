@@ -378,6 +378,16 @@ export const cartTypeDefs = /* GraphQL */ `
     embroideredName: String
   }
 
+  type ProductOptionSnapshot {
+    groupId: ID!
+    groupSlug: String!
+    groupName: String!
+    valueId: ID!
+    valueSlug: String!
+    valueLabel: String!
+    priceDeltaCents: Int!
+  }
+
   type CartItem {
     id: ID!
     productId: ID!
@@ -386,11 +396,13 @@ export const cartTypeDefs = /* GraphQL */ `
     quantity: Int!
     unitPriceCents: Int!
     customizationPriceCents: Int!
+    optionPriceCents: Int!
     totalPriceCents: Int!
     product: Product
     design: AccountDesign
     productSnapshot: CartProductSnapshot!
     customizationSnapshot: CartCustomizationSnapshot!
+    commercialOptionsSnapshot: [ProductOptionSnapshot!]!
     createdAt: String!
     updatedAt: String!
   }
@@ -401,6 +413,7 @@ export const cartTypeDefs = /* GraphQL */ `
     currency: String!
     subtotalCents: Int!
     customizationTotalCents: Int!
+    optionTotalCents: Int!
     shippingCostCents: Int!
     discountTotalCents: Int!
     totalCents: Int!
@@ -410,11 +423,19 @@ export const cartTypeDefs = /* GraphQL */ `
     updatedAt: String!
   }
 
+  input ProductOptionSelectionInput {
+    groupId: ID
+    groupSlug: String
+    valueId: ID
+    valueSlug: String
+  }
+
   input AddCartItemInput {
     productId: ID!
     productVariantId: ID
     designId: ID
     quantity: Int!
+    selectedCommercialOptions: [ProductOptionSelectionInput!]
   }
 
   input UpdateCartItemQuantityInput {

@@ -355,18 +355,45 @@ input ArchiveAdminProductOptionValueInput {
 - [x] Expose public product option groups via catalog/product BFF (server)
 - [x] **Phase 1 foundation:** `src/server/product-options/` helpers (validation, snapshots, pricing)
 - [x] Unit tests for commercial option helpers (`tests/unit/product-options.test.ts`)
+- [x] **Phase 2 server wiring:** cart add-to-cart validation, persistence, dedup, totals, checkout copy
+- [x] Cart GraphQL: `selectedCommercialOptions` input, `commercialOptionsSnapshot` output, `optionTotalCents`
+- [x] Unit tests for cart/checkout wiring (`tests/unit/cart-product-options-wiring.test.ts`)
 
 ⏳ **Pending:**
 - [ ] Admin UI for managing product options
 - [ ] Storefront PDP query/types for `optionGroups`
 - [ ] Render option selectors on Storefront PDP
+- [ ] Storefront cart UI: query/display `commercialOptionsSnapshot` and `optionTotalCents`
 - [ ] Option price delta display and total price calculation on PDP
-- [ ] Update add-to-cart flow to include `selectedCommercialOptions`
-- [ ] Wire cart/checkout services to validate and persist commercial option snapshots
-- [ ] Display selected options in cart/order detail (Admin & Storefront)
+- [ ] Display selected commercial options in cart/order detail (Admin & Storefront)
 - [ ] Option dependency handling (e.g., embroidery position/size disabled until embroidery selected)
 - [ ] Integration tests (cart, checkout, order)
-- [ ] Documentation updates for storefront/cart/admin UI
+
+## Phase 2 Cart & Checkout Wiring
+
+### Naming separation
+
+| Concept | Field / type | Used for |
+|---------|--------------|----------|
+| Customizer personalization | `customizationSnapshot.selectedOptions` | Logo, text, fabric choices from 3D customizer |
+| Commercial product options | `commercialOptionsSnapshot` (GraphQL) / `selectedOptionsJson` (Prisma) | Dry fit, pockets, embroidery config, apron length |
+
+Prisma keeps `selectedOptionsJson` on `CartItem` / `OrderItem` for commercial snapshots only at persistence layer. GraphQL exposes `commercialOptionsSnapshot` to avoid collision with customizer `selectedOptions`.
+
+### Add to cart
+
+`addCartItem(input: AddCartItemInput!)` accepts optional `selectedCommercialOptions`. Server validates via `validateSelectedProductOptions`, applies defaults, persists `optionPriceCents` + snapshot JSON, and deduplicates lines by:
+
+`productId:variantId:designId:commercialOptionsKey`
+
+### Cart totals
+
+- Line: `(unitPriceCents + customizationPriceCents + optionPriceCents) × quantity`
+- Cart: `optionTotalCents` summed across lines; included in `totalCents`
+
+### Checkout
+
+Order items copy `selectedOptionsJson` and `optionPriceCents` from cart lines without recalculating option prices.
 
 ## Phase 1 Server Helpers
 
@@ -397,9 +424,9 @@ Commercial product options use explicit naming — **not** customizer `selectedO
 
 ## Next Steps
 
-1. **Phase 2:** Extend `AddCartItemInput`, `cart.service.ts`, `checkout.service.ts` to accept `selectedCommercialOptions`, validate via `validateSelectedProductOptions`, persist snapshots and `optionPriceCents`
-2. Add `optionGroups` to storefront PDP GraphQL query and render selectors
-3. Display selected commercial options in cart and order views
+1. **Phase 3:** Add `optionGroups` to storefront PDP GraphQL query; render selectors; pass `selectedCommercialOptions` on add-to-cart
+2. Update storefront cart queries/UI to display `commercialOptionsSnapshot` and `optionTotalCents`
+3. Display selected commercial options in admin/customer order detail
 4. Build Admin UI for option management
 5. Add integration tests for cart/checkout/order flows
 6. Configure real price deltas based on production costs
