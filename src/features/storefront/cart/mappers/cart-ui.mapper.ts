@@ -13,9 +13,37 @@ import {
   getFreeShippingRemaining,
 } from '@/src/features/storefront/cart/lib/cart-utils'
 
-import type { Cart, CartItem } from '../types/cart-bff.types'
+import type {
+  Cart,
+  CartCommercialOptionSnapshot,
+  CartItem,
+} from '../types/cart-bff.types'
 
 const DEFAULT_COLOR_HEX = '#E5E7EB'
+
+function isCommercialOptionSnapshot(value: unknown): value is CartCommercialOptionSnapshot {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  const record = value as Record<string, unknown>
+  return (
+    typeof record.groupId === 'string' &&
+    typeof record.groupSlug === 'string' &&
+    typeof record.groupName === 'string' &&
+    typeof record.valueId === 'string' &&
+    typeof record.valueSlug === 'string' &&
+    typeof record.valueLabel === 'string' &&
+    typeof record.priceDeltaCents === 'number'
+  )
+}
+
+/**
+ * Normalizes commercial option snapshots from BFF cart items.
+ */
+export function normalizeCommercialOptionsSnapshot(
+  value: CartCommercialOptionSnapshot[] | null | undefined,
+): CartCommercialOptionSnapshot[] {
+  if (!Array.isArray(value)) return []
+  return value.filter(isCommercialOptionSnapshot)
+}
 
 /**
  * Infers storefront cart category from product slug and type label.
@@ -132,6 +160,11 @@ export function mapBffCartItemToUiItem(item: CartItem): CartPreviewItem {
     customizationSummary.personalizationLine = summaryLine
   }
 
+  const optionPriceCents = item.optionPriceCents ?? 0
+  const commercialOptionsSnapshot = normalizeCommercialOptionsSnapshot(
+    item.commercialOptionsSnapshot,
+  )
+
   return {
     id: item.id,
     productId: item.productId,
@@ -148,6 +181,9 @@ export function mapBffCartItemToUiItem(item: CartItem): CartPreviewItem {
     unitPrice: centsToPesos(item.unitPriceCents),
     customizationPrice:
       item.customizationPriceCents > 0 ? centsToPesos(item.customizationPriceCents) : undefined,
+    optionPrice: optionPriceCents > 0 ? centsToPesos(optionPriceCents) : undefined,
+    lineTotal: centsToPesos(item.totalPriceCents),
+    commercialOptionsSnapshot,
     isCustomized,
     designId: item.designId ?? customization?.designId ?? undefined,
     designPreviewUrl: customization?.previewUrl ?? undefined,
@@ -163,6 +199,7 @@ export function mapBffCartToCartPreview(cart: Cart): CartPreview {
     items: cart.items.map(mapBffCartItemToUiItem),
     subtotal: centsToPesos(cart.subtotalCents),
     customizationTotal: centsToPesos(cart.customizationTotalCents),
+    optionTotal: centsToPesos(cart.optionTotalCents ?? 0),
     totalItems: cart.totalItems,
   }
 }
@@ -172,21 +209,17 @@ export function mapBffCartToCartPreview(cart: Cart): CartPreview {
  */
 export function mapBffCartToCartPage(cart: Cart): CartPageState {
   const preview = mapBffCartToCartPreview(cart)
-  const partialTotalPesos = preview.subtotal + preview.customizationTotal
+  const merchandiseSubtotalPesos =
+    preview.subtotal + preview.customizationTotal + preview.optionTotal
   const shippingFromBff = centsToPesos(cart.shippingCostCents)
   const shipping =
     shippingFromBff > 0
       ? shippingFromBff
-      : partialTotalPesos >= FREE_SHIPPING_THRESHOLD_MXN
+      : merchandiseSubtotalPesos >= FREE_SHIPPING_THRESHOLD_MXN
         ? 0
         : STANDARD_SHIPPING_MXN
 
-  const discountPesos = centsToPesos(cart.discountTotalCents)
-  const totalFromBff = centsToPesos(cart.totalCents)
-  const total =
-    cart.shippingCostCents > 0 || cart.discountTotalCents > 0
-      ? totalFromBff
-      : partialTotalPesos + shipping - discountPesos
+  const total = centsToPesos(cart.totalCents) + shipping
 
   return {
     ...preview,
@@ -199,6 +232,9 @@ export function mapBffCartToCartPage(cart: Cart): CartPageState {
  * Remaining MXN to free shipping for cart page promo (from BFF subtotals).
  */
 export function getCartPageFreeShippingRemaining(cart: Cart): number {
-  const partial = centsToPesos(cart.subtotalCents) + centsToPesos(cart.customizationTotalCents)
+  const partial =
+    centsToPesos(cart.subtotalCents) +
+    centsToPesos(cart.customizationTotalCents) +
+    centsToPesos(cart.optionTotalCents ?? 0)
   return getFreeShippingRemaining(partial)
 }

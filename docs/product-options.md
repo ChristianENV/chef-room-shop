@@ -360,11 +360,11 @@ input ArchiveAdminProductOptionValueInput {
 - [x] Unit tests for cart/checkout wiring (`tests/unit/cart-product-options-wiring.test.ts`)
 - [x] **Phase 3A PDP:** query `optionGroups`, selectors, estimated price display, `selectedCommercialOptions` on add-to-cart
 - [x] Unit tests for PDP commercial options (`tests/unit/storefront-product-commercial-options.test.ts`)
+- [x] **Phase 3B cart UI:** `commercialOptionsSnapshot` on cart lines, `optionTotalCents` in cart/checkout summaries
+- [x] Unit tests for cart commercial options UI (`tests/unit/cart-commercial-options-ui.test.ts`)
 
 ⏳ **Pending:**
 - [ ] Admin UI for managing product options
-- [ ] Storefront cart UI: query/display `commercialOptionsSnapshot` and `optionTotalCents` (Phase 3B)
-- [ ] Checkout review display of commercial options
 - [ ] Admin/customer order detail display of commercial options
 - [ ] Option dependency handling (e.g., embroidery position/size disabled until embroidery selected)
 - [ ] Integration tests (cart, checkout, order)
@@ -405,6 +405,13 @@ Order items copy `selectedOptionsJson` and `optionPriceCents` from cart lines wi
 
 **Naming:** PDP uses `selectedCommercialOptions` / `commercialOptionSelections` — never `customizationSnapshot.selectedOptions`.
 
+## Phase 3B Cart & Checkout UI
+
+- `MY_CART_QUERY` fetches `optionTotalCents`, `optionPriceCents`, and `commercialOptionsSnapshot`.
+- Cart drawer, cart page, and checkout review show commercial option labels per line (separate from customizer personalization).
+- Cart summary shows **Opciones** row when `optionTotalCents > 0`.
+- Final cart total uses server `totalCents` + estimated shipping.
+
 ## Phase 1 Server Helpers
 
 Commercial product options use explicit naming — **not** customizer `selectedOptions`.
@@ -434,9 +441,7 @@ Commercial product options use explicit naming — **not** customizer `selectedO
 
 ## Next Steps
 
-1. **Phase 3B:** Update storefront cart queries/UI to display `commercialOptionsSnapshot` and `optionTotalCents`
-2. Checkout review display of commercial options
-3. Display selected commercial options in admin/customer order detail
-4. Build Admin UI for option management
-5. Add integration tests for cart/checkout/order flows
-6. Configure real price deltas based on production costs
+1. **Phase 4:** Admin Product Form “Opciones” tab + admin/customer order detail display
+2. Checkout post-order confirmation display of commercial options (if not already covered)
+3. Add integration tests for cart/checkout/order flows
+4. Configure real price deltas based on production costs

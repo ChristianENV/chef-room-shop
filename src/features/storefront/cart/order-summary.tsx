@@ -25,25 +25,30 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 interface OrderSummaryProps {
   subtotal: number
   customizationTotal: number
+  optionTotal?: number
   shipping: number
   discount?: {
     code: string
     amount: number
   }
   itemCount: number
+  total?: number
   className?: string
 }
 
 export function OrderSummary({
   subtotal,
   customizationTotal,
+  optionTotal = 0,
   shipping,
   discount,
   itemCount,
+  total,
   className,
 }: OrderSummaryProps) {
   const [isOpen, setIsOpen] = useState(true)
-  const total = subtotal + customizationTotal + shipping - (discount?.amount || 0)
+  const computedTotal = subtotal + customizationTotal + optionTotal + shipping - (discount?.amount || 0)
+  const displayTotal = total ?? computedTotal
 
   return (
     <div className={cn('rounded-lg border border-border bg-card', className)}>
@@ -54,7 +59,7 @@ export function OrderSummary({
             <span className="font-sans font-semibold text-foreground">Resumen del pedido</span>
             <div className="flex items-center gap-2">
               <span className="font-sans font-bold text-foreground">
-                {formatCurrencyMXN(total)}
+                {formatCurrencyMXN(displayTotal)}
               </span>
               {isOpen ? (
                 <ChevronUp className="h-4 w-4 text-muted-foreground" />
@@ -87,6 +92,13 @@ export function OrderSummary({
                   <span className="font-sans text-accent">
                     +{formatCurrencyMXN(customizationTotal)}
                   </span>
+                </div>
+              )}
+
+              {optionTotal > 0 && (
+                <div className="flex items-center justify-between font-serif text-sm">
+                  <span className="text-muted-foreground">Opciones</span>
+                  <span className="font-sans text-primary">+{formatCurrencyMXN(optionTotal)}</span>
                 </div>
               )}
 
@@ -125,7 +137,7 @@ export function OrderSummary({
             <div className="flex items-center justify-between">
               <span className="font-sans text-lg font-semibold text-foreground">Total</span>
               <span className="font-sans text-2xl font-bold text-foreground">
-                {formatCurrencyMXN(total)}
+                {formatCurrencyMXN(displayTotal)}
               </span>
             </div>
 

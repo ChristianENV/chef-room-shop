@@ -13,6 +13,7 @@ import {
   getCartPreviewLineTotal,
 } from '@/src/features/storefront/cart/lib/cart-utils'
 import { CartProductThumbnail } from '@/src/features/storefront/cart/components/cart-product-thumbnail'
+import { CartCommercialOptionsSummary } from '@/src/features/storefront/cart/components/cart-commercial-options-summary'
 import { CartCustomizationSummary } from '@/src/features/storefront/cart/components/cart-customization-summary'
 
 interface CartItemCardProps {
@@ -32,6 +33,7 @@ export function CartItemCard({
 }: CartItemCardProps) {
   const lineTotal = getCartPreviewLineTotal(item)
   const customizationUnit = item.customizationPrice ?? 0
+  const optionUnit = item.optionPrice ?? 0
 
   const handleQuantityChange = (delta: number) => {
     const newQuantity = item.quantity + delta
@@ -133,6 +135,15 @@ export function CartItemCard({
             ) : null}
           </div>
 
+          {item.commercialOptionsSnapshot.length > 0 ? (
+            <div className="mt-3 rounded-lg border border-border/60 bg-muted/30 p-3">
+              <p className="mb-2 font-sans text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Opciones
+              </p>
+              <CartCommercialOptionsSummary options={item.commercialOptionsSnapshot} />
+            </div>
+          ) : null}
+
           {item.isCustomized && (
             <CartCustomizationSummary
               className="mt-3 rounded-lg bg-secondary/50 p-3"
@@ -182,6 +193,12 @@ export function CartItemCard({
                     <span className="font-sans text-accent">
                       +{formatCurrencyMXN(customizationUnit)}
                     </span>
+                  </p>
+                )}
+                {optionUnit > 0 && (
+                  <p>
+                    <span className="font-serif">Opciones:</span>{' '}
+                    <span className="font-sans text-primary">+{formatCurrencyMXN(optionUnit)}</span>
                   </p>
                 )}
               </div>

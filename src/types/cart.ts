@@ -11,6 +11,17 @@ export type CartPreviewCustomizationSummary = {
   personalizationLine?: string
 }
 
+/** Commercial product option snapshot for cart display. */
+export type CartPreviewCommercialOption = {
+  groupId: string
+  groupSlug: string
+  groupName: string
+  valueId: string
+  valueSlug: string
+  valueLabel: string
+  priceDeltaCents: number
+}
+
 /** Lightweight cart line item for navbar popover preview. */
 export type CartPreviewItem = {
   id: string
@@ -27,6 +38,9 @@ export type CartPreviewItem = {
   quantity: number
   unitPrice: number
   customizationPrice?: number
+  optionPrice?: number
+  lineTotal?: number
+  commercialOptionsSnapshot: CartPreviewCommercialOption[]
   isCustomized: boolean
   designId?: string
   designPreviewUrl?: string
@@ -38,6 +52,7 @@ export type CartPreview = {
   items: CartPreviewItem[]
   subtotal: number
   customizationTotal: number
+  optionTotal: number
   totalItems: number
 }
 

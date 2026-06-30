@@ -22,8 +22,10 @@ export const CART_CATEGORY_LABELS: Record<CartPreviewCategory, string> = {
  * Returns the line total for a cart preview item (unit + customization × qty).
  */
 export function getCartPreviewLineTotal(item: CartPreviewItem): number {
+  if (item.lineTotal != null) return item.lineTotal
   const customization = item.customizationPrice ?? 0
-  return (item.unitPrice + customization) * item.quantity
+  const options = item.optionPrice ?? 0
+  return (item.unitPrice + customization + options) * item.quantity
 }
 
 /**
@@ -43,7 +45,11 @@ export function computeCartTotals(items: CartPreviewItem[]) {
     (sum, item) => sum + (item.customizationPrice ?? 0) * item.quantity,
     0,
   )
-  const partialTotal = subtotal + customizationTotal
+  const optionTotal = items.reduce(
+    (sum, item) => sum + (item.optionPrice ?? 0) * item.quantity,
+    0,
+  )
+  const partialTotal = subtotal + customizationTotal + optionTotal
   const shipping = partialTotal >= FREE_SHIPPING_THRESHOLD_MXN ? 0 : STANDARD_SHIPPING_MXN
   const total = partialTotal + shipping
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
@@ -51,6 +57,7 @@ export function computeCartTotals(items: CartPreviewItem[]) {
   return {
     subtotal,
     customizationTotal,
+    optionTotal,
     partialTotal,
     shipping,
     total,
@@ -67,6 +74,7 @@ export function buildCartPreview(items: CartPreviewItem[]): CartPreview {
     items,
     subtotal: totals.subtotal,
     customizationTotal: totals.customizationTotal,
+    optionTotal: totals.optionTotal,
     totalItems: totals.totalItems,
   }
 }

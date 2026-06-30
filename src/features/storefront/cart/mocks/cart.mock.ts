@@ -6,6 +6,7 @@ export const EMPTY_CART_PREVIEW: CartPreview = {
   items: [],
   subtotal: 0,
   customizationTotal: 0,
+  optionTotal: 0,
   totalItems: 0,
 }
 
@@ -23,6 +24,7 @@ const MOCK_CART_PREVIEW_ITEMS: CartPreviewItem[] = [
     quantity: 1,
     unitPrice: 1299,
     customizationPrice: 398,
+    commercialOptionsSnapshot: [],
     isCustomized: true,
     designId: 'DSN-K7M2P9',
     customizationSummary: {
@@ -44,6 +46,7 @@ const MOCK_CART_PREVIEW_ITEMS: CartPreviewItem[] = [
     colorHex: '#0B1026',
     quantity: 1,
     unitPrice: 599,
+    commercialOptionsSnapshot: [],
     isCustomized: false,
   },
 ]

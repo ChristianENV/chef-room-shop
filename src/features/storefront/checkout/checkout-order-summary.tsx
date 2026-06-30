@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
 import { ShieldCheck, CreditCard, Building2, Banknote, Palette } from 'lucide-react'
 import { centsToPesos, formatCurrencyMXN } from '@/src/lib/formatters'
+import { CartCommercialOptionsSummary } from '@/src/features/storefront/cart/components/cart-commercial-options-summary'
 
 import type { SelectedShippingRateSummary } from './types/checkout-shipping.types'
 import type { CheckoutSummaryData } from './mappers/checkout-ui.mapper'
@@ -20,14 +21,16 @@ export function CheckoutOrderSummary({
   selectedShipping,
   className,
 }: CheckoutOrderSummaryProps) {
-  const { items, subtotalPesos, customizationTotalPesos, discountPesos } = summary
+  const { items, subtotalPesos, customizationTotalPesos, optionTotalPesos, discountPesos, totalPesos } =
+    summary
 
   const shippingPesos = selectedShipping
     ? centsToPesos(selectedShipping.amountCents)
     : summary.shippingPesos
 
-  const estimatedTotalPesos =
-    subtotalPesos + customizationTotalPesos + shippingPesos - discountPesos
+  const estimatedTotalPesos = selectedShipping
+    ? totalPesos + shippingPesos
+    : totalPesos
 
   return (
     <div className={cn('rounded-lg border border-border bg-card', className)}>
@@ -66,6 +69,14 @@ export function CheckoutOrderSummary({
                   {item.sizeLabel} / {item.colorName}
                 </p>
                 <p className="font-serif text-xs text-muted-foreground">Cant: {item.quantity}</p>
+                {item.commercialOptionsSnapshot.length > 0 ? (
+                  <div className="mt-2">
+                    <CartCommercialOptionsSummary
+                      options={item.commercialOptionsSnapshot}
+                      compact
+                    />
+                  </div>
+                ) : null}
                 {item.isCustomized && (
                   <p className="font-serif text-xs text-accent">+ Personalización</p>
                 )}
@@ -94,6 +105,13 @@ export function CheckoutOrderSummary({
               <span className="font-sans text-accent">
                 +{formatCurrencyMXN(customizationTotalPesos)}
               </span>
+            </div>
+          )}
+
+          {optionTotalPesos > 0 && (
+            <div className="flex items-center justify-between font-serif text-sm">
+              <span className="text-muted-foreground">Opciones</span>
+              <span className="font-sans text-primary">+{formatCurrencyMXN(optionTotalPesos)}</span>
             </div>
           )}
 
