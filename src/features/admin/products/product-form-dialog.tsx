@@ -38,6 +38,7 @@ import type { ProductImageUploaderHandle } from './components/product-image-uplo
 import { ProductModel3DUploader } from './components/product-model-3d-uploader'
 import { ProductVariantEditor } from './components/product-variant-editor'
 import { ProductSeoImagePicker } from './components/product-seo-image-picker'
+import { ProductCommercialOptionsTab } from './components/product-commercial-options-tab'
 import { ProductFormSavingOverlay } from './components/product-form-saving-overlay'
 import { resolveProductOgImageUrl } from '@/src/lib/product-seo-image'
 import {
@@ -261,7 +262,7 @@ function ProductFormDrawerBody({
   return (
     <>
       <Tabs defaultValue="general" className="mt-6 flex-1">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="general" className="font-sans text-xs" disabled={isFormPending}>
             General
           </TabsTrigger>
@@ -270,6 +271,9 @@ function ProductFormDrawerBody({
           </TabsTrigger>
           <TabsTrigger value="seo" className="font-sans text-xs" disabled={isFormPending}>
             SEO
+          </TabsTrigger>
+          <TabsTrigger value="options" className="font-sans text-xs" disabled={isFormPending}>
+            Opciones
           </TabsTrigger>
         </TabsList>
 
@@ -544,6 +548,10 @@ function ProductFormDrawerBody({
               ) : null}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="options" className="space-y-4 pt-4">
+          <ProductCommercialOptionsTab productId={productId} disabled={isFormPending} />
         </TabsContent>
       </Tabs>
 

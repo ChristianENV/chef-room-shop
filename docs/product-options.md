@@ -396,10 +396,12 @@ input ArchiveAdminProductOptionValueInput {
 - [x] Unit tests for cart commercial options UI (`tests/unit/cart-commercial-options-ui.test.ts`)
 - [x] **Phase 3C order detail:** `commercialOptionsSnapshot` on account/admin order items, option totals in summaries
 - [x] Unit tests for order commercial options UI (`tests/unit/order-commercial-options-ui.test.ts`)
+- [x] **Phase 4 admin UI:** Product Form “Opciones” tab for product-scoped commercial option groups/values
+- [x] Unit tests for admin product options UI (`tests/unit/admin-product-options-ui.test.ts`)
 
 ⏳ **Pending:**
 
-- [ ] Admin UI for managing product options
+- [ ] Product-type-level / global option management in admin (API supports `productTypeId`; UI is product-specific only)
 - [ ] Option dependency handling (e.g., embroidery position/size disabled until embroidery selected)
 - [ ] Integration tests (cart, checkout, order)
 
@@ -455,6 +457,31 @@ Order items copy `selectedOptionsJson` and `optionPriceCents` from cart lines wi
 
 **Naming:** Order detail uses `commercialOptionsSnapshot` / `optionPriceCents` — never customizer `selectedOptions` or `customizationSnapshot.selectedOptions`.
 
+## Phase 4 Admin Product Form “Opciones” Tab
+
+**Scope:** Product-specific commercial options only (`productId`). Product-type-level groups (`productTypeId`) remain API/seed managed until a dedicated admin surface is added.
+
+**Location:** Admin → Products → Edit product → **Opciones** tab (`ProductCommercialOptionsTab`).
+
+**Capabilities:**
+
+- List option groups and values for the current product (includes inactive via `includeInactive: true`)
+- Create / edit / archive groups (`name`, `slug`, `description`, `inputType`, `isRequired`, `isActive`, `sortOrder`)
+- Create / edit / archive values (`label`, `slug`, `description`, `priceDeltaCents` via MXN input, `isDefault`, `isActive`, `sortOrder`)
+- Empty state when no groups exist; create-mode message when product is not saved yet
+
+**Client layer:**
+
+| File | Role |
+| ---- | ---- |
+| `graphql/admin-product-options.queries.ts` | `adminProductOptionGroups` query |
+| `graphql/admin-product-options.mutations.ts` | Group/value CRUD + archive mutations |
+| `api/admin-product-options.api.ts` | `fetchGraphQL` wrappers |
+| `api/use-admin-product-options.ts` | React Query hooks + cache invalidation |
+| `mappers/admin-product-options-ui.mapper.ts` | Form mapping, MXN↔cents, validation |
+
+**Naming:** Admin UI manages `ProductOptionGroup` / `ProductOptionValue` only — not `CustomizationOption` or customizer `selectedOptions`.
+
 ## Phase 1 Server Helpers
 
 Commercial product options use explicit naming — **not** customizer `selectedOptions`.
@@ -472,18 +499,17 @@ Commercial product options use explicit naming — **not** customizer `selectedO
 
 ## Known Gaps
 
-1. **Real price deltas**: All option values currently have `priceDeltaCents = 0`. Actual pricing needs to be configured based on business costs.
+1. **Real price deltas**: Seeded option values may still have `priceDeltaCents = 0`. Configure pricing per product in Admin → Opciones.
 2. **Option dependencies**: Embroidery position/size should be disabled or hidden until embroidery is selected. This can be implemented with:
    - Client-side UX rules
    - `configJson` metadata for dependencies
    - Helper text: "Selecciona bordado para configurar posición y tamaño"
 3. **Size measurements**: Real product size tables are pending.
-4. **Admin UI**: No visual interface for managing options yet. Currently requires GraphQL mutations.
-5. **Storefront integration**: Options exposed in catalog BFF server-side; PDP query/UI not wired yet.
+4. **Product-type options in admin**: GraphQL supports `productTypeId` scope; admin UI currently manages product-specific groups only.
 
 ## Next Steps
 
-1. **Phase 4:** Admin Product Form “Opciones” tab
+1. Product-type-level option management in admin (optional)
 2. Guest checkout confirmation display of commercial options (if needed)
 3. Add integration tests for cart/checkout/order flows
-4. Configure real price deltas based on production costs
+4. Option dependency UX on PDP (embroidery position/size)
