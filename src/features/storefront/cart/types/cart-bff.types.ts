@@ -85,6 +85,12 @@ export type AddCartItemInput = {
   productVariantId?: string | null
   designId?: string | null
   quantity: number
+  selectedCommercialOptions?: Array<{
+    groupId?: string
+    groupSlug?: string
+    valueId?: string
+    valueSlug?: string
+  }> | null
 }
 
 export type UpdateCartItemQuantityInput = {

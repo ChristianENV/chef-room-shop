@@ -358,14 +358,14 @@ input ArchiveAdminProductOptionValueInput {
 - [x] **Phase 2 server wiring:** cart add-to-cart validation, persistence, dedup, totals, checkout copy
 - [x] Cart GraphQL: `selectedCommercialOptions` input, `commercialOptionsSnapshot` output, `optionTotalCents`
 - [x] Unit tests for cart/checkout wiring (`tests/unit/cart-product-options-wiring.test.ts`)
+- [x] **Phase 3A PDP:** query `optionGroups`, selectors, estimated price display, `selectedCommercialOptions` on add-to-cart
+- [x] Unit tests for PDP commercial options (`tests/unit/storefront-product-commercial-options.test.ts`)
 
 ⏳ **Pending:**
 - [ ] Admin UI for managing product options
-- [ ] Storefront PDP query/types for `optionGroups`
-- [ ] Render option selectors on Storefront PDP
-- [ ] Storefront cart UI: query/display `commercialOptionsSnapshot` and `optionTotalCents`
-- [ ] Option price delta display and total price calculation on PDP
-- [ ] Display selected commercial options in cart/order detail (Admin & Storefront)
+- [ ] Storefront cart UI: query/display `commercialOptionsSnapshot` and `optionTotalCents` (Phase 3B)
+- [ ] Checkout review display of commercial options
+- [ ] Admin/customer order detail display of commercial options
 - [ ] Option dependency handling (e.g., embroidery position/size disabled until embroidery selected)
 - [ ] Integration tests (cart, checkout, order)
 
@@ -394,6 +394,16 @@ Prisma keeps `selectedOptionsJson` on `CartItem` / `OrderItem` for commercial sn
 ### Checkout
 
 Order items copy `selectedOptionsJson` and `optionPriceCents` from cart lines without recalculating option prices.
+
+## Phase 3A PDP
+
+- `PRODUCT_BY_SLUG_QUERY` fetches `optionGroups` from catalog BFF.
+- `ProductOptionSelectors` renders commercial options on the PDP (radio-card style).
+- Defaults are pre-selected in UI state; required groups without a selection block add-to-cart.
+- Estimated price on PDP = variant/base price + selected option deltas (**display only**; server pricing is authoritative).
+- `addCartItem` sends `selectedCommercialOptions` with `groupId` + `valueId` only.
+
+**Naming:** PDP uses `selectedCommercialOptions` / `commercialOptionSelections` — never `customizationSnapshot.selectedOptions`.
 
 ## Phase 1 Server Helpers
 
@@ -424,8 +434,8 @@ Commercial product options use explicit naming — **not** customizer `selectedO
 
 ## Next Steps
 
-1. **Phase 3:** Add `optionGroups` to storefront PDP GraphQL query; render selectors; pass `selectedCommercialOptions` on add-to-cart
-2. Update storefront cart queries/UI to display `commercialOptionsSnapshot` and `optionTotalCents`
+1. **Phase 3B:** Update storefront cart queries/UI to display `commercialOptionsSnapshot` and `optionTotalCents`
+2. Checkout review display of commercial options
 3. Display selected commercial options in admin/customer order detail
 4. Build Admin UI for option management
 5. Add integration tests for cart/checkout/order flows

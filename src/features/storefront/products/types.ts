@@ -15,11 +15,47 @@ export type ProductVariantOption = {
   sizeName: string
   stockQty: number
   isActive: boolean
+  priceCents: number
 }
 
-/** Legacy `Product` UI model plus BFF variants for cart mutations. */
+/** Commercial product option value from catalog BFF. */
+export type ProductOptionValue = {
+  id: string
+  slug: string
+  label: string
+  description?: string | null
+  priceDeltaCents: number
+  isDefault: boolean
+  sortOrder: number
+}
+
+/** Commercial product option group from catalog BFF. */
+export type ProductOptionGroup = {
+  id: string
+  slug: string
+  name: string
+  description?: string | null
+  inputType: 'SINGLE_SELECT' | 'BOOLEAN'
+  isRequired: boolean
+  sortOrder: number
+  values: ProductOptionValue[]
+}
+
+/** Full product detail from BFF (extends list shape). */
+export type ProductDetail = CatalogProduct & {
+  description?: string | null
+  productionTimeDays?: number | null
+  seoTitle?: string | null
+  seoDescription?: string | null
+  customizationRules: ProductCustomizationRule[]
+  optionGroups: ProductOptionGroup[]
+}
+
+/** Legacy `Product` UI model plus BFF variants and commercial options for PDP. */
 export type StorefrontProductDetail = Product & {
   variants: ProductVariantOption[]
+  basePriceCents: number
+  optionGroups: ProductOptionGroup[]
 }
 
 /** Customization area from product detail BFF. */
@@ -53,15 +89,6 @@ export type ProductCustomizationRule = {
   validationMessage?: string | null
   area: ProductCustomizationArea
   option: ProductCustomizationOption
-}
-
-/** Full product detail from BFF (extends list shape). */
-export type ProductDetail = CatalogProduct & {
-  description?: string | null
-  productionTimeDays?: number | null
-  seoTitle?: string | null
-  seoDescription?: string | null
-  customizationRules: ProductCustomizationRule[]
 }
 
 export type ProductBySlugQueryData = {

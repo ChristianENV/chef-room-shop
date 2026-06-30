@@ -70,6 +70,7 @@ export function mapVariantsForCart(variants: CatalogProductVariant[]): ProductVa
       sizeName: variant.size!.name.toUpperCase(),
       stockQty: variant.stockQty ?? 0,
       isActive: variant.isActive,
+      priceCents: variant.priceCents,
     }))
 }
 

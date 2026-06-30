@@ -82,6 +82,24 @@ export const PRODUCT_BY_SLUG_QUERY = /* GraphQL */ `
           pricePerCmCents
         }
       }
+      optionGroups {
+        id
+        slug
+        name
+        description
+        inputType
+        isRequired
+        sortOrder
+        values {
+          id
+          slug
+          label
+          description
+          priceDeltaCents
+          isDefault
+          sortOrder
+        }
+      }
     }
   }
 `
