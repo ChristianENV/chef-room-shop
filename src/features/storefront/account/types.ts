@@ -1,3 +1,5 @@
+import type { CartCommercialOptionSnapshot } from '@/src/features/storefront/cart/types/cart-bff.types'
+
 /** Account user from BFF `meProfile`. */
 export type AccountUser = {
   id: string
@@ -40,7 +42,9 @@ export type AccountOrderItem = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents: number
+  optionPriceCents: number
   totalPriceCents: number
+  commercialOptionsSnapshot: CartCommercialOptionSnapshot[]
   productSnapshotJson?: unknown
   designSnapshotJson?: unknown | null
 }

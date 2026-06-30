@@ -15,6 +15,7 @@ import {
 import { mapProductToGql } from '../catalog/catalog.mappers'
 import type { CatalogProductGql } from '../catalog/catalog.types'
 import { getCashPaymentDetailsFromAttempts } from '../payments/payments.mappers'
+import { parseCommercialOptionsSnapshot } from '@/src/server/product-options'
 import { resolveAccountPaymentActions } from './account-payment-actions'
 import type {
   AccountAddressGql,
@@ -178,7 +179,9 @@ function mapOrderItemToGql(item: OrderItem): AccountOrderItemGql {
     quantity: item.quantity,
     unitPriceCents: item.unitPriceCents,
     customizationPriceCents: item.customizationPriceCents,
+    optionPriceCents: item.optionPriceCents,
     totalPriceCents: item.lineTotalCents,
+    commercialOptionsSnapshot: parseCommercialOptionsSnapshot(item.selectedOptionsJson),
     productSnapshotJson: item.productSnapshotJson,
     designSnapshotJson: item.designSnapshotJson,
     productionNotes: null,

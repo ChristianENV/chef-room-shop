@@ -31,6 +31,12 @@ export function AdminOrderFinancialSummary({ order }: AdminOrderFinancialSummary
             </dd>
           </div>
         ) : null}
+        {order.optionTotal > 0 ? (
+          <div className="flex justify-between gap-4">
+            <dt className="text-muted-foreground">Opciones</dt>
+            <dd className="font-sans tabular-nums">{formatCurrencyMXN(order.optionTotal)}</dd>
+          </div>
+        ) : null}
         <div className="flex justify-between gap-4">
           <dt className="text-muted-foreground">Envío</dt>
           <dd className="font-sans tabular-nums">

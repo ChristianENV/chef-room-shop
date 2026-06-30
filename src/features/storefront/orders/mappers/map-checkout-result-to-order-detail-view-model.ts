@@ -16,7 +16,9 @@ function mapPublicItemToAccountItem(item: PublicOrderItem): AccountOrderItem {
     quantity: item.quantity,
     unitPriceCents,
     customizationPriceCents: item.customizationPriceCents,
+    optionPriceCents: item.optionPriceCents ?? 0,
     totalPriceCents: item.totalPriceCents,
+    commercialOptionsSnapshot: item.commercialOptionsSnapshot ?? [],
     productSnapshotJson: item.productSnapshotJson,
     designSnapshotJson: item.designSnapshotJson,
   }

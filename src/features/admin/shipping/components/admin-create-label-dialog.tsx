@@ -25,6 +25,7 @@ type AdminCreateLabelDialogProps = {
   onOpenChange: (open: boolean) => void
   onConfirm: (labelFormat: string) => void
   isPending?: boolean
+  error?: string | null
 }
 
 /**
@@ -35,6 +36,7 @@ export function AdminCreateLabelDialog({
   onOpenChange,
   onConfirm,
   isPending = false,
+  error = null,
 }: AdminCreateLabelDialogProps) {
   const [labelFormat, setLabelFormat] = useState('PDF')
 
@@ -61,6 +63,15 @@ export function AdminCreateLabelDialog({
             </SelectContent>
           </Select>
         </div>
+        {error ? (
+          <p
+            className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 font-serif text-sm text-destructive"
+            role="alert"
+            data-testid="admin-create-label-error"
+          >
+            {error}
+          </p>
+        ) : null}
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
             Cancelar

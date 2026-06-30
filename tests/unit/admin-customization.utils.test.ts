@@ -14,7 +14,9 @@ const baseItem: AdminOrderItem = {
   quantity: 1,
   unitPriceCents: 129900,
   customizationPriceCents: 25000,
+  optionPriceCents: 0,
   lineTotalCents: 154900,
+  commercialOptionsSnapshot: [],
   productSnapshotJson: {
     name: 'Filipina clásica',
     sizeName: 'L',

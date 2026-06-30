@@ -2,6 +2,7 @@ import Image from 'next/image'
 import { Package } from 'lucide-react'
 
 import { centsToPesos, formatCurrencyMXN } from '@/src/lib/formatters'
+import { CartCommercialOptionsSummary } from '@/src/features/storefront/cart/components/cart-commercial-options-summary'
 import type { AccountOrderItem } from '../types'
 import { OrderDesignSummary } from './order-design-summary'
 import { parseDesignSnapshot, parseProductSnapshot } from './order-detail.utils'
@@ -74,6 +75,14 @@ export function OrderItemRow({ item }: OrderItemRowProps) {
               {item.customizationPriceCents > 0 &&
                 ` · Personalización ${formatCurrencyMXN(centsToPesos(item.customizationPriceCents))}`}
             </p>
+            {item.commercialOptionsSnapshot.length > 0 ? (
+              <div className="mt-3" data-testid="order-item-commercial-options">
+                <p className="mb-1 font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Opciones
+                </p>
+                <CartCommercialOptionsSummary options={item.commercialOptionsSnapshot} />
+              </div>
+            ) : null}
           </div>
           <p className="shrink-0 font-sans text-lg font-semibold text-foreground">
             {formatCurrencyMXN(linePesos)}

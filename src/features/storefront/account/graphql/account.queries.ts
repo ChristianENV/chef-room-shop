@@ -129,7 +129,17 @@ export const MY_ORDER_BY_NUMBER_QUERY = /* GraphQL */ `
         quantity
         unitPriceCents
         customizationPriceCents
+        optionPriceCents
         totalPriceCents
+        commercialOptionsSnapshot {
+          groupId
+          groupSlug
+          groupName
+          valueId
+          valueSlug
+          valueLabel
+          priceDeltaCents
+        }
         productSnapshotJson
         designSnapshotJson
       }

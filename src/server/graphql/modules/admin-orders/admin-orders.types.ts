@@ -1,3 +1,5 @@
+import type { ProductOptionSnapshot } from '@/src/server/product-options'
+
 export type AdminOrderCustomerGql = {
   userId: string | null
   name: string | null
@@ -30,7 +32,9 @@ export type AdminOrderItemGql = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents: number
+  optionPriceCents: number
   lineTotalCents: number
+  commercialOptionsSnapshot: ProductOptionSnapshot[]
   productSnapshotJson: unknown
   designSnapshotJson: unknown | null
   productionNotes: string | null

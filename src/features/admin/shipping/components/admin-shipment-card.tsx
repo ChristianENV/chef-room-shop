@@ -51,6 +51,7 @@ export function AdminShipmentCard({
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
   const [localMessage, setLocalMessage] = useState<string | null>(null)
+  const [createLabelError, setCreateLabelError] = useState<string | null>(null)
 
   const shipmentQuery = useAdminShipmentByOrderNumberQuery(orderNumber, enabled)
   const createLabel = useAdminCreateShippingLabelMutation()
@@ -78,12 +79,15 @@ export function AdminShipmentCard({
   }
 
   const handleCreateLabel = async (labelFormat: string) => {
+    setCreateLabelError(null)
     try {
       await createLabel.mutateAsync({ orderNumber, labelFormat })
       setCreateDialogOpen(false)
+      setCreateLabelError(null)
       notifySuccess('Guía generada correctamente.')
     } catch (error) {
-      notifyError(error, 'No pudimos generar la guía.')
+      const message = mapShippingMutationError(error) || 'No pudimos generar la guía.'
+      setCreateLabelError(message)
     }
   }
 
@@ -199,13 +203,25 @@ export function AdminShipmentCard({
                   className="w-full sm:w-auto"
                   disabled={isMutating}
                   data-testid="admin-create-label-button"
-                  onClick={() => setCreateDialogOpen(true)}
+                  onClick={() => {
+                    setCreateLabelError(null)
+                    setCreateDialogOpen(true)
+                  }}
                 >
                   Generar guía
                 </Button>
               ) : blockedReason ? (
                 <p className="font-serif text-xs leading-relaxed text-muted-foreground">
                   {blockedReason}
+                </p>
+              ) : null}
+              {createLabelError && !createDialogOpen ? (
+                <p
+                  className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 font-serif text-sm text-destructive"
+                  role="alert"
+                  data-testid="admin-create-label-card-error"
+                >
+                  {createLabelError}
                 </p>
               ) : null}
             </>
@@ -215,9 +231,13 @@ export function AdminShipmentCard({
 
       <AdminCreateLabelDialog
         open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
+        onOpenChange={(open) => {
+          setCreateDialogOpen(open)
+          if (open) setCreateLabelError(null)
+        }}
         onConfirm={(format) => void handleCreateLabel(format)}
         isPending={createLabel.isPending}
+        error={createDialogOpen ? createLabelError : null}
       />
 
       <AdminCancelLabelDialog

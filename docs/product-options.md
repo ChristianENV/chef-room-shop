@@ -362,10 +362,11 @@ input ArchiveAdminProductOptionValueInput {
 - [x] Unit tests for PDP commercial options (`tests/unit/storefront-product-commercial-options.test.ts`)
 - [x] **Phase 3B cart UI:** `commercialOptionsSnapshot` on cart lines, `optionTotalCents` in cart/checkout summaries
 - [x] Unit tests for cart commercial options UI (`tests/unit/cart-commercial-options-ui.test.ts`)
+- [x] **Phase 3C order detail:** `commercialOptionsSnapshot` on account/admin order items, option totals in summaries
+- [x] Unit tests for order commercial options UI (`tests/unit/order-commercial-options-ui.test.ts`)
 
 ⏳ **Pending:**
 - [ ] Admin UI for managing product options
-- [ ] Admin/customer order detail display of commercial options
 - [ ] Option dependency handling (e.g., embroidery position/size disabled until embroidery selected)
 - [ ] Integration tests (cart, checkout, order)
 
@@ -412,6 +413,15 @@ Order items copy `selectedOptionsJson` and `optionPriceCents` from cart lines wi
 - Cart summary shows **Opciones** row when `optionTotalCents > 0`.
 - Final cart total uses server `totalCents` + estimated shipping.
 
+## Phase 3C Order Detail Display
+
+- `AccountOrderItem` and `AdminOrderItem` GraphQL types expose `optionPriceCents` and `commercialOptionsSnapshot` (mapped from `OrderItem.selectedOptionsJson`).
+- Customer account order detail (`order-item-row`) shows **Opciones** per line via `CartCommercialOptionsSummary`.
+- Admin order detail shows the same commercial options for production/ops (compact layout).
+- Order totals may show an **Opciones** row when line option totals sum above zero (client-side sum from items; final total remains server `totalCents`).
+
+**Naming:** Order detail uses `commercialOptionsSnapshot` / `optionPriceCents` — never customizer `selectedOptions` or `customizationSnapshot.selectedOptions`.
+
 ## Phase 1 Server Helpers
 
 Commercial product options use explicit naming — **not** customizer `selectedOptions`.
@@ -441,7 +451,7 @@ Commercial product options use explicit naming — **not** customizer `selectedO
 
 ## Next Steps
 
-1. **Phase 4:** Admin Product Form “Opciones” tab + admin/customer order detail display
-2. Checkout post-order confirmation display of commercial options (if not already covered)
+1. **Phase 4:** Admin Product Form “Opciones” tab
+2. Guest checkout confirmation display of commercial options (if needed)
 3. Add integration tests for cart/checkout/order flows
 4. Configure real price deltas based on production costs

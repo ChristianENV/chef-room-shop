@@ -14,6 +14,7 @@ import {
   derivePaymentStatus,
   resolveCustomerName,
 } from '../admin-dashboard/admin-dashboard.mappers'
+import { parseCommercialOptionsSnapshot } from '@/src/server/product-options'
 import type {
   AdminOrderAddressGql,
   AdminOrderCustomerGql,
@@ -120,7 +121,9 @@ function mapOrderItemToGql(item: OrderItem): AdminOrderItemGql {
     quantity: item.quantity,
     unitPriceCents: item.unitPriceCents,
     customizationPriceCents: item.customizationPriceCents,
+    optionPriceCents: item.optionPriceCents,
     lineTotalCents: item.lineTotalCents,
+    commercialOptionsSnapshot: parseCommercialOptionsSnapshot(item.selectedOptionsJson),
     productSnapshotJson: item.productSnapshotJson,
     designSnapshotJson: item.designSnapshotJson,
     productionNotes: null,

@@ -12,6 +12,7 @@ import { OrderTimeline } from '../order-timeline'
 import { ProductionSheetPreview } from '../production-sheet-preview'
 import { mapAdminOrderToDetail } from '../mappers/admin-orders-ui.mapper'
 import { formatCurrencyMXN } from '@/src/lib/formatters'
+import { CartCommercialOptionsSummary } from '@/src/features/storefront/cart/components/cart-commercial-options-summary'
 
 import { AdminOrderCustomerInfoCard } from './admin-order-customer-info-card'
 import { AdminOrderDetailPageBody } from './admin-order-detail-page-body'
@@ -151,6 +152,17 @@ function ItemsPanel({ order }: { order: NonNullable<ReturnType<typeof mapAdminOr
                 <Badge variant="secondary">x{item.quantity}</Badge>
                 {item.hasCustomization ? <Badge>Personalizado</Badge> : null}
               </div>
+              {item.commercialOptionsSnapshot.length > 0 ? (
+                <div className="mt-3" data-testid="admin-order-item-commercial-options">
+                  <p className="mb-1 font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Opciones
+                  </p>
+                  <CartCommercialOptionsSummary
+                    options={item.commercialOptionsSnapshot}
+                    compact
+                  />
+                </div>
+              ) : null}
             </div>
             <p className="font-sans font-semibold">{formatCurrencyMXN(item.totalPrice)}</p>
           </div>

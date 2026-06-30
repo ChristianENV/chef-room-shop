@@ -1,3 +1,5 @@
+import type { CartCommercialOptionSnapshot } from '@/src/features/storefront/cart/types/cart-bff.types'
+
 export type AdminOrderCustomer = {
   userId: string | null
   name: string | null
@@ -30,7 +32,9 @@ export type AdminOrderItem = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents: number
+  optionPriceCents: number
   lineTotalCents: number
+  commercialOptionsSnapshot: CartCommercialOptionSnapshot[]
   productSnapshotJson: unknown
   designSnapshotJson: unknown | null
   productionNotes: string | null

@@ -1,4 +1,5 @@
 import type { CatalogProductGql } from '../catalog/catalog.types'
+import type { ProductOptionSnapshot } from '@/src/server/product-options'
 
 /** GraphQL account user profile. */
 export type AccountUserGql = {
@@ -43,7 +44,9 @@ export type AccountOrderItemGql = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents: number
+  optionPriceCents: number
   totalPriceCents: number
+  commercialOptionsSnapshot: ProductOptionSnapshot[]
   productSnapshotJson: unknown
   designSnapshotJson: unknown | null
   productionNotes: string | null

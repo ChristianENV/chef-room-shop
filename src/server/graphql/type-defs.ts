@@ -203,7 +203,9 @@ export const accountTypeDefs = /* GraphQL */ `
     quantity: Int!
     unitPriceCents: Int!
     customizationPriceCents: Int!
+    optionPriceCents: Int!
     totalPriceCents: Int!
+    commercialOptionsSnapshot: [ProductOptionSnapshot!]!
     productSnapshotJson: JSON
     designSnapshotJson: JSON
     productionNotes: String
@@ -985,7 +987,9 @@ export const adminOrdersTypeDefs = /* GraphQL */ `
     quantity: Int!
     unitPriceCents: Int!
     customizationPriceCents: Int!
+    optionPriceCents: Int!
     lineTotalCents: Int!
+    commercialOptionsSnapshot: [ProductOptionSnapshot!]!
     productSnapshotJson: JSON
     designSnapshotJson: JSON
     productionNotes: String
