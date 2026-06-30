@@ -345,24 +345,44 @@ input ArchiveAdminProductOptionValueInput {
 ✅ **Completed:**
 - [x] Audit existing customization models
 - [x] Prisma schema for ProductOptionGroup and ProductOptionValue
+- [x] Prisma migration (`20260629120000_product_options`)
 - [x] Cart/Order snapshot fields (`selectedOptionsJson`, `optionPriceCents`)
 - [x] Seed initial option groups for chef jackets, pants, and apron
 - [x] Admin GraphQL CRUD operations (queries & mutations)
 - [x] Admin authentication guards
 - [x] GraphQL type definitions
 - [x] Validation (slug format, price deltas, uniqueness, default values)
+- [x] Expose public product option groups via catalog/product BFF (server)
+- [x] **Phase 1 foundation:** `src/server/product-options/` helpers (validation, snapshots, pricing)
+- [x] Unit tests for commercial option helpers (`tests/unit/product-options.test.ts`)
 
 ⏳ **Pending:**
 - [ ] Admin UI for managing product options
-- [ ] Expose public product option groups via catalog/product BFF
+- [ ] Storefront PDP query/types for `optionGroups`
 - [ ] Render option selectors on Storefront PDP
 - [ ] Option price delta display and total price calculation on PDP
-- [ ] Update add-to-cart flow to include selected options
-- [ ] Server-side validation of selected options in cart
+- [ ] Update add-to-cart flow to include `selectedCommercialOptions`
+- [ ] Wire cart/checkout services to validate and persist commercial option snapshots
 - [ ] Display selected options in cart/order detail (Admin & Storefront)
 - [ ] Option dependency handling (e.g., embroidery position/size disabled until embroidery selected)
-- [ ] Tests (schema, admin CRUD, storefront, cart, order)
+- [ ] Integration tests (cart, checkout, order)
 - [ ] Documentation updates for storefront/cart/admin UI
+
+## Phase 1 Server Helpers
+
+Commercial product options use explicit naming — **not** customizer `selectedOptions`.
+
+| Module | Purpose |
+|--------|---------|
+| `validateSelectedProductOptions` | Validates `selectedCommercialOptions` against server groups/values; applies defaults; enforces required groups |
+| `buildProductOptionSnapshots` | Builds `ProductOptionSnapshot[]` for cart/order `selectedOptionsJson` |
+| `calculateProductOptionsPriceCents` | Sums `priceDeltaCents` from validated snapshots |
+| `resolveApplicableProductOptionGroups` | Merges product + product-type groups (product wins on slug collision) |
+
+**Input type:** `ProductOptionSelectionInput` (`groupId`/`groupSlug` + `valueId`/`valueSlug`)
+
+**Snapshot type:** `ProductOptionSnapshot` (stable display + server-side `priceDeltaCents`)
+
 
 ## Known Gaps
 
@@ -373,14 +393,13 @@ input ArchiveAdminProductOptionValueInput {
    - Helper text: "Selecciona bordado para configurar posición y tamaño"
 3. **Size measurements**: Real product size tables are pending.
 4. **Admin UI**: No visual interface for managing options yet. Currently requires GraphQL mutations.
-5. **Storefront integration**: Options not yet exposed in catalog or rendered on PDP.
+5. **Storefront integration**: Options exposed in catalog BFF server-side; PDP query/UI not wired yet.
 
 ## Next Steps
 
-1. Expose product options in storefront catalog BFF
-2. Render option selectors on product detail page
-3. Integrate options into add-to-cart flow
-4. Display selected options in cart and order views
-5. Build Admin UI for option management
-6. Add comprehensive tests
-7. Configure real price deltas based on production costs
+1. **Phase 2:** Extend `AddCartItemInput`, `cart.service.ts`, `checkout.service.ts` to accept `selectedCommercialOptions`, validate via `validateSelectedProductOptions`, persist snapshots and `optionPriceCents`
+2. Add `optionGroups` to storefront PDP GraphQL query and render selectors
+3. Display selected commercial options in cart and order views
+4. Build Admin UI for option management
+5. Add integration tests for cart/checkout/order flows
+6. Configure real price deltas based on production costs
