@@ -37,9 +37,7 @@ export default function CartPage() {
 
   const cart = data ? mapBffCartToCartPage(data) : null
   const hasItems = (cart?.items.length ?? 0) > 0
-  const partialTotalPesos = cart
-    ? cart.subtotal + cart.customizationTotal + cart.optionTotal
-    : 0
+  const partialTotalPesos = cart ? cart.subtotal + cart.customizationTotal + cart.optionTotal : 0
   const freeShippingRemaining = data ? getCartPageFreeShippingRemaining(data) : 0
 
   const handleUpdateQuantity = async (itemId: string, quantity: number) => {

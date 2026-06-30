@@ -1,4 +1,5 @@
 import type { AccountOrder, AccountOrderItem } from '@/src/features/storefront/account/types'
+import { normalizeAccountOrderItem } from '@/src/features/storefront/account/order-detail/order-detail.utils'
 import type {
   CheckoutResult,
   PublicOrder,
@@ -9,7 +10,7 @@ function mapPublicItemToAccountItem(item: PublicOrderItem): AccountOrderItem {
   const unitPriceCents =
     item.quantity > 0 ? Math.round(item.totalPriceCents / item.quantity) : item.totalPriceCents
 
-  return {
+  return normalizeAccountOrderItem({
     id: item.id,
     name: item.name,
     sku: null,
@@ -21,7 +22,7 @@ function mapPublicItemToAccountItem(item: PublicOrderItem): AccountOrderItem {
     commercialOptionsSnapshot: item.commercialOptionsSnapshot ?? [],
     productSnapshotJson: item.productSnapshotJson,
     designSnapshotJson: item.designSnapshotJson,
-  }
+  })
 }
 
 /**

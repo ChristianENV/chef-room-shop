@@ -4,6 +4,7 @@ import { describe, it } from 'node:test'
 import { mapAdminOrderToDetail } from '@/src/features/admin/orders/mappers/admin-orders-ui.mapper'
 import type { AdminOrder, AdminOrderItem } from '@/src/features/admin/orders/types'
 import { parseCommercialOptionsSnapshot } from '@/src/server/product-options'
+import { normalizeAccountOrderItem } from '@/src/features/storefront/account/order-detail/order-detail.utils'
 
 function makeCommercialOptionSnapshot() {
   return {
@@ -126,6 +127,25 @@ describe('order commercial options UI mapping', () => {
     assert.equal(parsed.length, 1)
     assert.equal(parsed[0]?.groupName, 'Dry fit')
     assert.equal(parsed[0]?.valueLabel, 'Con dry fit')
+  })
+
+  it('normalizes missing commercialOptionsSnapshot on account order items', () => {
+    const normalized = normalizeAccountOrderItem({
+      id: 'item-1',
+      name: 'Pantalón',
+      sku: null,
+      quantity: 1,
+      unitPriceCents: 100000,
+      customizationPriceCents: 0,
+      optionPriceCents: undefined as unknown as number,
+      totalPriceCents: 100000,
+      commercialOptionsSnapshot: undefined as unknown as [],
+      productSnapshotJson: null,
+      designSnapshotJson: null,
+    })
+
+    assert.deepEqual(normalized.commercialOptionsSnapshot, [])
+    assert.equal(normalized.optionPriceCents, 0)
   })
 
   it('keeps commercial options separate from customizer design snapshots', () => {

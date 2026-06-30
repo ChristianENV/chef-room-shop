@@ -17,7 +17,10 @@ import type {
 
 import type { AccountDesignGql } from '../account/account.types'
 import type { CatalogProductGql } from '../catalog/catalog.types'
-import type { ProductOptionSelectionInput, ProductOptionSnapshot } from '@/src/server/product-options'
+import type {
+  ProductOptionSelectionInput,
+  ProductOptionSnapshot,
+} from '@/src/server/product-options'
 
 export type CartProductSnapshotGql = {
   productId: string

@@ -23,22 +23,20 @@ import type {
 // Mappers
 // ────────────────────────────────────────────────────────────────────────────
 
-function mapOptionValueToGql(
-  value: {
-    id: string
-    optionGroupId: string
-    slug: string
-    label: string
-    description: string | null
-    priceDeltaCents: number
-    isDefault: boolean
-    isActive: boolean
-    sortOrder: number
-    configJson: any
-    createdAt: Date
-    updatedAt: Date
-  },
-): AdminProductOptionValueGql {
+function mapOptionValueToGql(value: {
+  id: string
+  optionGroupId: string
+  slug: string
+  label: string
+  description: string | null
+  priceDeltaCents: number
+  isDefault: boolean
+  isActive: boolean
+  sortOrder: number
+  configJson: any
+  createdAt: Date
+  updatedAt: Date
+}): AdminProductOptionValueGql {
   return {
     id: value.id,
     optionGroupId: value.optionGroupId,
@@ -55,37 +53,35 @@ function mapOptionValueToGql(
   }
 }
 
-function mapOptionGroupToGql(
-  group: {
+function mapOptionGroupToGql(group: {
+  id: string
+  productId: string | null
+  productTypeId: string | null
+  slug: string
+  name: string
+  description: string | null
+  inputType: 'SINGLE_SELECT' | 'BOOLEAN'
+  isRequired: boolean
+  isActive: boolean
+  sortOrder: number
+  configJson: any
+  createdAt: Date
+  updatedAt: Date
+  values: Array<{
     id: string
-    productId: string | null
-    productTypeId: string | null
+    optionGroupId: string
     slug: string
-    name: string
+    label: string
     description: string | null
-    inputType: 'SINGLE_SELECT' | 'BOOLEAN'
-    isRequired: boolean
+    priceDeltaCents: number
+    isDefault: boolean
     isActive: boolean
     sortOrder: number
     configJson: any
     createdAt: Date
     updatedAt: Date
-    values: Array<{
-      id: string
-      optionGroupId: string
-      slug: string
-      label: string
-      description: string | null
-      priceDeltaCents: number
-      isDefault: boolean
-      isActive: boolean
-      sortOrder: number
-      configJson: any
-      createdAt: Date
-      updatedAt: Date
-    }>
-  },
-): AdminProductOptionGroupGql {
+  }>
+}): AdminProductOptionGroupGql {
   return {
     id: group.id,
     productId: group.productId,

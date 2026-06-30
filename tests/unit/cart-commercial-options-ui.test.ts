@@ -192,7 +192,10 @@ describe('cart commercial options UI mapping', () => {
     )
 
     assert.equal(summary.optionTotalPesos, 100)
-    assert.equal(summary.items[0]?.commercialOptionsSnapshot[0]?.valueLabel, 'Con dry fit en espalda')
+    assert.equal(
+      summary.items[0]?.commercialOptionsSnapshot[0]?.valueLabel,
+      'Con dry fit en espalda',
+    )
     assert.equal(summary.items[0]?.lineTotalPesos, 1100)
     assert.equal(summary.totalPesos, 1100)
   })

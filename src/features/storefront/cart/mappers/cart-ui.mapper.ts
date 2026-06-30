@@ -13,11 +13,7 @@ import {
   getFreeShippingRemaining,
 } from '@/src/features/storefront/cart/lib/cart-utils'
 
-import type {
-  Cart,
-  CartCommercialOptionSnapshot,
-  CartItem,
-} from '../types/cart-bff.types'
+import type { Cart, CartCommercialOptionSnapshot, CartItem } from '../types/cart-bff.types'
 
 const DEFAULT_COLOR_HEX = '#E5E7EB'
 

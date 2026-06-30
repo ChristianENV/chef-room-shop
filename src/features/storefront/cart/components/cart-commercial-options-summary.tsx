@@ -22,10 +22,7 @@ export function CartCommercialOptionsSummary({
   if (options.length === 0) return null
 
   return (
-    <ul
-      className={cn('space-y-1', className)}
-      data-testid="cart-commercial-options-summary"
-    >
+    <ul className={cn('space-y-1', className)} data-testid="cart-commercial-options-summary">
       {options.map((option) => (
         <li
           key={`${option.groupId}:${option.valueId}`}

@@ -282,9 +282,7 @@ function sameLineKey(
   return `${productId}:${productVariantId ?? ''}:${designId ?? ''}:${commercialOptionsKey}`
 }
 
-function commercialOptionsKeyFromItem(item: {
-  selectedOptionsJson: unknown
-}): string {
+function commercialOptionsKeyFromItem(item: { selectedOptionsJson: unknown }): string {
   return buildCommercialOptionsLineKey(parseCommercialOptionsSnapshot(item.selectedOptionsJson))
 }
 
@@ -374,7 +372,12 @@ export async function addCartItem(
     })
   }
 
-  const lineKey = sameLineKey(parsed.productId, parsed.productVariantId, designId, commercialOptionsKey)
+  const lineKey = sameLineKey(
+    parsed.productId,
+    parsed.productVariantId,
+    designId,
+    commercialOptionsKey,
+  )
   const existingItem = cart.items.find(
     (item) =>
       sameLineKey(

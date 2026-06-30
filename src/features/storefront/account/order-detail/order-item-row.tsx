@@ -30,6 +30,7 @@ export function OrderItemRow({ item }: OrderItemRowProps) {
     design?.selectedColor?.name ??
     null
   const detailColorName = design?.detailColor?.name ?? product.detailColorName ?? null
+  const commercialOptionsSnapshot = item.commercialOptionsSnapshot ?? []
 
   return (
     <li className="flex gap-4 border-b border-border py-5 last:border-0 last:pb-0">
@@ -75,12 +76,12 @@ export function OrderItemRow({ item }: OrderItemRowProps) {
               {item.customizationPriceCents > 0 &&
                 ` · Personalización ${formatCurrencyMXN(centsToPesos(item.customizationPriceCents))}`}
             </p>
-            {item.commercialOptionsSnapshot.length > 0 ? (
+            {commercialOptionsSnapshot.length > 0 ? (
               <div className="mt-3" data-testid="order-item-commercial-options">
                 <p className="mb-1 font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Opciones
                 </p>
-                <CartCommercialOptionsSummary options={item.commercialOptionsSnapshot} />
+                <CartCommercialOptionsSummary options={commercialOptionsSnapshot} />
               </div>
             ) : null}
           </div>

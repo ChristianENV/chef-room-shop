@@ -1,4 +1,7 @@
-import type { ProductOptionSnapshot, ValidatedProductOptionSelection } from './product-options.types'
+import type {
+  ProductOptionSnapshot,
+  ValidatedProductOptionSelection,
+} from './product-options.types'
 
 function isProductOptionSnapshot(value: unknown): value is ProductOptionSnapshot {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false

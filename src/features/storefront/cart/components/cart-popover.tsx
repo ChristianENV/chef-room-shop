@@ -71,10 +71,7 @@ function CartPopoverItem({ item }: { item: CartPreviewItem }) {
 
           {item.commercialOptionsSnapshot.length > 0 ? (
             <div className="mt-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-2">
-              <CartCommercialOptionsSummary
-                options={item.commercialOptionsSnapshot}
-                compact
-              />
+              <CartCommercialOptionsSummary options={item.commercialOptionsSnapshot} compact />
             </div>
           ) : null}
 

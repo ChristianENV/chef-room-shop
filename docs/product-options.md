@@ -7,6 +7,7 @@ Commercial product configuration options for Chef Room products.
 Product options are pre-defined configuration choices that customers can select when purchasing a product. Unlike product variants (color + size combinations) and free-form customizer personalization (logos, text, artwork), product options are structured commercial add-ons or modifications to the base product.
 
 **Key distinction:**
+
 - **Product variants**: Color + size SKU combinations (e.g., Filipina Blanca, size M)
 - **Product options**: Commercial configuration choices (e.g., dry fit fabric, cargo pockets, +10cm length)
 - **Customizer personalization**: Free-form user-uploaded designs (logos, embroidery artwork, text placement)
@@ -20,6 +21,7 @@ Product options are defined via two models:
 Represents a group of related options (e.g., "Dry fit en espalda", "Bolsas", "Bordado").
 
 **Fields:**
+
 - `id` (UUID): Unique identifier
 - `productId` (UUID, optional): If set, this option group applies to a specific product
 - `productTypeId` (UUID, optional): If set, this option group applies to all products of this type
@@ -33,6 +35,7 @@ Represents a group of related options (e.g., "Dry fit en espalda", "Bolsas", "Bo
 - `configJson` (JSON, optional): Flexible configuration for business rules
 
 **Rules:**
+
 - At least one of `productId` or `productTypeId` must be set
 - Product-specific options override or extend product-type options
 - Slug must be unique within the product or product type scope
@@ -42,6 +45,7 @@ Represents a group of related options (e.g., "Dry fit en espalda", "Bolsas", "Bo
 Represents an individual choice within an option group (e.g., "Sin dry fit", "Con dry fit en espalda").
 
 **Fields:**
+
 - `id` (UUID): Unique identifier
 - `optionGroupId` (UUID): Parent option group
 - `slug` (string): Kebab-case slug for the value (e.g., "sin-dry-fit")
@@ -54,6 +58,7 @@ Represents an individual choice within an option group (e.g., "Sin dry fit", "Co
 - `configJson` (JSON, optional): Value-specific metadata
 
 **Rules:**
+
 - Slug must be unique within the option group
 - Price delta must be non-negative (≥0)
 - Only one value per group can be marked as default
@@ -63,16 +68,19 @@ Represents an individual choice within an option group (e.g., "Sin dry fit", "Co
 ### A. Chef Jackets / Filipinas
 
 **Option Group: `dry-fit-back`**
+
 - **Name**: Dry fit en espalda
 - **Input Type**: SINGLE_SELECT
 - **Required**: No
 - **Applied To**: Product type `chef-jacket`
 
 **Values:**
+
 1. `sin-dry-fit`: Sin dry fit (default, 0¢)
 2. `con-dry-fit`: Con dry fit en espalda (0¢)
 
 **Config:**
+
 ```json
 {
   "appliesToPanel": "back",
@@ -83,16 +91,19 @@ Represents an individual choice within an option group (e.g., "Sin dry fit", "Co
 ### B. Pants / Pantalón
 
 **Option Group: `pockets`**
+
 - **Name**: Bolsas
 - **Input Type**: SINGLE_SELECT
 - **Required**: Yes
 - **Applied To**: Product type `pants`
 
 **Values:**
+
 1. `sin-bolsas-cargo`: Sin bolsas cargo (default, 0¢)
 2. `con-bolsas-cargo`: Con bolsas cargo (0¢)
 
 **Config:**
+
 ```json
 {
   "notes": "Cargo style includes side pockets and rear pockets"
@@ -104,36 +115,42 @@ Represents an individual choice within an option group (e.g., "Sin dry fit", "Co
 #### C1. Embroidery Main Option
 
 **Option Group: `embroidery`**
+
 - **Name**: Bordado
 - **Input Type**: SINGLE_SELECT
 - **Required**: No
 - **Applied To**: Product type `apron`
 
 **Values:**
+
 1. `sin-bordado`: Sin bordado (default, 0¢)
 2. `con-bordado`: Con bordado (0¢)
 
 #### C2. Embroidery Position
 
 **Option Group: `embroidery-position`**
+
 - **Name**: Posición del bordado
 - **Input Type**: SINGLE_SELECT
 - **Required**: No
 - **Applied To**: Product type `apron`
 
 **Values:**
+
 1. `derecha`: Derecha (default, 0¢)
 2. `izquierda`: Izquierda (0¢)
 
 #### C3. Embroidery Size
 
 **Option Group: `embroidery-size`**
+
 - **Name**: Tamaño del bordado
 - **Input Type**: SINGLE_SELECT
 - **Required**: No
 - **Applied To**: Product type `apron`
 
 **Values:**
+
 1. `chica`: Chica (0¢)
 2. `mediana`: Mediana (default, 0¢)
 3. `grande`: Grande (0¢)
@@ -141,12 +158,14 @@ Represents an individual choice within an option group (e.g., "Sin dry fit", "Co
 #### C4. Apron Length
 
 **Option Group: `apron-length`**
+
 - **Name**: Largo del mandil
 - **Input Type**: SINGLE_SELECT
 - **Required**: No
 - **Applied To**: Product type `apron`
 
 **Values:**
+
 1. `normal`: Largo normal (default, 0¢)
 2. `mas-10cm`: +10 cm (0¢)
 
@@ -165,6 +184,7 @@ Selected product options are preserved in cart items and order items via:
 - `optionPriceCents` (int): Total option price delta for this item
 
 **Snapshot structure:**
+
 ```json
 [
   {
@@ -180,6 +200,7 @@ Selected product options are preserved in cart items and order items via:
 ```
 
 **Why snapshots?**
+
 - Orders must preserve option labels/prices even if Admin later edits option names
 - Cart can store IDs + snapshot for real-time updates
 - Order history is immutable
@@ -193,6 +214,7 @@ Selected product options are preserved in cart items and order items via:
 Fetch option groups filtered by product or product type.
 
 **Input:**
+
 ```graphql
 input GetAdminProductOptionGroupsInput {
   productId: ID
@@ -208,6 +230,7 @@ input GetAdminProductOptionGroupsInput {
 Fetch a single option group by ID.
 
 **Input:**
+
 ```graphql
 input GetAdminProductOptionGroupInput {
   id: ID!
@@ -223,6 +246,7 @@ input GetAdminProductOptionGroupInput {
 Create a new option group.
 
 **Input:**
+
 ```graphql
 input CreateAdminProductOptionGroupInput {
   productId: ID
@@ -239,6 +263,7 @@ input CreateAdminProductOptionGroupInput {
 ```
 
 **Validation:**
+
 - At least one of `productId` or `productTypeId` required
 - Slug must be kebab-case
 - Slug must be unique within product/product type scope
@@ -250,6 +275,7 @@ input CreateAdminProductOptionGroupInput {
 Update an existing option group.
 
 **Input:**
+
 ```graphql
 input UpdateAdminProductOptionGroupInput {
   id: ID!
@@ -271,6 +297,7 @@ input UpdateAdminProductOptionGroupInput {
 Soft-delete an option group (sets `isActive = false`).
 
 **Input:**
+
 ```graphql
 input ArchiveAdminProductOptionGroupInput {
   id: ID!
@@ -284,6 +311,7 @@ input ArchiveAdminProductOptionGroupInput {
 Create a new option value.
 
 **Input:**
+
 ```graphql
 input CreateAdminProductOptionValueInput {
   optionGroupId: ID!
@@ -299,6 +327,7 @@ input CreateAdminProductOptionValueInput {
 ```
 
 **Validation:**
+
 - Slug must be kebab-case
 - Price delta must be non-negative (≥0)
 - Slug must be unique within option group
@@ -311,6 +340,7 @@ input CreateAdminProductOptionValueInput {
 Update an existing option value.
 
 **Input:**
+
 ```graphql
 input UpdateAdminProductOptionValueInput {
   id: ID!
@@ -332,6 +362,7 @@ input UpdateAdminProductOptionValueInput {
 Soft-delete an option value (sets `isActive = false`).
 
 **Input:**
+
 ```graphql
 input ArchiveAdminProductOptionValueInput {
   id: ID!
@@ -343,6 +374,7 @@ input ArchiveAdminProductOptionValueInput {
 ## Implementation Status
 
 ✅ **Completed:**
+
 - [x] Audit existing customization models
 - [x] Prisma schema for ProductOptionGroup and ProductOptionValue
 - [x] Prisma migration (`20260629120000_product_options`)
@@ -366,6 +398,7 @@ input ArchiveAdminProductOptionValueInput {
 - [x] Unit tests for order commercial options UI (`tests/unit/order-commercial-options-ui.test.ts`)
 
 ⏳ **Pending:**
+
 - [ ] Admin UI for managing product options
 - [ ] Option dependency handling (e.g., embroidery position/size disabled until embroidery selected)
 - [ ] Integration tests (cart, checkout, order)
@@ -374,9 +407,9 @@ input ArchiveAdminProductOptionValueInput {
 
 ### Naming separation
 
-| Concept | Field / type | Used for |
-|---------|--------------|----------|
-| Customizer personalization | `customizationSnapshot.selectedOptions` | Logo, text, fabric choices from 3D customizer |
+| Concept                    | Field / type                                                           | Used for                                          |
+| -------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------- |
+| Customizer personalization | `customizationSnapshot.selectedOptions`                                | Logo, text, fabric choices from 3D customizer     |
 | Commercial product options | `commercialOptionsSnapshot` (GraphQL) / `selectedOptionsJson` (Prisma) | Dry fit, pockets, embroidery config, apron length |
 
 Prisma keeps `selectedOptionsJson` on `CartItem` / `OrderItem` for commercial snapshots only at persistence layer. GraphQL exposes `commercialOptionsSnapshot` to avoid collision with customizer `selectedOptions`.
@@ -426,17 +459,16 @@ Order items copy `selectedOptionsJson` and `optionPriceCents` from cart lines wi
 
 Commercial product options use explicit naming — **not** customizer `selectedOptions`.
 
-| Module | Purpose |
-|--------|---------|
-| `validateSelectedProductOptions` | Validates `selectedCommercialOptions` against server groups/values; applies defaults; enforces required groups |
-| `buildProductOptionSnapshots` | Builds `ProductOptionSnapshot[]` for cart/order `selectedOptionsJson` |
-| `calculateProductOptionsPriceCents` | Sums `priceDeltaCents` from validated snapshots |
-| `resolveApplicableProductOptionGroups` | Merges product + product-type groups (product wins on slug collision) |
+| Module                                 | Purpose                                                                                                        |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `validateSelectedProductOptions`       | Validates `selectedCommercialOptions` against server groups/values; applies defaults; enforces required groups |
+| `buildProductOptionSnapshots`          | Builds `ProductOptionSnapshot[]` for cart/order `selectedOptionsJson`                                          |
+| `calculateProductOptionsPriceCents`    | Sums `priceDeltaCents` from validated snapshots                                                                |
+| `resolveApplicableProductOptionGroups` | Merges product + product-type groups (product wins on slug collision)                                          |
 
 **Input type:** `ProductOptionSelectionInput` (`groupId`/`groupSlug` + `valueId`/`valueSlug`)
 
 **Snapshot type:** `ProductOptionSnapshot` (stable display + server-side `priceDeltaCents`)
-
 
 ## Known Gaps
 

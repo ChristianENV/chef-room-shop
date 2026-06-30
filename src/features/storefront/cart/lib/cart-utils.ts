@@ -45,10 +45,7 @@ export function computeCartTotals(items: CartPreviewItem[]) {
     (sum, item) => sum + (item.customizationPrice ?? 0) * item.quantity,
     0,
   )
-  const optionTotal = items.reduce(
-    (sum, item) => sum + (item.optionPrice ?? 0) * item.quantity,
-    0,
-  )
+  const optionTotal = items.reduce((sum, item) => sum + (item.optionPrice ?? 0) * item.quantity, 0)
   const partialTotal = subtotal + customizationTotal + optionTotal
   const shipping = partialTotal >= FREE_SHIPPING_THRESHOLD_MXN ? 0 : STANDARD_SHIPPING_MXN
   const total = partialTotal + shipping

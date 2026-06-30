@@ -203,7 +203,9 @@ export function mapProductModel3dToGql(asset: ProductModelAsset): CatalogProduct
 /**
  * Maps a product option value to the catalog GraphQL type.
  */
-export function mapProductOptionValueToGql(value: ProductOptionValue): CatalogProductOptionValueGql {
+export function mapProductOptionValueToGql(
+  value: ProductOptionValue,
+): CatalogProductOptionValueGql {
   return {
     id: value.id,
     slug: value.slug,
@@ -245,7 +247,7 @@ export function mapProductToGql(product: ProductWithRelations): CatalogProductGq
   // Combine product-specific and product-type option groups
   const productOptionGroups = (product.optionGroups ?? []).filter((g) => g.isActive)
   const productTypeOptionGroups = (product.productType.optionGroups ?? []).filter((g) => g.isActive)
-  
+
   // Product-specific options take precedence over product-type options
   const allOptionGroups = [
     ...productOptionGroups,

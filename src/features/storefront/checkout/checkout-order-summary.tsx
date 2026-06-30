@@ -21,16 +21,20 @@ export function CheckoutOrderSummary({
   selectedShipping,
   className,
 }: CheckoutOrderSummaryProps) {
-  const { items, subtotalPesos, customizationTotalPesos, optionTotalPesos, discountPesos, totalPesos } =
-    summary
+  const {
+    items,
+    subtotalPesos,
+    customizationTotalPesos,
+    optionTotalPesos,
+    discountPesos,
+    totalPesos,
+  } = summary
 
   const shippingPesos = selectedShipping
     ? centsToPesos(selectedShipping.amountCents)
     : summary.shippingPesos
 
-  const estimatedTotalPesos = selectedShipping
-    ? totalPesos + shippingPesos
-    : totalPesos
+  const estimatedTotalPesos = selectedShipping ? totalPesos + shippingPesos : totalPesos
 
   return (
     <div className={cn('rounded-lg border border-border bg-card', className)}>

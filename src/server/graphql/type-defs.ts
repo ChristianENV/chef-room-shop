@@ -1983,8 +1983,12 @@ export const typeDefs = /* GraphQL */ `
     adminProductById(id: ID!): AdminProduct
     adminProductBySlug(slug: String!): AdminProduct
     adminProductFormOptions: AdminProductFormOptions!
-    adminProductOptionGroups(input: GetAdminProductOptionGroupsInput!): AdminProductOptionGroupsPayload!
-    adminProductOptionGroupById(input: GetAdminProductOptionGroupInput!): AdminProductOptionGroupPayload!
+    adminProductOptionGroups(
+      input: GetAdminProductOptionGroupsInput!
+    ): AdminProductOptionGroupsPayload!
+    adminProductOptionGroupById(
+      input: GetAdminProductOptionGroupInput!
+    ): AdminProductOptionGroupPayload!
     adminColors(includeInactive: Boolean): [AdminColor!]!
     adminColorById(id: ID!): AdminColor
     adminProductTypes(includeInactive: Boolean): [AdminProductType!]!
@@ -2073,12 +2077,24 @@ export const typeDefs = /* GraphQL */ `
     upsertAdminProductImage(input: AdminProductImageInput!): AdminProductImage!
     deleteAdminProductImage(id: ID!): Boolean!
     reorderAdminProductImages(productId: ID!, imageIds: [ID!]!): [AdminProductImage!]!
-    createAdminProductOptionGroup(input: CreateAdminProductOptionGroupInput!): AdminProductOptionGroupPayload!
-    updateAdminProductOptionGroup(input: UpdateAdminProductOptionGroupInput!): AdminProductOptionGroupPayload!
-    archiveAdminProductOptionGroup(input: ArchiveAdminProductOptionGroupInput!): ArchiveAdminProductOptionGroupPayload!
-    createAdminProductOptionValue(input: CreateAdminProductOptionValueInput!): AdminProductOptionValuePayload!
-    updateAdminProductOptionValue(input: UpdateAdminProductOptionValueInput!): AdminProductOptionValuePayload!
-    archiveAdminProductOptionValue(input: ArchiveAdminProductOptionValueInput!): ArchiveAdminProductOptionValuePayload!
+    createAdminProductOptionGroup(
+      input: CreateAdminProductOptionGroupInput!
+    ): AdminProductOptionGroupPayload!
+    updateAdminProductOptionGroup(
+      input: UpdateAdminProductOptionGroupInput!
+    ): AdminProductOptionGroupPayload!
+    archiveAdminProductOptionGroup(
+      input: ArchiveAdminProductOptionGroupInput!
+    ): ArchiveAdminProductOptionGroupPayload!
+    createAdminProductOptionValue(
+      input: CreateAdminProductOptionValueInput!
+    ): AdminProductOptionValuePayload!
+    updateAdminProductOptionValue(
+      input: UpdateAdminProductOptionValueInput!
+    ): AdminProductOptionValuePayload!
+    archiveAdminProductOptionValue(
+      input: ArchiveAdminProductOptionValueInput!
+    ): ArchiveAdminProductOptionValuePayload!
     createAdminCustomizationRule(input: AdminCustomizationRuleInput!): AdminCustomizationRule!
     updateAdminCustomizationRule(
       id: ID!

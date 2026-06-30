@@ -99,18 +99,11 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
         optionGroups,
         selections: commercialOptionSelections,
       }),
-    [
-      product.basePriceCents,
-      selectedVariant?.priceCents,
-      optionGroups,
-      commercialOptionSelections,
-    ],
+    [product.basePriceCents, selectedVariant?.priceCents, optionGroups, commercialOptionSelections],
   )
 
   const estimatedUnitPricePesos = centsToPesos(estimatedUnitPriceCents)
-  const baseDisplayPricePesos = centsToPesos(
-    selectedVariant?.priceCents ?? product.basePriceCents,
-  )
+  const baseDisplayPricePesos = centsToPesos(selectedVariant?.priceCents ?? product.basePriceCents)
   const hasOptionPriceDelta = optionsPriceDeltaCents > 0
 
   const incrementQuantity = () => setQuantity((prev) => Math.min(prev + 1, 10))

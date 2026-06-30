@@ -13,7 +13,8 @@ const PRODUCT_ID = 'product-1'
 const PRODUCT_TYPE_ID = 'type-pants'
 
 function makeGroup(
-  overrides: Partial<ProductOptionGroupWithValues> & Pick<ProductOptionGroupWithValues, 'id' | 'slug' | 'name'>,
+  overrides: Partial<ProductOptionGroupWithValues> &
+    Pick<ProductOptionGroupWithValues, 'id' | 'slug' | 'name'>,
 ): ProductOptionGroupWithValues {
   return {
     productId: null,
@@ -150,9 +151,7 @@ describe('commercial product options helpers', () => {
       productId: PRODUCT_ID,
       productTypeId: PRODUCT_TYPE_ID,
       optionGroups: [group],
-      selectedCommercialOptions: [
-        { groupSlug: 'pockets', valueSlug: 'does-not-exist' },
-      ],
+      selectedCommercialOptions: [{ groupSlug: 'pockets', valueSlug: 'does-not-exist' }],
     })
 
     assert.equal(result.ok, false)
@@ -268,7 +267,10 @@ describe('commercial product options helpers', () => {
     assert.equal(snapshots[0]?.groupSlug, 'dry-fit-back')
 
     assert.notDeepEqual(snapshots, customizerSelectedOptions)
-    assert.equal('selectedCommercialOptions' in { selectedCommercialOptions: commercialInput }, true)
+    assert.equal(
+      'selectedCommercialOptions' in { selectedCommercialOptions: commercialInput },
+      true,
+    )
     assert.equal('selectedOptions' in { selectedOptions: customizerSelectedOptions }, true)
   })
 

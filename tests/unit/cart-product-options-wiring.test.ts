@@ -21,7 +21,8 @@ const PRODUCT_ID = 'product-1'
 const PRODUCT_TYPE_ID = 'type-pants'
 
 function makeGroup(
-  overrides: Partial<ProductOptionGroupWithValues> & Pick<ProductOptionGroupWithValues, 'id' | 'slug' | 'name'>,
+  overrides: Partial<ProductOptionGroupWithValues> &
+    Pick<ProductOptionGroupWithValues, 'id' | 'slug' | 'name'>,
 ): ProductOptionGroupWithValues {
   return {
     productId: null,

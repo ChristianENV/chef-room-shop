@@ -47,7 +47,8 @@ export function OrderSummary({
   className,
 }: OrderSummaryProps) {
   const [isOpen, setIsOpen] = useState(true)
-  const computedTotal = subtotal + customizationTotal + optionTotal + shipping - (discount?.amount || 0)
+  const computedTotal =
+    subtotal + customizationTotal + optionTotal + shipping - (discount?.amount || 0)
   const displayTotal = total ?? computedTotal
 
   return (

@@ -94,9 +94,7 @@ export function mapBffCartToCheckoutSummary(cart: Cart): CheckoutSummaryData {
       isCustomized: Boolean(
         item.designId || item.customizationPriceCents > 0 || getCartItemCustomizationSummary(item),
       ),
-      commercialOptionsSnapshot: normalizeCommercialOptionsSnapshot(
-        item.commercialOptionsSnapshot,
-      ),
+      commercialOptionsSnapshot: normalizeCommercialOptionsSnapshot(item.commercialOptionsSnapshot),
     }
   })
 

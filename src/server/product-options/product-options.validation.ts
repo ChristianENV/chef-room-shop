@@ -55,7 +55,9 @@ function findValueInGroup(
   return null
 }
 
-function getDefaultActiveValue(group: ProductOptionGroupWithValues): ProductOptionValueRecord | null {
+function getDefaultActiveValue(
+  group: ProductOptionGroupWithValues,
+): ProductOptionValueRecord | null {
   const defaults = group.values.filter((value) => value.isDefault && value.isActive)
   if (defaults.length === 0) return null
   return defaults.sort((a, b) => a.sortOrder - b.sortOrder)[0] ?? null
@@ -118,7 +120,10 @@ export function validateSelectedProductOptions(
 
   for (const selection of selectedCommercialOptions) {
     if (!selection.groupId && !selection.groupSlug) {
-      return fail('MISSING_GROUP_REFERENCE', 'Cada opción comercial debe incluir groupId o groupSlug.')
+      return fail(
+        'MISSING_GROUP_REFERENCE',
+        'Cada opción comercial debe incluir groupId o groupSlug.',
+      )
     }
 
     const group = findGroupByReference(optionGroups, selection)
@@ -139,7 +144,10 @@ export function validateSelectedProductOptions(
     }
 
     if (!selection.valueId && !selection.valueSlug) {
-      return fail('MISSING_VALUE_REFERENCE', `Falta valueId o valueSlug para el grupo "${group.slug}".`)
+      return fail(
+        'MISSING_VALUE_REFERENCE',
+        `Falta valueId o valueSlug para el grupo "${group.slug}".`,
+      )
     }
 
     const value = findValueInGroup(group, selection)
@@ -152,7 +160,10 @@ export function validateSelectedProductOptions(
     }
 
     if (value.optionGroupId !== group.id) {
-      return fail('VALUE_NOT_IN_GROUP', `El valor "${value.slug}" no pertenece al grupo "${group.slug}".`)
+      return fail(
+        'VALUE_NOT_IN_GROUP',
+        `El valor "${value.slug}" no pertenece al grupo "${group.slug}".`,
+      )
     }
 
     selectionsByGroupId.set(group.id, selection)
@@ -184,10 +195,7 @@ export function validateSelectedProductOptions(
     }
 
     if (group.isRequired) {
-      return fail(
-        'REQUIRED_GROUP_MISSING',
-        `Debes seleccionar una opción para "${group.name}".`,
-      )
+      return fail('REQUIRED_GROUP_MISSING', `Debes seleccionar una opción para "${group.name}".`)
     }
   }
 

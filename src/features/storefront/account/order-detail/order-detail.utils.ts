@@ -1,4 +1,6 @@
-import type { AccountOrder } from '../types'
+import { normalizeCommercialOptionsSnapshot } from '@/src/features/storefront/cart/mappers/cart-ui.mapper'
+
+import type { AccountOrder, AccountOrderItem } from '../types'
 
 export type OrderStatusTone =
   | 'pending'
@@ -93,6 +95,31 @@ const FULFILLMENT_LABELS: Record<string, string> = {
   UNFULFILLED: 'Sin iniciar',
   PARTIALLY_FULFILLED: 'Parcial',
   FULFILLED: 'Completado',
+}
+
+/**
+ * Ensures commercial option fields are always present on account order lines.
+ */
+export function normalizeAccountOrderItem(item: AccountOrderItem): AccountOrderItem {
+  return {
+    ...item,
+    optionPriceCents: item.optionPriceCents ?? 0,
+    commercialOptionsSnapshot: normalizeCommercialOptionsSnapshot(item.commercialOptionsSnapshot),
+  }
+}
+
+/**
+ * Normalizes nullable order collections and line-level commercial option fields.
+ */
+export function normalizeAccountOrder(order: AccountOrder): AccountOrder {
+  return {
+    ...order,
+    payments: order.payments ?? [],
+    shipments: order.shipments ?? [],
+    events: order.events ?? [],
+    subtotalCents: order.subtotalCents ?? order.totalCents,
+    items: (order.items ?? []).map(normalizeAccountOrderItem),
+  }
 }
 
 /**

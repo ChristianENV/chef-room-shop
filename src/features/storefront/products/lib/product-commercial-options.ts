@@ -151,10 +151,7 @@ export function calculateEstimatedUnitPriceCents(input: {
   optionGroups: ProductOptionGroup[]
   selections: CommercialOptionSelections
 }): number {
-  const unitPriceCents = resolveProductUnitPriceCents(
-    input.basePriceCents,
-    input.variantPriceCents,
-  )
+  const unitPriceCents = resolveProductUnitPriceCents(input.basePriceCents, input.variantPriceCents)
   const optionsDeltaCents = calculateCommercialOptionsPriceDeltaCents(
     input.optionGroups,
     input.selections,

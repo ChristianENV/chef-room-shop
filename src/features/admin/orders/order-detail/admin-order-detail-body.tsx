@@ -157,10 +157,7 @@ function ItemsPanel({ order }: { order: NonNullable<ReturnType<typeof mapAdminOr
                   <p className="mb-1 font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Opciones
                   </p>
-                  <CartCommercialOptionsSummary
-                    options={item.commercialOptionsSnapshot}
-                    compact
-                  />
+                  <CartCommercialOptionsSummary options={item.commercialOptionsSnapshot} compact />
                 </div>
               ) : null}
             </div>
