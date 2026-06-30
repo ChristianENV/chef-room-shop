@@ -13,7 +13,6 @@ import {
   LoadingSkeleton,
   CTAButtonGroup,
   FeatureCard,
-  TrustBadge,
   TrustBadgesRow,
 } from '@/components/brand'
 import { MOCK_PRODUCTS } from '@/lib/mock-data'

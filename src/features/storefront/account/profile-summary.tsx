@@ -2,17 +2,7 @@
 import { routes } from '@/src/config/routes'
 
 import Link from 'next/link'
-import {
-  Calendar,
-  CreditCard,
-  Edit,
-  Mail,
-  MapPin,
-  Package,
-  Palette,
-  Phone,
-  Star,
-} from 'lucide-react'
+import { Calendar, Edit, Mail, MapPin, Package, Palette, Phone, Star } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { UserAvatar } from '@/components/shared/user-avatar'

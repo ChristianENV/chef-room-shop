@@ -15,7 +15,15 @@ interface ColorSwatchProps {
 function ColorSwatch({ name, hex, usage, textColor = 'dark' }: ColorSwatchProps) {
   return (
     <Card className="overflow-hidden border-border">
-      <div className="h-24 w-full" style={{ backgroundColor: hex }} />
+      <div
+        className={cn(
+          'flex h-24 w-full items-end p-2',
+          textColor === 'light' ? 'text-white' : 'text-foreground',
+        )}
+        style={{ backgroundColor: hex }}
+      >
+        <span className="font-mono text-xs opacity-90">{hex}</span>
+      </div>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div>

@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ShoppingCart, Heart, Edit3, Check, AlertCircle, Info, ChevronRight } from 'lucide-react'
+import { ShoppingCart, Heart, Edit3, Check, AlertCircle, Info } from 'lucide-react'
 
 export function ShadcnComponentsSection() {
   return (

@@ -19,13 +19,13 @@ const hexSchema = z
   .trim()
   .regex(HEX_COLOR_REGEX, 'El hex debe ser un color válido (#RRGGBB).')
 
-const scopeFlagsSchema = z.object({
-  isFabricColor: z.boolean().optional().nullable(),
-  isProductColor: z.boolean().optional().nullable(),
-  isGeneralColor: z.boolean().optional().nullable(),
-})
+type ScopeFlagsInput = {
+  isFabricColor?: boolean | null
+  isProductColor?: boolean | null
+  isGeneralColor?: boolean | null
+}
 
-function parseScopeFlags(input: z.infer<typeof scopeFlagsSchema>) {
+function parseScopeFlags(input: ScopeFlagsInput) {
   return {
     isFabricColor: input.isFabricColor ?? false,
     isProductColor: input.isProductColor ?? false,

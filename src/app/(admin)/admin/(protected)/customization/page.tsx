@@ -60,7 +60,7 @@ export default function CustomizationRulesPage() {
   const areasQuery = useAdminCustomizationAreasQuery()
   const optionsQuery = useAdminCustomizationOptionsQuery()
 
-  const products = productsQuery.data ?? []
+  const products = useMemo(() => productsQuery.data ?? [], [productsQuery.data])
 
   const activeProductId = useMemo(() => {
     if (selectedProductId && products.some((p) => p.id === selectedProductId)) {

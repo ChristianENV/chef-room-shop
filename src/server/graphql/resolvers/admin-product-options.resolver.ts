@@ -1,5 +1,3 @@
-import { GraphQLError } from 'graphql'
-
 import type { GraphQLContext } from '../context'
 import { requireAdminGraphQL } from '../modules/admin-products/admin-products.auth'
 import {

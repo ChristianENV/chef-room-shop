@@ -39,7 +39,7 @@ export default function AdminCategoriesPage() {
   const categoriesQuery = useAdminProductTypesQuery({ includeInactive: true })
   const archiveMutation = useArchiveAdminProductTypeMutation()
 
-  const categories = categoriesQuery.data ?? []
+  const categories = useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data])
 
   const tableRows = useMemo(() => categories.map(mapAdminProductTypeToTableRow), [categories])
 

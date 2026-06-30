@@ -12,7 +12,6 @@ import { mapAdminColorToGql } from '../admin-colors/admin-colors.mappers'
 import type {
   AdminProductGql,
   AdminProductImageGql,
-  AdminProductModel3dGql,
   AdminProductVariantGql,
   AdminSizeGql,
 } from './admin-products.types'

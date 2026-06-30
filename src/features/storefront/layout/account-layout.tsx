@@ -119,7 +119,6 @@ export function AccountLayout({
   children,
   title,
   description,
-  cartItemCount = 0,
   userName = 'Usuario',
 }: AccountLayoutProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)

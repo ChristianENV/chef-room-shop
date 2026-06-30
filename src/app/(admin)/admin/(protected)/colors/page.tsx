@@ -38,7 +38,7 @@ export default function AdminColorsPage() {
   const colorsQuery = useAdminColorsQuery({ includeInactive: true })
   const archiveMutation = useArchiveAdminColorMutation()
 
-  const colors = colorsQuery.data ?? []
+  const colors = useMemo(() => colorsQuery.data ?? [], [colorsQuery.data])
   const tableRows = useMemo(() => colors.map(mapAdminColorToTableRow), [colors])
 
   const formInitialValues = useMemo(() => mapAdminColorToFormValues(editingColor), [editingColor])

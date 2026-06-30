@@ -14,7 +14,6 @@ import {
   resolveVariantCellState,
   sortVariantsForDisplay,
 } from '@/src/features/admin/products/lib/variant-matrix'
-import { buildVariantColorSelectOptions } from '@/src/features/admin/products/lib/variant-color-options'
 import {
   buildVariantColorPoolOptions,
   buildVisibleMatrixColorRows,

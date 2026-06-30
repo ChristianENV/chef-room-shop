@@ -42,7 +42,6 @@ async function main() {
     select: { productSnapshotJson: true },
   })
 
-  const slugById = new Map(products.map((p) => [p.id, p.slug]))
   const slugSet = new Set(products.map((p) => p.slug))
 
   for (const item of orderItems) {
