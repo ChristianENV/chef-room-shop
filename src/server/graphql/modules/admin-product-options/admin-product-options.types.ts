@@ -1,4 +1,4 @@
-import type { ProductOptionInputType } from '@prisma/client'
+import type { Prisma, ProductOptionInputType } from '@prisma/client'
 
 // ────────────────────────────────────────────────────────────────────────────
 // Query filters / inputs
@@ -24,7 +24,7 @@ export type CreateAdminProductOptionGroupInput = {
   isRequired: boolean
   isActive: boolean
   sortOrder: number
-  configJson?: any
+  configJson?: Prisma.InputJsonValue
 }
 
 export type UpdateAdminProductOptionGroupInput = {
@@ -36,7 +36,7 @@ export type UpdateAdminProductOptionGroupInput = {
   isRequired?: boolean
   isActive?: boolean
   sortOrder?: number
-  configJson?: any
+  configJson?: Prisma.InputJsonValue
 }
 
 export type ArchiveAdminProductOptionGroupInput = {
@@ -52,7 +52,7 @@ export type CreateAdminProductOptionValueInput = {
   isDefault: boolean
   isActive: boolean
   sortOrder: number
-  configJson?: any
+  configJson?: Prisma.InputJsonValue
 }
 
 export type UpdateAdminProductOptionValueInput = {
@@ -64,7 +64,7 @@ export type UpdateAdminProductOptionValueInput = {
   isDefault?: boolean
   isActive?: boolean
   sortOrder?: number
-  configJson?: any
+  configJson?: Prisma.InputJsonValue
 }
 
 export type ArchiveAdminProductOptionValueInput = {
@@ -85,7 +85,7 @@ export type AdminProductOptionValueGql = {
   isDefault: boolean
   isActive: boolean
   sortOrder: number
-  configJson: any
+  configJson: Prisma.JsonValue | null
   createdAt: string
   updatedAt: string
 }
@@ -101,7 +101,7 @@ export type AdminProductOptionGroupGql = {
   isRequired: boolean
   isActive: boolean
   sortOrder: number
-  configJson: any
+  configJson: Prisma.JsonValue | null
   values: AdminProductOptionValueGql[]
   createdAt: string
   updatedAt: string

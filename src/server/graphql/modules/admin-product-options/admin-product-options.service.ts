@@ -1,5 +1,5 @@
 import { GraphQLError } from 'graphql'
-import type { PrismaClient } from '@prisma/client'
+import type { Prisma, PrismaClient } from '@prisma/client'
 
 import type {
   AdminProductOptionGroupGql,
@@ -33,7 +33,7 @@ function mapOptionValueToGql(value: {
   isDefault: boolean
   isActive: boolean
   sortOrder: number
-  configJson: any
+  configJson: Prisma.JsonValue | null
   createdAt: Date
   updatedAt: Date
 }): AdminProductOptionValueGql {
@@ -64,7 +64,7 @@ function mapOptionGroupToGql(group: {
   isRequired: boolean
   isActive: boolean
   sortOrder: number
-  configJson: any
+  configJson: Prisma.JsonValue | null
   createdAt: Date
   updatedAt: Date
   values: Array<{
@@ -77,7 +77,7 @@ function mapOptionGroupToGql(group: {
     isDefault: boolean
     isActive: boolean
     sortOrder: number
-    configJson: any
+    configJson: Prisma.JsonValue | null
     createdAt: Date
     updatedAt: Date
   }>
@@ -108,7 +108,7 @@ export async function getAdminProductOptionGroups(
   prisma: PrismaClient,
   input: GetAdminProductOptionGroupsInput,
 ): Promise<AdminProductOptionGroupsPayloadGql> {
-  const where: any = {}
+  const where: Prisma.ProductOptionGroupWhereInput = {}
 
   if (input.productId) {
     where.productId = input.productId
@@ -271,7 +271,7 @@ export async function updateAdminProductOptionGroup(
     }
   }
 
-  const updateData: any = {}
+  const updateData: Prisma.ProductOptionGroupUpdateInput = {}
   if (input.slug !== undefined) updateData.slug = input.slug
   if (input.name !== undefined) updateData.name = input.name
   if (input.description !== undefined) updateData.description = input.description
@@ -443,7 +443,7 @@ export async function updateAdminProductOptionValue(
     })
   }
 
-  const updateData: any = {}
+  const updateData: Prisma.ProductOptionValueUpdateInput = {}
   if (input.slug !== undefined) updateData.slug = input.slug
   if (input.label !== undefined) updateData.label = input.label
   if (input.description !== undefined) updateData.description = input.description

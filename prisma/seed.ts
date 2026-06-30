@@ -8,7 +8,7 @@ import { config } from 'dotenv'
 config({ path: '.env.local' })
 config({ path: '.env' })
 
-import { RoleSlug, UserStatus } from '@prisma/client'
+import { Prisma, RoleSlug, UserStatus } from '@prisma/client'
 
 import { buildAuth } from '../src/server/auth/build-auth'
 import { createPrismaClient } from '../src/server/db/create-prisma'
@@ -295,7 +295,7 @@ type OptionGroupData = {
   isRequired: boolean
   isActive: boolean
   sortOrder: number
-  configJson?: any
+  configJson?: Prisma.InputJsonValue
   values: {
     slug: string
     label: string
@@ -304,7 +304,7 @@ type OptionGroupData = {
     isDefault: boolean
     isActive: boolean
     sortOrder: number
-    configJson?: any
+    configJson?: Prisma.InputJsonValue
   }[]
 }
 
@@ -346,7 +346,7 @@ async function upsertOptionGroup(data: OptionGroupData) {
   }
 
   for (const valueData of data.values) {
-    let value = await prisma.productOptionValue.findFirst({
+    const value = await prisma.productOptionValue.findFirst({
       where: {
         optionGroupId: group.id,
         slug: valueData.slug,
