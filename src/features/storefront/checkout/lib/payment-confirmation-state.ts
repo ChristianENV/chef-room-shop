@@ -175,7 +175,6 @@ export function getPaymentConfirmationCopy(
  */
 export function getPaymentConfirmationActions(
   state: PaymentConfirmationUxState,
-  _options?: { canRetryPayment?: boolean },
 ): PaymentConfirmationActions {
   switch (state) {
     case 'loading':

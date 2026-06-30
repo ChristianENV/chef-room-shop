@@ -95,6 +95,27 @@ export type CatalogProductModel3dGql = {
   anchorsJson: unknown | null
 }
 
+export type CatalogProductOptionValueGql = {
+  id: string
+  slug: string
+  label: string
+  description: string | null
+  priceDeltaCents: number
+  isDefault: boolean
+  sortOrder: number
+}
+
+export type CatalogProductOptionGroupGql = {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  inputType: 'SINGLE_SELECT' | 'BOOLEAN'
+  isRequired: boolean
+  sortOrder: number
+  values: CatalogProductOptionValueGql[]
+}
+
 export type CatalogProductGql = {
   id: string
   slug: string
@@ -113,6 +134,7 @@ export type CatalogProductGql = {
   images: CatalogProductImageGql[]
   variants: CatalogProductVariantGql[]
   customizationRules: CatalogProductCustomizationRuleGql[]
+  optionGroups: CatalogProductOptionGroupGql[]
   model3d: CatalogProductModel3dGql | null
 }
 

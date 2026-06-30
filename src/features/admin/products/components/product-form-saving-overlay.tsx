@@ -21,12 +21,12 @@ export function ProductFormSavingOverlay({ stage }: ProductFormSavingOverlayProp
 
   return (
     <div
-      className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 rounded-lg bg-background/85 px-6 text-center backdrop-blur-sm"
+      className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 rounded-lg bg-background/92 px-6 text-center backdrop-blur-sm"
       role="status"
       aria-live="polite"
       data-testid="admin-product-form-saving-overlay"
     >
-      <Loader2 className="h-9 w-9 animate-spin text-accent" />
+      <Loader2 className="h-9 w-9 animate-spin text-primary" />
       <p className="font-sans text-base font-medium text-foreground">{PRODUCT_FORM_SAVING_TITLE}</p>
       <p className="max-w-sm font-serif text-sm text-muted-foreground">
         {PRODUCT_FORM_SAVING_DESCRIPTION}

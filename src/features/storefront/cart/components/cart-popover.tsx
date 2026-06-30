@@ -14,6 +14,7 @@ import { formatCurrencyMXN } from '@/src/lib/formatters'
 import type { CartPreview, CartPreviewItem } from '@/src/types/cart'
 import { useMyCartQuery } from '@/src/features/storefront/cart/api/use-my-cart-query'
 import { mapBffCartToCartPreview } from '@/src/features/storefront/cart/mappers/cart-ui.mapper'
+import { CartCommercialOptionsSummary } from '@/src/features/storefront/cart/components/cart-commercial-options-summary'
 import {
   formatCartItemCountLabel,
   getCartPreviewLineTotal,
@@ -67,6 +68,12 @@ function CartPopoverItem({ item }: { item: CartPreviewItem }) {
           <p className="mt-1 font-serif text-xs text-muted-foreground">
             Talla {item.size} · {item.colorName} · Cant. {item.quantity}
           </p>
+
+          {item.commercialOptionsSnapshot.length > 0 ? (
+            <div className="mt-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-2">
+              <CartCommercialOptionsSummary options={item.commercialOptionsSnapshot} compact />
+            </div>
+          ) : null}
 
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <span
@@ -173,7 +180,7 @@ function CartPopoverError({ onRetry }: { onRetry: () => void }) {
 
 function CartPopoverContent({ cart }: { cart: CartPreview }) {
   const hasItems = cart.items.length > 0
-  const partialTotal = cart.subtotal + cart.customizationTotal
+  const partialTotal = cart.subtotal + cart.customizationTotal + cart.optionTotal
 
   if (!hasItems) {
     return <CartPopoverEmpty />
@@ -198,6 +205,12 @@ function CartPopoverContent({ cart }: { cart: CartPreview }) {
           <div className="flex justify-between text-muted-foreground">
             <span>Personalización</span>
             <span>{formatCurrencyMXN(cart.customizationTotal)}</span>
+          </div>
+        )}
+        {cart.optionTotal > 0 && (
+          <div className="flex justify-between text-muted-foreground">
+            <span>Opciones</span>
+            <span>{formatCurrencyMXN(cart.optionTotal)}</span>
           </div>
         )}
         <div className="flex justify-between font-sans font-semibold text-foreground">

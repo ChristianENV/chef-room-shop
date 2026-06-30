@@ -133,19 +133,6 @@ async function assertAreaExists(prisma: GraphQLContext['prisma'], areaId: string
   }
 }
 
-async function assertOptionExists(
-  prisma: GraphQLContext['prisma'],
-  optionId: string,
-): Promise<void> {
-  const option = await prisma.customizationOption.findUnique({
-    where: { id: optionId },
-    select: { id: true },
-  })
-  if (!option) {
-    throw notFoundError('Opción de personalización')
-  }
-}
-
 async function loadRuleById(
   prisma: GraphQLContext['prisma'],
   id: string,

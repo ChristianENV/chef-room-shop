@@ -1,5 +1,3 @@
-import type { Prisma } from '@prisma/client'
-
 type PrismaClientLike = {
   product: {
     findFirst: (args: {

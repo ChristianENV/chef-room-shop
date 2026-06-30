@@ -72,12 +72,12 @@ export function ProductImageSortableCard({
         isDragging && 'z-10 opacity-80 shadow-lg ring-2 ring-primary/30',
       )}
     >
-      <div className="relative aspect-square bg-secondary/40">
+      <div className="relative aspect-square bg-muted/60">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={item.previewUrl}
           alt={item.alt || `Imagen ${index + 1}`}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-contain"
         />
 
         {index === 0 && (
@@ -97,8 +97,8 @@ export function ProductImageSortableCard({
         )}
 
         {item.status === 'uploaded' && (
-          <div className="absolute inset-0 flex items-center justify-center bg-emerald-500/10 opacity-0 transition-opacity group-hover:opacity-100">
-            <CheckCircle2 className="h-8 w-8 text-emerald-600" aria-hidden />
+          <div className="absolute inset-0 flex items-center justify-center bg-success/10 opacity-0 transition-opacity group-hover:opacity-100">
+            <CheckCircle2 className="h-8 w-8 text-success" aria-hidden />
           </div>
         )}
 

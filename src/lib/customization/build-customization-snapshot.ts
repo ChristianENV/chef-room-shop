@@ -194,7 +194,6 @@ export function buildCustomizationSnapshot(
   const config = parseRecord(configJson)
   const selection = extractSelectionFromConfigJson(configJson)
   const elements = selection.elements
-  const textElements = elements.filter((element) => element.type === 'text')
 
   const summaryFromConfig = Array.isArray(config.summary)
     ? config.summary.filter((line): line is string => typeof line === 'string')

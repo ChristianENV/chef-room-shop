@@ -4,6 +4,7 @@ import {
   buildCustomizationSnapshot as buildSharedCustomizationSnapshot,
   enrichProductSnapshotWithConfig,
 } from '@/src/lib/customization/build-customization-snapshot'
+import { parseCommercialOptionsSnapshot } from '@/src/server/product-options'
 
 import { mapDesignToGql } from '../account/account.mappers'
 import { mapProductToGql } from '../catalog/catalog.mappers'
@@ -165,6 +166,7 @@ function resolveCustomizationSnapshot(item: CartItemWithRelations): CartCustomiz
 export function computeCartTotals(items: CartItemWithRelations[]): {
   subtotalCents: number
   customizationTotalCents: number
+  optionTotalCents: number
   shippingCostCents: number
   discountTotalCents: number
   totalCents: number
@@ -172,22 +174,29 @@ export function computeCartTotals(items: CartItemWithRelations[]): {
 } {
   let subtotalCents = 0
   let customizationTotalCents = 0
+  let optionTotalCents = 0
   let totalItems = 0
 
   for (const item of items) {
     subtotalCents += item.unitPriceCents * item.quantity
     customizationTotalCents += item.customizationPriceCents * item.quantity
+    optionTotalCents += item.optionPriceCents * item.quantity
     totalItems += item.quantity
   }
 
   const shippingCostCents = 0
   const discountTotalCents = 0
   const totalCents =
-    subtotalCents + customizationTotalCents + shippingCostCents - discountTotalCents
+    subtotalCents +
+    customizationTotalCents +
+    optionTotalCents +
+    shippingCostCents -
+    discountTotalCents
 
   return {
     subtotalCents,
     customizationTotalCents,
+    optionTotalCents,
     shippingCostCents,
     discountTotalCents,
     totalCents,
@@ -196,10 +205,49 @@ export function computeCartTotals(items: CartItemWithRelations[]): {
 }
 
 /**
+ * Computes checkout order totals from cart line items (server-side only).
+ */
+export function computeCheckoutTotalsFromCartItems(
+  items: CartItemWithRelations[],
+  shippingCents = 0,
+): {
+  subtotalCents: number
+  customizationTotalCents: number
+  optionTotalCents: number
+  shippingCents: number
+  discountCents: number
+  taxCents: number
+  totalCents: number
+} {
+  const cartTotals = computeCartTotals(items)
+  const discountCents = 0
+  const taxCents = 0
+  const totalCents =
+    cartTotals.subtotalCents +
+    cartTotals.customizationTotalCents +
+    cartTotals.optionTotalCents +
+    shippingCents +
+    taxCents -
+    discountCents
+
+  return {
+    subtotalCents: cartTotals.subtotalCents,
+    customizationTotalCents: cartTotals.customizationTotalCents,
+    optionTotalCents: cartTotals.optionTotalCents,
+    shippingCents,
+    discountCents,
+    taxCents,
+    totalCents,
+  }
+}
+
+/**
  * Maps a cart line item with relations to the GraphQL cart item shape.
  */
 export function mapCartItemToGql(item: CartItemWithRelations): CartItemGql {
-  const totalPriceCents = (item.unitPriceCents + item.customizationPriceCents) * item.quantity
+  const totalPriceCents =
+    (item.unitPriceCents + item.customizationPriceCents + item.optionPriceCents) * item.quantity
+  const commercialOptionsSnapshot = parseCommercialOptionsSnapshot(item.selectedOptionsJson)
 
   return {
     id: item.id,
@@ -209,11 +257,13 @@ export function mapCartItemToGql(item: CartItemWithRelations): CartItemGql {
     quantity: item.quantity,
     unitPriceCents: item.unitPriceCents,
     customizationPriceCents: item.customizationPriceCents,
+    optionPriceCents: item.optionPriceCents,
     totalPriceCents,
     product: mapProductToGql(item.product),
     design: item.design ? mapDesignToGql(item.design, null) : null,
     productSnapshot: resolveProductSnapshot(item),
     customizationSnapshot: resolveCustomizationSnapshot(item),
+    commercialOptionsSnapshot,
     createdAt: item.createdAt.toISOString(),
     updatedAt: item.updatedAt.toISOString(),
   }

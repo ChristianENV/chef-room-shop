@@ -279,3 +279,11 @@ export const ProductModelAssetStatus = {
 } as const
 
 export type ProductModelAssetStatus = (typeof ProductModelAssetStatus)[keyof typeof ProductModelAssetStatus]
+
+
+export const ProductOptionInputType = {
+  SINGLE_SELECT: 'SINGLE_SELECT',
+  BOOLEAN: 'BOOLEAN'
+} as const
+
+export type ProductOptionInputType = (typeof ProductOptionInputType)[keyof typeof ProductOptionInputType]

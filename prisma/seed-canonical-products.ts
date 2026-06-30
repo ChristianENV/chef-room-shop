@@ -1,4 +1,4 @@
-import { ProductStatus, type Prisma, type PrismaClient } from '@prisma/client'
+import type { Prisma, type PrismaClient } from '@prisma/client'
 
 import { getOrThrow } from './seed-helpers'
 import { CANONICAL_PRODUCTS, type CanonicalProductSeed } from './seed-canonical-products.data'

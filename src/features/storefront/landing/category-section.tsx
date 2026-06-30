@@ -94,7 +94,7 @@ function CategoryCard({ cat }: { cat: LandingCategory }) {
           'relative w-full shrink-0 overflow-hidden',
           isFeatured
             ? 'aspect-[4/5] min-h-[280px] sm:min-h-[320px] lg:min-h-[360px] lg:flex-1'
-            : 'aspect-[16/9] min-h-[200px] lg:h-[280px] lg:min-h-[420px] lg:aspect-auto',
+            : 'aspect-[3/4]',
         )}
       >
         {cat.imageSrc ? (
@@ -154,7 +154,15 @@ export function CategorySection({ className }: CategorySectionProps) {
   const { data } = useCatalogFiltersQuery()
   const categories = buildLandingCategories(getNavProductTypes(data?.productTypes ?? []))
   const [featured, ...rest] = categories
-  const useEditorialLayout = categories.length >= 3 && featured != null
+  // Editorial layout (1 large left + 2 stacked right) only works cleanly with exactly 3 categories.
+  const useEditorialLayout = categories.length === 3 && featured != null
+  // For 4+ categories, pick a column count that avoids orphaned cards.
+  const simpleGridCols =
+    categories.length <= 2
+      ? 'sm:grid-cols-2'
+      : categories.length === 4
+        ? 'sm:grid-cols-2 lg:grid-cols-2'
+        : 'sm:grid-cols-2 lg:grid-cols-3'
 
   return (
     <section className={cn('relative bg-muted/40 py-24 md:py-32', className)}>
@@ -188,7 +196,7 @@ export function CategorySection({ className }: CategorySectionProps) {
             ))}
           </LandingStagger>
         ) : (
-          <LandingStagger className="mt-16 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+          <LandingStagger className={cn('mt-16 grid grid-cols-1 gap-5 sm:gap-6', simpleGridCols)}>
             {categories.map((cat) => (
               <LandingStaggerItem key={cat.id}>
                 <CategoryCard cat={{ ...cat, featured: false }} />

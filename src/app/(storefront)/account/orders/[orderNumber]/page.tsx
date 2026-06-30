@@ -15,8 +15,8 @@ import {
   OrderDetailPageContent,
   OrderDetailSkeleton,
 } from '@/src/features/storefront/account/order-detail'
+import { normalizeAccountOrder } from '@/src/features/storefront/account/order-detail/order-detail.utils'
 import { mapAccountUserToProfile } from '@/src/features/storefront/account/mappers/account-ui.mapper'
-import type { AccountOrder } from '@/src/features/storefront/account/types'
 import { AccountLayout } from '@/src/features/storefront/layout/account-layout'
 import { useOrderByCheckoutTokenQuery } from '@/src/features/storefront/checkout'
 import { PostCheckoutOrderModal } from '@/src/features/storefront/orders/components/post-checkout-order-modal'
@@ -109,7 +109,7 @@ function AccountOrderDetailPageContent() {
     }
 
     const tokenAccess = tokenOrderQuery.data
-    const order = normalizeOrder(tokenAccess.order)
+    const order = normalizeAccountOrder(tokenAccess.order)
     const isAuthenticatedOwner =
       postCheckoutClaim.orderLinkedToAccount ||
       (isAuthenticated &&
@@ -186,7 +186,7 @@ function AccountOrderDetailPageContent() {
     )
   }
 
-  const normalizedOrder = normalizeOrder(order)
+  const normalizedOrder = normalizeAccountOrder(order)
 
   return (
     <AccountLayout
@@ -224,16 +224,6 @@ function AccountOrderDetailPageContent() {
       </div>
     </AccountLayout>
   )
-}
-
-function normalizeOrder(order: AccountOrder): AccountOrder {
-  return {
-    ...order,
-    payments: order.payments ?? [],
-    shipments: order.shipments ?? [],
-    events: order.events ?? [],
-    subtotalCents: order.subtotalCents ?? order.totalCents,
-  }
 }
 
 export default function AccountOrderDetailPage() {

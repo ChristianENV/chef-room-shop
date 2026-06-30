@@ -1,3 +1,5 @@
+import type { CartCommercialOptionSnapshot } from '@/src/features/storefront/cart/types/cart-bff.types'
+
 export type CheckoutAddressInput = {
   firstName: string
   lastName: string
@@ -109,6 +111,8 @@ export type PublicOrderItem = {
   quantity: number
   totalPriceCents: number
   customizationPriceCents: number
+  optionPriceCents?: number
+  commercialOptionsSnapshot?: CartCommercialOptionSnapshot[]
   productSnapshotJson: unknown
   designSnapshotJson: unknown | null
 }

@@ -33,7 +33,7 @@ export function CatalogProductCard({
       )}
     >
       {/* Image Container */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-secondary">
+      <div className="relative aspect-[4/5] overflow-hidden bg-muted">
         <ProductImageDisplay
           images={product.images}
           alt={product.name}
@@ -164,8 +164,8 @@ interface CatalogBadgeProps {
 }
 
 const badgeStyles: Record<ProductBadgeType, string> = {
-  nuevo: 'bg-success text-white',
-  oferta: 'bg-destructive text-white',
+  nuevo: 'bg-success text-success-foreground',
+  oferta: 'bg-destructive text-destructive-foreground',
   agotado: 'bg-muted text-muted-foreground',
   personalizable: 'bg-primary text-primary-foreground',
   popular: 'bg-primary text-primary-foreground',

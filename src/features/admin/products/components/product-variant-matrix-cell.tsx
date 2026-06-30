@@ -78,12 +78,12 @@ function MatrixCellShell({
     <div
       className={cn(
         'relative flex min-h-[108px] min-w-[92px] flex-col items-stretch gap-1.5 rounded-md border p-2 text-center transition-colors',
-        state === 'missing' && 'border-dashed border-border bg-muted/20',
-        state === 'active' && 'border-primary/40 bg-primary/5 shadow-sm',
-        state === 'inactive' && 'border-border bg-muted/40',
-        state === 'invalid' && 'border-destructive/40 bg-destructive/5',
-        !disabled && 'hover:border-primary/30 hover:bg-accent/30',
-        selected && 'ring-2 ring-primary ring-offset-1',
+        state === 'missing' && 'border-dashed border-border bg-muted/30',
+        state === 'active' && 'border-primary/50 bg-primary/10 shadow-sm',
+        state === 'inactive' && 'border-border bg-muted/50',
+        state === 'invalid' && 'border-destructive/50 bg-destructive/10',
+        !disabled && 'hover:border-primary/40 hover:bg-accent/40',
+        selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
       )}
       data-testid="admin-product-variant-matrix-cell"
       data-state={state}
@@ -132,8 +132,8 @@ export function ProductVariantMatrixCell({
   const metrics =
     variant && state !== 'missing' ? (
       <div className="space-y-0.5">
-        <p className="font-mono text-[10px] text-muted-foreground">{variant.stockQty} u.</p>
-        <p className="font-sans text-[11px] font-medium">${variant.pricePesos}</p>
+        <p className="font-mono text-[10px] text-foreground/70">{variant.stockQty} u.</p>
+        <p className="font-sans text-[11px] font-semibold text-foreground">${variant.pricePesos}</p>
       </div>
     ) : null
 
@@ -248,7 +248,7 @@ export function ProductVariantMatrixCell({
         type="button"
         variant="ghost"
         size="sm"
-        className="h-7 w-full font-sans text-[11px] text-muted-foreground"
+        className="h-7 w-full font-sans text-[11px] text-muted-foreground hover:text-foreground disabled:text-muted-foreground/80"
         disabled={disabled}
         onClick={() => onToggle(false)}
         data-testid="admin-product-variant-cell-deactivate"

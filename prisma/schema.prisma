@@ -450,7 +450,8 @@ model ProductType {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  products Product[]
+  products      Product[]
+  optionGroups  ProductOptionGroup[] @relation("ProductTypeOptions")
 
   @@map("product_types")
 }
@@ -476,6 +477,7 @@ model Product {
   images               ProductImage[]            @relation("ProductImages")
   seoImage             ProductImage?             @relation("ProductSeoImage", fields: [seoImageId], references: [id], onDelete: SetNull)
   variants             ProductVariant[]
+  optionGroups         ProductOptionGroup[]      @relation("ProductOptions")
   customizationRules   ProductCustomizationRule[]
   cartItems            CartItem[]
   modelAssets          ProductModelAsset[]
@@ -596,6 +598,63 @@ model ProductVariant {
   @@index([productId])
   @@index([deletedAt])
   @@map("product_variants")
+}
+
+// ---------------------------------------------------------------------------
+// Product Options (commercial product configuration)
+// ---------------------------------------------------------------------------
+
+enum ProductOptionInputType {
+  SINGLE_SELECT
+  BOOLEAN
+}
+
+model ProductOptionGroup {
+  id            String                  @id @default(uuid()) @db.Uuid
+  productId     String?                 @db.Uuid
+  productTypeId String?                 @db.Uuid
+  slug          String
+  name          String
+  description   String?
+  inputType     ProductOptionInputType
+  isRequired    Boolean                 @default(false)
+  isActive      Boolean                 @default(true)
+  sortOrder     Int                     @default(0)
+  configJson    Json?
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  product     Product?             @relation("ProductOptions", fields: [productId], references: [id], onDelete: Cascade)
+  productType ProductType?         @relation("ProductTypeOptions", fields: [productTypeId], references: [id], onDelete: Cascade)
+  values      ProductOptionValue[]
+
+  @@index([productId])
+  @@index([productTypeId])
+  @@index([slug])
+  @@index([isActive])
+  @@map("product_option_groups")
+}
+
+model ProductOptionValue {
+  id              String   @id @default(uuid()) @db.Uuid
+  optionGroupId   String   @db.Uuid
+  slug            String
+  label           String
+  description     String?
+  priceDeltaCents Int      @default(0)
+  isDefault       Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  configJson      Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  optionGroup ProductOptionGroup @relation(fields: [optionGroupId], references: [id], onDelete: Cascade)
+
+  @@index([optionGroupId])
+  @@index([slug])
+  @@index([isActive])
+  @@map("product_option_values")
 }
 
 // ---------------------------------------------------------------------------
@@ -740,7 +799,9 @@ model CartItem {
   quantity                Int      @default(1)
   unitPriceCents          Int
   customizationPriceCents Int      @default(0)
+  optionPriceCents        Int      @default(0)
   configSnapshotJson      Json?
+  selectedOptionsJson     Json?
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 
@@ -863,17 +924,19 @@ model OrderClaimTransferRequest {
 }
 
 model OrderItem {
-  id                 String   @id @default(uuid()) @db.Uuid
-  orderId            String   @db.Uuid
-  designId           String?  @db.Uuid
-  quantity           Int
-  unitPriceCents     Int
-  customizationPriceCents Int @default(0)
-  lineTotalCents     Int
-  productSnapshotJson Json
-  designSnapshotJson  Json?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                      String   @id @default(uuid()) @db.Uuid
+  orderId                 String   @db.Uuid
+  designId                String?  @db.Uuid
+  quantity                Int
+  unitPriceCents          Int
+  customizationPriceCents Int      @default(0)
+  optionPriceCents        Int      @default(0)
+  lineTotalCents          Int
+  productSnapshotJson     Json
+  designSnapshotJson      Json?
+  selectedOptionsJson     Json?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 
   order  Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   design Design? @relation(fields: [designId], references: [id], onDelete: SetNull)

@@ -8,7 +8,6 @@ import {
   buildProductModelObjectKey,
   buildPublicR2Url,
   createR2PresignedPutUrl,
-  MAX_UPLOAD_BYTES,
   PRESIGNED_PUT_TTL_SECONDS,
   r2DeleteObject,
   r2HeadObject,

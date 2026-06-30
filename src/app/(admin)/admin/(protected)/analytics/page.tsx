@@ -24,7 +24,6 @@ import {
 import {
   Brush,
   Download,
-  Eye,
   MousePointerClick,
   Percent,
   ShoppingCart,

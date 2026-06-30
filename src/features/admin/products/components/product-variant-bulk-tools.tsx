@@ -145,7 +145,7 @@ export function ProductVariantBulkTools({
 
   const scopeSelect = (
     <div className="space-y-1">
-      <Label className="font-sans text-xs">{VARIANT_BULK_APPLY_TO_LABEL}</Label>
+      <Label className="font-sans text-xs text-foreground">{VARIANT_BULK_APPLY_TO_LABEL}</Label>
       <Select
         value={scope}
         onValueChange={(value) => setScope(value as BulkApplyScope)}
@@ -168,7 +168,7 @@ export function ProductVariantBulkTools({
   const colorSelect =
     scope === 'color' ? (
       <div className="space-y-1">
-        <Label className="font-sans text-xs">{VARIANT_BULK_COLOR_LABEL}</Label>
+        <Label className="font-sans text-xs text-foreground">{VARIANT_BULK_COLOR_LABEL}</Label>
         <Select value={targetColorId} onValueChange={setTargetColorId} disabled={disabled}>
           <SelectTrigger className="h-9 font-sans" data-testid="admin-product-bulk-color">
             <SelectValue placeholder={VARIANT_BULK_COLOR_LABEL} />
@@ -187,7 +187,7 @@ export function ProductVariantBulkTools({
   const sizeSelect =
     scope === 'size' ? (
       <div className="space-y-1">
-        <Label className="font-sans text-xs">{VARIANT_BULK_SIZE_LABEL}</Label>
+        <Label className="font-sans text-xs text-foreground">{VARIANT_BULK_SIZE_LABEL}</Label>
         <Select value={targetSizeId} onValueChange={setTargetSizeId} disabled={disabled}>
           <SelectTrigger className="h-9 font-sans" data-testid="admin-product-bulk-size">
             <SelectValue placeholder={VARIANT_BULK_SIZE_LABEL} />
@@ -235,7 +235,7 @@ export function ProductVariantBulkTools({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-1">
-          <Label htmlFor="bulk-stock-qty" className="font-sans text-xs">
+          <Label htmlFor="bulk-stock-qty" className="font-sans text-xs text-foreground">
             {VARIANT_BULK_QUANTITY_LABEL}
           </Label>
           <Input
@@ -257,7 +257,7 @@ export function ProductVariantBulkTools({
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <label className="flex items-center gap-2 font-serif text-xs text-muted-foreground">
+        <label className="flex items-center gap-2 font-serif text-xs text-foreground/80">
           <Checkbox
             checked={createMissing}
             disabled={disabled}
@@ -281,7 +281,7 @@ export function ProductVariantBulkTools({
         <p className="font-sans text-sm font-medium text-foreground">{VARIANT_BULK_PRICE_TITLE}</p>
         <div className="flex flex-wrap items-end gap-3">
           <div className="space-y-1">
-            <Label htmlFor="bulk-price-value" className="font-sans text-xs">
+            <Label htmlFor="bulk-price-value" className="font-sans text-xs text-foreground">
               {VARIANT_BULK_PRICE_TITLE}
             </Label>
             <Input

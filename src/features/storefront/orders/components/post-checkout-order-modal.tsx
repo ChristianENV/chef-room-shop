@@ -149,6 +149,8 @@ export function PostCheckoutOrderModal({
   claimMessage = null,
   orderLinkedToAccount = false,
 }: PostCheckoutOrderModalProps) {
+  void isAuthenticatedOwner
+  void viewerEmailMatchesOrder
   const router = useRouter()
   const [startedAt] = useState(() => Date.now())
   const pollAttemptsRef = useRef(0)
@@ -189,9 +191,7 @@ export function PostCheckoutOrderModal({
     elapsedMs,
   })
 
-  const confirmationActions = getPaymentConfirmationActions(confirmationState, {
-    canRetryPayment: localPaymentActions.canRetryPayment,
-  })
+  const confirmationActions = getPaymentConfirmationActions(confirmationState)
 
   const modalCopy = getModalCopy(confirmationState)
   const stateTestId = getStateTestId(confirmationState)

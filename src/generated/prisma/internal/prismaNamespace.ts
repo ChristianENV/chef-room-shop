@@ -402,6 +402,8 @@ export const ModelName = {
   Color: 'Color',
   Size: 'Size',
   ProductVariant: 'ProductVariant',
+  ProductOptionGroup: 'ProductOptionGroup',
+  ProductOptionValue: 'ProductOptionValue',
   CustomizationArea: 'CustomizationArea',
   CustomizationOption: 'CustomizationOption',
   ProductCustomizationRule: 'ProductCustomizationRule',
@@ -442,7 +444,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "role" | "permission" | "userRole" | "rolePermission" | "session" | "account" | "verification" | "loginAttempt" | "guestSession" | "address" | "productType" | "product" | "productImage" | "productModelAsset" | "color" | "size" | "productVariant" | "customizationArea" | "customizationOption" | "productCustomizationRule" | "design" | "designAsset" | "designEvent" | "cart" | "cartItem" | "order" | "orderClaimToken" | "checkoutReturnToken" | "orderClaimTransferRequest" | "orderItem" | "orderEvent" | "payment" | "paymentAttempt" | "conektaWebhookEvent" | "shippingQuote" | "shippingRate" | "shippingWebhookEvent" | "shipment" | "shipmentEvent" | "notification" | "emailMessage" | "auditLog"
+    modelProps: "user" | "role" | "permission" | "userRole" | "rolePermission" | "session" | "account" | "verification" | "loginAttempt" | "guestSession" | "address" | "productType" | "product" | "productImage" | "productModelAsset" | "color" | "size" | "productVariant" | "productOptionGroup" | "productOptionValue" | "customizationArea" | "customizationOption" | "productCustomizationRule" | "design" | "designAsset" | "designEvent" | "cart" | "cartItem" | "order" | "orderClaimToken" | "checkoutReturnToken" | "orderClaimTransferRequest" | "orderItem" | "orderEvent" | "payment" | "paymentAttempt" | "conektaWebhookEvent" | "shippingQuote" | "shippingRate" | "shippingWebhookEvent" | "shipment" | "shipmentEvent" | "notification" | "emailMessage" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1775,6 +1777,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ProductVariantCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ProductVariantCountAggregateOutputType> | number
+        }
+      }
+    }
+    ProductOptionGroup: {
+      payload: Prisma.$ProductOptionGroupPayload<ExtArgs>
+      fields: Prisma.ProductOptionGroupFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ProductOptionGroupFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionGroupPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ProductOptionGroupFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionGroupPayload>
+        }
+        findFirst: {
+          args: Prisma.ProductOptionGroupFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionGroupPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ProductOptionGroupFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionGroupPayload>
+        }
+        findMany: {
+          args: Prisma.ProductOptionGroupFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionGroupPayload>[]
+        }
+        create: {
+          args: Prisma.ProductOptionGroupCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionGroupPayload>
+        }
+        createMany: {
+          args: Prisma.ProductOptionGroupCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ProductOptionGroupCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionGroupPayload>[]
+        }
+        delete: {
+          args: Prisma.ProductOptionGroupDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionGroupPayload>
+        }
+        update: {
+          args: Prisma.ProductOptionGroupUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionGroupPayload>
+        }
+        deleteMany: {
+          args: Prisma.ProductOptionGroupDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ProductOptionGroupUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ProductOptionGroupUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionGroupPayload>[]
+        }
+        upsert: {
+          args: Prisma.ProductOptionGroupUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionGroupPayload>
+        }
+        aggregate: {
+          args: Prisma.ProductOptionGroupAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProductOptionGroup>
+        }
+        groupBy: {
+          args: Prisma.ProductOptionGroupGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProductOptionGroupGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ProductOptionGroupCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProductOptionGroupCountAggregateOutputType> | number
+        }
+      }
+    }
+    ProductOptionValue: {
+      payload: Prisma.$ProductOptionValuePayload<ExtArgs>
+      fields: Prisma.ProductOptionValueFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ProductOptionValueFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionValuePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ProductOptionValueFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionValuePayload>
+        }
+        findFirst: {
+          args: Prisma.ProductOptionValueFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionValuePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ProductOptionValueFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionValuePayload>
+        }
+        findMany: {
+          args: Prisma.ProductOptionValueFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionValuePayload>[]
+        }
+        create: {
+          args: Prisma.ProductOptionValueCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionValuePayload>
+        }
+        createMany: {
+          args: Prisma.ProductOptionValueCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ProductOptionValueCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionValuePayload>[]
+        }
+        delete: {
+          args: Prisma.ProductOptionValueDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionValuePayload>
+        }
+        update: {
+          args: Prisma.ProductOptionValueUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionValuePayload>
+        }
+        deleteMany: {
+          args: Prisma.ProductOptionValueDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ProductOptionValueUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ProductOptionValueUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionValuePayload>[]
+        }
+        upsert: {
+          args: Prisma.ProductOptionValueUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductOptionValuePayload>
+        }
+        aggregate: {
+          args: Prisma.ProductOptionValueAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProductOptionValue>
+        }
+        groupBy: {
+          args: Prisma.ProductOptionValueGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProductOptionValueGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ProductOptionValueCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProductOptionValueCountAggregateOutputType> | number
         }
       }
     }
@@ -3953,6 +4103,43 @@ export const ProductVariantScalarFieldEnum = {
 export type ProductVariantScalarFieldEnum = (typeof ProductVariantScalarFieldEnum)[keyof typeof ProductVariantScalarFieldEnum]
 
 
+export const ProductOptionGroupScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  productTypeId: 'productTypeId',
+  slug: 'slug',
+  name: 'name',
+  description: 'description',
+  inputType: 'inputType',
+  isRequired: 'isRequired',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  configJson: 'configJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductOptionGroupScalarFieldEnum = (typeof ProductOptionGroupScalarFieldEnum)[keyof typeof ProductOptionGroupScalarFieldEnum]
+
+
+export const ProductOptionValueScalarFieldEnum = {
+  id: 'id',
+  optionGroupId: 'optionGroupId',
+  slug: 'slug',
+  label: 'label',
+  description: 'description',
+  priceDeltaCents: 'priceDeltaCents',
+  isDefault: 'isDefault',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  configJson: 'configJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductOptionValueScalarFieldEnum = (typeof ProductOptionValueScalarFieldEnum)[keyof typeof ProductOptionValueScalarFieldEnum]
+
+
 export const CustomizationAreaScalarFieldEnum = {
   id: 'id',
   slug: 'slug',
@@ -4058,7 +4245,9 @@ export const CartItemScalarFieldEnum = {
   quantity: 'quantity',
   unitPriceCents: 'unitPriceCents',
   customizationPriceCents: 'customizationPriceCents',
+  optionPriceCents: 'optionPriceCents',
   configSnapshotJson: 'configSnapshotJson',
+  selectedOptionsJson: 'selectedOptionsJson',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -4144,9 +4333,11 @@ export const OrderItemScalarFieldEnum = {
   quantity: 'quantity',
   unitPriceCents: 'unitPriceCents',
   customizationPriceCents: 'customizationPriceCents',
+  optionPriceCents: 'optionPriceCents',
   lineTotalCents: 'lineTotalCents',
   productSnapshotJson: 'productSnapshotJson',
   designSnapshotJson: 'designSnapshotJson',
+  selectedOptionsJson: 'selectedOptionsJson',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -4575,6 +4766,20 @@ export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
 
 
 /**
+ * Reference to a field of type 'ProductOptionInputType'
+ */
+export type EnumProductOptionInputTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductOptionInputType'>
+    
+
+
+/**
+ * Reference to a field of type 'ProductOptionInputType[]'
+ */
+export type ListEnumProductOptionInputTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductOptionInputType[]'>
+    
+
+
+/**
  * Reference to a field of type 'DesignStatus'
  */
 export type EnumDesignStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DesignStatus'>
@@ -4953,6 +5158,8 @@ export type GlobalOmitConfig = {
   color?: Prisma.ColorOmit
   size?: Prisma.SizeOmit
   productVariant?: Prisma.ProductVariantOmit
+  productOptionGroup?: Prisma.ProductOptionGroupOmit
+  productOptionValue?: Prisma.ProductOptionValueOmit
   customizationArea?: Prisma.CustomizationAreaOmit
   customizationOption?: Prisma.CustomizationOptionOmit
   productCustomizationRule?: Prisma.ProductCustomizationRuleOmit

@@ -76,6 +76,24 @@ Interfaz operativa conectada al **Admin Products BFF v1**. Copy en español; pre
 
 **Editar:** upload inmediato; reorder con drag o flechas; primera imagen = principal.
 
+### Miniaturas de imágenes (Admin)
+
+- **`object-contain`** en `product-image-sortable-card.tsx` y `product-seo-image-picker.tsx` — la imagen nunca se recorta.
+- Fondo: `bg-muted` (adapta a modo oscuro; sin fondos blancos fijos).
+- El componente `ProductImageDisplay` en `components/shared/product-image.tsx` usa `object-contain` como comportamiento por defecto para todas las vistas que no pasen `imgClassName` explícito.
+- En móvil el grid `grid-cols-2 sm:grid-cols-3 lg:grid-cols-4` respeta el ancho del contenedor.
+
+### Contraste y tema (formulario de producto)
+
+- **Labels:** `text-foreground` en campos del formulario, bulk tools y matriz de variantes.
+- **Matriz de variantes:** estados `active` / `missing` / `inactive` / `invalid` usan tokens (`bg-primary/10`, `bg-muted/50`, `bg-destructive/10`) con bordes más visibles; selección con `ring-offset-background`.
+- **Color picker:** tarjeta seleccionada con `ring-2 ring-primary ring-offset-2 ring-offset-background`.
+- **Overlay de guardado:** `bg-background/92` + spinner `text-primary` (legible en claro y oscuro).
+- **Modelo 3D:** alertas con `warning`/`success` tokens; dropzone deshabilitada sin `opacity-60` global.
+- **SEO picker:** badge “Principal” con `bg-primary/90 text-primary-foreground` (sin `bg-black/60`).
+
+Ver reglas generales en `docs/design-system.md`.
+
 ## Hooks usados
 
 - `useAdminProductsQuery`

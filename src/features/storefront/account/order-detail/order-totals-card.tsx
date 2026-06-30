@@ -10,6 +10,10 @@ type OrderTotalsCardProps = {
  */
 export function OrderTotalsCard({ order }: OrderTotalsCardProps) {
   const customizationCents = order.customizationTotalCents ?? 0
+  const optionTotalCents = order.items.reduce(
+    (sum, item) => sum + (item.optionPriceCents ?? 0) * item.quantity,
+    0,
+  )
   const shippingCents = order.shippingCostCents ?? 0
   const discountCents = order.discountTotalCents ?? 0
   const taxCents = order.taxTotalCents ?? 0
@@ -17,6 +21,7 @@ export function OrderTotalsCard({ order }: OrderTotalsCardProps) {
   const rows = [
     { label: 'Subtotal', cents: order.subtotalCents },
     ...(customizationCents > 0 ? [{ label: 'Personalización', cents: customizationCents }] : []),
+    ...(optionTotalCents > 0 ? [{ label: 'Opciones', cents: optionTotalCents }] : []),
     { label: 'Envío', cents: shippingCents },
     ...(discountCents > 0 ? [{ label: 'Descuento', cents: -discountCents }] : []),
     ...(taxCents > 0 ? [{ label: 'Impuestos', cents: taxCents }] : []),

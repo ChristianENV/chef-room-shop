@@ -30,6 +30,7 @@ export type OrderItemAvgAggregateOutputType = {
   quantity: number | null
   unitPriceCents: number | null
   customizationPriceCents: number | null
+  optionPriceCents: number | null
   lineTotalCents: number | null
 }
 
@@ -37,6 +38,7 @@ export type OrderItemSumAggregateOutputType = {
   quantity: number | null
   unitPriceCents: number | null
   customizationPriceCents: number | null
+  optionPriceCents: number | null
   lineTotalCents: number | null
 }
 
@@ -47,6 +49,7 @@ export type OrderItemMinAggregateOutputType = {
   quantity: number | null
   unitPriceCents: number | null
   customizationPriceCents: number | null
+  optionPriceCents: number | null
   lineTotalCents: number | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -59,6 +62,7 @@ export type OrderItemMaxAggregateOutputType = {
   quantity: number | null
   unitPriceCents: number | null
   customizationPriceCents: number | null
+  optionPriceCents: number | null
   lineTotalCents: number | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -71,9 +75,11 @@ export type OrderItemCountAggregateOutputType = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents: number
+  optionPriceCents: number
   lineTotalCents: number
   productSnapshotJson: number
   designSnapshotJson: number
+  selectedOptionsJson: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -84,6 +90,7 @@ export type OrderItemAvgAggregateInputType = {
   quantity?: true
   unitPriceCents?: true
   customizationPriceCents?: true
+  optionPriceCents?: true
   lineTotalCents?: true
 }
 
@@ -91,6 +98,7 @@ export type OrderItemSumAggregateInputType = {
   quantity?: true
   unitPriceCents?: true
   customizationPriceCents?: true
+  optionPriceCents?: true
   lineTotalCents?: true
 }
 
@@ -101,6 +109,7 @@ export type OrderItemMinAggregateInputType = {
   quantity?: true
   unitPriceCents?: true
   customizationPriceCents?: true
+  optionPriceCents?: true
   lineTotalCents?: true
   createdAt?: true
   updatedAt?: true
@@ -113,6 +122,7 @@ export type OrderItemMaxAggregateInputType = {
   quantity?: true
   unitPriceCents?: true
   customizationPriceCents?: true
+  optionPriceCents?: true
   lineTotalCents?: true
   createdAt?: true
   updatedAt?: true
@@ -125,9 +135,11 @@ export type OrderItemCountAggregateInputType = {
   quantity?: true
   unitPriceCents?: true
   customizationPriceCents?: true
+  optionPriceCents?: true
   lineTotalCents?: true
   productSnapshotJson?: true
   designSnapshotJson?: true
+  selectedOptionsJson?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -226,9 +238,11 @@ export type OrderItemGroupByOutputType = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents: number
+  optionPriceCents: number
   lineTotalCents: number
   productSnapshotJson: runtime.JsonValue
   designSnapshotJson: runtime.JsonValue | null
+  selectedOptionsJson: runtime.JsonValue | null
   createdAt: Date
   updatedAt: Date
   _count: OrderItemCountAggregateOutputType | null
@@ -263,9 +277,11 @@ export type OrderItemWhereInput = {
   quantity?: Prisma.IntFilter<"OrderItem"> | number
   unitPriceCents?: Prisma.IntFilter<"OrderItem"> | number
   customizationPriceCents?: Prisma.IntFilter<"OrderItem"> | number
+  optionPriceCents?: Prisma.IntFilter<"OrderItem"> | number
   lineTotalCents?: Prisma.IntFilter<"OrderItem"> | number
   productSnapshotJson?: Prisma.JsonFilter<"OrderItem">
   designSnapshotJson?: Prisma.JsonNullableFilter<"OrderItem">
+  selectedOptionsJson?: Prisma.JsonNullableFilter<"OrderItem">
   createdAt?: Prisma.DateTimeFilter<"OrderItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"OrderItem"> | Date | string
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
@@ -279,9 +295,11 @@ export type OrderItemOrderByWithRelationInput = {
   quantity?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
   customizationPriceCents?: Prisma.SortOrder
+  optionPriceCents?: Prisma.SortOrder
   lineTotalCents?: Prisma.SortOrder
   productSnapshotJson?: Prisma.SortOrder
   designSnapshotJson?: Prisma.SortOrderInput | Prisma.SortOrder
+  selectedOptionsJson?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   order?: Prisma.OrderOrderByWithRelationInput
@@ -298,9 +316,11 @@ export type OrderItemWhereUniqueInput = Prisma.AtLeast<{
   quantity?: Prisma.IntFilter<"OrderItem"> | number
   unitPriceCents?: Prisma.IntFilter<"OrderItem"> | number
   customizationPriceCents?: Prisma.IntFilter<"OrderItem"> | number
+  optionPriceCents?: Prisma.IntFilter<"OrderItem"> | number
   lineTotalCents?: Prisma.IntFilter<"OrderItem"> | number
   productSnapshotJson?: Prisma.JsonFilter<"OrderItem">
   designSnapshotJson?: Prisma.JsonNullableFilter<"OrderItem">
+  selectedOptionsJson?: Prisma.JsonNullableFilter<"OrderItem">
   createdAt?: Prisma.DateTimeFilter<"OrderItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"OrderItem"> | Date | string
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
@@ -314,9 +334,11 @@ export type OrderItemOrderByWithAggregationInput = {
   quantity?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
   customizationPriceCents?: Prisma.SortOrder
+  optionPriceCents?: Prisma.SortOrder
   lineTotalCents?: Prisma.SortOrder
   productSnapshotJson?: Prisma.SortOrder
   designSnapshotJson?: Prisma.SortOrderInput | Prisma.SortOrder
+  selectedOptionsJson?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.OrderItemCountOrderByAggregateInput
@@ -336,9 +358,11 @@ export type OrderItemScalarWhereWithAggregatesInput = {
   quantity?: Prisma.IntWithAggregatesFilter<"OrderItem"> | number
   unitPriceCents?: Prisma.IntWithAggregatesFilter<"OrderItem"> | number
   customizationPriceCents?: Prisma.IntWithAggregatesFilter<"OrderItem"> | number
+  optionPriceCents?: Prisma.IntWithAggregatesFilter<"OrderItem"> | number
   lineTotalCents?: Prisma.IntWithAggregatesFilter<"OrderItem"> | number
   productSnapshotJson?: Prisma.JsonWithAggregatesFilter<"OrderItem">
   designSnapshotJson?: Prisma.JsonNullableWithAggregatesFilter<"OrderItem">
+  selectedOptionsJson?: Prisma.JsonNullableWithAggregatesFilter<"OrderItem">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"OrderItem"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"OrderItem"> | Date | string
 }
@@ -348,9 +372,11 @@ export type OrderItemCreateInput = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   lineTotalCents: number
   productSnapshotJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   order: Prisma.OrderCreateNestedOneWithoutItemsInput
@@ -364,9 +390,11 @@ export type OrderItemUncheckedCreateInput = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   lineTotalCents: number
   productSnapshotJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -376,9 +404,11 @@ export type OrderItemUpdateInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   productSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   order?: Prisma.OrderUpdateOneRequiredWithoutItemsNestedInput
@@ -392,9 +422,11 @@ export type OrderItemUncheckedUpdateInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   productSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -406,9 +438,11 @@ export type OrderItemCreateManyInput = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   lineTotalCents: number
   productSnapshotJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -418,9 +452,11 @@ export type OrderItemUpdateManyMutationInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   productSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -432,9 +468,11 @@ export type OrderItemUncheckedUpdateManyInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   productSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -456,9 +494,11 @@ export type OrderItemCountOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
   customizationPriceCents?: Prisma.SortOrder
+  optionPriceCents?: Prisma.SortOrder
   lineTotalCents?: Prisma.SortOrder
   productSnapshotJson?: Prisma.SortOrder
   designSnapshotJson?: Prisma.SortOrder
+  selectedOptionsJson?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -467,6 +507,7 @@ export type OrderItemAvgOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
   customizationPriceCents?: Prisma.SortOrder
+  optionPriceCents?: Prisma.SortOrder
   lineTotalCents?: Prisma.SortOrder
 }
 
@@ -477,6 +518,7 @@ export type OrderItemMaxOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
   customizationPriceCents?: Prisma.SortOrder
+  optionPriceCents?: Prisma.SortOrder
   lineTotalCents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -489,6 +531,7 @@ export type OrderItemMinOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
   customizationPriceCents?: Prisma.SortOrder
+  optionPriceCents?: Prisma.SortOrder
   lineTotalCents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -498,6 +541,7 @@ export type OrderItemSumOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
   customizationPriceCents?: Prisma.SortOrder
+  optionPriceCents?: Prisma.SortOrder
   lineTotalCents?: Prisma.SortOrder
 }
 
@@ -590,9 +634,11 @@ export type OrderItemCreateWithoutDesignInput = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   lineTotalCents: number
   productSnapshotJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   order: Prisma.OrderCreateNestedOneWithoutItemsInput
@@ -604,9 +650,11 @@ export type OrderItemUncheckedCreateWithoutDesignInput = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   lineTotalCents: number
   productSnapshotJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -647,9 +695,11 @@ export type OrderItemScalarWhereInput = {
   quantity?: Prisma.IntFilter<"OrderItem"> | number
   unitPriceCents?: Prisma.IntFilter<"OrderItem"> | number
   customizationPriceCents?: Prisma.IntFilter<"OrderItem"> | number
+  optionPriceCents?: Prisma.IntFilter<"OrderItem"> | number
   lineTotalCents?: Prisma.IntFilter<"OrderItem"> | number
   productSnapshotJson?: Prisma.JsonFilter<"OrderItem">
   designSnapshotJson?: Prisma.JsonNullableFilter<"OrderItem">
+  selectedOptionsJson?: Prisma.JsonNullableFilter<"OrderItem">
   createdAt?: Prisma.DateTimeFilter<"OrderItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"OrderItem"> | Date | string
 }
@@ -659,9 +709,11 @@ export type OrderItemCreateWithoutOrderInput = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   lineTotalCents: number
   productSnapshotJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   design?: Prisma.DesignCreateNestedOneWithoutOrderItemsInput
@@ -673,9 +725,11 @@ export type OrderItemUncheckedCreateWithoutOrderInput = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   lineTotalCents: number
   productSnapshotJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -712,9 +766,11 @@ export type OrderItemCreateManyDesignInput = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   lineTotalCents: number
   productSnapshotJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -724,9 +780,11 @@ export type OrderItemUpdateWithoutDesignInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   productSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   order?: Prisma.OrderUpdateOneRequiredWithoutItemsNestedInput
@@ -738,9 +796,11 @@ export type OrderItemUncheckedUpdateWithoutDesignInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   productSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -751,9 +811,11 @@ export type OrderItemUncheckedUpdateManyWithoutDesignInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   productSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -764,9 +826,11 @@ export type OrderItemCreateManyOrderInput = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   lineTotalCents: number
   productSnapshotJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -776,9 +840,11 @@ export type OrderItemUpdateWithoutOrderInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   productSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   design?: Prisma.DesignUpdateOneWithoutOrderItemsNestedInput
@@ -790,9 +856,11 @@ export type OrderItemUncheckedUpdateWithoutOrderInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   productSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -803,9 +871,11 @@ export type OrderItemUncheckedUpdateManyWithoutOrderInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   productSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   designSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -819,9 +889,11 @@ export type OrderItemSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   quantity?: boolean
   unitPriceCents?: boolean
   customizationPriceCents?: boolean
+  optionPriceCents?: boolean
   lineTotalCents?: boolean
   productSnapshotJson?: boolean
   designSnapshotJson?: boolean
+  selectedOptionsJson?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
@@ -835,9 +907,11 @@ export type OrderItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   quantity?: boolean
   unitPriceCents?: boolean
   customizationPriceCents?: boolean
+  optionPriceCents?: boolean
   lineTotalCents?: boolean
   productSnapshotJson?: boolean
   designSnapshotJson?: boolean
+  selectedOptionsJson?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
@@ -851,9 +925,11 @@ export type OrderItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   quantity?: boolean
   unitPriceCents?: boolean
   customizationPriceCents?: boolean
+  optionPriceCents?: boolean
   lineTotalCents?: boolean
   productSnapshotJson?: boolean
   designSnapshotJson?: boolean
+  selectedOptionsJson?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
@@ -867,14 +943,16 @@ export type OrderItemSelectScalar = {
   quantity?: boolean
   unitPriceCents?: boolean
   customizationPriceCents?: boolean
+  optionPriceCents?: boolean
   lineTotalCents?: boolean
   productSnapshotJson?: boolean
   designSnapshotJson?: boolean
+  selectedOptionsJson?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type OrderItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "designId" | "quantity" | "unitPriceCents" | "customizationPriceCents" | "lineTotalCents" | "productSnapshotJson" | "designSnapshotJson" | "createdAt" | "updatedAt", ExtArgs["result"]["orderItem"]>
+export type OrderItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "designId" | "quantity" | "unitPriceCents" | "customizationPriceCents" | "optionPriceCents" | "lineTotalCents" | "productSnapshotJson" | "designSnapshotJson" | "selectedOptionsJson" | "createdAt" | "updatedAt", ExtArgs["result"]["orderItem"]>
 export type OrderItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
   design?: boolean | Prisma.OrderItem$designArgs<ExtArgs>
@@ -901,9 +979,11 @@ export type $OrderItemPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     quantity: number
     unitPriceCents: number
     customizationPriceCents: number
+    optionPriceCents: number
     lineTotalCents: number
     productSnapshotJson: runtime.JsonValue
     designSnapshotJson: runtime.JsonValue | null
+    selectedOptionsJson: runtime.JsonValue | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["orderItem"]>
@@ -1337,9 +1417,11 @@ export interface OrderItemFieldRefs {
   readonly quantity: Prisma.FieldRef<"OrderItem", 'Int'>
   readonly unitPriceCents: Prisma.FieldRef<"OrderItem", 'Int'>
   readonly customizationPriceCents: Prisma.FieldRef<"OrderItem", 'Int'>
+  readonly optionPriceCents: Prisma.FieldRef<"OrderItem", 'Int'>
   readonly lineTotalCents: Prisma.FieldRef<"OrderItem", 'Int'>
   readonly productSnapshotJson: Prisma.FieldRef<"OrderItem", 'Json'>
   readonly designSnapshotJson: Prisma.FieldRef<"OrderItem", 'Json'>
+  readonly selectedOptionsJson: Prisma.FieldRef<"OrderItem", 'Json'>
   readonly createdAt: Prisma.FieldRef<"OrderItem", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"OrderItem", 'DateTime'>
 }

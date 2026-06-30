@@ -17,6 +17,7 @@ import {
   MY_ORDER_BY_NUMBER_QUERY,
   MY_ORDERS_QUERY,
 } from '../graphql/account.queries'
+import { normalizeAccountOrder } from '../order-detail/order-detail.utils'
 import type {
   AccountAddress,
   AccountDashboardSummary,
@@ -64,7 +65,7 @@ export async function getMyOrders(params?: {
     query: MY_ORDERS_QUERY,
     variables: params,
   })
-  return data.myOrders
+  return data.myOrders.map(normalizeAccountOrder)
 }
 
 /**
@@ -75,7 +76,7 @@ export async function getMyOrderByNumber(orderNumber: string): Promise<AccountOr
     query: MY_ORDER_BY_NUMBER_QUERY,
     variables: { orderNumber },
   })
-  return data.myOrderByNumber
+  return data.myOrderByNumber ? normalizeAccountOrder(data.myOrderByNumber) : null
 }
 
 /**

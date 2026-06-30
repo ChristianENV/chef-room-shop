@@ -12,7 +12,11 @@ import {
   type Prisma,
 } from '@prisma/client'
 import { mapAddressInputToPrisma } from '../account/account.mappers'
-import { buildCustomizationSnapshot, buildProductSnapshot } from '../cart/cart.mappers'
+import {
+  buildCustomizationSnapshot,
+  buildProductSnapshot,
+  computeCheckoutTotalsFromCartItems,
+} from '../cart/cart.mappers'
 import type { CartConfigSnapshotJson, CartItemWithRelations } from '../cart/cart.types'
 import type { GraphQLContext } from '../../context'
 import { getActiveCartForCheckout, resolveCheckoutOwner } from './checkout.auth'
@@ -32,6 +36,8 @@ import { safeSendTransactionalEmail } from '@/src/server/email/email.service'
 import { createOrderClaimToken } from '@/src/server/orders/order-claim-token'
 import { safeNotifyOrderCreated } from '@/src/server/notifications/notify-order-created'
 
+export { computeCheckoutTotalsFromCartItems } from '../cart/cart.mappers'
+
 function parseConfigSnapshot(value: unknown): CartConfigSnapshotJson {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return {}
@@ -46,42 +52,6 @@ function parseConfigSnapshot(value: unknown): CartConfigSnapshotJson {
       record.customizationSnapshot && typeof record.customizationSnapshot === 'object'
         ? (record.customizationSnapshot as CartConfigSnapshotJson['customizationSnapshot'])
         : undefined,
-  }
-}
-
-/**
- * Computes order totals from cart line items (server-side only).
- */
-export function computeCheckoutTotalsFromCartItems(
-  items: CartItemWithRelations[],
-  shippingCents = 0,
-): {
-  subtotalCents: number
-  customizationTotalCents: number
-  shippingCents: number
-  discountCents: number
-  taxCents: number
-  totalCents: number
-} {
-  let subtotalCents = 0
-  let customizationTotalCents = 0
-
-  for (const item of items) {
-    subtotalCents += item.unitPriceCents * item.quantity
-    customizationTotalCents += item.customizationPriceCents * item.quantity
-  }
-  const discountCents = 0
-  const taxCents = 0
-  const totalCents =
-    subtotalCents + customizationTotalCents + shippingCents + taxCents - discountCents
-
-  return {
-    subtotalCents,
-    customizationTotalCents,
-    shippingCents,
-    discountCents,
-    taxCents,
-    totalCents,
   }
 }
 
@@ -223,7 +193,8 @@ export async function createCheckoutOrderCore(
     })
 
     for (const item of cart.items) {
-      const lineUnitTotal = item.unitPriceCents + item.customizationPriceCents
+      const lineUnitTotal =
+        item.unitPriceCents + item.customizationPriceCents + item.optionPriceCents
       await tx.orderItem.create({
         data: {
           orderId: order.id,
@@ -231,9 +202,11 @@ export async function createCheckoutOrderCore(
           quantity: item.quantity,
           unitPriceCents: item.unitPriceCents,
           customizationPriceCents: item.customizationPriceCents,
+          optionPriceCents: item.optionPriceCents,
           lineTotalCents: lineUnitTotal * item.quantity,
           productSnapshotJson: buildOrderProductSnapshot(item),
           designSnapshotJson: buildOrderDesignSnapshot(item),
+          selectedOptionsJson: item.selectedOptionsJson ?? undefined,
         },
       })
     }

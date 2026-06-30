@@ -3,11 +3,17 @@
  * Runs against DATABASE_URL from .env.local (shared dev/test DB).
  *
  * Usage: pnpm exec tsx scripts/orders/qa-order-claim-transfer-flow.ts
+ *
+ * SAFETY: sets DISABLE_EMAIL_SENDS=true before importing any server modules so
+ * the email service never calls a real external provider during the QA run.
  */
 import { config } from 'dotenv'
 import { resolve } from 'node:path'
 
 config({ path: resolve(process.cwd(), '.env.local') })
+
+// Prevent real email sends during QA script execution.
+process.env.DISABLE_EMAIL_SENDS = 'true'
 
 import { EmailStatus, OrderClaimTransferRequestStatus, OrderStatus } from '@prisma/client'
 

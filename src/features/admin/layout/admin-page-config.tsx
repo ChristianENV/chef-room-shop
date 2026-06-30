@@ -61,6 +61,7 @@ export function AdminPageConfig({
   children,
 }: AdminPageConfig & { children: ReactNode }) {
   const context = useContext(AdminPageConfigContext)
+  const breadcrumbKey = JSON.stringify(breadcrumb)
 
   useEffect(() => {
     context?.setPageConfig({
@@ -72,7 +73,7 @@ export function AdminPageConfig({
     return () => {
       context?.setPageConfig(defaultConfig)
     }
-  }, [context, breadcrumb, notificationCount, environment, JSON.stringify(breadcrumb)])
+  }, [context, breadcrumb, notificationCount, environment, breadcrumbKey])
 
   return <>{children}</>
 }

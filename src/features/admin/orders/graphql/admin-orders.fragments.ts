@@ -12,7 +12,17 @@ export const ADMIN_ORDER_ITEM_FIELDS = /* GraphQL */ `
   quantity
   unitPriceCents
   customizationPriceCents
+  optionPriceCents
   lineTotalCents
+  commercialOptionsSnapshot {
+    groupId
+    groupSlug
+    groupName
+    valueId
+    valueSlug
+    valueLabel
+    priceDeltaCents
+  }
   productSnapshotJson
   designSnapshotJson
   productionNotes

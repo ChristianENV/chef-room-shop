@@ -100,13 +100,44 @@ Both are client components with loading / error / empty states. User-facing erro
 - `CustomizationSummaryCard` — static areas/options
 - Production time / material filters — UI only (no BFF)
 
+## Product detail gallery (PDP)
+
+### Galería de imágenes
+
+`src/features/storefront/products/product-gallery.tsx` — componente `ProductGallery`.
+
+| Comportamiento        | Detalle                                                                       |
+| --------------------- | ----------------------------------------------------------------------------- |
+| Imagen principal      | `aspect-square`, `object-contain`, fondo `bg-muted`                           |
+| Miniaturas            | `flex-wrap` — no desbordan en móvil                                           |
+| Imagen seleccionada   | `ring-2 ring-primary` en thumbnail activo                                     |
+| Sin imágenes          | Muestra icono de placeholder (`ProductImageDisplay` fallback)                 |
+| Producto con 1 imagen | Galería aún se ve bien; sin flechas ni strip de miniaturas                    |
+| Copia neutra          | `aria-label="Fotografías del producto"` — sin "Vista frontal / Vista trasera" |
+| Lightbox              | Clic en `ZoomIn` abre `ProductLightbox` a pantalla completa                   |
+
+### Lightbox (`ProductLightbox`)
+
+`src/features/storefront/products/product-lightbox.tsx`
+
+- **Abrir**: botón "Ver imagen" (`ZoomIn`) o clic en la imagen principal.
+- **Cerrar**: botón "Cerrar", tecla `Esc`, clic en el overlay.
+- **Navegar**: `←`/`→` en teclado, botones "Imagen anterior" / "Imagen siguiente".
+- **Tiras de miniaturas** visibles cuando hay más de 1 imagen.
+- Sin layout shift — usa `position: fixed` y bloquea `body.overflow` mientras está abierto.
+- Funciona en desktop y móvil.
+
+### Reglas de copia
+
+- No se asume que todos los productos tengan vista frontal o trasera.
+- Etiquetas neutrales: `Fotografías del producto`, `Imagen anterior`, `Imagen siguiente`.
+
 ## Pendientes
 
 - Pagination real (cursor/offset UX)
 - Sorting avanzado server-side
 - GraphQL codegen
 - Wire `CustomizationSummaryCard` to `customizationRules`
-- Real images in cards/gallery
 
 ## Landing category card images
 

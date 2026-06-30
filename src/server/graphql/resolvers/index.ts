@@ -10,6 +10,7 @@ import { adminCustomizationResolvers } from './admin-customization.resolver'
 import { adminColorsResolvers } from './admin-colors.resolver'
 import { adminProductTypesResolvers } from './admin-product-types.resolver'
 import { adminProductsResolvers } from './admin-products.resolver'
+import { adminProductOptionsResolver } from './admin-product-options.resolver'
 import { cartResolvers } from './cart.resolver'
 import { catalogResolvers } from './catalog.resolver'
 import { checkoutResolvers } from './checkout.resolver'
@@ -35,6 +36,7 @@ export const resolvers = {
     ...adminOrdersResolvers.Query,
     ...adminShippingResolvers.Query,
     ...adminProductsResolvers.Query,
+    ...adminProductOptionsResolver.Query,
     ...adminColorsResolvers.Query,
     ...adminProductTypesResolvers.Query,
     ...adminCustomizationResolvers.Query,
@@ -55,6 +57,7 @@ export const resolvers = {
     ...adminOrdersResolvers.Mutation,
     ...adminShippingResolvers.Mutation,
     ...adminProductsResolvers.Mutation,
+    ...adminProductOptionsResolver.Mutation,
     ...adminColorsResolvers.Mutation,
     ...adminProductTypesResolvers.Mutation,
     ...adminCustomizationResolvers.Mutation,

@@ -8,7 +8,17 @@ import { Badge } from '@/components/ui/badge'
 import { Star, Shield, Clock, HeadphonesIcon, Minus, Plus, Loader2 } from 'lucide-react'
 import { PriceDisplay } from '@/components/brand/product-components'
 import { routes } from '@/src/config/routes'
+import { centsToPesos } from '@/src/lib/formatters'
+import { GraphQLRequestError } from '@/src/lib/graphql/errors'
 import { useAddCartItemMutation } from '@/src/features/storefront/cart/api/use-add-cart-item-mutation'
+import { ProductOptionSelectors } from '@/src/features/storefront/products/components/product-option-selectors'
+import {
+  buildSelectedCommercialOptionsPayload,
+  calculateCommercialOptionsPriceDeltaCents,
+  calculateEstimatedUnitPriceCents,
+  getInitialCommercialOptionSelections,
+  validateCommercialOptionSelections,
+} from '@/src/features/storefront/products/lib/product-commercial-options'
 import {
   findVariantByColorAndSize,
   getAvailableSizesForColor,
@@ -42,6 +52,7 @@ interface ProductInfoProps {
 
 export function ProductInfo({ product, className, onCustomize }: ProductInfoProps) {
   const variants = product.variants
+  const optionGroups = product.optionGroups
   const requiresVariant = productRequiresVariantSelection(variants)
   const singleVariant = useMemo(() => getSingleVariant(variants), [variants])
   const initialSelection = useMemo(() => getInitialColorAndSize(product), [product])
@@ -49,6 +60,9 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
   const [selectedColor, setSelectedColor] = useState<string>(() => initialSelection.color)
   const [selectedSize, setSelectedSize] = useState<string>(() => initialSelection.size)
   const [quantity, setQuantity] = useState(1)
+  const [commercialOptionSelections, setCommercialOptionSelections] = useState(() =>
+    getInitialCommercialOptionSelections(optionGroups),
+  )
   const [selectionError, setSelectionError] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
@@ -67,6 +81,31 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
     return findVariantByColorAndSize(variants, selectedColor, selectedSize)
   }, [singleVariant, variants, selectedColor, selectedSize])
 
+  const commercialOptionsValidation = useMemo(
+    () => validateCommercialOptionSelections(optionGroups, commercialOptionSelections),
+    [optionGroups, commercialOptionSelections],
+  )
+
+  const optionsPriceDeltaCents = useMemo(
+    () => calculateCommercialOptionsPriceDeltaCents(optionGroups, commercialOptionSelections),
+    [optionGroups, commercialOptionSelections],
+  )
+
+  const estimatedUnitPriceCents = useMemo(
+    () =>
+      calculateEstimatedUnitPriceCents({
+        basePriceCents: product.basePriceCents,
+        variantPriceCents: selectedVariant?.priceCents,
+        optionGroups,
+        selections: commercialOptionSelections,
+      }),
+    [product.basePriceCents, selectedVariant?.priceCents, optionGroups, commercialOptionSelections],
+  )
+
+  const estimatedUnitPricePesos = centsToPesos(estimatedUnitPriceCents)
+  const baseDisplayPricePesos = centsToPesos(selectedVariant?.priceCents ?? product.basePriceCents)
+  const hasOptionPriceDelta = optionsPriceDeltaCents > 0
+
   const incrementQuantity = () => setQuantity((prev) => Math.min(prev + 1, 10))
   const decrementQuantity = () => setQuantity((prev) => Math.max(prev - 1, 1))
 
@@ -80,6 +119,12 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
 
   const handleSizeSelect = (size: string) => {
     setSelectedSize(size)
+    setSelectionError(null)
+    setActionError(null)
+  }
+
+  const handleCommercialOptionChange = (groupId: string, valueId: string) => {
+    setCommercialOptionSelections((prev) => ({ ...prev, [groupId]: valueId }))
     setSelectionError(null)
     setActionError(null)
   }
@@ -99,17 +144,33 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
       return
     }
 
+    if (!commercialOptionsValidation.ok) {
+      setSelectionError(commercialOptionsValidation.message)
+      return
+    }
+
+    const selectedCommercialOptions = buildSelectedCommercialOptionsPayload(
+      optionGroups,
+      commercialOptionSelections,
+    )
+
     try {
       await addToCart.mutateAsync({
         productId: product.id,
         productVariantId: selectedVariant?.id ?? null,
         quantity,
+        selectedCommercialOptions:
+          selectedCommercialOptions.length > 0 ? selectedCommercialOptions : undefined,
       })
       setShowSuccess(true)
       setJustAdded(true)
       window.setTimeout(() => setJustAdded(false), 3000)
-    } catch {
-      setActionError(GENERIC_ADD_ERROR)
+    } catch (error) {
+      if (error instanceof GraphQLRequestError) {
+        setActionError(error.message)
+      } else {
+        setActionError(GENERIC_ADD_ERROR)
+      }
     }
   }
 
@@ -120,7 +181,8 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
   const isAddDisabled =
     addToCart.isPending ||
     (requiresVariant && !selectedVariant) ||
-    (selectedVariant != null && selectedVariant.stockQty <= 0)
+    (selectedVariant != null && selectedVariant.stockQty <= 0) ||
+    !commercialOptionsValidation.ok
 
   return (
     <div className={cn('flex flex-col gap-6', className)}>
@@ -150,7 +212,15 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
         </span>
       </div>
 
-      <PriceDisplay price={product.price} originalPrice={product.originalPrice} size="lg" />
+      <div className="space-y-2">
+        <PriceDisplay price={estimatedUnitPricePesos} size="lg" />
+        {hasOptionPriceDelta ? (
+          <p className="font-serif text-sm text-muted-foreground">
+            Precio base ${baseDisplayPricePesos.toLocaleString('es-MX')} + opciones $
+            {centsToPesos(optionsPriceDeltaCents).toLocaleString('es-MX')} MXN (estimado)
+          </p>
+        ) : null}
+      </div>
 
       <p className="font-serif text-base leading-relaxed text-muted-foreground">
         {product.shortDescription}
@@ -176,7 +246,7 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
                   selectedColor === color.id
                     ? 'border-primary ring-2 ring-primary ring-offset-2 ring-offset-background'
                     : 'border-border hover:border-muted-foreground',
-                  !color.available && 'cursor-not-allowed opacity-40',
+                  !color.available && 'cursor-not-allowed opacity-55 saturate-50',
                 )}
                 style={{ backgroundColor: color.hex }}
                 title={color.name}
@@ -215,7 +285,7 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
                     selectedSize === size
                       ? 'border-primary bg-primary text-primary-foreground'
                       : 'border-border bg-card text-foreground hover:border-muted-foreground',
-                    !sizeAvailable && 'cursor-not-allowed opacity-40',
+                    !sizeAvailable && 'cursor-not-allowed opacity-55',
                   )}
                 >
                   {size}
@@ -225,6 +295,12 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
           </div>
         </div>
       )}
+
+      <ProductOptionSelectors
+        optionGroups={optionGroups}
+        selections={commercialOptionSelections}
+        onChange={handleCommercialOptionChange}
+      />
 
       <div className="space-y-3">
         <label className="font-sans text-sm font-medium text-foreground">Cantidad</label>
@@ -252,7 +328,7 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
               <Plus className="h-4 w-4" />
             </button>
           </div>
-          <span className="font-serif text-sm text-muted-foreground">
+          <span className="font-serif text-sm text-foreground/80">
             {product.stock > 10 ? 'En stock' : `Solo quedan ${product.stock}`}
           </span>
         </div>
@@ -342,15 +418,15 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
       <div className="grid grid-cols-1 gap-3 border-t border-border pt-6 sm:grid-cols-3">
         <div className="flex items-center gap-2">
           <Shield className="h-5 w-5 text-success" />
-          <span className="font-serif text-sm text-muted-foreground">Pago seguro</span>
+          <span className="font-serif text-sm text-foreground/75">Pago seguro</span>
         </div>
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-success" />
-          <span className="font-serif text-sm text-muted-foreground">Produccion profesional</span>
+          <span className="font-serif text-sm text-foreground/75">Produccion profesional</span>
         </div>
         <div className="flex items-center gap-2">
           <HeadphonesIcon className="h-5 w-5 text-success" />
-          <span className="font-serif text-sm text-muted-foreground">Soporte personalizado</span>
+          <span className="font-serif text-sm text-foreground/75">Soporte personalizado</span>
         </div>
       </div>
     </div>

@@ -330,7 +330,7 @@ pnpm exec next build
 Notes:
 
 - `pnpm test` is an alias for `pnpm test:unit` only — it does **not** run Playwright (`pnpm run test:e2e:smoke` is separate and optional).
-- Prettier formatting baseline is applied; `pnpm format:check` is a required CI gate.
+- Prettier formatting baseline is applied; `pnpm format:check` is a required CI gate. See **[`code-style.md`](./code-style.md)** for format-on-save setup and how to avoid CI failures.
 - `.gitattributes` enforces LF line endings repo-wide so `format:check` stays consistent on Windows and GitHub Actions.
 - `next-env.d.ts` is auto-updated by Next.js (`pnpm dev` / `next build`) and is listed in `.prettierignore` so Prettier does not fight Next’s generated formatting.
 - `pnpm run build` already runs Prisma generate; `db:generate` is listed for parity with CI steps that typecheck before build.

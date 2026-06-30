@@ -20,7 +20,20 @@ import type {
 const DEFAULT_LIMIT = 24
 const MAX_LIMIT = 100
 const productInclude = {
-  productType: true,
+  productType: {
+    include: {
+      optionGroups: {
+        where: { isActive: true },
+        include: {
+          values: {
+            where: { isActive: true },
+            orderBy: { sortOrder: 'asc' as const },
+          },
+        },
+        orderBy: { sortOrder: 'asc' as const },
+      },
+    },
+  },
   images: { orderBy: { sortOrder: 'asc' as const } },
   variants: {
     where: { deletedAt: null },
@@ -31,6 +44,16 @@ const productInclude = {
     where: { isEnabled: true },
     include: { area: true, option: true },
     orderBy: [{ area: { sortOrder: 'asc' } }, { option: { slug: 'asc' } }],
+  },
+  optionGroups: {
+    where: { isActive: true },
+    include: {
+      values: {
+        where: { isActive: true },
+        orderBy: { sortOrder: 'asc' as const },
+      },
+    },
+    orderBy: { sortOrder: 'asc' as const },
   },
   modelAssets: {
     where: { deletedAt: null, isActive: true },

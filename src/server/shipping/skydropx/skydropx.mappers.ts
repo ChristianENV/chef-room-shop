@@ -3,7 +3,6 @@ import 'server-only'
 import { APP_LIMITS } from '@/src/config/vars'
 import { SHIPPING_CURRENCY_MX } from '@/src/config/shipping'
 
-import { getShippingOriginConfig } from '../shipping.config'
 import { toSkydropxV1AddressInput } from './skydropx-address'
 import {
   mapLabelFormatToSkydropx,
@@ -24,13 +23,7 @@ import {
   mapShippingQuoteToSkydropxQuotationPayload,
   type MapCartToQuotationPayloadInput,
 } from './skydropx-quotation-payload'
-import { mapPackageToSkydropxParcel } from './skydropx-parcel'
-import type {
-  SkydropxAddressInput,
-  SkydropxCreateQuotationRequest,
-  SkydropxCreateShipmentRequest,
-  SkydropxParcelInput,
-} from './skydropx.types'
+import type { SkydropxAddressInput } from './skydropx.types'
 
 export type DestinationAddressInput = {
   postalCode: string

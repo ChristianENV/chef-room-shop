@@ -1,4 +1,4 @@
-import type { CartItemQuantityInput, PackageDimensions } from '../shipping-package.shared'
+import type { CartItemQuantityInput } from '../shipping-package.shared'
 import { getPackageForCartItems } from '../shipping-package.shared'
 import { toSkydropxV1AddressInput } from './skydropx-address'
 import { mapPackageToSkydropxParcel } from './skydropx-parcel'

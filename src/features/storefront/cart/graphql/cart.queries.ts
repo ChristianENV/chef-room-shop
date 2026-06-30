@@ -10,6 +10,7 @@ export const MY_CART_QUERY = /* GraphQL */ `
       currency
       subtotalCents
       customizationTotalCents
+      optionTotalCents
       shippingCostCents
       discountTotalCents
       totalCents
@@ -24,6 +25,7 @@ export const MY_CART_QUERY = /* GraphQL */ `
         quantity
         unitPriceCents
         customizationPriceCents
+        optionPriceCents
         totalPriceCents
         createdAt
         updatedAt
@@ -69,6 +71,15 @@ export const MY_CART_QUERY = /* GraphQL */ `
           hasLogo
           hasEmbroidery
           embroideredName
+        }
+        commercialOptionsSnapshot {
+          groupId
+          groupSlug
+          groupName
+          valueId
+          valueSlug
+          valueLabel
+          priceDeltaCents
         }
       }
     }

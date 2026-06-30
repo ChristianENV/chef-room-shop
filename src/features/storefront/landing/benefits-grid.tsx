@@ -1,7 +1,6 @@
 import { cn } from '@/lib/utils'
 import { Card, CardContent } from '@/components/ui/card'
 import { Check, Shield, Truck, Award, Palette, Clock, Users, Sparkles } from 'lucide-react'
-import type { ReactNode } from 'react'
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   shield: Shield,

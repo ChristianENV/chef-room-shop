@@ -30,12 +30,14 @@ export type CartItemAvgAggregateOutputType = {
   quantity: number | null
   unitPriceCents: number | null
   customizationPriceCents: number | null
+  optionPriceCents: number | null
 }
 
 export type CartItemSumAggregateOutputType = {
   quantity: number | null
   unitPriceCents: number | null
   customizationPriceCents: number | null
+  optionPriceCents: number | null
 }
 
 export type CartItemMinAggregateOutputType = {
@@ -47,6 +49,7 @@ export type CartItemMinAggregateOutputType = {
   quantity: number | null
   unitPriceCents: number | null
   customizationPriceCents: number | null
+  optionPriceCents: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -60,6 +63,7 @@ export type CartItemMaxAggregateOutputType = {
   quantity: number | null
   unitPriceCents: number | null
   customizationPriceCents: number | null
+  optionPriceCents: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -73,7 +77,9 @@ export type CartItemCountAggregateOutputType = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents: number
+  optionPriceCents: number
   configSnapshotJson: number
+  selectedOptionsJson: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -84,12 +90,14 @@ export type CartItemAvgAggregateInputType = {
   quantity?: true
   unitPriceCents?: true
   customizationPriceCents?: true
+  optionPriceCents?: true
 }
 
 export type CartItemSumAggregateInputType = {
   quantity?: true
   unitPriceCents?: true
   customizationPriceCents?: true
+  optionPriceCents?: true
 }
 
 export type CartItemMinAggregateInputType = {
@@ -101,6 +109,7 @@ export type CartItemMinAggregateInputType = {
   quantity?: true
   unitPriceCents?: true
   customizationPriceCents?: true
+  optionPriceCents?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -114,6 +123,7 @@ export type CartItemMaxAggregateInputType = {
   quantity?: true
   unitPriceCents?: true
   customizationPriceCents?: true
+  optionPriceCents?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -127,7 +137,9 @@ export type CartItemCountAggregateInputType = {
   quantity?: true
   unitPriceCents?: true
   customizationPriceCents?: true
+  optionPriceCents?: true
   configSnapshotJson?: true
+  selectedOptionsJson?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -228,7 +240,9 @@ export type CartItemGroupByOutputType = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents: number
+  optionPriceCents: number
   configSnapshotJson: runtime.JsonValue | null
+  selectedOptionsJson: runtime.JsonValue | null
   createdAt: Date
   updatedAt: Date
   _count: CartItemCountAggregateOutputType | null
@@ -265,7 +279,9 @@ export type CartItemWhereInput = {
   quantity?: Prisma.IntFilter<"CartItem"> | number
   unitPriceCents?: Prisma.IntFilter<"CartItem"> | number
   customizationPriceCents?: Prisma.IntFilter<"CartItem"> | number
+  optionPriceCents?: Prisma.IntFilter<"CartItem"> | number
   configSnapshotJson?: Prisma.JsonNullableFilter<"CartItem">
+  selectedOptionsJson?: Prisma.JsonNullableFilter<"CartItem">
   createdAt?: Prisma.DateTimeFilter<"CartItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CartItem"> | Date | string
   cart?: Prisma.XOR<Prisma.CartScalarRelationFilter, Prisma.CartWhereInput>
@@ -283,7 +299,9 @@ export type CartItemOrderByWithRelationInput = {
   quantity?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
   customizationPriceCents?: Prisma.SortOrder
+  optionPriceCents?: Prisma.SortOrder
   configSnapshotJson?: Prisma.SortOrderInput | Prisma.SortOrder
+  selectedOptionsJson?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   cart?: Prisma.CartOrderByWithRelationInput
@@ -304,7 +322,9 @@ export type CartItemWhereUniqueInput = Prisma.AtLeast<{
   quantity?: Prisma.IntFilter<"CartItem"> | number
   unitPriceCents?: Prisma.IntFilter<"CartItem"> | number
   customizationPriceCents?: Prisma.IntFilter<"CartItem"> | number
+  optionPriceCents?: Prisma.IntFilter<"CartItem"> | number
   configSnapshotJson?: Prisma.JsonNullableFilter<"CartItem">
+  selectedOptionsJson?: Prisma.JsonNullableFilter<"CartItem">
   createdAt?: Prisma.DateTimeFilter<"CartItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CartItem"> | Date | string
   cart?: Prisma.XOR<Prisma.CartScalarRelationFilter, Prisma.CartWhereInput>
@@ -322,7 +342,9 @@ export type CartItemOrderByWithAggregationInput = {
   quantity?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
   customizationPriceCents?: Prisma.SortOrder
+  optionPriceCents?: Prisma.SortOrder
   configSnapshotJson?: Prisma.SortOrderInput | Prisma.SortOrder
+  selectedOptionsJson?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.CartItemCountOrderByAggregateInput
@@ -344,7 +366,9 @@ export type CartItemScalarWhereWithAggregatesInput = {
   quantity?: Prisma.IntWithAggregatesFilter<"CartItem"> | number
   unitPriceCents?: Prisma.IntWithAggregatesFilter<"CartItem"> | number
   customizationPriceCents?: Prisma.IntWithAggregatesFilter<"CartItem"> | number
+  optionPriceCents?: Prisma.IntWithAggregatesFilter<"CartItem"> | number
   configSnapshotJson?: Prisma.JsonNullableWithAggregatesFilter<"CartItem">
+  selectedOptionsJson?: Prisma.JsonNullableWithAggregatesFilter<"CartItem">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CartItem"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"CartItem"> | Date | string
 }
@@ -354,7 +378,9 @@ export type CartItemCreateInput = {
   quantity?: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   cart: Prisma.CartCreateNestedOneWithoutItemsInput
@@ -372,7 +398,9 @@ export type CartItemUncheckedCreateInput = {
   quantity?: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -382,7 +410,9 @@ export type CartItemUpdateInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cart?: Prisma.CartUpdateOneRequiredWithoutItemsNestedInput
@@ -400,7 +430,9 @@ export type CartItemUncheckedUpdateInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -414,7 +446,9 @@ export type CartItemCreateManyInput = {
   quantity?: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -424,7 +458,9 @@ export type CartItemUpdateManyMutationInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -438,7 +474,9 @@ export type CartItemUncheckedUpdateManyInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -462,7 +500,9 @@ export type CartItemCountOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
   customizationPriceCents?: Prisma.SortOrder
+  optionPriceCents?: Prisma.SortOrder
   configSnapshotJson?: Prisma.SortOrder
+  selectedOptionsJson?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -471,6 +511,7 @@ export type CartItemAvgOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
   customizationPriceCents?: Prisma.SortOrder
+  optionPriceCents?: Prisma.SortOrder
 }
 
 export type CartItemMaxOrderByAggregateInput = {
@@ -482,6 +523,7 @@ export type CartItemMaxOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
   customizationPriceCents?: Prisma.SortOrder
+  optionPriceCents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -495,6 +537,7 @@ export type CartItemMinOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
   customizationPriceCents?: Prisma.SortOrder
+  optionPriceCents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -503,6 +546,7 @@ export type CartItemSumOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
   customizationPriceCents?: Prisma.SortOrder
+  optionPriceCents?: Prisma.SortOrder
 }
 
 export type CartItemCreateNestedManyWithoutProductInput = {
@@ -678,7 +722,9 @@ export type CartItemCreateWithoutProductInput = {
   quantity?: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   cart: Prisma.CartCreateNestedOneWithoutItemsInput
@@ -694,7 +740,9 @@ export type CartItemUncheckedCreateWithoutProductInput = {
   quantity?: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -737,7 +785,9 @@ export type CartItemScalarWhereInput = {
   quantity?: Prisma.IntFilter<"CartItem"> | number
   unitPriceCents?: Prisma.IntFilter<"CartItem"> | number
   customizationPriceCents?: Prisma.IntFilter<"CartItem"> | number
+  optionPriceCents?: Prisma.IntFilter<"CartItem"> | number
   configSnapshotJson?: Prisma.JsonNullableFilter<"CartItem">
+  selectedOptionsJson?: Prisma.JsonNullableFilter<"CartItem">
   createdAt?: Prisma.DateTimeFilter<"CartItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CartItem"> | Date | string
 }
@@ -747,7 +797,9 @@ export type CartItemCreateWithoutProductVariantInput = {
   quantity?: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   cart: Prisma.CartCreateNestedOneWithoutItemsInput
@@ -763,7 +815,9 @@ export type CartItemUncheckedCreateWithoutProductVariantInput = {
   quantity?: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -799,7 +853,9 @@ export type CartItemCreateWithoutDesignInput = {
   quantity?: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   cart: Prisma.CartCreateNestedOneWithoutItemsInput
@@ -815,7 +871,9 @@ export type CartItemUncheckedCreateWithoutDesignInput = {
   quantity?: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -851,7 +909,9 @@ export type CartItemCreateWithoutCartInput = {
   quantity?: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.ProductCreateNestedOneWithoutCartItemsInput
@@ -867,7 +927,9 @@ export type CartItemUncheckedCreateWithoutCartInput = {
   quantity?: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -906,7 +968,9 @@ export type CartItemCreateManyProductInput = {
   quantity?: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -916,7 +980,9 @@ export type CartItemUpdateWithoutProductInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cart?: Prisma.CartUpdateOneRequiredWithoutItemsNestedInput
@@ -932,7 +998,9 @@ export type CartItemUncheckedUpdateWithoutProductInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -945,7 +1013,9 @@ export type CartItemUncheckedUpdateManyWithoutProductInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -958,7 +1028,9 @@ export type CartItemCreateManyProductVariantInput = {
   quantity?: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -968,7 +1040,9 @@ export type CartItemUpdateWithoutProductVariantInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cart?: Prisma.CartUpdateOneRequiredWithoutItemsNestedInput
@@ -984,7 +1058,9 @@ export type CartItemUncheckedUpdateWithoutProductVariantInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -997,7 +1073,9 @@ export type CartItemUncheckedUpdateManyWithoutProductVariantInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1010,7 +1088,9 @@ export type CartItemCreateManyDesignInput = {
   quantity?: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1020,7 +1100,9 @@ export type CartItemUpdateWithoutDesignInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cart?: Prisma.CartUpdateOneRequiredWithoutItemsNestedInput
@@ -1036,7 +1118,9 @@ export type CartItemUncheckedUpdateWithoutDesignInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1049,7 +1133,9 @@ export type CartItemUncheckedUpdateManyWithoutDesignInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1062,7 +1148,9 @@ export type CartItemCreateManyCartInput = {
   quantity?: number
   unitPriceCents: number
   customizationPriceCents?: number
+  optionPriceCents?: number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1072,7 +1160,9 @@ export type CartItemUpdateWithoutCartInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.ProductUpdateOneRequiredWithoutCartItemsNestedInput
@@ -1088,7 +1178,9 @@ export type CartItemUncheckedUpdateWithoutCartInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1101,7 +1193,9 @@ export type CartItemUncheckedUpdateManyWithoutCartInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   customizationPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  optionPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   configSnapshotJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  selectedOptionsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1117,7 +1211,9 @@ export type CartItemSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   quantity?: boolean
   unitPriceCents?: boolean
   customizationPriceCents?: boolean
+  optionPriceCents?: boolean
   configSnapshotJson?: boolean
+  selectedOptionsJson?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   cart?: boolean | Prisma.CartDefaultArgs<ExtArgs>
@@ -1135,7 +1231,9 @@ export type CartItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   quantity?: boolean
   unitPriceCents?: boolean
   customizationPriceCents?: boolean
+  optionPriceCents?: boolean
   configSnapshotJson?: boolean
+  selectedOptionsJson?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   cart?: boolean | Prisma.CartDefaultArgs<ExtArgs>
@@ -1153,7 +1251,9 @@ export type CartItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   quantity?: boolean
   unitPriceCents?: boolean
   customizationPriceCents?: boolean
+  optionPriceCents?: boolean
   configSnapshotJson?: boolean
+  selectedOptionsJson?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   cart?: boolean | Prisma.CartDefaultArgs<ExtArgs>
@@ -1171,12 +1271,14 @@ export type CartItemSelectScalar = {
   quantity?: boolean
   unitPriceCents?: boolean
   customizationPriceCents?: boolean
+  optionPriceCents?: boolean
   configSnapshotJson?: boolean
+  selectedOptionsJson?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type CartItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "cartId" | "productId" | "productVariantId" | "designId" | "quantity" | "unitPriceCents" | "customizationPriceCents" | "configSnapshotJson" | "createdAt" | "updatedAt", ExtArgs["result"]["cartItem"]>
+export type CartItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "cartId" | "productId" | "productVariantId" | "designId" | "quantity" | "unitPriceCents" | "customizationPriceCents" | "optionPriceCents" | "configSnapshotJson" | "selectedOptionsJson" | "createdAt" | "updatedAt", ExtArgs["result"]["cartItem"]>
 export type CartItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cart?: boolean | Prisma.CartDefaultArgs<ExtArgs>
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
@@ -1213,7 +1315,9 @@ export type $CartItemPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     quantity: number
     unitPriceCents: number
     customizationPriceCents: number
+    optionPriceCents: number
     configSnapshotJson: runtime.JsonValue | null
+    selectedOptionsJson: runtime.JsonValue | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["cartItem"]>
@@ -1651,7 +1755,9 @@ export interface CartItemFieldRefs {
   readonly quantity: Prisma.FieldRef<"CartItem", 'Int'>
   readonly unitPriceCents: Prisma.FieldRef<"CartItem", 'Int'>
   readonly customizationPriceCents: Prisma.FieldRef<"CartItem", 'Int'>
+  readonly optionPriceCents: Prisma.FieldRef<"CartItem", 'Int'>
   readonly configSnapshotJson: Prisma.FieldRef<"CartItem", 'Json'>
+  readonly selectedOptionsJson: Prisma.FieldRef<"CartItem", 'Json'>
   readonly createdAt: Prisma.FieldRef<"CartItem", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"CartItem", 'DateTime'>
 }

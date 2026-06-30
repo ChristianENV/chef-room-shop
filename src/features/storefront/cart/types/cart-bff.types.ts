@@ -1,6 +1,16 @@
 import type { AccountDesign } from '@/src/features/storefront/account/types'
 import type { CatalogProduct } from '@/src/features/storefront/catalog/types'
 
+export type CartCommercialOptionSnapshot = {
+  groupId: string
+  groupSlug: string
+  groupName: string
+  valueId: string
+  valueSlug: string
+  valueLabel: string
+  priceDeltaCents: number
+}
+
 export type CartProductSnapshot = {
   productId: string
   variantId: string | null
@@ -56,11 +66,13 @@ export type CartItem = {
   quantity: number
   unitPriceCents: number
   customizationPriceCents: number
+  optionPriceCents: number
   totalPriceCents: number
   product: CatalogProduct | null
   design: AccountDesign | null
   productSnapshot: CartProductSnapshot
   customizationSnapshot: CartCustomizationSnapshot
+  commercialOptionsSnapshot: CartCommercialOptionSnapshot[]
   createdAt: string
   updatedAt: string
 }
@@ -71,6 +83,7 @@ export type Cart = {
   currency: string
   subtotalCents: number
   customizationTotalCents: number
+  optionTotalCents: number
   shippingCostCents: number
   discountTotalCents: number
   totalCents: number
@@ -85,6 +98,12 @@ export type AddCartItemInput = {
   productVariantId?: string | null
   designId?: string | null
   quantity: number
+  selectedCommercialOptions?: Array<{
+    groupId?: string
+    groupSlug?: string
+    valueId?: string
+    valueSlug?: string
+  }> | null
 }
 
 export type UpdateCartItemQuantityInput = {

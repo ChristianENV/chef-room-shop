@@ -4,6 +4,7 @@ import { MapPin, Package, Receipt, FileText } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { formatCurrencyMXN } from '@/src/lib/formatters'
+import { CartCommercialOptionsSummary } from '@/src/features/storefront/cart/components/cart-commercial-options-summary'
 import { AdminShipmentCard } from '@/src/features/admin/shipping/components/admin-shipment-card'
 
 import { CustomizationSnapshot } from '../customization-snapshot'
@@ -108,6 +109,17 @@ export function AdminOrderDetailPageBody({
                         <Badge variant="secondary">x{item.quantity}</Badge>
                         {item.hasCustomization ? <Badge>Personalizado</Badge> : null}
                       </div>
+                      {item.commercialOptionsSnapshot.length > 0 ? (
+                        <div className="mt-3" data-testid="admin-order-item-commercial-options">
+                          <p className="mb-1 font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            Opciones
+                          </p>
+                          <CartCommercialOptionsSummary
+                            options={item.commercialOptionsSnapshot}
+                            compact
+                          />
+                        </div>
+                      ) : null}
                     </div>
                     <p className="shrink-0 font-sans text-lg font-semibold tabular-nums">
                       {formatCurrencyMXN(item.totalPrice)}

@@ -132,6 +132,16 @@ export type Size = Prisma.SizeModel
  */
 export type ProductVariant = Prisma.ProductVariantModel
 /**
+ * Model ProductOptionGroup
+ * 
+ */
+export type ProductOptionGroup = Prisma.ProductOptionGroupModel
+/**
+ * Model ProductOptionValue
+ * 
+ */
+export type ProductOptionValue = Prisma.ProductOptionValueModel
+/**
  * Model CustomizationArea
  * 
  */

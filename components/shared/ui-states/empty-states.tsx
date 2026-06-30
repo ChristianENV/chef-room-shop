@@ -11,7 +11,6 @@ import {
   BarChart3,
   Database,
   FolderOpen,
-  Plus,
 } from 'lucide-react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'

@@ -21,12 +21,16 @@ function flattenZodErrors(error: ZodError): Record<string, string> {
   return out
 }
 
-function stripSaveAddress({ saveAddress: _, ...address }: ShippingAddressData) {
-  return address
+function stripSaveAddress(address: ShippingAddressData) {
+  const { saveAddress, ...rest } = address
+  void saveAddress
+  return rest
 }
 
-function stripBillingMeta({ sameAsShipping: _, ...address }: BillingAddressData) {
-  return address
+function stripBillingMeta(address: BillingAddressData) {
+  const { sameAsShipping, ...rest } = address
+  void sameAsShipping
+  return rest
 }
 
 /**

@@ -30,6 +30,7 @@ export function SavedDesignsSection({ embedded = false }: { embedded?: boolean }
     if (isAuthenticated || !hasLocalDraft) return null
     const draft = loadCustomizerLocalDraft(product?.slug)
     if (!draft) return null
+    void lastSavedAt
     return draft
   }, [isAuthenticated, hasLocalDraft, product?.slug, lastSavedAt])
 

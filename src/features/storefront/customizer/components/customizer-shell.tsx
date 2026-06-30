@@ -195,7 +195,6 @@ export function CustomizerShell({
       quantity,
       viewMode,
       viewAngle,
-      layers,
     ],
   )
 

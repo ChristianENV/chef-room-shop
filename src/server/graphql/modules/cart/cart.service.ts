@@ -9,8 +9,15 @@ import {
 import { GraphQLError } from 'graphql'
 
 import { resolveCustomizationPriceFromConfig } from '@/src/server/customizer-pricing/apply-server-pricing'
+import {
+  buildCommercialOptionsLineKey,
+  calculateProductOptionsPriceCents,
+  parseCommercialOptionsSnapshot,
+  validateSelectedProductOptions,
+} from '@/src/server/product-options'
 
 import type { GraphQLContext } from '../../context'
+import { collectProductOptionGroupsForValidation } from './cart-product-options'
 import { resolveCartOwner } from './cart.auth'
 import {
   buildCustomizationSnapshot,
@@ -32,12 +39,23 @@ import {
   updateCartItemQuantityInputSchema,
 } from './cart.validation'
 
+const productOptionGroupsInclude = {
+  include: {
+    values: { orderBy: { sortOrder: 'asc' as const } },
+  },
+  orderBy: { sortOrder: 'asc' as const },
+} as const
+
 const cartInclude = {
   items: {
     include: {
       product: {
         include: {
-          productType: true,
+          productType: {
+            include: {
+              optionGroups: productOptionGroupsInclude,
+            },
+          },
           images: { orderBy: { sortOrder: 'asc' as const } },
           variants: {
             where: { deletedAt: null },
@@ -48,6 +66,7 @@ const cartInclude = {
             include: { area: true, option: true },
             orderBy: [{ area: { sortOrder: 'asc' } }, { option: { slug: 'asc' } }],
           },
+          optionGroups: productOptionGroupsInclude,
         },
       },
       productVariant: { include: { color: true, size: true } },
@@ -258,8 +277,13 @@ function sameLineKey(
   productId: string,
   productVariantId: string | null | undefined,
   designId: string | null | undefined,
+  commercialOptionsKey: string,
 ): string {
-  return `${productId}:${productVariantId ?? ''}:${designId ?? ''}`
+  return `${productId}:${productVariantId ?? ''}:${designId ?? ''}:${commercialOptionsKey}`
+}
+
+function commercialOptionsKeyFromItem(item: { selectedOptionsJson: unknown }): string {
+  return buildCommercialOptionsLineKey(parseCommercialOptionsSnapshot(item.selectedOptionsJson))
 }
 
 /**
@@ -279,7 +303,11 @@ export async function addCartItem(
       deletedAt: null,
     },
     include: {
-      productType: true,
+      productType: {
+        include: {
+          optionGroups: productOptionGroupsInclude,
+        },
+      },
       images: { orderBy: { sortOrder: 'asc' } },
       variants: {
         where: { deletedAt: null },
@@ -289,6 +317,7 @@ export async function addCartItem(
         where: { isEnabled: true },
         include: { area: true, option: true },
       },
+      optionGroups: productOptionGroupsInclude,
     },
   })
 
@@ -314,6 +343,22 @@ export async function addCartItem(
   const unitPriceCents = resolveUnitPriceCents(product, variant)
   const customizationPriceCents = resolveCustomizationPriceCents(designRow, unitPriceCents)
 
+  const optionGroups = collectProductOptionGroupsForValidation(product)
+  const optionsValidation = validateSelectedProductOptions({
+    productId: product.id,
+    productTypeId: product.productTypeId,
+    optionGroups,
+    selectedCommercialOptions: parsed.selectedCommercialOptions ?? [],
+  })
+
+  if (!optionsValidation.ok) {
+    throw cartError(optionsValidation.error, optionsValidation.code)
+  }
+
+  const commercialOptionsSnapshots = optionsValidation.commercialOptionsSnapshots
+  const optionPriceCents = calculateProductOptionsPriceCents(commercialOptionsSnapshots)
+  const commercialOptionsKey = buildCommercialOptionsLineKey(commercialOptionsSnapshots)
+
   let cart = await findActiveCart(context, owner)
   if (!cart) {
     cart = await context.prisma.cart.create({
@@ -327,9 +372,20 @@ export async function addCartItem(
     })
   }
 
-  const lineKey = sameLineKey(parsed.productId, parsed.productVariantId, designId)
+  const lineKey = sameLineKey(
+    parsed.productId,
+    parsed.productVariantId,
+    designId,
+    commercialOptionsKey,
+  )
   const existingItem = cart.items.find(
-    (item) => sameLineKey(item.productId, item.productVariantId, item.designId) === lineKey,
+    (item) =>
+      sameLineKey(
+        item.productId,
+        item.productVariantId,
+        item.designId,
+        commercialOptionsKeyFromItem(item),
+      ) === lineKey,
   )
 
   if (existingItem) {
@@ -379,6 +435,11 @@ export async function addCartItem(
         quantity: parsed.quantity,
         unitPriceCents,
         customizationPriceCents,
+        optionPriceCents,
+        selectedOptionsJson:
+          commercialOptionsSnapshots.length > 0
+            ? (commercialOptionsSnapshots as Prisma.InputJsonValue)
+            : undefined,
         configSnapshotJson: toConfigSnapshotJson(
           productSnapshot,
           customizationSnapshot,

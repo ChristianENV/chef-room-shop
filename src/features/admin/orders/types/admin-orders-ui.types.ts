@@ -1,3 +1,5 @@
+import type { CartCommercialOptionSnapshot } from '@/src/features/storefront/cart/types/cart-bff.types'
+
 /** UI filter slug for order status (cards / toolbar). */
 export type AdminOrderStatusFilter =
   | 'pendiente-pago'
@@ -87,6 +89,8 @@ export type AdminOrdersUiItem = {
   unitPrice: number
   totalPrice: number
   customizationPrice: number
+  optionPriceCents: number
+  commercialOptionsSnapshot: CartCommercialOptionSnapshot[]
   hasCustomization: boolean
   customization?: AdminOrdersUiCustomization
 }
@@ -131,6 +135,7 @@ export type AdminOrdersUiOrder = {
   discount: number
   tax: number
   customizationTotal: number
+  optionTotal: number
   total: number
   paymentMethod?: string
   paymentReference?: string

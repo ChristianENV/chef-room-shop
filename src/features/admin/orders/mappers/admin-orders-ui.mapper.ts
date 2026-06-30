@@ -240,6 +240,8 @@ function mapItemToUi(item: AdminOrderItem): AdminOrdersUiItem {
     unitPrice: unitPesos,
     totalPrice: linePesos,
     customizationPrice: customizationPesos,
+    optionPriceCents: item.optionPriceCents,
+    commercialOptionsSnapshot: item.commercialOptionsSnapshot ?? [],
     hasCustomization: item.hasCustomDesign,
     customization: buildAdminCustomizationFromItem(item),
   }
@@ -333,6 +335,9 @@ export function mapAdminOrderToDetail(order: AdminOrder): AdminOrdersUiOrder {
     discount: centsToPesos(order.discountCents),
     tax: centsToPesos(order.taxCents),
     customizationTotal: centsToPesos(order.customizationTotalCents),
+    optionTotal: centsToPesos(
+      order.items.reduce((sum, item) => sum + item.optionPriceCents * item.quantity, 0),
+    ),
     total: centsToPesos(order.totalCents),
     paymentMethod: latestPayment ? mapPaymentMethodToLabel(latestPayment.method) : undefined,
     paymentReference: latestPayment?.providerOrderId ?? undefined,

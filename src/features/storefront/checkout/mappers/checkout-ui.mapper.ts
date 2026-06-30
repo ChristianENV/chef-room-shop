@@ -3,9 +3,13 @@ import {
   getCartItemCustomizationSummary,
   getCartItemDisplayImage,
   mapBffCartToCartPage,
+  normalizeCommercialOptionsSnapshot,
 } from '@/src/features/storefront/cart/mappers/cart-ui.mapper'
 
-import type { Cart } from '@/src/features/storefront/cart/types/cart-bff.types'
+import type {
+  Cart,
+  CartCommercialOptionSnapshot,
+} from '@/src/features/storefront/cart/types/cart-bff.types'
 import type { AccountAddress, AccountUser } from '@/src/features/storefront/account/types'
 import type { CreateCheckoutOrderInput } from '../types'
 import type { ContactFormData } from '../contact-form'
@@ -24,12 +28,14 @@ export type CheckoutSummaryItem = {
   lineTotalPesos: number
   imageUrl?: string
   isCustomized: boolean
+  commercialOptionsSnapshot: CartCommercialOptionSnapshot[]
 }
 
 export type CheckoutSummaryData = {
   items: CheckoutSummaryItem[]
   subtotalPesos: number
   customizationTotalPesos: number
+  optionTotalPesos: number
   shippingPesos: number
   discountPesos: number
   totalPesos: number
@@ -76,9 +82,6 @@ export function mapBffCartToCheckoutSummary(cart: Cart): CheckoutSummaryData {
 
   const items: CheckoutSummaryItem[] = cart.items.map((item) => {
     const uiItem = page.items.find((row) => row.id === item.id)
-    const lineTotalPesos = uiItem
-      ? (uiItem.unitPrice + (uiItem.customizationPrice ?? 0)) * uiItem.quantity
-      : centsToPesos(item.unitPriceCents + item.customizationPriceCents) * item.quantity
 
     return {
       id: item.id,
@@ -86,11 +89,12 @@ export function mapBffCartToCheckoutSummary(cart: Cart): CheckoutSummaryData {
       sizeLabel: item.productSnapshot?.sizeName ?? uiItem?.size ?? '—',
       colorName: item.productSnapshot?.colorName ?? uiItem?.colorName ?? '—',
       quantity: item.quantity,
-      lineTotalPesos,
+      lineTotalPesos: centsToPesos(item.totalPriceCents),
       imageUrl: getCartItemDisplayImage(item),
       isCustomized: Boolean(
         item.designId || item.customizationPriceCents > 0 || getCartItemCustomizationSummary(item),
       ),
+      commercialOptionsSnapshot: normalizeCommercialOptionsSnapshot(item.commercialOptionsSnapshot),
     }
   })
 
@@ -98,9 +102,10 @@ export function mapBffCartToCheckoutSummary(cart: Cart): CheckoutSummaryData {
     items,
     subtotalPesos: page.subtotal,
     customizationTotalPesos: page.customizationTotal,
+    optionTotalPesos: page.optionTotal,
     shippingPesos: centsToPesos(cart.shippingCostCents),
     discountPesos: centsToPesos(cart.discountTotalCents),
-    totalPesos: page.total,
+    totalPesos: centsToPesos(cart.totalCents),
     totalItems: cart.totalItems,
   }
 }

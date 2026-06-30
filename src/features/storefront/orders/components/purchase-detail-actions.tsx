@@ -46,7 +46,7 @@ export function PurchaseDetailActions({
   showManualRetryPayment,
   canRetryPayment = true,
 }: PurchaseDetailActionsProps) {
-  const actions = getPaymentConfirmationActions(confirmationState, { canRetryPayment })
+  const actions = getPaymentConfirmationActions(confirmationState)
   const showRetry =
     (showManualRetryPayment ?? shouldShowManualRetryPayment(confirmationState)) &&
     canRetryPayment &&

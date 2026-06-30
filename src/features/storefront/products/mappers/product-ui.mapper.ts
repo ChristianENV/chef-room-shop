@@ -6,5 +6,10 @@ import type { ProductDetail, StorefrontProductDetail } from '../types'
  * Maps product detail BFF payload to the legacy storefront `Product` UI model with variants.
  */
 export function mapProductDetailToUi(product: ProductDetail): StorefrontProductDetail {
-  return mapCatalogProductToDetail(product)
+  const base = mapCatalogProductToDetail(product)
+  return {
+    ...base,
+    basePriceCents: product.basePriceCents,
+    optionGroups: product.optionGroups ?? [],
+  }
 }

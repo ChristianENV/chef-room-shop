@@ -69,6 +69,8 @@ export const ModelName = {
   Color: 'Color',
   Size: 'Size',
   ProductVariant: 'ProductVariant',
+  ProductOptionGroup: 'ProductOptionGroup',
+  ProductOptionValue: 'ProductOptionValue',
   CustomizationArea: 'CustomizationArea',
   CustomizationOption: 'CustomizationOption',
   ProductCustomizationRule: 'ProductCustomizationRule',
@@ -398,6 +400,43 @@ export const ProductVariantScalarFieldEnum = {
 export type ProductVariantScalarFieldEnum = (typeof ProductVariantScalarFieldEnum)[keyof typeof ProductVariantScalarFieldEnum]
 
 
+export const ProductOptionGroupScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  productTypeId: 'productTypeId',
+  slug: 'slug',
+  name: 'name',
+  description: 'description',
+  inputType: 'inputType',
+  isRequired: 'isRequired',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  configJson: 'configJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductOptionGroupScalarFieldEnum = (typeof ProductOptionGroupScalarFieldEnum)[keyof typeof ProductOptionGroupScalarFieldEnum]
+
+
+export const ProductOptionValueScalarFieldEnum = {
+  id: 'id',
+  optionGroupId: 'optionGroupId',
+  slug: 'slug',
+  label: 'label',
+  description: 'description',
+  priceDeltaCents: 'priceDeltaCents',
+  isDefault: 'isDefault',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  configJson: 'configJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductOptionValueScalarFieldEnum = (typeof ProductOptionValueScalarFieldEnum)[keyof typeof ProductOptionValueScalarFieldEnum]
+
+
 export const CustomizationAreaScalarFieldEnum = {
   id: 'id',
   slug: 'slug',
@@ -503,7 +542,9 @@ export const CartItemScalarFieldEnum = {
   quantity: 'quantity',
   unitPriceCents: 'unitPriceCents',
   customizationPriceCents: 'customizationPriceCents',
+  optionPriceCents: 'optionPriceCents',
   configSnapshotJson: 'configSnapshotJson',
+  selectedOptionsJson: 'selectedOptionsJson',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -589,9 +630,11 @@ export const OrderItemScalarFieldEnum = {
   quantity: 'quantity',
   unitPriceCents: 'unitPriceCents',
   customizationPriceCents: 'customizationPriceCents',
+  optionPriceCents: 'optionPriceCents',
   lineTotalCents: 'lineTotalCents',
   productSnapshotJson: 'productSnapshotJson',
   designSnapshotJson: 'designSnapshotJson',
+  selectedOptionsJson: 'selectedOptionsJson',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

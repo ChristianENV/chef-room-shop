@@ -825,6 +825,7 @@ export async function updateAdminProduct(
 
 export async function deleteAdminProduct(id: string): Promise<boolean> {
   // TODO: Replace with GraphQL mutation
+  void id
   await new Promise((resolve) => setTimeout(resolve, 300))
   return true
 }
@@ -1494,6 +1495,7 @@ export async function updateAdminOrderStatus(
   notes?: string,
 ): Promise<AdminOrder> {
   // TODO: Replace with GraphQL mutation orders.updateStatus
+  void notes
   await new Promise((resolve) => setTimeout(resolve, 400))
   const order = MOCK_ADMIN_ORDERS.find((o) => o.id === orderId)
   if (!order) throw new Error('Order not found')

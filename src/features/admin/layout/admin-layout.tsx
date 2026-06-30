@@ -13,12 +13,7 @@ interface AdminLayoutProps {
   notificationCount?: number
 }
 
-export function AdminLayout({
-  children,
-  breadcrumb = [],
-  environment = 'DEV',
-  notificationCount = 0,
-}: AdminLayoutProps) {
+export function AdminLayout({ children, breadcrumb = [], environment = 'DEV' }: AdminLayoutProps) {
   return (
     <SidebarProvider className="min-h-svh overflow-x-hidden">
       <AdminSidebar environment={environment} />
