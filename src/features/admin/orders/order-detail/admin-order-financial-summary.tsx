@@ -4,6 +4,7 @@ import { Receipt } from 'lucide-react'
 
 import { Separator } from '@/components/ui/separator'
 import { formatCurrencyMXN } from '@/src/lib/formatters'
+import { isProductOptionsEnabled } from '@/src/config/features'
 
 import type { AdminOrdersUiOrder } from '../types/admin-orders-ui.types'
 
@@ -12,6 +13,8 @@ type AdminOrderFinancialSummaryProps = {
 }
 
 export function AdminOrderFinancialSummary({ order }: AdminOrderFinancialSummaryProps) {
+  const showCommercialOptions = isProductOptionsEnabled()
+
   return (
     <div className="flex h-full min-w-0 flex-col rounded-lg border border-border/80 bg-muted/20 p-4">
       <h4 className="mb-4 flex items-center gap-2 font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -31,7 +34,7 @@ export function AdminOrderFinancialSummary({ order }: AdminOrderFinancialSummary
             </dd>
           </div>
         ) : null}
-        {order.optionTotal > 0 ? (
+        {showCommercialOptions && order.optionTotal > 0 ? (
           <div className="flex justify-between gap-4">
             <dt className="text-muted-foreground">Opciones</dt>
             <dd className="font-sans tabular-nums">{formatCurrencyMXN(order.optionTotal)}</dd>

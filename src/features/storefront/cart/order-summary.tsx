@@ -1,5 +1,6 @@
 'use client'
 import { routes } from '@/src/config/routes'
+import { isProductOptionsEnabled } from '@/src/config/features'
 import { formatCurrencyMXN } from '@/src/lib/formatters'
 
 import { useState } from 'react'
@@ -46,9 +47,11 @@ export function OrderSummary({
   total,
   className,
 }: OrderSummaryProps) {
+  const showCommercialOptions = isProductOptionsEnabled()
+  const resolvedOptionTotal = showCommercialOptions ? optionTotal : 0
   const [isOpen, setIsOpen] = useState(true)
   const computedTotal =
-    subtotal + customizationTotal + optionTotal + shipping - (discount?.amount || 0)
+    subtotal + customizationTotal + resolvedOptionTotal + shipping - (discount?.amount || 0)
   const displayTotal = total ?? computedTotal
 
   return (
@@ -96,10 +99,12 @@ export function OrderSummary({
                 </div>
               )}
 
-              {optionTotal > 0 && (
+              {resolvedOptionTotal > 0 && (
                 <div className="flex items-center justify-between font-serif text-sm">
                   <span className="text-muted-foreground">Opciones</span>
-                  <span className="font-sans text-primary">+{formatCurrencyMXN(optionTotal)}</span>
+                  <span className="font-sans text-primary">
+                    +{formatCurrencyMXN(resolvedOptionTotal)}
+                  </span>
                 </div>
               )}
 

@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
 import { ShieldCheck, CreditCard, Building2, Banknote, Palette } from 'lucide-react'
 import { centsToPesos, formatCurrencyMXN } from '@/src/lib/formatters'
+import { isProductOptionsEnabled } from '@/src/config/features'
 import { CartCommercialOptionsSummary } from '@/src/features/storefront/cart/components/cart-commercial-options-summary'
 
 import type { SelectedShippingRateSummary } from './types/checkout-shipping.types'
@@ -21,6 +22,7 @@ export function CheckoutOrderSummary({
   selectedShipping,
   className,
 }: CheckoutOrderSummaryProps) {
+  const showCommercialOptions = isProductOptionsEnabled()
   const {
     items,
     subtotalPesos,
@@ -73,7 +75,7 @@ export function CheckoutOrderSummary({
                   {item.sizeLabel} / {item.colorName}
                 </p>
                 <p className="font-serif text-xs text-muted-foreground">Cant: {item.quantity}</p>
-                {item.commercialOptionsSnapshot.length > 0 ? (
+                {showCommercialOptions && item.commercialOptionsSnapshot.length > 0 ? (
                   <div className="mt-2">
                     <CartCommercialOptionsSummary
                       options={item.commercialOptionsSnapshot}
@@ -112,7 +114,7 @@ export function CheckoutOrderSummary({
             </div>
           )}
 
-          {optionTotalPesos > 0 && (
+          {showCommercialOptions && optionTotalPesos > 0 && (
             <div className="flex items-center justify-between font-serif text-sm">
               <span className="text-muted-foreground">Opciones</span>
               <span className="font-sans text-primary">+{formatCurrencyMXN(optionTotalPesos)}</span>

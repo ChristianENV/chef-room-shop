@@ -11,6 +11,7 @@ import {
 
 const PRODUCT_ID = 'product-1'
 const PRODUCT_TYPE_ID = 'type-pants'
+const APRON_TYPE_ID = 'type-apron'
 
 function makeGroup(
   overrides: Partial<ProductOptionGroupWithValues> &
@@ -52,6 +53,63 @@ function makeValue(
     configJson: null,
     ...overrides,
   }
+}
+
+function makeApronEmbroideryOptionGroups(): ProductOptionGroupWithValues[] {
+  return [
+    makeGroup({
+      id: 'group-embroidery',
+      slug: 'embroidery',
+      name: 'Bordado',
+      productTypeId: APRON_TYPE_ID,
+      values: [
+        makeValue('group-embroidery', {
+          id: 'val-sin-bordado',
+          slug: 'sin-bordado',
+          label: 'Sin bordado',
+          isDefault: true,
+        }),
+        makeValue('group-embroidery', {
+          id: 'val-con-bordado',
+          slug: 'con-bordado',
+          label: 'Con bordado',
+        }),
+      ],
+    }),
+    makeGroup({
+      id: 'group-embroidery-position',
+      slug: 'embroidery-position',
+      name: 'Posición del bordado',
+      productTypeId: APRON_TYPE_ID,
+      isRequired: true,
+      sortOrder: 1,
+      values: [
+        makeValue('group-embroidery-position', {
+          id: 'val-position-derecha',
+          slug: 'derecha',
+          label: 'Derecha',
+          isDefault: true,
+        }),
+      ],
+    }),
+    makeGroup({
+      id: 'group-embroidery-size',
+      slug: 'embroidery-size',
+      name: 'Tamaño del bordado',
+      productTypeId: APRON_TYPE_ID,
+      isRequired: true,
+      sortOrder: 2,
+      values: [
+        makeValue('group-embroidery-size', {
+          id: 'val-size-mediana',
+          slug: 'mediana',
+          label: 'Mediana',
+          priceDeltaCents: 2000,
+          isDefault: true,
+        }),
+      ],
+    }),
+  ]
 }
 
 describe('commercial product options helpers', () => {
@@ -340,5 +398,117 @@ describe('commercial product options helpers', () => {
     assert.equal(result.ok, false)
     if (result.ok) return
     assert.equal(result.code, 'GROUP_NOT_APPLICABLE')
+  })
+})
+
+describe('commercial product options embroidery dependencies (server)', () => {
+  const apronGroups = makeApronEmbroideryOptionGroups()
+
+  it('does not apply defaults for embroidery-position/size when embroidery is sin-bordado', () => {
+    const result = validateSelectedProductOptions({
+      productId: PRODUCT_ID,
+      productTypeId: APRON_TYPE_ID,
+      optionGroups: apronGroups,
+      selectedCommercialOptions: [{ groupSlug: 'embroidery', valueSlug: 'sin-bordado' }],
+    })
+
+    assert.equal(result.ok, true)
+    if (!result.ok) return
+
+    assert.equal(result.validatedSelections.length, 1)
+    assert.equal(result.validatedSelections[0]?.value.slug, 'sin-bordado')
+    assert.equal(result.commercialOptionsSnapshots.length, 1)
+    assert.equal(result.commercialOptionsSnapshots[0]?.groupSlug, 'embroidery')
+  })
+
+  it('does not include dependent price deltas when embroidery is sin-bordado', () => {
+    const result = validateSelectedProductOptions({
+      productId: PRODUCT_ID,
+      productTypeId: APRON_TYPE_ID,
+      optionGroups: apronGroups,
+      selectedCommercialOptions: [],
+    })
+
+    assert.equal(result.ok, true)
+    if (!result.ok) return
+
+    assert.equal(calculateProductOptionsPriceCents(result.commercialOptionsSnapshots), 0)
+  })
+
+  it('rejects forcibly sent embroidery-position when embroidery is sin-bordado', () => {
+    const result = validateSelectedProductOptions({
+      productId: PRODUCT_ID,
+      productTypeId: APRON_TYPE_ID,
+      optionGroups: apronGroups,
+      selectedCommercialOptions: [
+        { groupSlug: 'embroidery', valueSlug: 'sin-bordado' },
+        { groupSlug: 'embroidery-position', valueSlug: 'derecha' },
+      ],
+    })
+
+    assert.equal(result.ok, false)
+    if (result.ok) return
+    assert.equal(result.code, 'DEPENDENT_GROUP_DISABLED')
+  })
+
+  it('applies dependent defaults and price when embroidery is con-bordado', () => {
+    const result = validateSelectedProductOptions({
+      productId: PRODUCT_ID,
+      productTypeId: APRON_TYPE_ID,
+      optionGroups: apronGroups,
+      selectedCommercialOptions: [{ groupSlug: 'embroidery', valueSlug: 'con-bordado' }],
+    })
+
+    assert.equal(result.ok, true)
+    if (!result.ok) return
+
+    assert.equal(result.validatedSelections.length, 3)
+    assert.deepEqual(
+      result.commercialOptionsSnapshots.map((snapshot) => snapshot.groupSlug),
+      ['embroidery', 'embroidery-position', 'embroidery-size'],
+    )
+    assert.equal(calculateProductOptionsPriceCents(result.commercialOptionsSnapshots), 2000)
+  })
+
+  it('keeps generic required/default behavior for products without embroidery groups', () => {
+    const group = makeGroup({
+      id: 'group-pockets',
+      slug: 'pockets',
+      name: 'Bolsas',
+      isRequired: true,
+      values: [
+        makeValue('group-pockets', {
+          id: 'val-no-cargo',
+          slug: 'sin-bolsas-cargo',
+          label: 'Sin bolsas cargo',
+          isDefault: true,
+        }),
+      ],
+    })
+
+    const result = validateSelectedProductOptions({
+      productId: PRODUCT_ID,
+      productTypeId: PRODUCT_TYPE_ID,
+      optionGroups: [group],
+      selectedCommercialOptions: [],
+    })
+
+    assert.equal(result.ok, true)
+    if (!result.ok) return
+    assert.equal(result.validatedSelections[0]?.value.slug, 'sin-bolsas-cargo')
+  })
+
+  it('keeps customizer selectedOptions unrelated to commercial validation', () => {
+    const customizerSelectedOptions = [{ areaId: 'chest', optionId: 'logo' }]
+    const result = validateSelectedProductOptions({
+      productId: PRODUCT_ID,
+      productTypeId: APRON_TYPE_ID,
+      optionGroups: apronGroups,
+      selectedCommercialOptions: [{ groupSlug: 'embroidery', valueSlug: 'sin-bordado' }],
+    })
+
+    assert.equal(result.ok, true)
+    if (!result.ok) return
+    assert.notDeepEqual(result.commercialOptionsSnapshots, customizerSelectedOptions)
   })
 })

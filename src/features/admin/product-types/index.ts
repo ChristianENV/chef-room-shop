@@ -4,6 +4,7 @@ export { AdminCategoriesEmpty } from './components/admin-categories-empty'
 export { AdminCategoriesTableSkeleton } from './components/admin-categories-loading'
 export { CategoryFormDialog } from './components/category-form-dialog'
 export { ArchiveCategoryDialog } from './components/archive-category-dialog'
+export { ProductTypeCommercialOptionsPanel } from './components/product-type-commercial-options-panel'
 
 export type {
   AdminProductType,

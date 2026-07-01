@@ -396,11 +396,12 @@ input ArchiveAdminProductOptionValueInput {
 - [x] Unit tests for cart commercial options UI (`tests/unit/cart-commercial-options-ui.test.ts`)
 - [x] **Phase 3C order detail:** `commercialOptionsSnapshot` on account/admin order items, option totals in summaries
 - [x] Unit tests for order commercial options UI (`tests/unit/order-commercial-options-ui.test.ts`)
+- [x] **Phase 4 admin UI:** Product Form “Opciones” tab for product-scoped commercial option groups/values
+- [x] Unit tests for admin product options UI (`tests/unit/admin-product-options-ui.test.ts`)
+- [x] **Phase 4B admin UI:** Product-type/global option management (`/admin/categories/options`)
 
 ⏳ **Pending:**
 
-- [ ] Admin UI for managing product options
-- [ ] Option dependency handling (e.g., embroidery position/size disabled until embroidery selected)
 - [ ] Integration tests (cart, checkout, order)
 
 ## Phase 2 Cart & Checkout Wiring
@@ -439,6 +440,42 @@ Order items copy `selectedOptionsJson` and `optionPriceCents` from cart lines wi
 
 **Naming:** PDP uses `selectedCommercialOptions` / `commercialOptionSelections` — never `customizationSnapshot.selectedOptions`.
 
+## Embroidery Dependency UX (PDP + Server)
+
+Client and server guards for apron/mandil commercial options where position and size depend on embroidery selection.
+
+| Constant / slug       | Role                     |
+| --------------------- | ------------------------ |
+| `embroidery`          | Parent group             |
+| `con-bordado`         | Enables dependent groups |
+| `embroidery-position` | Dependent group          |
+| `embroidery-size`     | Dependent group          |
+
+**When embroidery = `sin-bordado` (or not `con-bordado`):**
+
+- PDP: `embroidery-position` and `embroidery-size` render disabled with helper text: _“Selecciona bordado para habilitar esta opción.”_
+- Client: dependent selections omitted from `selectedCommercialOptions`; price estimate excludes dependents
+- **Server:** `validateSelectedProductOptions` skips defaults/required checks for disabled dependents; they are **not** included in `ProductOptionSnapshot[]` or `optionPriceCents`
+- **Server:** forcibly sending a dependent group while embroidery is disabled returns `DEPENDENT_GROUP_DISABLED`
+
+**When embroidery = `con-bordado`:**
+
+- Dependent groups are enabled on PDP and server
+- Defaults apply when configured; required validation and price deltas behave normally
+
+**Implementation:**
+
+| Layer  | Module                                                                           |
+| ------ | -------------------------------------------------------------------------------- |
+| Client | `src/features/storefront/products/lib/product-commercial-option-dependencies.ts` |
+| Server | `src/server/product-options/product-options.dependencies.ts`                     |
+
+Server validation/pricing is **authoritative** for persisted cart/order snapshots.
+
+**Products without an `embroidery` group:** Unchanged behavior (no dependency applied).
+
+**Future:** `configJson` metadata on groups could drive dependencies without hardcoded slugs.
+
 ## Phase 3B Cart & Checkout UI
 
 - `MY_CART_QUERY` fetches `optionTotalCents`, `optionPriceCents`, and `commercialOptionsSnapshot`.
@@ -454,6 +491,105 @@ Order items copy `selectedOptionsJson` and `optionPriceCents` from cart lines wi
 - Order totals may show an **Opciones** row when line option totals sum above zero (client-side sum from items; final total remains server `totalCents`).
 
 **Naming:** Order detail uses `commercialOptionsSnapshot` / `optionPriceCents` — never customizer `selectedOptions` or `customizationSnapshot.selectedOptions`.
+
+## Phase 4 Admin Product Form “Opciones” Tab
+
+**Scope:** Product-specific commercial options (`productId`). Product-type-level groups are managed separately (see Phase 4B).
+
+**Location:** Admin → Products → Edit product → **Opciones** tab (`ProductCommercialOptionsTab`).
+
+**Override note:** Product-specific groups can replace a product-type group when both share the same slug (catalog merge keeps the product-scoped group).
+
+**Capabilities:**
+
+- List option groups and values for the current product (includes inactive via `includeInactive: true`)
+- Create / edit / archive groups (`name`, `slug`, `description`, `inputType`, `isRequired`, `isActive`, `sortOrder`)
+- Create / edit / archive values (`label`, `slug`, `description`, `priceDeltaCents` via MXN input, `isDefault`, `isActive`, `sortOrder`)
+- Empty state when no groups exist; create-mode message when product is not saved yet
+
+**Client layer:**
+
+| File                                         | Role                                   |
+| -------------------------------------------- | -------------------------------------- |
+| `graphql/admin-product-options.queries.ts`   | `adminProductOptionGroups` query       |
+| `graphql/admin-product-options.mutations.ts` | Group/value CRUD + archive mutations   |
+| `api/admin-product-options.api.ts`           | `fetchGraphQL` wrappers                |
+| `api/use-admin-product-options.ts`           | React Query hooks + cache invalidation |
+| `mappers/admin-product-options-ui.mapper.ts` | Form mapping, MXN↔cents, validation    |
+
+**Naming:** Admin UI manages `ProductOptionGroup` / `ProductOptionValue` only — not `CustomizationOption` or customizer `selectedOptions`.
+
+## Phase 4B Admin Product-Type Options
+
+**Scope:** Product-type / global commercial options (`productTypeId`). Applies to all products of that category (e.g. all chef jackets, all pants, all aprons).
+
+**Location:** Admin → Categorías → **Opciones por tipo** (`/admin/categories/options`), or the link from the Categorías page header.
+
+**ProductId vs productTypeId:**
+
+| Scope            | Field           | Applies to                    | Admin surface                   |
+| ---------------- | --------------- | ----------------------------- | ------------------------------- |
+| Product type     | `productTypeId` | All products of that category | `/admin/categories/options`     |
+| Product-specific | `productId`     | Single product only           | Product form → **Opciones** tab |
+
+**Override behavior:** Catalog merges product-type + product-specific groups. On slug collision, the **product-specific** group wins. Use matching slugs intentionally when a product should replace a global default.
+
+**Capabilities:**
+
+- Select product type/category from a list
+- List/create/edit/archive groups scoped to `productTypeId`
+- Create/edit/archive values within each group
+- Scope badge on group cards (`Tipo de producto` vs `Producto`)
+- Empty state: “Este tipo de producto todavía no tiene opciones comerciales.”
+
+**Reused components:** `ProductCommercialOptionsEditor`, group/value form dialogs, archive dialog, React Query hooks (extended with `AdminProductOptionScope`).
+
+**Feature flag:** When `NEXT_PUBLIC_ENABLE_PRODUCT_OPTIONS=false`, the page shows a disabled message and does not fetch product types for option management.
+
+## Release Hardening (Post-Audit)
+
+| Item                                                                  | Status                                                                                                            |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Prettier / `format:check` on Product Options admin files              | ✅                                                                                                                |
+| `react-hooks/exhaustive-deps` in `product-commercial-options-tab.tsx` | ✅                                                                                                                |
+| Skydropx create-label modal error placement test                      | ✅ `tests/unit/admin-create-label-error-placement.test.ts`                                                        |
+| Product Options purchase-flow coverage (cart → checkout → order)      | ✅ `tests/unit/product-options-purchase-flow.test.ts`                                                             |
+| Guest post-checkout order detail commercial options                   | ✅ Client query updated (`ORDER_BY_CHECKOUT_TOKEN_QUERY`); reuses `OrderItemRow` + `CartCommercialOptionsSummary` |
+
+**Guest checkout note:** `/checkout/success` redirects to token-scoped order detail (`orderByCheckoutToken`). The backend already exposes `AccountOrderItem.optionPriceCents` and `commercialOptionsSnapshot`; the missing piece was the client GraphQL query fields. `checkoutResultByToken` still uses `PublicOrderItem` without commercial fields — only relevant if a UI reads that query directly instead of the order detail page.
+
+**Integration coverage limits:** Tests chain server helpers/mappers (`validateSelectedProductOptions` → cart totals → checkout totals → order line copy). No DB-backed E2E or live GraphQL mutation test in this phase.
+
+## Feature Flag Rollout
+
+Commercial Product Options can be disabled globally without deleting database rows or removing code.
+
+| Variable                             | Scope                                                                                                                  | Default when unset        |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `NEXT_PUBLIC_ENABLE_PRODUCT_OPTIONS` | Storefront/admin client UI (PDP selectors, cart/checkout/order display, admin Opciones tab, product-type options page) | **enabled** (`true`)      |
+| `ENABLE_PRODUCT_OPTIONS`             | Server override (catalog `optionGroups`, add-to-cart validation/pricing)                                               | Falls back to public flag |
+
+**Disable everywhere (example):**
+
+```env
+NEXT_PUBLIC_ENABLE_PRODUCT_OPTIONS=false
+ENABLE_PRODUCT_OPTIONS=false
+```
+
+**Enabled behavior:** unchanged Product Options flow (PDP → cart → checkout → orders + admin Opciones tab).
+
+**Disabled behavior:**
+
+- PDP: no option selectors; add-to-cart omits `selectedCommercialOptions`; estimated price ignores option deltas
+- Catalog BFF: returns empty `optionGroups`
+- Add to cart: ignores options for new lines; rejects payloads that still send `selectedCommercialOptions` with code `PRODUCT_OPTIONS_DISABLED`
+- Cart/checkout/order/admin UI: hides commercial option sections and option total rows (existing snapshot data remains readable in mappers/API)
+- Admin product form: hides the **Opciones** tab (no admin option queries from that tab)
+- Admin product-type options page: shows disabled message; skips product-type queries for option management
+
+**Rollout note:** Existing cart lines/orders with `commercialOptionsSnapshot` remain in the database and safe to read; UI hides new configuration surfaces when disabled. Product-type and product-specific option rows remain in the database when disabled.
+
+Tests: `tests/unit/product-options-feature-flag.test.ts`
 
 ## Phase 1 Server Helpers
 
@@ -472,18 +608,12 @@ Commercial product options use explicit naming — **not** customizer `selectedO
 
 ## Known Gaps
 
-1. **Real price deltas**: All option values currently have `priceDeltaCents = 0`. Actual pricing needs to be configured based on business costs.
-2. **Option dependencies**: Embroidery position/size should be disabled or hidden until embroidery is selected. This can be implemented with:
-   - Client-side UX rules
-   - `configJson` metadata for dependencies
-   - Helper text: "Selecciona bordado para configurar posición y tamaño"
+1. **Real price deltas**: Seeded option values may still have `priceDeltaCents = 0`. Configure pricing per product in Admin → Opciones.
+2. **Option dependencies**: ✅ Client + server embroidery UX — position/size disabled until `con-bordado`; future `configJson`-driven rules possible.
 3. **Size measurements**: Real product size tables are pending.
-4. **Admin UI**: No visual interface for managing options yet. Currently requires GraphQL mutations.
-5. **Storefront integration**: Options exposed in catalog BFF server-side; PDP query/UI not wired yet.
+4. **Product-type options in admin**: ✅ Phase 4B — `/admin/categories/options` for `productTypeId` scope; product form tab for `productId` overrides.
 
 ## Next Steps
 
-1. **Phase 4:** Admin Product Form “Opciones” tab
-2. Guest checkout confirmation display of commercial options (if needed)
-3. Add integration tests for cart/checkout/order flows
-4. Configure real price deltas based on production costs
+1. Extend `PublicOrderItem` / `checkoutResultByToken` if a standalone confirmation UI needs commercial options without order detail
+2. DB-backed integration/E2E tests for priced commercial options

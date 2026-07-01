@@ -1,4 +1,9 @@
 import { buildProductOptionSnapshots } from './product-options.snapshot'
+import {
+  EMBROIDERY_DEPENDENT_GROUP_SLUGS,
+  filterApplicableGroupsForSelection,
+  isProductOptionGroupEnabledForSelection,
+} from './product-options.dependencies'
 import type {
   ProductOptionGroupWithValues,
   ProductOptionSelectionInput,
@@ -169,13 +174,31 @@ export function validateSelectedProductOptions(
     selectionsByGroupId.set(group.id, selection)
   }
 
+  for (const group of applicableGroups) {
+    const explicitSelection = selectionsByGroupId.get(group.id)
+    if (!explicitSelection) continue
+    if (!(EMBROIDERY_DEPENDENT_GROUP_SLUGS as readonly string[]).includes(group.slug)) continue
+
+    if (!isProductOptionGroupEnabledForSelection(group, applicableGroups, selectionsByGroupId)) {
+      return fail(
+        'DEPENDENT_GROUP_DISABLED',
+        `La opción "${group.name}" requiere seleccionar bordado.`,
+      )
+    }
+  }
+
+  const groupsForValidation = filterApplicableGroupsForSelection(
+    applicableGroups,
+    selectionsByGroupId,
+  )
+
   const validatedSelections: Array<{
     group: ProductOptionGroupWithValues
     value: ProductOptionValueRecord
     fromDefault: boolean
   }> = []
 
-  for (const group of applicableGroups) {
+  for (const group of groupsForValidation) {
     const activeValues = group.values.filter((value) => value.isActive)
     const explicitSelection = selectionsByGroupId.get(group.id)
 

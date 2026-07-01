@@ -4,6 +4,7 @@ import { MapPin, Package, Receipt, FileText } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { formatCurrencyMXN } from '@/src/lib/formatters'
+import { isProductOptionsEnabled } from '@/src/config/features'
 import { CartCommercialOptionsSummary } from '@/src/features/storefront/cart/components/cart-commercial-options-summary'
 import { AdminShipmentCard } from '@/src/features/admin/shipping/components/admin-shipment-card'
 
@@ -29,6 +30,8 @@ export function AdminOrderDetailPageBody({
 }: AdminOrderDetailPageBodyProps) {
   const { order, bffOrder } = detail
   if (!order || !bffOrder) return null
+
+  const showCommercialOptions = isProductOptionsEnabled()
 
   const scrollToProduction = () => {
     document.getElementById('admin-order-production')?.scrollIntoView({ behavior: 'smooth' })
@@ -109,7 +112,7 @@ export function AdminOrderDetailPageBody({
                         <Badge variant="secondary">x{item.quantity}</Badge>
                         {item.hasCustomization ? <Badge>Personalizado</Badge> : null}
                       </div>
-                      {item.commercialOptionsSnapshot.length > 0 ? (
+                      {showCommercialOptions && item.commercialOptionsSnapshot.length > 0 ? (
                         <div className="mt-3" data-testid="admin-order-item-commercial-options">
                           <p className="mb-1 font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                             Opciones

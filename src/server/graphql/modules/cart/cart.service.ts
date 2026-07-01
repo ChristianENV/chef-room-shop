@@ -10,10 +10,15 @@ import { GraphQLError } from 'graphql'
 
 import { resolveCustomizationPriceFromConfig } from '@/src/server/customizer-pricing/apply-server-pricing'
 import {
+  assertProductOptionsFeatureEnabled,
+  isProductOptionsEnabledOnServer,
+} from '@/src/config/features.server'
+import {
   buildCommercialOptionsLineKey,
   calculateProductOptionsPriceCents,
   parseCommercialOptionsSnapshot,
   validateSelectedProductOptions,
+  type ProductOptionSnapshot,
 } from '@/src/server/product-options'
 
 import type { GraphQLContext } from '../../context'
@@ -343,19 +348,30 @@ export async function addCartItem(
   const unitPriceCents = resolveUnitPriceCents(product, variant)
   const customizationPriceCents = resolveCustomizationPriceCents(designRow, unitPriceCents)
 
-  const optionGroups = collectProductOptionGroupsForValidation(product)
-  const optionsValidation = validateSelectedProductOptions({
-    productId: product.id,
-    productTypeId: product.productTypeId,
-    optionGroups,
-    selectedCommercialOptions: parsed.selectedCommercialOptions ?? [],
-  })
-
-  if (!optionsValidation.ok) {
-    throw cartError(optionsValidation.error, optionsValidation.code)
+  const selectedCommercialOptions = parsed.selectedCommercialOptions ?? []
+  const featureGate = assertProductOptionsFeatureEnabled(selectedCommercialOptions.length)
+  if (!featureGate.ok) {
+    throw cartError(featureGate.error, featureGate.code)
   }
 
-  const commercialOptionsSnapshots = optionsValidation.commercialOptionsSnapshots
+  let commercialOptionsSnapshots: ProductOptionSnapshot[] = []
+
+  if (isProductOptionsEnabledOnServer()) {
+    const optionGroups = collectProductOptionGroupsForValidation(product)
+    const optionsValidation = validateSelectedProductOptions({
+      productId: product.id,
+      productTypeId: product.productTypeId,
+      optionGroups,
+      selectedCommercialOptions,
+    })
+
+    if (!optionsValidation.ok) {
+      throw cartError(optionsValidation.error, optionsValidation.code)
+    }
+
+    commercialOptionsSnapshots = optionsValidation.commercialOptionsSnapshots
+  }
+
   const optionPriceCents = calculateProductOptionsPriceCents(commercialOptionsSnapshots)
   const commercialOptionsKey = buildCommercialOptionsLineKey(commercialOptionsSnapshots)
 

@@ -13,6 +13,8 @@ import type {
   Size,
 } from '@prisma/client'
 
+import { isProductOptionsEnabledOnServer } from '@/src/config/features.server'
+
 import type {
   CatalogColorGql,
   CatalogProductCustomizationRuleGql,
@@ -276,7 +278,9 @@ export function mapProductToGql(product: ProductWithRelations): CatalogProductGq
       mapProductVariantToGql(variant, product.basePriceCents),
     ),
     customizationRules: product.customizationRules.map(mapCustomizationRuleToGql),
-    optionGroups: allOptionGroups.map(mapProductOptionGroupToGql),
+    optionGroups: isProductOptionsEnabledOnServer()
+      ? allOptionGroups.map(mapProductOptionGroupToGql)
+      : [],
     model3d: activeModel ? mapProductModel3dToGql(activeModel) : null,
   }
 }

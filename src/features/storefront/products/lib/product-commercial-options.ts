@@ -1,3 +1,17 @@
+import {
+  clearDisabledCommercialOptionSelections,
+  isCommercialOptionGroupEnabled,
+} from './product-commercial-option-dependencies'
+
+export {
+  EMBROIDERY_DEPENDENT_GROUP_SLUGS,
+  EMBROIDERY_ENABLED_VALUE_SLUG,
+  EMBROIDERY_OPTION_GROUP_SLUG,
+  clearDisabledCommercialOptionSelections,
+  isCommercialOptionGroupEnabled,
+  isEmbroideryCommercialOptionEnabled,
+} from './product-commercial-option-dependencies'
+
 /** Commercial product option value from catalog BFF (PDP). */
 export type ProductOptionValue = {
   id: string
@@ -32,6 +46,7 @@ export type SelectedCommercialOptionInput = {
 
 /**
  * Builds initial commercial option selections from group defaults.
+ * Embroidery dependents are omitted when embroidery is not enabled.
  */
 export function getInitialCommercialOptionSelections(
   optionGroups: ProductOptionGroup[],
@@ -48,11 +63,12 @@ export function getInitialCommercialOptionSelections(
     }
   }
 
-  return selections
+  return clearDisabledCommercialOptionSelections(optionGroups, selections)
 }
 
 /**
  * Validates required commercial option groups have a selected value.
+ * Disabled embroidery dependents are not required on the client.
  */
 export function validateCommercialOptionSelections(
   optionGroups: ProductOptionGroup[],
@@ -60,6 +76,7 @@ export function validateCommercialOptionSelections(
 ): { ok: true } | { ok: false; message: string } {
   for (const group of optionGroups) {
     if (!group.isRequired) continue
+    if (!isCommercialOptionGroupEnabled(group, optionGroups, selections)) continue
 
     const selectedValueId = selections[group.id]
     if (!selectedValueId) {
@@ -84,6 +101,7 @@ export function validateCommercialOptionSelections(
 /**
  * Builds add-to-cart payload from current commercial option selections.
  * Sends groupId + valueId only — never price or labels.
+ * Disabled embroidery dependents are omitted.
  */
 export function buildSelectedCommercialOptionsPayload(
   optionGroups: ProductOptionGroup[],
@@ -92,6 +110,8 @@ export function buildSelectedCommercialOptionsPayload(
   const payload: SelectedCommercialOptionInput[] = []
 
   for (const group of optionGroups) {
+    if (!isCommercialOptionGroupEnabled(group, optionGroups, selections)) continue
+
     const valueId = selections[group.id]
     if (!valueId) continue
 
@@ -109,6 +129,7 @@ export function buildSelectedCommercialOptionsPayload(
 
 /**
  * Sums selected commercial option price deltas for PDP display (estimate only).
+ * Disabled embroidery dependents are excluded.
  */
 export function calculateCommercialOptionsPriceDeltaCents(
   optionGroups: ProductOptionGroup[],
@@ -117,6 +138,8 @@ export function calculateCommercialOptionsPriceDeltaCents(
   let total = 0
 
   for (const group of optionGroups) {
+    if (!isCommercialOptionGroupEnabled(group, optionGroups, selections)) continue
+
     const valueId = selections[group.id]
     if (!valueId) continue
 
