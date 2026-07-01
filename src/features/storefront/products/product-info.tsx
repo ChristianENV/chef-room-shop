@@ -54,7 +54,10 @@ interface ProductInfoProps {
 export function ProductInfo({ product, className, onCustomize }: ProductInfoProps) {
   const productOptionsEnabled = isProductOptionsEnabled()
   const variants = product.variants
-  const optionGroups = productOptionsEnabled ? product.optionGroups : []
+  const optionGroups = useMemo(
+    () => (productOptionsEnabled ? product.optionGroups : []),
+    [productOptionsEnabled, product.optionGroups],
+  )
   const requiresVariant = productRequiresVariantSelection(variants)
   const singleVariant = useMemo(() => getSingleVariant(variants), [variants])
   const initialSelection = useMemo(() => getInitialColorAndSize(product), [product])
