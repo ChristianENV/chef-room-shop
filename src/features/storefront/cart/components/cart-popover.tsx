@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { routes } from '@/src/config/routes'
+import { isProductOptionsEnabled } from '@/src/config/features'
 import { formatCurrencyMXN } from '@/src/lib/formatters'
 import type { CartPreview, CartPreviewItem } from '@/src/types/cart'
 import { useMyCartQuery } from '@/src/features/storefront/cart/api/use-my-cart-query'
@@ -35,6 +36,7 @@ function CartTriggerBadge({ count }: { count: number }) {
 }
 
 function CartPopoverItem({ item }: { item: CartPreviewItem }) {
+  const showCommercialOptions = isProductOptionsEnabled()
   const lineTotal = getCartPreviewLineTotal(item)
 
   return (
@@ -69,7 +71,7 @@ function CartPopoverItem({ item }: { item: CartPreviewItem }) {
             Talla {item.size} · {item.colorName} · Cant. {item.quantity}
           </p>
 
-          {item.commercialOptionsSnapshot.length > 0 ? (
+          {showCommercialOptions && item.commercialOptionsSnapshot.length > 0 ? (
             <div className="mt-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-2">
               <CartCommercialOptionsSummary options={item.commercialOptionsSnapshot} compact />
             </div>
@@ -179,8 +181,10 @@ function CartPopoverError({ onRetry }: { onRetry: () => void }) {
 }
 
 function CartPopoverContent({ cart }: { cart: CartPreview }) {
+  const showCommercialOptions = isProductOptionsEnabled()
   const hasItems = cart.items.length > 0
-  const partialTotal = cart.subtotal + cart.customizationTotal + cart.optionTotal
+  const partialTotal =
+    cart.subtotal + cart.customizationTotal + (showCommercialOptions ? cart.optionTotal : 0)
 
   if (!hasItems) {
     return <CartPopoverEmpty />
@@ -207,7 +211,7 @@ function CartPopoverContent({ cart }: { cart: CartPreview }) {
             <span>{formatCurrencyMXN(cart.customizationTotal)}</span>
           </div>
         )}
-        {cart.optionTotal > 0 && (
+        {showCommercialOptions && cart.optionTotal > 0 && (
           <div className="flex justify-between text-muted-foreground">
             <span>Opciones</span>
             <span>{formatCurrencyMXN(cart.optionTotal)}</span>

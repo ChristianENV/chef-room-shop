@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Minus, Plus, Trash2, Palette } from 'lucide-react'
 import { routes } from '@/src/config/routes'
+import { isProductOptionsEnabled } from '@/src/config/features'
 import { formatCurrencyMXN } from '@/src/lib/formatters'
 import type { CartPreviewItem } from '@/src/types/cart'
 import {
@@ -31,6 +32,7 @@ export function CartItemCard({
   isUpdating = false,
   className,
 }: CartItemCardProps) {
+  const showCommercialOptions = isProductOptionsEnabled()
   const lineTotal = getCartPreviewLineTotal(item)
   const customizationUnit = item.customizationPrice ?? 0
   const optionUnit = item.optionPrice ?? 0
@@ -135,7 +137,7 @@ export function CartItemCard({
             ) : null}
           </div>
 
-          {item.commercialOptionsSnapshot.length > 0 ? (
+          {showCommercialOptions && item.commercialOptionsSnapshot.length > 0 ? (
             <div className="mt-3 rounded-lg border border-border/60 bg-muted/30 p-3">
               <p className="mb-2 font-sans text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Opciones
@@ -195,7 +197,7 @@ export function CartItemCard({
                     </span>
                   </p>
                 )}
-                {optionUnit > 0 && (
+                {showCommercialOptions && optionUnit > 0 && (
                   <p>
                     <span className="font-serif">Opciones:</span>{' '}
                     <span className="font-sans text-primary">+{formatCurrencyMXN(optionUnit)}</span>

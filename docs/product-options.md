@@ -496,6 +496,36 @@ Order items copy `selectedOptionsJson` and `optionPriceCents` from cart lines wi
 
 **Integration coverage limits:** Tests chain server helpers/mappers (`validateSelectedProductOptions` → cart totals → checkout totals → order line copy). No DB-backed E2E or live GraphQL mutation test in this phase.
 
+## Feature Flag Rollout
+
+Commercial Product Options can be disabled globally without deleting database rows or removing code.
+
+| Variable                             | Scope                                                                                       | Default when unset        |
+| ------------------------------------ | ------------------------------------------------------------------------------------------- | ------------------------- |
+| `NEXT_PUBLIC_ENABLE_PRODUCT_OPTIONS` | Storefront/admin client UI (PDP selectors, cart/checkout/order display, admin Opciones tab) | **enabled** (`true`)      |
+| `ENABLE_PRODUCT_OPTIONS`             | Server override (catalog `optionGroups`, add-to-cart validation/pricing)                    | Falls back to public flag |
+
+**Disable everywhere (example):**
+
+```env
+NEXT_PUBLIC_ENABLE_PRODUCT_OPTIONS=false
+ENABLE_PRODUCT_OPTIONS=false
+```
+
+**Enabled behavior:** unchanged Product Options flow (PDP → cart → checkout → orders + admin Opciones tab).
+
+**Disabled behavior:**
+
+- PDP: no option selectors; add-to-cart omits `selectedCommercialOptions`; estimated price ignores option deltas
+- Catalog BFF: returns empty `optionGroups`
+- Add to cart: ignores options for new lines; rejects payloads that still send `selectedCommercialOptions` with code `PRODUCT_OPTIONS_DISABLED`
+- Cart/checkout/order/admin UI: hides commercial option sections and option total rows (existing snapshot data remains readable in mappers/API)
+- Admin product form: hides the **Opciones** tab (no admin option queries from that tab)
+
+**Rollout note:** Existing cart lines/orders with `commercialOptionsSnapshot` remain in the database and safe to read; UI hides new configuration surfaces when disabled.
+
+Tests: `tests/unit/product-options-feature-flag.test.ts`
+
 ## Phase 1 Server Helpers
 
 Commercial product options use explicit naming — **not** customizer `selectedOptions`.

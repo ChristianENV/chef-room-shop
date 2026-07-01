@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Star, Shield, Clock, HeadphonesIcon, Minus, Plus, Loader2 } from 'lucide-react'
 import { PriceDisplay } from '@/components/brand/product-components'
 import { routes } from '@/src/config/routes'
+import { isProductOptionsEnabled } from '@/src/config/features'
 import { centsToPesos } from '@/src/lib/formatters'
 import { GraphQLRequestError } from '@/src/lib/graphql/errors'
 import { useAddCartItemMutation } from '@/src/features/storefront/cart/api/use-add-cart-item-mutation'
@@ -51,8 +52,9 @@ interface ProductInfoProps {
 }
 
 export function ProductInfo({ product, className, onCustomize }: ProductInfoProps) {
+  const productOptionsEnabled = isProductOptionsEnabled()
   const variants = product.variants
-  const optionGroups = product.optionGroups
+  const optionGroups = productOptionsEnabled ? product.optionGroups : []
   const requiresVariant = productRequiresVariantSelection(variants)
   const singleVariant = useMemo(() => getSingleVariant(variants), [variants])
   const initialSelection = useMemo(() => getInitialColorAndSize(product), [product])
@@ -104,7 +106,7 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
 
   const estimatedUnitPricePesos = centsToPesos(estimatedUnitPriceCents)
   const baseDisplayPricePesos = centsToPesos(selectedVariant?.priceCents ?? product.basePriceCents)
-  const hasOptionPriceDelta = optionsPriceDeltaCents > 0
+  const hasOptionPriceDelta = productOptionsEnabled && optionsPriceDeltaCents > 0
 
   const incrementQuantity = () => setQuantity((prev) => Math.min(prev + 1, 10))
   const decrementQuantity = () => setQuantity((prev) => Math.max(prev - 1, 1))
@@ -149,10 +151,9 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
       return
     }
 
-    const selectedCommercialOptions = buildSelectedCommercialOptionsPayload(
-      optionGroups,
-      commercialOptionSelections,
-    )
+    const selectedCommercialOptions = productOptionsEnabled
+      ? buildSelectedCommercialOptionsPayload(optionGroups, commercialOptionSelections)
+      : []
 
     try {
       await addToCart.mutateAsync({
@@ -160,7 +161,9 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
         productVariantId: selectedVariant?.id ?? null,
         quantity,
         selectedCommercialOptions:
-          selectedCommercialOptions.length > 0 ? selectedCommercialOptions : undefined,
+          productOptionsEnabled && selectedCommercialOptions.length > 0
+            ? selectedCommercialOptions
+            : undefined,
       })
       setShowSuccess(true)
       setJustAdded(true)
@@ -182,7 +185,7 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
     addToCart.isPending ||
     (requiresVariant && !selectedVariant) ||
     (selectedVariant != null && selectedVariant.stockQty <= 0) ||
-    !commercialOptionsValidation.ok
+    (productOptionsEnabled && !commercialOptionsValidation.ok)
 
   return (
     <div className={cn('flex flex-col gap-6', className)}>
@@ -296,11 +299,13 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
         </div>
       )}
 
-      <ProductOptionSelectors
-        optionGroups={optionGroups}
-        selections={commercialOptionSelections}
-        onChange={handleCommercialOptionChange}
-      />
+      {productOptionsEnabled ? (
+        <ProductOptionSelectors
+          optionGroups={optionGroups}
+          selections={commercialOptionSelections}
+          onChange={handleCommercialOptionChange}
+        />
+      ) : null}
 
       <div className="space-y-3">
         <label className="font-sans text-sm font-medium text-foreground">Cantidad</label>

@@ -41,6 +41,7 @@ import { ProductSeoImagePicker } from './components/product-seo-image-picker'
 import { ProductCommercialOptionsTab } from './components/product-commercial-options-tab'
 import { ProductFormSavingOverlay } from './components/product-form-saving-overlay'
 import { resolveProductOgImageUrl } from '@/src/lib/product-seo-image'
+import { isProductOptionsEnabled } from '@/src/config/features'
 import {
   mapAdminProductToFormValues,
   mapFormValuesToAdminProductInput,
@@ -131,6 +132,7 @@ function ProductFormDrawerBody({
     isImageUploadBusy,
     isModel3dBusy,
   })
+  const productOptionsEnabled = isProductOptionsEnabled()
 
   useEffect(() => {
     onPendingChange?.(isFormPending)
@@ -262,7 +264,9 @@ function ProductFormDrawerBody({
   return (
     <>
       <Tabs defaultValue="general" className="mt-6 flex-1">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList
+          className={`grid w-full ${productOptionsEnabled ? 'grid-cols-4' : 'grid-cols-3'}`}
+        >
           <TabsTrigger value="general" className="font-sans text-xs" disabled={isFormPending}>
             General
           </TabsTrigger>
@@ -272,9 +276,11 @@ function ProductFormDrawerBody({
           <TabsTrigger value="seo" className="font-sans text-xs" disabled={isFormPending}>
             SEO
           </TabsTrigger>
-          <TabsTrigger value="options" className="font-sans text-xs" disabled={isFormPending}>
-            Opciones
-          </TabsTrigger>
+          {productOptionsEnabled ? (
+            <TabsTrigger value="options" className="font-sans text-xs" disabled={isFormPending}>
+              Opciones
+            </TabsTrigger>
+          ) : null}
         </TabsList>
 
         <TabsContent value="general" className="space-y-4 pt-4">
@@ -550,9 +556,11 @@ function ProductFormDrawerBody({
           </Card>
         </TabsContent>
 
-        <TabsContent value="options" className="space-y-4 pt-4">
-          <ProductCommercialOptionsTab productId={productId} disabled={isFormPending} />
-        </TabsContent>
+        {productOptionsEnabled ? (
+          <TabsContent value="options" className="space-y-4 pt-4">
+            <ProductCommercialOptionsTab productId={productId} disabled={isFormPending} />
+          </TabsContent>
+        ) : null}
       </Tabs>
 
       {isSaving ? (

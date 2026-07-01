@@ -1,4 +1,5 @@
 import { centsToPesos, formatCurrencyMXN } from '@/src/lib/formatters'
+import { isProductOptionsEnabled } from '@/src/config/features'
 import type { AccountOrder } from '../types'
 
 type OrderTotalsCardProps = {
@@ -9,11 +10,11 @@ type OrderTotalsCardProps = {
  * Order totals breakdown in MXN.
  */
 export function OrderTotalsCard({ order }: OrderTotalsCardProps) {
+  const showCommercialOptions = isProductOptionsEnabled()
   const customizationCents = order.customizationTotalCents ?? 0
-  const optionTotalCents = order.items.reduce(
-    (sum, item) => sum + (item.optionPriceCents ?? 0) * item.quantity,
-    0,
-  )
+  const optionTotalCents = showCommercialOptions
+    ? order.items.reduce((sum, item) => sum + (item.optionPriceCents ?? 0) * item.quantity, 0)
+    : 0
   const shippingCents = order.shippingCostCents ?? 0
   const discountCents = order.discountTotalCents ?? 0
   const taxCents = order.taxTotalCents ?? 0

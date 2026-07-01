@@ -12,6 +12,7 @@ import { OrderTimeline } from '../order-timeline'
 import { ProductionSheetPreview } from '../production-sheet-preview'
 import { mapAdminOrderToDetail } from '../mappers/admin-orders-ui.mapper'
 import { formatCurrencyMXN } from '@/src/lib/formatters'
+import { isProductOptionsEnabled } from '@/src/config/features'
 import { CartCommercialOptionsSummary } from '@/src/features/storefront/cart/components/cart-commercial-options-summary'
 
 import { AdminOrderCustomerInfoCard } from './admin-order-customer-info-card'
@@ -139,6 +140,8 @@ function ModalDetailsPanel({
 }
 
 function ItemsPanel({ order }: { order: NonNullable<ReturnType<typeof mapAdminOrderToDetail>> }) {
+  const showCommercialOptions = isProductOptionsEnabled()
+
   return (
     <>
       {order.items.map((item) => (
@@ -152,7 +155,7 @@ function ItemsPanel({ order }: { order: NonNullable<ReturnType<typeof mapAdminOr
                 <Badge variant="secondary">x{item.quantity}</Badge>
                 {item.hasCustomization ? <Badge>Personalizado</Badge> : null}
               </div>
-              {item.commercialOptionsSnapshot.length > 0 ? (
+              {showCommercialOptions && item.commercialOptionsSnapshot.length > 0 ? (
                 <div className="mt-3" data-testid="admin-order-item-commercial-options">
                   <p className="mb-1 font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Opciones
