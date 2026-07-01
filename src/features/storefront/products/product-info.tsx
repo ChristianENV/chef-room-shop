@@ -17,6 +17,7 @@ import {
   buildSelectedCommercialOptionsPayload,
   calculateCommercialOptionsPriceDeltaCents,
   calculateEstimatedUnitPriceCents,
+  clearDisabledCommercialOptionSelections,
   getInitialCommercialOptionSelections,
   validateCommercialOptionSelections,
 } from '@/src/features/storefront/products/lib/product-commercial-options'
@@ -129,7 +130,12 @@ export function ProductInfo({ product, className, onCustomize }: ProductInfoProp
   }
 
   const handleCommercialOptionChange = (groupId: string, valueId: string) => {
-    setCommercialOptionSelections((prev) => ({ ...prev, [groupId]: valueId }))
+    setCommercialOptionSelections((prev) =>
+      clearDisabledCommercialOptionSelections(optionGroups, {
+        ...prev,
+        [groupId]: valueId,
+      }),
+    )
     setSelectionError(null)
     setActionError(null)
   }

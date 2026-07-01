@@ -402,7 +402,6 @@ input ArchiveAdminProductOptionValueInput {
 
 ⏳ **Pending:**
 
-- [ ] Option dependency handling (e.g., embroidery position/size disabled until embroidery selected)
 - [ ] Integration tests (cart, checkout, order)
 
 ## Phase 2 Cart & Checkout Wiring
@@ -440,6 +439,35 @@ Order items copy `selectedOptionsJson` and `optionPriceCents` from cart lines wi
 - `addCartItem` sends `selectedCommercialOptions` with `groupId` + `valueId` only.
 
 **Naming:** PDP uses `selectedCommercialOptions` / `commercialOptionSelections` — never `customizationSnapshot.selectedOptions`.
+
+## Embroidery Dependency UX (PDP)
+
+Client-side guard for apron/mandil commercial options where position and size depend on embroidery selection.
+
+| Constant / slug       | Role                     |
+| --------------------- | ------------------------ |
+| `embroidery`          | Parent group             |
+| `con-bordado`         | Enables dependent groups |
+| `embroidery-position` | Dependent group          |
+| `embroidery-size`     | Dependent group          |
+
+**When embroidery = `sin-bordado` (or not `con-bordado`):**
+
+- `embroidery-position` and `embroidery-size` render disabled with helper text: _“Selecciona bordado para habilitar esta opción.”_
+- Dependent selections are cleared from client state and omitted from `selectedCommercialOptions`
+- Dependent price deltas are excluded from PDP estimate
+- Required validation does **not** block add-to-cart for disabled dependents
+
+**When embroidery = `con-bordado`:**
+
+- Dependent groups are enabled; defaults apply when present
+- Validation, payload, and price estimate behave normally
+
+**Scope:** Explicit client-side rules in `product-commercial-option-dependencies.ts` — not a generic dependency engine. Server validation/pricing remains authoritative on add-to-cart.
+
+**Products without an `embroidery` group:** Unchanged behavior (no dependency applied).
+
+**Future:** `configJson` metadata on groups could drive dependencies without hardcoded slugs.
 
 ## Phase 3B Cart & Checkout UI
 
@@ -574,10 +602,7 @@ Commercial product options use explicit naming — **not** customizer `selectedO
 ## Known Gaps
 
 1. **Real price deltas**: Seeded option values may still have `priceDeltaCents = 0`. Configure pricing per product in Admin → Opciones.
-2. **Option dependencies**: Embroidery position/size should be disabled or hidden until embroidery is selected. This can be implemented with:
-   - Client-side UX rules
-   - `configJson` metadata for dependencies
-   - Helper text: "Selecciona bordado para configurar posición y tamaño"
+2. **Option dependencies**: ✅ PDP embroidery UX — position/size disabled until `con-bordado`; future `configJson`-driven rules possible.
 3. **Size measurements**: Real product size tables are pending.
 4. **Product-type options in admin**: ✅ Phase 4B — `/admin/categories/options` for `productTypeId` scope; product form tab for `productId` overrides.
 
@@ -585,4 +610,3 @@ Commercial product options use explicit naming — **not** customizer `selectedO
 
 1. Extend `PublicOrderItem` / `checkoutResultByToken` if a standalone confirmation UI needs commercial options without order detail
 2. DB-backed integration/E2E tests for priced commercial options
-3. Option dependency UX on PDP (embroidery position/size)
