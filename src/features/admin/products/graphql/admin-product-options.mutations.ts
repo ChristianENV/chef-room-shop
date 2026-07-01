@@ -1,4 +1,7 @@
-import { ADMIN_PRODUCT_OPTION_GROUP_FIELDS, ADMIN_PRODUCT_OPTION_VALUE_FIELDS } from './admin-product-options.queries'
+import {
+  ADMIN_PRODUCT_OPTION_GROUP_FIELDS,
+  ADMIN_PRODUCT_OPTION_VALUE_FIELDS,
+} from './admin-product-options.queries'
 
 export const CREATE_ADMIN_PRODUCT_OPTION_GROUP_MUTATION = /* GraphQL */ `
   mutation CreateAdminProductOptionGroup($input: CreateAdminProductOptionGroupInput!) {

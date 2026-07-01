@@ -74,7 +74,8 @@ export function useArchiveAdminProductOptionGroupMutation(productId: string) {
   const invalidate = useInvalidateProductOptions(productId)
 
   return useMutation({
-    mutationFn: (input: ArchiveAdminProductOptionGroupInput) => archiveAdminProductOptionGroup(input),
+    mutationFn: (input: ArchiveAdminProductOptionGroupInput) =>
+      archiveAdminProductOptionGroup(input),
     onSuccess: () => invalidate(),
   })
 }
@@ -101,7 +102,8 @@ export function useArchiveAdminProductOptionValueMutation(productId: string) {
   const invalidate = useInvalidateProductOptions(productId)
 
   return useMutation({
-    mutationFn: (input: ArchiveAdminProductOptionValueInput) => archiveAdminProductOptionValue(input),
+    mutationFn: (input: ArchiveAdminProductOptionValueInput) =>
+      archiveAdminProductOptionValue(input),
     onSuccess: () => invalidate(),
   })
 }

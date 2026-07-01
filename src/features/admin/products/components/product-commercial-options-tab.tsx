@@ -20,7 +20,10 @@ import {
   mapProductOptionValueToFormValues,
   PRODUCT_OPTION_INPUT_TYPE_LABELS,
 } from '../mappers/admin-product-options-ui.mapper'
-import type { AdminProductOptionGroup, AdminProductOptionValue } from '../types/admin-product-options.types'
+import type {
+  AdminProductOptionGroup,
+  AdminProductOptionValue,
+} from '../types/admin-product-options.types'
 import { ArchiveProductOptionDialog } from './archive-product-option-dialog'
 import { ProductOptionGroupFormDialog } from './product-option-group-form-dialog'
 import { ProductOptionValueFormDialog } from './product-option-value-form-dialog'
@@ -51,9 +54,7 @@ export function ProductCommercialOptionsTab({
     )
   }
 
-  return (
-    <ProductCommercialOptionsEditor productId={productId} disabled={disabled} />
-  )
+  return <ProductCommercialOptionsEditor productId={productId} disabled={disabled} />
 }
 
 function ProductCommercialOptionsEditor({
@@ -82,15 +83,13 @@ function ProductCommercialOptionsEditor({
   const [archiveTarget, setArchiveTarget] = useState<ArchiveTarget | null>(null)
   const [archiveError, setArchiveError] = useState<string | null>(null)
 
-  const groups = groupsQuery.data?.groups ?? []
-  const activeGroups = useMemo(
-    () => [...groups].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name)),
-    [groups],
-  )
+  const activeGroups = useMemo(() => {
+    const groups = groupsQuery.data?.groups ?? []
+    return [...groups].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
+  }, [groupsQuery.data?.groups])
 
-  const nextGroupSortOrder = activeGroups.length > 0
-    ? Math.max(...activeGroups.map((g) => g.sortOrder)) + 1
-    : 0
+  const nextGroupSortOrder =
+    activeGroups.length > 0 ? Math.max(...activeGroups.map((g) => g.sortOrder)) + 1 : 0
 
   const openCreateGroup = () => {
     setEditingGroup(null)

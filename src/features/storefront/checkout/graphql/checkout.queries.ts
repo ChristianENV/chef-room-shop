@@ -145,7 +145,17 @@ export const ORDER_BY_CHECKOUT_TOKEN_QUERY = /* GraphQL */ `
           quantity
           unitPriceCents
           customizationPriceCents
+          optionPriceCents
           totalPriceCents
+          commercialOptionsSnapshot {
+            groupId
+            groupSlug
+            groupName
+            valueId
+            valueSlug
+            valueLabel
+            priceDeltaCents
+          }
           productSnapshotJson
           designSnapshotJson
         }

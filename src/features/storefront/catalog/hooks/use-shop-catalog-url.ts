@@ -26,6 +26,19 @@ export function useShopCatalogUrl({ setFilters, productTypes = [] }: UseShopCata
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const skipUrlSyncRef = useRef(false)
+  const pendingUrlSyncRef = useRef<FilterState | null>(null)
+
+  const replaceShopUrl = useCallback(
+    (nextFilters: FilterState) => {
+      if (pathname !== routes.shop || skipUrlSyncRef.current) return
+      const target = shopUrlFromFilterState(nextFilters, productTypes)
+      const current =
+        searchParams.toString().length > 0 ? `${pathname}?${searchParams.toString()}` : pathname
+      if (target === current) return
+      router.replace(target)
+    },
+    [pathname, productTypes, router, searchParams],
+  )
 
   useEffect(() => {
     if (pathname !== routes.shop) return
@@ -46,31 +59,30 @@ export function useShopCatalogUrl({ setFilters, productTypes = [] }: UseShopCata
     })
   }, [pathname, productTypes, searchParams, setFilters])
 
-  const replaceShopUrl = useCallback(
-    (nextFilters: FilterState) => {
-      if (pathname !== routes.shop || skipUrlSyncRef.current) return
-      const target = shopUrlFromFilterState(nextFilters, productTypes)
-      const current =
-        searchParams.toString().length > 0 ? `${pathname}?${searchParams.toString()}` : pathname
-      if (target === current) return
-      router.replace(target)
-    },
-    [pathname, productTypes, router, searchParams],
-  )
+  useEffect(() => {
+    if (skipUrlSyncRef.current) return
+
+    const pending = pendingUrlSyncRef.current
+    if (pending === null) return
+
+    pendingUrlSyncRef.current = null
+    replaceShopUrl(pending)
+  })
 
   const setFiltersWithUrl = useCallback(
     (updater: FilterState | ((prev: FilterState) => FilterState)) => {
       setFilters((prev) => {
         const next = typeof updater === 'function' ? updater(prev) : updater
-        replaceShopUrl(next)
+        pendingUrlSyncRef.current = next
         return next
       })
     },
-    [replaceShopUrl, setFilters],
+    [setFilters],
   )
 
   const clearFiltersWithUrl = useCallback(
     (defaultFilters: FilterState) => {
+      pendingUrlSyncRef.current = null
       setFilters(defaultFilters)
       if (pathname === routes.shop) {
         router.replace(routes.shop)

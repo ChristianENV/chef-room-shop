@@ -144,9 +144,7 @@ function ProductOptionValueFormBody({
               step={1}
               value={values.priceDeltaPesos}
               disabled={isSaving}
-              onChange={(e) =>
-                update('priceDeltaPesos', Math.max(0, Number(e.target.value) || 0))
-              }
+              onChange={(e) => update('priceDeltaPesos', Math.max(0, Number(e.target.value) || 0))}
             />
             <p className="font-serif text-xs text-muted-foreground">
               0 = sin cargo adicional. Se guarda en centavos.
@@ -239,9 +237,7 @@ export function ProductOptionValueFormDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{editingValue ? 'Editar valor' : 'Nuevo valor'}</DialogTitle>
-          <DialogDescription className="font-serif">
-            Grupo: {groupName}
-          </DialogDescription>
+          <DialogDescription className="font-serif">Grupo: {groupName}</DialogDescription>
         </DialogHeader>
         {open ? (
           <ProductOptionValueFormBody

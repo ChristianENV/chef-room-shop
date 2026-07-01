@@ -38,7 +38,10 @@ import {
   slugifyProductOptionLabel,
   validateProductOptionGroupFormValues,
 } from '../mappers/admin-product-options-ui.mapper'
-import type { AdminProductOptionGroup, ProductOptionGroupFormValues } from '../types/admin-product-options.types'
+import type {
+  AdminProductOptionGroup,
+  ProductOptionGroupFormValues,
+} from '../types/admin-product-options.types'
 
 type ProductOptionGroupFormDialogProps = {
   open: boolean
@@ -242,7 +245,9 @@ export function ProductOptionGroupFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editingGroup ? 'Editar grupo de opciones' : 'Nuevo grupo de opciones'}</DialogTitle>
+          <DialogTitle>
+            {editingGroup ? 'Editar grupo de opciones' : 'Nuevo grupo de opciones'}
+          </DialogTitle>
           <DialogDescription className="font-serif">
             Opciones comerciales del producto (no personalización del customizer).
           </DialogDescription>

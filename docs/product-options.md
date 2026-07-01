@@ -472,15 +472,29 @@ Order items copy `selectedOptionsJson` and `optionPriceCents` from cart lines wi
 
 **Client layer:**
 
-| File | Role |
-| ---- | ---- |
-| `graphql/admin-product-options.queries.ts` | `adminProductOptionGroups` query |
-| `graphql/admin-product-options.mutations.ts` | Group/value CRUD + archive mutations |
-| `api/admin-product-options.api.ts` | `fetchGraphQL` wrappers |
-| `api/use-admin-product-options.ts` | React Query hooks + cache invalidation |
-| `mappers/admin-product-options-ui.mapper.ts` | Form mapping, MXN↔cents, validation |
+| File                                         | Role                                   |
+| -------------------------------------------- | -------------------------------------- |
+| `graphql/admin-product-options.queries.ts`   | `adminProductOptionGroups` query       |
+| `graphql/admin-product-options.mutations.ts` | Group/value CRUD + archive mutations   |
+| `api/admin-product-options.api.ts`           | `fetchGraphQL` wrappers                |
+| `api/use-admin-product-options.ts`           | React Query hooks + cache invalidation |
+| `mappers/admin-product-options-ui.mapper.ts` | Form mapping, MXN↔cents, validation    |
 
 **Naming:** Admin UI manages `ProductOptionGroup` / `ProductOptionValue` only — not `CustomizationOption` or customizer `selectedOptions`.
+
+## Release Hardening (Post-Audit)
+
+| Item                                                                  | Status                                                                                                            |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Prettier / `format:check` on Product Options admin files              | ✅                                                                                                                |
+| `react-hooks/exhaustive-deps` in `product-commercial-options-tab.tsx` | ✅                                                                                                                |
+| Skydropx create-label modal error placement test                      | ✅ `tests/unit/admin-create-label-error-placement.test.ts`                                                        |
+| Product Options purchase-flow coverage (cart → checkout → order)      | ✅ `tests/unit/product-options-purchase-flow.test.ts`                                                             |
+| Guest post-checkout order detail commercial options                   | ✅ Client query updated (`ORDER_BY_CHECKOUT_TOKEN_QUERY`); reuses `OrderItemRow` + `CartCommercialOptionsSummary` |
+
+**Guest checkout note:** `/checkout/success` redirects to token-scoped order detail (`orderByCheckoutToken`). The backend already exposes `AccountOrderItem.optionPriceCents` and `commercialOptionsSnapshot`; the missing piece was the client GraphQL query fields. `checkoutResultByToken` still uses `PublicOrderItem` without commercial fields — only relevant if a UI reads that query directly instead of the order detail page.
+
+**Integration coverage limits:** Tests chain server helpers/mappers (`validateSelectedProductOptions` → cart totals → checkout totals → order line copy). No DB-backed E2E or live GraphQL mutation test in this phase.
 
 ## Phase 1 Server Helpers
 
@@ -510,6 +524,6 @@ Commercial product options use explicit naming — **not** customizer `selectedO
 ## Next Steps
 
 1. Product-type-level option management in admin (optional)
-2. Guest checkout confirmation display of commercial options (if needed)
-3. Add integration tests for cart/checkout/order flows
+2. Extend `PublicOrderItem` / `checkoutResultByToken` if a standalone confirmation UI needs commercial options without order detail
+3. DB-backed integration/E2E tests for priced commercial options
 4. Option dependency UX on PDP (embroidery position/size)
