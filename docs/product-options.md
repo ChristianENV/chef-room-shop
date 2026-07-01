@@ -440,9 +440,9 @@ Order items copy `selectedOptionsJson` and `optionPriceCents` from cart lines wi
 
 **Naming:** PDP uses `selectedCommercialOptions` / `commercialOptionSelections` — never `customizationSnapshot.selectedOptions`.
 
-## Embroidery Dependency UX (PDP)
+## Embroidery Dependency UX (PDP + Server)
 
-Client-side guard for apron/mandil commercial options where position and size depend on embroidery selection.
+Client and server guards for apron/mandil commercial options where position and size depend on embroidery selection.
 
 | Constant / slug       | Role                     |
 | --------------------- | ------------------------ |
@@ -453,17 +453,24 @@ Client-side guard for apron/mandil commercial options where position and size de
 
 **When embroidery = `sin-bordado` (or not `con-bordado`):**
 
-- `embroidery-position` and `embroidery-size` render disabled with helper text: _“Selecciona bordado para habilitar esta opción.”_
-- Dependent selections are cleared from client state and omitted from `selectedCommercialOptions`
-- Dependent price deltas are excluded from PDP estimate
-- Required validation does **not** block add-to-cart for disabled dependents
+- PDP: `embroidery-position` and `embroidery-size` render disabled with helper text: _“Selecciona bordado para habilitar esta opción.”_
+- Client: dependent selections omitted from `selectedCommercialOptions`; price estimate excludes dependents
+- **Server:** `validateSelectedProductOptions` skips defaults/required checks for disabled dependents; they are **not** included in `ProductOptionSnapshot[]` or `optionPriceCents`
+- **Server:** forcibly sending a dependent group while embroidery is disabled returns `DEPENDENT_GROUP_DISABLED`
 
 **When embroidery = `con-bordado`:**
 
-- Dependent groups are enabled; defaults apply when present
-- Validation, payload, and price estimate behave normally
+- Dependent groups are enabled on PDP and server
+- Defaults apply when configured; required validation and price deltas behave normally
 
-**Scope:** Explicit client-side rules in `product-commercial-option-dependencies.ts` — not a generic dependency engine. Server validation/pricing remains authoritative on add-to-cart.
+**Implementation:**
+
+| Layer  | Module                                                                           |
+| ------ | -------------------------------------------------------------------------------- |
+| Client | `src/features/storefront/products/lib/product-commercial-option-dependencies.ts` |
+| Server | `src/server/product-options/product-options.dependencies.ts`                     |
+
+Server validation/pricing is **authoritative** for persisted cart/order snapshots.
 
 **Products without an `embroidery` group:** Unchanged behavior (no dependency applied).
 
@@ -602,7 +609,7 @@ Commercial product options use explicit naming — **not** customizer `selectedO
 ## Known Gaps
 
 1. **Real price deltas**: Seeded option values may still have `priceDeltaCents = 0`. Configure pricing per product in Admin → Opciones.
-2. **Option dependencies**: ✅ PDP embroidery UX — position/size disabled until `con-bordado`; future `configJson`-driven rules possible.
+2. **Option dependencies**: ✅ Client + server embroidery UX — position/size disabled until `con-bordado`; future `configJson`-driven rules possible.
 3. **Size measurements**: Real product size tables are pending.
 4. **Product-type options in admin**: ✅ Phase 4B — `/admin/categories/options` for `productTypeId` scope; product form tab for `productId` overrides.
 

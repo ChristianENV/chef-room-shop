@@ -89,6 +89,7 @@ export type ProductOptionsValidationFailure = {
     | 'INACTIVE_VALUE'
     | 'VALUE_NOT_IN_GROUP'
     | 'REQUIRED_GROUP_MISSING'
+    | 'DEPENDENT_GROUP_DISABLED'
 }
 
 export type ProductOptionsValidationResult =
