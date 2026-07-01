@@ -13,6 +13,7 @@ import {
 } from './admin-product-options.api'
 import { adminProductOptionsQueryKeys } from './admin-product-options.query-keys'
 import type {
+  AdminProductOptionScope,
   ArchiveAdminProductOptionGroupInput,
   ArchiveAdminProductOptionValueInput,
   CreateAdminProductOptionGroupInput,
@@ -22,38 +23,54 @@ import type {
 } from '../types/admin-product-options.types'
 
 type UseAdminProductOptionGroupsQueryOptions = {
-  productId: string
+  scope: AdminProductOptionScope
   includeInactive?: boolean
   enabled?: boolean
 }
 
+function getScopeQueryKey(scope: AdminProductOptionScope, includeInactive: boolean) {
+  return scope.kind === 'product'
+    ? adminProductOptionsQueryKeys.byProduct(scope.productId, includeInactive)
+    : adminProductOptionsQueryKeys.byProductType(scope.productTypeId, includeInactive)
+}
+
+function getScopeQueryInput(scope: AdminProductOptionScope, includeInactive: boolean) {
+  return scope.kind === 'product'
+    ? { productId: scope.productId, includeInactive }
+    : { productTypeId: scope.productTypeId, includeInactive }
+}
+
+function isScopeEnabled(scope: AdminProductOptionScope): boolean {
+  return scope.kind === 'product' ? scope.productId.length > 0 : scope.productTypeId.length > 0
+}
+
 export function useAdminProductOptionGroupsQuery({
-  productId,
+  scope,
   includeInactive = true,
   enabled = true,
 }: UseAdminProductOptionGroupsQueryOptions) {
   return useQuery({
-    queryKey: adminProductOptionsQueryKeys.byProduct(productId, includeInactive),
-    queryFn: () => getAdminProductOptionGroups({ productId, includeInactive }),
-    enabled: enabled && productId.length > 0,
+    queryKey: getScopeQueryKey(scope, includeInactive),
+    queryFn: () => getAdminProductOptionGroups(getScopeQueryInput(scope, includeInactive)),
+    enabled: enabled && isScopeEnabled(scope),
   })
 }
 
-function useInvalidateProductOptions(productId: string) {
+function useInvalidateProductOptions(scope: AdminProductOptionScope) {
   const queryClient = useQueryClient()
   return () => {
     void queryClient.invalidateQueries({ queryKey: adminProductOptionsQueryKeys.all })
     void queryClient.invalidateQueries({
-      queryKey: adminProductOptionsQueryKeys.byProduct(productId, true),
+      queryKey: getScopeQueryKey(scope, true),
     })
     void queryClient.invalidateQueries({
-      queryKey: adminProductOptionsQueryKeys.byProduct(productId, false),
+      queryKey: getScopeQueryKey(scope, false),
     })
   }
 }
 
-export function useCreateAdminProductOptionGroupMutation(productId: string) {
-  const invalidate = useInvalidateProductOptions(productId)
+export function useCreateAdminProductOptionGroupMutation(scope: AdminProductOptionScope) {
+  const invalidate = useInvalidateProductOptions(scope)
 
   return useMutation({
     mutationFn: (input: CreateAdminProductOptionGroupInput) => createAdminProductOptionGroup(input),
@@ -61,8 +78,8 @@ export function useCreateAdminProductOptionGroupMutation(productId: string) {
   })
 }
 
-export function useUpdateAdminProductOptionGroupMutation(productId: string) {
-  const invalidate = useInvalidateProductOptions(productId)
+export function useUpdateAdminProductOptionGroupMutation(scope: AdminProductOptionScope) {
+  const invalidate = useInvalidateProductOptions(scope)
 
   return useMutation({
     mutationFn: (input: UpdateAdminProductOptionGroupInput) => updateAdminProductOptionGroup(input),
@@ -70,8 +87,8 @@ export function useUpdateAdminProductOptionGroupMutation(productId: string) {
   })
 }
 
-export function useArchiveAdminProductOptionGroupMutation(productId: string) {
-  const invalidate = useInvalidateProductOptions(productId)
+export function useArchiveAdminProductOptionGroupMutation(scope: AdminProductOptionScope) {
+  const invalidate = useInvalidateProductOptions(scope)
 
   return useMutation({
     mutationFn: (input: ArchiveAdminProductOptionGroupInput) =>
@@ -80,8 +97,8 @@ export function useArchiveAdminProductOptionGroupMutation(productId: string) {
   })
 }
 
-export function useCreateAdminProductOptionValueMutation(productId: string) {
-  const invalidate = useInvalidateProductOptions(productId)
+export function useCreateAdminProductOptionValueMutation(scope: AdminProductOptionScope) {
+  const invalidate = useInvalidateProductOptions(scope)
 
   return useMutation({
     mutationFn: (input: CreateAdminProductOptionValueInput) => createAdminProductOptionValue(input),
@@ -89,8 +106,8 @@ export function useCreateAdminProductOptionValueMutation(productId: string) {
   })
 }
 
-export function useUpdateAdminProductOptionValueMutation(productId: string) {
-  const invalidate = useInvalidateProductOptions(productId)
+export function useUpdateAdminProductOptionValueMutation(scope: AdminProductOptionScope) {
+  const invalidate = useInvalidateProductOptions(scope)
 
   return useMutation({
     mutationFn: (input: UpdateAdminProductOptionValueInput) => updateAdminProductOptionValue(input),
@@ -98,8 +115,8 @@ export function useUpdateAdminProductOptionValueMutation(productId: string) {
   })
 }
 
-export function useArchiveAdminProductOptionValueMutation(productId: string) {
-  const invalidate = useInvalidateProductOptions(productId)
+export function useArchiveAdminProductOptionValueMutation(scope: AdminProductOptionScope) {
+  const invalidate = useInvalidateProductOptions(scope)
 
   return useMutation({
     mutationFn: (input: ArchiveAdminProductOptionValueInput) =>

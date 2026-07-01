@@ -3,6 +3,7 @@ import { GraphQLRequestError } from '@/src/lib/graphql/errors'
 
 import type {
   AdminProductOptionGroup,
+  AdminProductOptionScope,
   AdminProductOptionValue,
   CreateAdminProductOptionGroupInput,
   CreateAdminProductOptionValueInput,
@@ -82,12 +83,11 @@ export function mapProductOptionValueToFormValues(
   }
 }
 
-export function mapGroupFormValuesToCreateInput(
-  productId: string,
+export function mapGroupFormValuesToCreateInputForScope(
+  scope: AdminProductOptionScope,
   values: ProductOptionGroupFormValues,
 ): CreateAdminProductOptionGroupInput {
-  return {
-    productId,
+  const base: CreateAdminProductOptionGroupInput = {
     slug: values.slug.trim(),
     name: values.name.trim(),
     description: values.description.trim() || null,
@@ -96,6 +96,19 @@ export function mapGroupFormValuesToCreateInput(
     isActive: values.isActive,
     sortOrder: values.sortOrder,
   }
+
+  if (scope.kind === 'product') {
+    return { ...base, productId: scope.productId }
+  }
+
+  return { ...base, productTypeId: scope.productTypeId }
+}
+
+export function mapGroupFormValuesToCreateInput(
+  productId: string,
+  values: ProductOptionGroupFormValues,
+): CreateAdminProductOptionGroupInput {
+  return mapGroupFormValuesToCreateInputForScope({ kind: 'product', productId }, values)
 }
 
 export function mapGroupFormValuesToUpdateInput(

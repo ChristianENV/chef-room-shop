@@ -398,10 +398,10 @@ input ArchiveAdminProductOptionValueInput {
 - [x] Unit tests for order commercial options UI (`tests/unit/order-commercial-options-ui.test.ts`)
 - [x] **Phase 4 admin UI:** Product Form “Opciones” tab for product-scoped commercial option groups/values
 - [x] Unit tests for admin product options UI (`tests/unit/admin-product-options-ui.test.ts`)
+- [x] **Phase 4B admin UI:** Product-type/global option management (`/admin/categories/options`)
 
 ⏳ **Pending:**
 
-- [ ] Product-type-level / global option management in admin (API supports `productTypeId`; UI is product-specific only)
 - [ ] Option dependency handling (e.g., embroidery position/size disabled until embroidery selected)
 - [ ] Integration tests (cart, checkout, order)
 
@@ -459,9 +459,11 @@ Order items copy `selectedOptionsJson` and `optionPriceCents` from cart lines wi
 
 ## Phase 4 Admin Product Form “Opciones” Tab
 
-**Scope:** Product-specific commercial options only (`productId`). Product-type-level groups (`productTypeId`) remain API/seed managed until a dedicated admin surface is added.
+**Scope:** Product-specific commercial options (`productId`). Product-type-level groups are managed separately (see Phase 4B).
 
 **Location:** Admin → Products → Edit product → **Opciones** tab (`ProductCommercialOptionsTab`).
+
+**Override note:** Product-specific groups can replace a product-type group when both share the same slug (catalog merge keeps the product-scoped group).
 
 **Capabilities:**
 
@@ -482,6 +484,33 @@ Order items copy `selectedOptionsJson` and `optionPriceCents` from cart lines wi
 
 **Naming:** Admin UI manages `ProductOptionGroup` / `ProductOptionValue` only — not `CustomizationOption` or customizer `selectedOptions`.
 
+## Phase 4B Admin Product-Type Options
+
+**Scope:** Product-type / global commercial options (`productTypeId`). Applies to all products of that category (e.g. all chef jackets, all pants, all aprons).
+
+**Location:** Admin → Categorías → **Opciones por tipo** (`/admin/categories/options`), or the link from the Categorías page header.
+
+**ProductId vs productTypeId:**
+
+| Scope            | Field           | Applies to                    | Admin surface                   |
+| ---------------- | --------------- | ----------------------------- | ------------------------------- |
+| Product type     | `productTypeId` | All products of that category | `/admin/categories/options`     |
+| Product-specific | `productId`     | Single product only           | Product form → **Opciones** tab |
+
+**Override behavior:** Catalog merges product-type + product-specific groups. On slug collision, the **product-specific** group wins. Use matching slugs intentionally when a product should replace a global default.
+
+**Capabilities:**
+
+- Select product type/category from a list
+- List/create/edit/archive groups scoped to `productTypeId`
+- Create/edit/archive values within each group
+- Scope badge on group cards (`Tipo de producto` vs `Producto`)
+- Empty state: “Este tipo de producto todavía no tiene opciones comerciales.”
+
+**Reused components:** `ProductCommercialOptionsEditor`, group/value form dialogs, archive dialog, React Query hooks (extended with `AdminProductOptionScope`).
+
+**Feature flag:** When `NEXT_PUBLIC_ENABLE_PRODUCT_OPTIONS=false`, the page shows a disabled message and does not fetch product types for option management.
+
 ## Release Hardening (Post-Audit)
 
 | Item                                                                  | Status                                                                                                            |
@@ -500,10 +529,10 @@ Order items copy `selectedOptionsJson` and `optionPriceCents` from cart lines wi
 
 Commercial Product Options can be disabled globally without deleting database rows or removing code.
 
-| Variable                             | Scope                                                                                       | Default when unset        |
-| ------------------------------------ | ------------------------------------------------------------------------------------------- | ------------------------- |
-| `NEXT_PUBLIC_ENABLE_PRODUCT_OPTIONS` | Storefront/admin client UI (PDP selectors, cart/checkout/order display, admin Opciones tab) | **enabled** (`true`)      |
-| `ENABLE_PRODUCT_OPTIONS`             | Server override (catalog `optionGroups`, add-to-cart validation/pricing)                    | Falls back to public flag |
+| Variable                             | Scope                                                                                                                  | Default when unset        |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `NEXT_PUBLIC_ENABLE_PRODUCT_OPTIONS` | Storefront/admin client UI (PDP selectors, cart/checkout/order display, admin Opciones tab, product-type options page) | **enabled** (`true`)      |
+| `ENABLE_PRODUCT_OPTIONS`             | Server override (catalog `optionGroups`, add-to-cart validation/pricing)                                               | Falls back to public flag |
 
 **Disable everywhere (example):**
 
@@ -521,8 +550,9 @@ ENABLE_PRODUCT_OPTIONS=false
 - Add to cart: ignores options for new lines; rejects payloads that still send `selectedCommercialOptions` with code `PRODUCT_OPTIONS_DISABLED`
 - Cart/checkout/order/admin UI: hides commercial option sections and option total rows (existing snapshot data remains readable in mappers/API)
 - Admin product form: hides the **Opciones** tab (no admin option queries from that tab)
+- Admin product-type options page: shows disabled message; skips product-type queries for option management
 
-**Rollout note:** Existing cart lines/orders with `commercialOptionsSnapshot` remain in the database and safe to read; UI hides new configuration surfaces when disabled.
+**Rollout note:** Existing cart lines/orders with `commercialOptionsSnapshot` remain in the database and safe to read; UI hides new configuration surfaces when disabled. Product-type and product-specific option rows remain in the database when disabled.
 
 Tests: `tests/unit/product-options-feature-flag.test.ts`
 
@@ -549,11 +579,10 @@ Commercial product options use explicit naming — **not** customizer `selectedO
    - `configJson` metadata for dependencies
    - Helper text: "Selecciona bordado para configurar posición y tamaño"
 3. **Size measurements**: Real product size tables are pending.
-4. **Product-type options in admin**: GraphQL supports `productTypeId` scope; admin UI currently manages product-specific groups only.
+4. **Product-type options in admin**: ✅ Phase 4B — `/admin/categories/options` for `productTypeId` scope; product form tab for `productId` overrides.
 
 ## Next Steps
 
-1. Product-type-level option management in admin (optional)
-2. Extend `PublicOrderItem` / `checkoutResultByToken` if a standalone confirmation UI needs commercial options without order detail
-3. DB-backed integration/E2E tests for priced commercial options
-4. Option dependency UX on PDP (embroidery position/size)
+1. Extend `PublicOrderItem` / `checkoutResultByToken` if a standalone confirmation UI needs commercial options without order detail
+2. DB-backed integration/E2E tests for priced commercial options
+3. Option dependency UX on PDP (embroidery position/size)

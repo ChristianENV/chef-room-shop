@@ -22,6 +22,7 @@ import {
 } from '../mappers/admin-product-options-ui.mapper'
 import type {
   AdminProductOptionGroup,
+  AdminProductOptionScope,
   AdminProductOptionValue,
 } from '../types/admin-product-options.types'
 import { ArchiveProductOptionDialog } from './archive-product-option-dialog'
@@ -31,6 +32,13 @@ import { ProductOptionValueFormDialog } from './product-option-value-form-dialog
 type ProductCommercialOptionsTabProps = {
   productId: string | null
   disabled?: boolean
+}
+
+type ProductCommercialOptionsEditorProps = {
+  scope: AdminProductOptionScope
+  disabled?: boolean
+  emptyStateMessage?: string
+  scopeHint?: string | null
 }
 
 type ArchiveTarget =
@@ -54,24 +62,30 @@ export function ProductCommercialOptionsTab({
     )
   }
 
-  return <ProductCommercialOptionsEditor productId={productId} disabled={disabled} />
+  return (
+    <ProductCommercialOptionsEditor
+      scope={{ kind: 'product', productId }}
+      disabled={disabled}
+      emptyStateMessage="Este producto todavía no tiene opciones comerciales."
+      scopeHint="Las opciones de producto específico pueden reemplazar un grupo del mismo slug definido a nivel tipo."
+    />
+  )
 }
 
-function ProductCommercialOptionsEditor({
-  productId,
-  disabled,
-}: {
-  productId: string
-  disabled: boolean
-}) {
+export function ProductCommercialOptionsEditor({
+  scope,
+  disabled = false,
+  emptyStateMessage = 'Todavía no hay opciones comerciales configuradas.',
+  scopeHint = null,
+}: ProductCommercialOptionsEditorProps) {
   const groupsQuery = useAdminProductOptionGroupsQuery({
-    productId,
+    scope,
     includeInactive: true,
     enabled: !disabled,
   })
 
-  const archiveGroupMutation = useArchiveAdminProductOptionGroupMutation(productId)
-  const archiveValueMutation = useArchiveAdminProductOptionValueMutation(productId)
+  const archiveGroupMutation = useArchiveAdminProductOptionGroupMutation(scope)
+  const archiveValueMutation = useArchiveAdminProductOptionValueMutation(scope)
 
   const [groupDialogOpen, setGroupDialogOpen] = useState(false)
   const [editingGroup, setEditingGroup] = useState<AdminProductOptionGroup | null>(null)
@@ -161,9 +175,12 @@ function ProductCommercialOptionsEditor({
         <div>
           <h4 className="font-sans font-medium">Opciones comerciales</h4>
           <p className="font-serif text-sm text-muted-foreground">
-            Configuración de add-ons del producto (dry fit, bolsas, bordado, etc.). No es
-            personalización del customizer.
+            Configuración de add-ons (dry fit, bolsas, bordado, etc.). No es personalización del
+            customizer.
           </p>
+          {scopeHint ? (
+            <p className="mt-1 font-serif text-xs text-muted-foreground">{scopeHint}</p>
+          ) : null}
         </div>
         <Button
           type="button"
@@ -182,9 +199,7 @@ function ProductCommercialOptionsEditor({
           className="rounded-lg border border-dashed border-border p-8 text-center"
           data-testid="admin-product-options-empty"
         >
-          <p className="font-serif text-sm text-muted-foreground">
-            Este producto todavía no tiene opciones comerciales.
-          </p>
+          <p className="font-serif text-sm text-muted-foreground">{emptyStateMessage}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -208,7 +223,7 @@ function ProductCommercialOptionsEditor({
       <ProductOptionGroupFormDialog
         open={groupDialogOpen}
         onOpenChange={setGroupDialogOpen}
-        productId={productId}
+        scope={scope}
         editingGroup={editingGroup}
         initialValues={mapProductOptionGroupToFormValues(editingGroup, nextGroupSortOrder)}
       />
@@ -217,7 +232,7 @@ function ProductCommercialOptionsEditor({
         <ProductOptionValueFormDialog
           open={valueDialogOpen}
           onOpenChange={setValueDialogOpen}
-          productId={productId}
+          scope={scope}
           optionGroupId={valueDialogGroup.id}
           groupName={valueDialogGroup.name}
           editingValue={editingValue}
@@ -279,6 +294,8 @@ function ProductOptionGroupCard({
     (a, b) => a.sortOrder - b.sortOrder || a.label.localeCompare(b.label),
   )
 
+  const scopeLabel = group.productTypeId && !group.productId ? 'Tipo de producto' : 'Producto'
+
   return (
     <Card
       className={cn(!group.isActive && 'opacity-70')}
@@ -289,6 +306,9 @@ function ProductOptionGroupCard({
           <CardTitle className="font-sans text-base">{group.name}</CardTitle>
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-mono text-xs text-muted-foreground">{group.slug}</span>
+            <Badge variant="outline" className="font-sans text-xs">
+              {scopeLabel}
+            </Badge>
             <Badge variant="secondary" className="font-sans text-xs">
               {PRODUCT_OPTION_INPUT_TYPE_LABELS[group.inputType]}
             </Badge>

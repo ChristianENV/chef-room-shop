@@ -31,6 +31,7 @@ import {
   validateProductOptionValueFormValues,
 } from '../mappers/admin-product-options-ui.mapper'
 import type {
+  AdminProductOptionScope,
   AdminProductOptionValue,
   ProductOptionValueFormValues,
 } from '../types/admin-product-options.types'
@@ -38,7 +39,7 @@ import type {
 type ProductOptionValueFormDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  productId: string
+  scope: AdminProductOptionScope
   optionGroupId: string
   groupName: string
   editingValue: AdminProductOptionValue | null
@@ -47,7 +48,7 @@ type ProductOptionValueFormDialogProps = {
 }
 
 function ProductOptionValueFormBody({
-  productId,
+  scope,
   optionGroupId,
   editingValue,
   initialValues,
@@ -55,8 +56,8 @@ function ProductOptionValueFormBody({
   onSaved,
 }: Omit<ProductOptionValueFormDialogProps, 'open' | 'groupName'>) {
   const isEditing = !!editingValue
-  const createMutation = useCreateAdminProductOptionValueMutation(productId)
-  const updateMutation = useUpdateAdminProductOptionValueMutation(productId)
+  const createMutation = useCreateAdminProductOptionValueMutation(scope)
+  const updateMutation = useUpdateAdminProductOptionValueMutation(scope)
 
   const [values, setValues] = useState<ProductOptionValueFormValues>(initialValues)
   const [formError, setFormError] = useState<string | null>(null)
@@ -223,7 +224,7 @@ function ProductOptionValueFormBody({
 export function ProductOptionValueFormDialog({
   open,
   onOpenChange,
-  productId,
+  scope,
   optionGroupId,
   groupName,
   editingValue,
@@ -242,7 +243,7 @@ export function ProductOptionValueFormDialog({
         {open ? (
           <ProductOptionValueFormBody
             key={formKey}
-            productId={productId}
+            scope={scope}
             optionGroupId={optionGroupId}
             editingValue={editingValue}
             initialValues={initialValues}

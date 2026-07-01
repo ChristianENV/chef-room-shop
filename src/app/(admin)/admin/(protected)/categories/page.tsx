@@ -1,7 +1,8 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Plus } from 'lucide-react'
+import Link from 'next/link'
+import { Plus, SlidersHorizontal } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -22,6 +23,7 @@ import {
   mapAdminProductTypeToFormValues,
   mapAdminProductTypeToTableRow,
 } from '@/src/features/admin/product-types/mappers/admin-product-types-ui.mapper'
+import { routes } from '@/src/config/routes'
 import type { AdminProductType } from '@/src/features/admin/product-types/types'
 import type { AdminCategoryTableRow } from '@/src/features/admin/product-types/types/admin-product-types-ui.types'
 
@@ -104,10 +106,18 @@ export default function AdminCategoriesPage() {
               producto.
             </p>
           </div>
-          <Button onClick={handleCreate}>
-            <Plus className="mr-2 h-4 w-4" />
-            Nueva categoría
-          </Button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button variant="outline" asChild>
+              <Link href={routes.adminCategoryOptions}>
+                <SlidersHorizontal className="mr-2 h-4 w-4" />
+                Opciones por tipo
+              </Link>
+            </Button>
+            <Button onClick={handleCreate}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nueva categoría
+            </Button>
+          </div>
         </div>
 
         {feedback ? (

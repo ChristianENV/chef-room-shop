@@ -1,5 +1,9 @@
 export type AdminProductOptionInputType = 'SINGLE_SELECT' | 'BOOLEAN'
 
+export type AdminProductOptionScope =
+  | { kind: 'product'; productId: string }
+  | { kind: 'productType'; productTypeId: string }
+
 export type AdminProductOptionValue = {
   id: string
   optionGroupId: string

@@ -7,6 +7,7 @@ import {
   KEBAB_CASE_SLUG_REGEX,
   mapAdminProductOptionMutationError,
   mapGroupFormValuesToCreateInput,
+  mapGroupFormValuesToCreateInputForScope,
   mapValueFormValuesToCreateInput,
   slugifyProductOptionLabel,
   validateProductOptionGroupFormValues,
@@ -20,6 +21,7 @@ import { ADMIN_PRODUCT_OPTION_GROUPS_QUERY } from '@/src/features/admin/products
 import { adminProductOptionsQueryKeys } from '@/src/features/admin/products/api/admin-product-options.query-keys'
 
 const productId = 'prod-abc-123'
+const productTypeId = 'type-chef-jackets-789'
 const groupId = 'group-xyz-456'
 
 const validGroupValues = {
@@ -71,9 +73,20 @@ describe('admin product options UI mapper', () => {
   it('mapGroupFormValuesToCreateInput includes productId', () => {
     const input = mapGroupFormValuesToCreateInput(productId, validGroupValues)
     assert.equal(input.productId, productId)
+    assert.equal(input.productTypeId, undefined)
     assert.equal(input.slug, 'dry-fit')
     assert.equal(input.name, 'Dry fit')
     assert.equal(input.inputType, 'SINGLE_SELECT')
+  })
+
+  it('mapGroupFormValuesToCreateInputForScope uses productTypeId for type scope', () => {
+    const input = mapGroupFormValuesToCreateInputForScope(
+      { kind: 'productType', productTypeId },
+      validGroupValues,
+    )
+    assert.equal(input.productTypeId, productTypeId)
+    assert.equal(input.productId, undefined)
+    assert.equal(input.slug, 'dry-fit')
   })
 
   it('mapValueFormValuesToCreateInput converts MXN to cents', () => {
@@ -109,12 +122,29 @@ describe('admin product options GraphQL client', () => {
     )
 
     assert.match(hookSource, /adminProductOptionsQueryKeys\.byProduct/)
+    assert.match(hookSource, /adminProductOptionsQueryKeys\.byProductType/)
     assert.deepEqual(adminProductOptionsQueryKeys.byProduct(productId, true), [
       'admin-product-options',
       'product',
       productId,
       { includeInactive: true },
     ])
+    assert.deepEqual(adminProductOptionsQueryKeys.byProductType(productTypeId, true), [
+      'admin-product-options',
+      'productType',
+      productTypeId,
+      { includeInactive: true },
+    ])
+  })
+
+  it('product-type option query uses productTypeId in query input', () => {
+    const hookSource = readFileSync(
+      resolve('src/features/admin/products/api/use-admin-product-options.ts'),
+      'utf8',
+    )
+
+    assert.match(hookSource, /productTypeId: scope\.productTypeId/)
+    assert.match(hookSource, /productId: scope\.productId/)
   })
 })
 
@@ -141,5 +171,64 @@ describe('admin product options tab UI wiring', () => {
     assert.match(tabSource, /Agregar grupo de opciones/)
     assert.match(tabSource, /Agregar valor/)
     assert.match(tabSource, /Guarda el producto primero/)
+    assert.match(tabSource, /reemplazar un grupo del mismo slug/)
+  })
+})
+
+describe('admin product-type options UI wiring', () => {
+  it('product-type options page uses ProductCommercialOptionsEditor with productType scope', () => {
+    const panelSource = readFileSync(
+      resolve(
+        'src/features/admin/product-types/components/product-type-commercial-options-panel.tsx',
+      ),
+      'utf8',
+    )
+
+    assert.match(panelSource, /isProductOptionsEnabled\(\)/)
+    assert.match(panelSource, /kind: 'productType', productTypeId/)
+    assert.match(panelSource, /Este tipo de producto todavía no tiene opciones comerciales\./)
+    assert.match(panelSource, /mismo slug para reemplazar la configuración global/)
+  })
+
+  it('product-type options UI is hidden when feature flag is off', () => {
+    const panelSource = readFileSync(
+      resolve(
+        'src/features/admin/product-types/components/product-type-commercial-options-panel.tsx',
+      ),
+      'utf8',
+    )
+
+    assert.match(panelSource, /admin-product-type-options-disabled/)
+    assert.match(panelSource, /enabled: productOptionsEnabled/)
+  })
+
+  it('categories page links to product-type options admin route', () => {
+    const categoriesPageSource = readFileSync(
+      resolve('src/app/(admin)/admin/(protected)/categories/page.tsx'),
+      'utf8',
+    )
+
+    assert.match(categoriesPageSource, /routes\.adminCategoryOptions/)
+    assert.match(categoriesPageSource, /Opciones por tipo/)
+  })
+
+  it('group form dialog creates product-type scoped groups via scope prop', () => {
+    const groupDialogSource = readFileSync(
+      resolve('src/features/admin/products/components/product-option-group-form-dialog.tsx'),
+      'utf8',
+    )
+
+    assert.match(groupDialogSource, /mapGroupFormValuesToCreateInputForScope\(scope, values\)/)
+    assert.match(groupDialogSource, /scope: AdminProductOptionScope/)
+  })
+
+  it('archive mutations remain wired for scoped editor', () => {
+    const tabSource = readFileSync(
+      resolve('src/features/admin/products/components/product-commercial-options-tab.tsx'),
+      'utf8',
+    )
+
+    assert.match(tabSource, /useArchiveAdminProductOptionGroupMutation\(scope\)/)
+    assert.match(tabSource, /useArchiveAdminProductOptionValueMutation\(scope\)/)
   })
 })

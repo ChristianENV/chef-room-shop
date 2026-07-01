@@ -31,7 +31,7 @@ import {
 } from '../api/use-admin-product-options'
 import {
   mapAdminProductOptionMutationError,
-  mapGroupFormValuesToCreateInput,
+  mapGroupFormValuesToCreateInputForScope,
   mapGroupFormValuesToUpdateInput,
   mapProductOptionGroupToFormValues,
   PRODUCT_OPTION_INPUT_TYPE_LABELS,
@@ -40,28 +40,29 @@ import {
 } from '../mappers/admin-product-options-ui.mapper'
 import type {
   AdminProductOptionGroup,
+  AdminProductOptionScope,
   ProductOptionGroupFormValues,
 } from '../types/admin-product-options.types'
 
 type ProductOptionGroupFormDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  productId: string
+  scope: AdminProductOptionScope
   editingGroup: AdminProductOptionGroup | null
   initialValues: ProductOptionGroupFormValues
   onSaved?: () => void
 }
 
 function ProductOptionGroupFormBody({
-  productId,
+  scope,
   editingGroup,
   initialValues,
   onOpenChange,
   onSaved,
 }: Omit<ProductOptionGroupFormDialogProps, 'open'>) {
   const isEditing = !!editingGroup
-  const createMutation = useCreateAdminProductOptionGroupMutation(productId)
-  const updateMutation = useUpdateAdminProductOptionGroupMutation(productId)
+  const createMutation = useCreateAdminProductOptionGroupMutation(scope)
+  const updateMutation = useUpdateAdminProductOptionGroupMutation(scope)
 
   const [values, setValues] = useState<ProductOptionGroupFormValues>(initialValues)
   const [formError, setFormError] = useState<string | null>(null)
@@ -87,7 +88,7 @@ function ProductOptionGroupFormBody({
       if (isEditing && editingGroup) {
         await updateMutation.mutateAsync(mapGroupFormValuesToUpdateInput(editingGroup.id, values))
       } else {
-        await createMutation.mutateAsync(mapGroupFormValuesToCreateInput(productId, values))
+        await createMutation.mutateAsync(mapGroupFormValuesToCreateInputForScope(scope, values))
       }
       onSaved?.()
       onOpenChange(false)
@@ -234,7 +235,7 @@ function ProductOptionGroupFormBody({
 export function ProductOptionGroupFormDialog({
   open,
   onOpenChange,
-  productId,
+  scope,
   editingGroup,
   initialValues,
   onSaved,
@@ -249,13 +250,15 @@ export function ProductOptionGroupFormDialog({
             {editingGroup ? 'Editar grupo de opciones' : 'Nuevo grupo de opciones'}
           </DialogTitle>
           <DialogDescription className="font-serif">
-            Opciones comerciales del producto (no personalización del customizer).
+            {scope.kind === 'productType'
+              ? 'Opciones comerciales del tipo de producto (aplican a todos los productos de la categoría).'
+              : 'Opciones comerciales del producto (no personalización del customizer).'}
           </DialogDescription>
         </DialogHeader>
         {open ? (
           <ProductOptionGroupFormBody
             key={formKey}
-            productId={productId}
+            scope={scope}
             editingGroup={editingGroup}
             initialValues={initialValues}
             onOpenChange={onOpenChange}
