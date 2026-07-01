@@ -5,9 +5,9 @@ import { getCustomerTierLabel } from '@/src/lib/customer/customer-tier'
 
 import type {
   AdminUser,
-  AdminUserRoleFilter,
-  AdminUsersListVariables,
+  AdminUserSegment,
   AdminUserStatusFilter,
+  AdminUsersListVariables,
   AdminUsersUiTableRow,
 } from '../types'
 
@@ -21,7 +21,7 @@ const STATUS_LABELS: Record<string, string> = {
   ACTIVE: 'Activo',
   SUSPENDED: 'Suspendido',
   PENDING_VERIFICATION: 'Pendiente',
-  DELETED: 'Eliminado',
+  DELETED: 'Bloqueado',
 }
 
 function formatAdminDate(iso: string): string {
@@ -39,18 +39,18 @@ function formatRoles(roles: string[]): string {
 
 export function buildAdminUsersListVariables(input: {
   search: string
-  roleFilter: AdminUserRoleFilter
   statusFilter: AdminUserStatusFilter
   limit?: number
   offset?: number
+  segment?: AdminUserSegment
 }): AdminUsersListVariables {
   const search = input.search.trim()
 
   return {
     filter: {
       ...(search ? { search } : {}),
-      ...(input.roleFilter !== 'all' ? { role: input.roleFilter } : {}),
       ...(input.statusFilter !== 'all' ? { status: input.statusFilter } : {}),
+      ...(input.segment ? { segment: input.segment } : {}),
     },
     limit: input.limit ?? 50,
     offset: input.offset ?? 0,
@@ -70,6 +70,9 @@ export function mapAdminUserToTableRow(user: AdminUser): AdminUsersUiTableRow {
     customerTierLabel: getCustomerTierLabel(user.customerTier),
     emailVerified: user.emailVerified,
     isActive: user.isActive,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    phone: user.phone,
     createdAtLabel: formatAdminDate(user.createdAt),
     updatedAtLabel: formatAdminDate(user.updatedAt),
   }

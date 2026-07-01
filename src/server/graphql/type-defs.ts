@@ -1283,6 +1283,9 @@ export const adminUsersTypeDefs = /* GraphQL */ `
     customerTier: String!
     emailVerified: Boolean!
     isActive: Boolean!
+    firstName: String
+    lastName: String
+    phone: String
     createdAt: String!
     updatedAt: String!
   }
@@ -1296,6 +1299,16 @@ export const adminUsersTypeDefs = /* GraphQL */ `
     search: String
     role: String
     status: String
+    segment: String
+  }
+
+  input UpdateAdminUserInput {
+    id: ID!
+    name: String
+    firstName: String
+    lastName: String
+    phone: String
+    customerTier: String
   }
 `
 
@@ -1952,6 +1965,7 @@ export const typeDefs = /* GraphQL */ `
     adminRecentDesigns(limit: Int): [AdminRecentDesign!]!
     adminRecentPayments(limit: Int): [AdminRecentPayment!]!
     adminTopProducts(limit: Int): [AdminTopProduct!]!
+    adminUser(id: ID!): AdminUser
     adminUsers(filter: AdminUsersFilterInput, limit: Int, offset: Int): AdminUsersPayload!
     adminPayments(filter: AdminPaymentsFilterInput, limit: Int, offset: Int): AdminPaymentsPayload!
     adminOrders(
@@ -2133,6 +2147,10 @@ export const typeDefs = /* GraphQL */ `
     deleteDesignDraft(input: DeleteDesignDraftInput!): Boolean!
     markNotificationRead(id: ID!): Notification!
     markAllNotificationsRead(audience: NotificationAudience): MarkAllNotificationsReadPayload!
+    updateAdminUser(input: UpdateAdminUserInput!): AdminUser!
+    pauseAdminUser(id: ID!): AdminUser!
+    blockAdminUser(id: ID!): AdminUser!
+    reactivateAdminUser(id: ID!): AdminUser!
   }
 
   ${catalogTypeDefs}

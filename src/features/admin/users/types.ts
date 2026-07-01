@@ -7,6 +7,9 @@ export type AdminUser = {
   customerTier: string
   emailVerified: boolean
   isActive: boolean
+  firstName: string | null
+  lastName: string | null
+  phone: string | null
   createdAt: string
   updatedAt: string
 }
@@ -20,6 +23,7 @@ export type AdminUsersFilter = {
   search?: string | null
   role?: string | null
   status?: string | null
+  segment?: string | null
 }
 
 export type AdminUsersListVariables = {
@@ -30,7 +34,15 @@ export type AdminUsersListVariables = {
 
 export type AdminUserRoleFilter = 'all' | 'CUSTOMER' | 'ADMIN' | 'SUPERADMIN'
 
-export type AdminUserStatusFilter = 'all' | 'ACTIVE' | 'SUSPENDED' | 'PENDING_VERIFICATION'
+export type AdminUserStatusFilter =
+  | 'all'
+  | 'ACTIVE'
+  | 'SUSPENDED'
+  | 'PENDING_VERIFICATION'
+  | 'DELETED'
+
+/** Which tab/segment is being displayed */
+export type AdminUserSegment = 'CUSTOMERS' | 'ADMINS'
 
 export type AdminUsersUiTableRow = {
   id: string
@@ -44,6 +56,18 @@ export type AdminUsersUiTableRow = {
   customerTierLabel: string | null
   emailVerified: boolean
   isActive: boolean
+  firstName: string | null
+  lastName: string | null
+  phone: string | null
   createdAtLabel: string
   updatedAtLabel: string
+}
+
+export type UpdateAdminUserInput = {
+  id: string
+  name?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  phone?: string | null
+  customerTier?: string | null
 }

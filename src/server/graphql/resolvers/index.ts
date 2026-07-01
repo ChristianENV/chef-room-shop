@@ -54,6 +54,7 @@ export const resolvers = {
     ...checkoutResolvers.Mutation,
     ...paymentsResolvers.Mutation,
     ...orderClaimResolvers.Mutation,
+    ...adminUsersResolvers.Mutation,
     ...adminOrdersResolvers.Mutation,
     ...adminShippingResolvers.Mutation,
     ...adminProductsResolvers.Mutation,

@@ -52,6 +52,8 @@ export const routes = {
   adminCustomization: '/admin/customization',
   adminDesigns: '/admin/designs',
   adminUsers: '/admin/users',
+  adminUsersCustomers: '/admin/users/customers',
+  adminUsersAdmins: '/admin/users/admins',
   adminPayments: '/admin/payments',
   adminShipping: '/admin/shipping',
   adminAnalytics: '/admin/analytics',
