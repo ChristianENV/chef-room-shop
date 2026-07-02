@@ -168,7 +168,7 @@ export function ViewportControls() {
         </div>
       ) : (
         <div className="absolute bottom-[5.5rem] left-1/2 z-10 -translate-x-1/2 text-[11px] text-muted-foreground">
-          Vista 2D detallada disponible próximamente
+          Vista previa 2D (boceto). El arte final llegará con el asset vectorial.
         </div>
       )}
     </>

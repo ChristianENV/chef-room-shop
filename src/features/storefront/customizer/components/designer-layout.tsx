@@ -1,6 +1,5 @@
 'use client'
 
-import dynamic from 'next/dynamic'
 import type { RefObject } from 'react'
 import { motion } from 'framer-motion'
 import { Layers, SlidersHorizontal } from 'lucide-react'
@@ -9,17 +8,8 @@ import type { CatalogProduct } from '@/src/features/storefront/catalog/types'
 import { LeftSidebar } from './left-sidebar'
 import { RightSidebar } from './right-sidebar'
 import { TopToolbar, ViewportControls, BottomActionBar } from './toolbar'
+import { CustomizerViewportHost } from './customizer-viewport-host'
 import type { ViewportCaptureHandle } from './viewport-3d'
-
-// Dynamic import for 3D viewport to avoid SSR issues
-const Viewport3D = dynamic(() => import('./viewport-3d'), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#0a0a12] via-[#0f0f1a] to-[#0a0a12]">
-      <div className="text-muted-foreground">Cargando visor 3D...</div>
-    </div>
-  ),
-})
 
 interface DesignerLayoutProps {
   onSaveDesign?: () => void
@@ -77,7 +67,7 @@ export function DesignerLayout({
         />
 
         <div className="h-full w-full">
-          <Viewport3D ref={viewportCaptureRef} />
+          <CustomizerViewportHost viewportCaptureRef={viewportCaptureRef} />
         </div>
 
         <ViewportControls />
