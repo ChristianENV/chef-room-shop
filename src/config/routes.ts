@@ -52,6 +52,10 @@ export const routes = {
   adminCustomization: '/admin/customization',
   adminDesigns: '/admin/designs',
   adminUsers: '/admin/users',
+  adminUsersCustomers: '/admin/users/customers',
+  adminUsersAdmins: '/admin/users/admins',
+  adminUsersInvitations: '/admin/users/invitations',
+  acceptInvite: '/accept-invite',
   adminPayments: '/admin/payments',
   adminShipping: '/admin/shipping',
   adminAnalytics: '/admin/analytics',
@@ -100,6 +104,11 @@ export function login(options?: { callbackUrl?: string }) {
 
 export function register(options?: { callbackUrl?: string }) {
   return appendQuery(routes.register, { callbackUrl: options?.callbackUrl })
+}
+
+/** Public invitation acceptance link with token. */
+export function acceptInvite(options: { token: string }) {
+  return appendQuery(routes.acceptInvite, { token: options.token.trim() })
 }
 
 export function verifyEmail(options?: { callbackUrl?: string }) {

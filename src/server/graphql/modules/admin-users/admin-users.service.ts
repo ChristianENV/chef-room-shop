@@ -1,14 +1,13 @@
-import { Prisma, RoleSlug, UserStatus } from '@prisma/client'
+import { GraphQLError } from 'graphql'
+import { type Prisma, RoleSlug, UserStatus } from '@prisma/client'
 
 import type { GraphQLContext } from '../../context'
 import { requireAdminGraphQL } from './admin-users.auth'
-import { mapUserToAdminGql } from './admin-users.mappers'
-import type { AdminUsersListInput, AdminUsersPayloadGql } from './admin-users.types'
+import { mapUserToAdminGql, userListInclude } from './admin-users.mappers'
+import type { AdminUserGql, AdminUsersListInput, AdminUsersPayloadGql } from './admin-users.types'
 import { parseAdminUsersListInput } from './admin-users.validation'
 
-const userListInclude = {
-  roles: { include: { role: true } },
-} satisfies Prisma.UserInclude
+const ADMIN_ROLE_SET: RoleSlug[] = [RoleSlug.ADMIN, RoleSlug.SUPERADMIN]
 
 function buildSearchWhere(search: string): Prisma.UserWhereInput {
   const term = search.trim()
@@ -23,7 +22,12 @@ function buildSearchWhere(search: string): Prisma.UserWhereInput {
 }
 
 function buildListWhere(filter: AdminUsersListInput['filter']): Prisma.UserWhereInput {
-  const and: Prisma.UserWhereInput[] = [{ deletedAt: null }]
+  const and: Prisma.UserWhereInput[] = []
+
+  // Exclude soft-deleted users unless caller explicitly filters by DELETED status
+  if (filter?.status !== 'DELETED') {
+    and.push({ deletedAt: null })
+  }
 
   if (filter?.search?.trim()) {
     and.push(buildSearchWhere(filter.search))
@@ -39,7 +43,20 @@ function buildListWhere(filter: AdminUsersListInput['filter']): Prisma.UserWhere
     and.push({ status: filter.status as UserStatus })
   }
 
-  return { AND: and }
+  // Segment-based filtering (takes precedence over role filter for segmented views)
+  if (filter?.segment === 'CUSTOMERS') {
+    // Only users that have no ADMIN or SUPERADMIN role
+    and.push({
+      roles: { none: { role: { slug: { in: ADMIN_ROLE_SET } } } },
+    })
+  } else if (filter?.segment === 'ADMINS') {
+    // Only users that have at least one ADMIN or SUPERADMIN role
+    and.push({
+      roles: { some: { role: { slug: { in: ADMIN_ROLE_SET } } } },
+    })
+  }
+
+  return and.length > 0 ? { AND: and } : {}
 }
 
 /**
@@ -69,4 +86,24 @@ export async function getAdminUsers(
     total,
     items: users.map(mapUserToAdminGql),
   }
+}
+
+/**
+ * Fetches a single admin user by ID (no deletedAt filter — caller can see any user).
+ */
+export async function getAdminUserById(context: GraphQLContext, id: string): Promise<AdminUserGql> {
+  requireAdminGraphQL(context)
+
+  const user = await context.prisma.user.findUnique({
+    where: { id },
+    include: userListInclude,
+  })
+
+  if (!user) {
+    throw new GraphQLError('Usuario no encontrado.', {
+      extensions: { code: 'NOT_FOUND' },
+    })
+  }
+
+  return mapUserToAdminGql(user)
 }

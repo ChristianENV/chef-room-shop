@@ -4,12 +4,15 @@ import { z } from 'zod'
 const userStatusValues = Object.values(UserStatus) as [string, ...string[]]
 const roleSlugValues = Object.values(RoleSlug) as [string, ...string[]]
 
+const segmentValues = ['CUSTOMERS', 'ADMINS'] as [string, ...string[]]
+
 export const adminUsersListInputSchema = z.object({
   filter: z
     .object({
       search: z.string().trim().max(120).optional().nullable(),
       role: z.enum(roleSlugValues).optional().nullable(),
       status: z.enum(userStatusValues).optional().nullable(),
+      segment: z.enum(segmentValues).optional().nullable(),
     })
     .optional()
     .nullable(),

@@ -9,14 +9,9 @@ import {
   PaymentStatus,
 } from '@prisma/client'
 
-config({ path: '.env.local' })
+import { canRunDbIntegrationTests } from './helpers/db-integration'
 
-function canRunDbIntegrationTests(): boolean {
-  const url = process.env.DATABASE_URL?.trim()
-  if (!url) return false
-  if (url.includes('localhost:5432/chef_room')) return false
-  return true
-}
+config({ path: '.env.local' })
 
 const hasDatabase = canRunDbIntegrationTests()
 

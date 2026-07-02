@@ -55,6 +55,7 @@ export const ModelName = {
   Role: 'Role',
   Permission: 'Permission',
   UserRole: 'UserRole',
+  UserInvitation: 'UserInvitation',
   RolePermission: 'RolePermission',
   Session: 'Session',
   Account: 'Account',
@@ -166,6 +167,26 @@ export const UserRoleScalarFieldEnum = {
 } as const
 
 export type UserRoleScalarFieldEnum = (typeof UserRoleScalarFieldEnum)[keyof typeof UserRoleScalarFieldEnum]
+
+
+export const UserInvitationScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  targetRole: 'targetRole',
+  tokenHash: 'tokenHash',
+  status: 'status',
+  invitedByUserId: 'invitedByUserId',
+  expiresAt: 'expiresAt',
+  acceptedAt: 'acceptedAt',
+  acceptedByUserId: 'acceptedByUserId',
+  revokedAt: 'revokedAt',
+  revokedByUserId: 'revokedByUserId',
+  metadataJson: 'metadataJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserInvitationScalarFieldEnum = (typeof UserInvitationScalarFieldEnum)[keyof typeof UserInvitationScalarFieldEnum]
 
 
 export const RolePermissionScalarFieldEnum = {

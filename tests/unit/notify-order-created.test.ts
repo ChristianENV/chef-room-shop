@@ -3,15 +3,9 @@ import assert from 'node:assert/strict'
 import { after, describe, it } from 'node:test'
 
 import { NotificationAudience, NotificationType } from '@prisma/client'
+import { canRunDbIntegrationTests } from './helpers/db-integration'
 
 config({ path: '.env.local' })
-
-function canRunDbIntegrationTests(): boolean {
-  const url = process.env.DATABASE_URL?.trim()
-  if (!url) return false
-  if (url.includes('localhost:5432/chef_room')) return false
-  return true
-}
 
 const hasDatabase = canRunDbIntegrationTests()
 

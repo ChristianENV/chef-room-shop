@@ -3,6 +3,7 @@ import 'server-only'
 import { CHEF_ROOM_LOGO_SRC } from '@/lib/brand'
 import { BRAND_VARS } from '@/src/config/vars'
 import { getAppBaseUrl } from '@/src/server/payments/app-url'
+import { USER_INVITATION_TTL_DAYS } from '@/src/server/invitations/user-invitation.constants'
 
 import type {
   RenderedEmail,
@@ -220,6 +221,22 @@ export function renderTransactionalTemplate(
         <p>Si reconoces esta solicitud, autoriza la vinculación del pedido. Si no la reconoces, puedes ignorar este correo.</p>
         ${cta(authorizeUrl, 'Autorizar vinculación del pedido')}
         <p style="font-size:14px;color:#6b7280;">Este enlace expira en 48 horas por seguridad.</p>
+      `)
+      return { subject, html, text }
+    }
+
+    case 'user_invitation': {
+      const invitationUrl = payload.invitationUrl ?? '#'
+      const targetRoleLabel = payload.targetRoleLabel ?? 'usuario'
+      const invitedByName = payload.invitedByName ?? 'un administrador'
+      const subject = `Invitación a Chef Room — ${targetRoleLabel}`
+      const text = `Hola,\n\n${invitedByName} te invitó a unirte a Chef Room como ${targetRoleLabel}.\n\nAcepta tu invitación aquí: ${invitationUrl}\n\nEste enlace expira en ${USER_INVITATION_TTL_DAYS} días.\n\nChef Room`
+      const html = layoutHtml(`
+        <p>Hola,</p>
+        <p><strong>${invitedByName}</strong> te invitó a unirte a Chef Room como <strong>${targetRoleLabel}</strong>.</p>
+        <p>Haz clic en el botón para continuar con tu registro o acceso.</p>
+        ${cta(invitationUrl, 'Aceptar invitación')}
+        <p style="font-size:14px;color:#6b7280;">Este enlace expira en ${USER_INVITATION_TTL_DAYS} días. Si no esperabas esta invitación, puedes ignorar este correo.</p>
       `)
       return { subject, html, text }
     }

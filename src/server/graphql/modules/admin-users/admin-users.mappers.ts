@@ -2,6 +2,10 @@ import { UserStatus, type Prisma } from '@prisma/client'
 
 import type { AdminUserGql } from './admin-users.types'
 
+export const userListInclude = {
+  roles: { include: { role: true } },
+} satisfies Prisma.UserInclude
+
 export type AdminUserWithRoles = Prisma.UserGetPayload<{
   include: {
     roles: { include: { role: true } }
@@ -23,6 +27,9 @@ export function mapUserToAdminGql(user: AdminUserWithRoles): AdminUserGql {
     customerTier: user.customerTier,
     emailVerified: user.emailVerified,
     isActive: user.status === UserStatus.ACTIVE && user.deletedAt == null,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    phone: user.phone,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),
   }

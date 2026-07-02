@@ -2,14 +2,9 @@ import { config } from 'dotenv'
 import assert from 'node:assert/strict'
 import { after, describe, it } from 'node:test'
 
-config({ path: '.env.local' })
+import { canRunDbIntegrationTests } from './helpers/db-integration'
 
-function canRunDbIntegrationTests(): boolean {
-  const url = process.env.DATABASE_URL?.trim()
-  if (!url) return false
-  if (url.includes('localhost:5432/chef_room')) return false
-  return true
-}
+config({ path: '.env.local' })
 
 const hasDatabase = canRunDbIntegrationTests()
 

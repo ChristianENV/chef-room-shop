@@ -37,6 +37,16 @@ export const RoleSlug = {
 export type RoleSlug = (typeof RoleSlug)[keyof typeof RoleSlug]
 
 
+export const UserInvitationStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REVOKED: 'REVOKED',
+  EXPIRED: 'EXPIRED'
+} as const
+
+export type UserInvitationStatus = (typeof UserInvitationStatus)[keyof typeof UserInvitationStatus]
+
+
 export const AddressType = {
   SHIPPING: 'SHIPPING',
   BILLING: 'BILLING',

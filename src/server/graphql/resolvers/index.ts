@@ -3,6 +3,7 @@ import { adminDesignsResolvers } from './admin-designs.resolver'
 import { adminSettingsResolvers } from './admin-settings.resolver'
 import { adminPaymentsResolvers } from './admin-payments.resolver'
 import { adminUsersResolvers } from './admin-users.resolver'
+import { adminInvitationsResolvers } from './admin-invitations.resolver'
 import { adminDashboardResolvers } from './admin-dashboard.resolver'
 import { adminOrdersResolvers } from './admin-orders.resolver'
 import { adminShippingResolvers } from './admin-shipping.resolver'
@@ -16,6 +17,7 @@ import { catalogResolvers } from './catalog.resolver'
 import { checkoutResolvers } from './checkout.resolver'
 import { shippingResolvers } from './shipping.resolver'
 import { orderClaimResolvers } from './order-claim.resolver'
+import { userInvitationAcceptResolvers } from './user-invitation-accept.resolver'
 import { paymentsResolvers } from './payments.resolver'
 import { uploadsResolvers } from './uploads.resolver'
 import { designsResolvers } from './designs.resolver'
@@ -30,6 +32,7 @@ export const resolvers = {
     ...accountResolvers.Query,
     ...adminDashboardResolvers.Query,
     ...adminUsersResolvers.Query,
+    ...adminInvitationsResolvers.Query,
     ...adminPaymentsResolvers.Query,
     ...adminDesignsResolvers.Query,
     ...adminSettingsResolvers.Query,
@@ -44,6 +47,7 @@ export const resolvers = {
     ...shippingResolvers.Query,
     ...checkoutResolvers.Query,
     ...orderClaimResolvers.Query,
+    ...userInvitationAcceptResolvers.Query,
     ...designsResolvers.Query,
     ...notificationsResolvers.Query,
   },
@@ -54,6 +58,9 @@ export const resolvers = {
     ...checkoutResolvers.Mutation,
     ...paymentsResolvers.Mutation,
     ...orderClaimResolvers.Mutation,
+    ...userInvitationAcceptResolvers.Mutation,
+    ...adminUsersResolvers.Mutation,
+    ...adminInvitationsResolvers.Mutation,
     ...adminOrdersResolvers.Mutation,
     ...adminShippingResolvers.Mutation,
     ...adminProductsResolvers.Mutation,

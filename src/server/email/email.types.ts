@@ -9,6 +9,7 @@ export type TransactionalEmailTemplate =
   | 'email_verification'
   | 'password_reset'
   | 'order_claim_transfer_authorization'
+  | 'user_invitation'
   | 'shipping_update'
   | 'delivered'
 
@@ -54,6 +55,10 @@ export type TransactionalEmailPayload = {
   verificationUrl?: string
   resetPasswordUrl?: string
   requestedByEmail?: string
+  invitationUrl?: string
+  targetRoleLabel?: string
+  invitedByName?: string
+  expiresAt?: string
   carrier?: string
   trackingNumber?: string
   shipmentStatus?: string
