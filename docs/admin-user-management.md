@@ -111,15 +111,87 @@ All mutations write an `AuditLog` entry with:
 
 - **SUSPENDED users can still log in.** The `UserStatus.SUSPENDED` value is not enforced at the Better Auth / session creation level. Only `deletedAt != null` (i.e., blocked users) is enforced through the existing `getCurrentUser()` filter. This is by design for Phase 1 — auth-level enforcement for SUSPENDED users requires changes to the Better Auth session flow, which is explicitly out of scope.
 
+## Invitations (Phase 3A — implemented)
+
+Admin users with `users.write` can create, revoke, and resend invitations. Listing requires `users.read`.
+
+### Routes
+
+| Route                      | Description                     |
+| -------------------------- | ------------------------------- |
+| `/admin/users/invitations` | Invitations list and management |
+
+Segment tabs: **Clientes** | **Equipo / Admin** | **Invitaciones**
+
+### UserInvitation model
+
+- `email` — normalized lowercase
+- `targetRole` — `CUSTOMER` or `ADMIN` only (SUPERADMIN not allowed in v1)
+- `tokenHash` — SHA-256 hex digest; **never exposed via GraphQL**
+- `status` — `PENDING`, `ACCEPTED`, `REVOKED`, `EXPIRED`
+- `invitedByUserId`, `expiresAt` (default 7 days), `acceptedAt`, `revokedAt`, optional `metadataJson`
+
+### Status semantics
+
+| Status     | Meaning                                     |
+| ---------- | ------------------------------------------- |
+| `PENDING`  | Sent, awaiting acceptance                   |
+| `ACCEPTED` | Consumed (Phase 3B)                         |
+| `REVOKED`  | Admin cancelled                             |
+| `EXPIRED`  | Past `expiresAt` (lazy-marked on list read) |
+
+### Token security
+
+- Raw token: `randomBytes(32).base64url` — **only in email URL**
+- Stored: `tokenHash` (SHA-256)
+- Resend rotates token and refreshes expiry
+- Duplicate pending invite for same `(email, targetRole)` is superseded (old invite revoked)
+
+### GraphQL (Phase 3A)
+
+```graphql
+adminUserInvitations(filter, limit, offset): AdminUserInvitationsPayload!
+createUserInvitation(input: CreateUserInvitationInput!): UserInvitation!
+revokeUserInvitation(input: RevokeUserInvitationInput!): UserInvitation!
+resendUserInvitation(input: ResendUserInvitationInput!): UserInvitation!
+```
+
+### Permissions
+
+| Operation                | Permission           |
+| ------------------------ | -------------------- |
+| List invitations         | `users.read`         |
+| Create / revoke / resend | `users.write`        |
+| SUPERADMIN target role   | **Disallowed** in v1 |
+
+### Email
+
+- Template: `user_invitation`
+- Link format: `/accept-invite?token=<raw>` (public page **not implemented yet**)
+
+### Error codes
+
+- `USER_ALREADY_HAS_ROLE` — target user already has the invited role
+- `USER_BLOCKED` — target email belongs to a blocked/deleted user
+- `INVALID_TARGET_ROLE` — SUPERADMIN or other disallowed role
+- `INVITATION_NOT_PENDING` — revoke/resend on non-pending invite
+
+### Auth core
+
+Invitations do **not** modify Better Auth, login, register, session, or Verification tables.
+
 ## Future Phases
 
-### Phase 3: Invitation System
+### Phase 3B: Public invitation acceptance
 
-- Invite model and Prisma table.
-- Admin invite flow: send invite email → user registers via token → auto-assign role.
-- Customer invite flow (marketing campaigns).
-- Invite token expiry and revocation.
-- Email sending (SMTP/SendGrid/Resend).
+- `/accept-invite?token=...` public page
+- `previewUserInvitation` / `acceptUserInvitation` operations
+- Role assignment after signup/login (application layer)
+- OAuth invite acceptance (defer)
+
+### Phase 3C: Customer campaigns (optional)
+
+- Bulk invites, tier metadata on accept
 
 ### Phase 4: Auth-Level Suspension Enforcement
 

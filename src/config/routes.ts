@@ -54,6 +54,8 @@ export const routes = {
   adminUsers: '/admin/users',
   adminUsersCustomers: '/admin/users/customers',
   adminUsersAdmins: '/admin/users/admins',
+  adminUsersInvitations: '/admin/users/invitations',
+  acceptInvite: '/accept-invite',
   adminPayments: '/admin/payments',
   adminShipping: '/admin/shipping',
   adminAnalytics: '/admin/analytics',

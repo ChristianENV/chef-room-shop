@@ -33,6 +33,13 @@ enum RoleSlug {
   SUPERADMIN
 }
 
+enum UserInvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
 enum AddressType {
   SHIPPING
   BILLING
@@ -243,6 +250,9 @@ model User {
   shippingQuotes      ShippingQuote[]
   orderClaimTransferRequests OrderClaimTransferRequest[]
   notifications            Notification[]
+  invitationsSent          UserInvitation[] @relation("InvitationsSent")
+  invitationsAccepted      UserInvitation[] @relation("InvitationsAccepted")
+  invitationsRevoked       UserInvitation[] @relation("InvitationsRevoked")
 
   @@index([status])
   @@index([customerTier])
@@ -288,6 +298,33 @@ model UserRole {
   @@id([userId, roleId])
   @@index([roleId])
   @@map("user_roles")
+}
+
+model UserInvitation {
+  id               String               @id @default(uuid()) @db.Uuid
+  email            String
+  targetRole       RoleSlug
+  tokenHash        String               @unique
+  status           UserInvitationStatus @default(PENDING)
+  invitedByUserId  String               @db.Uuid
+  expiresAt        DateTime
+  acceptedAt       DateTime?
+  acceptedByUserId String?              @db.Uuid
+  revokedAt        DateTime?
+  revokedByUserId  String?              @db.Uuid
+  metadataJson     Json?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  invitedBy  User  @relation("InvitationsSent", fields: [invitedByUserId], references: [id], onDelete: Cascade)
+  acceptedBy User? @relation("InvitationsAccepted", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+  revokedBy  User? @relation("InvitationsRevoked", fields: [revokedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([invitedByUserId])
+  @@map("user_invitations")
 }
 
 model RolePermission {

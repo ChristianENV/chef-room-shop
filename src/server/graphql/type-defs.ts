@@ -1312,6 +1312,47 @@ export const adminUsersTypeDefs = /* GraphQL */ `
   }
 `
 
+export const adminInvitationsTypeDefs = /* GraphQL */ `
+  type UserInvitation {
+    id: ID!
+    email: String!
+    targetRole: String!
+    status: String!
+    expiresAt: String!
+    acceptedAt: String
+    revokedAt: String
+    createdAt: String!
+    updatedAt: String!
+    invitedBy: AdminUser
+    acceptedBy: AdminUser
+    revokedBy: AdminUser
+  }
+
+  type AdminUserInvitationsPayload {
+    items: [UserInvitation!]!
+    total: Int!
+  }
+
+  input AdminUserInvitationsFilterInput {
+    search: String
+    status: String
+    targetRole: String
+  }
+
+  input CreateUserInvitationInput {
+    email: String!
+    targetRole: String!
+  }
+
+  input RevokeUserInvitationInput {
+    id: ID!
+  }
+
+  input ResendUserInvitationInput {
+    id: ID!
+  }
+`
+
 export const adminPaymentsTypeDefs = /* GraphQL */ `
   type AdminPayment {
     id: ID!
@@ -1967,6 +2008,11 @@ export const typeDefs = /* GraphQL */ `
     adminTopProducts(limit: Int): [AdminTopProduct!]!
     adminUser(id: ID!): AdminUser
     adminUsers(filter: AdminUsersFilterInput, limit: Int, offset: Int): AdminUsersPayload!
+    adminUserInvitations(
+      filter: AdminUserInvitationsFilterInput
+      limit: Int
+      offset: Int
+    ): AdminUserInvitationsPayload!
     adminPayments(filter: AdminPaymentsFilterInput, limit: Int, offset: Int): AdminPaymentsPayload!
     adminOrders(
       filter: AdminOrdersFilterInput
@@ -2151,6 +2197,9 @@ export const typeDefs = /* GraphQL */ `
     pauseAdminUser(id: ID!): AdminUser!
     blockAdminUser(id: ID!): AdminUser!
     reactivateAdminUser(id: ID!): AdminUser!
+    createUserInvitation(input: CreateUserInvitationInput!): UserInvitation!
+    revokeUserInvitation(input: RevokeUserInvitationInput!): UserInvitation!
+    resendUserInvitation(input: ResendUserInvitationInput!): UserInvitation!
   }
 
   ${catalogTypeDefs}
@@ -2162,6 +2211,7 @@ export const typeDefs = /* GraphQL */ `
   ${paymentsTypeDefs}
   ${adminDashboardTypeDefs}
   ${adminUsersTypeDefs}
+  ${adminInvitationsTypeDefs}
   ${adminPaymentsTypeDefs}
   ${adminDesignsTypeDefs}
   ${adminSettingsTypeDefs}

@@ -8,6 +8,7 @@ import { routes } from '@/src/config/routes'
 const TABS = [
   { label: 'Clientes', href: routes.adminUsersCustomers },
   { label: 'Equipo / Admin', href: routes.adminUsersAdmins },
+  { label: 'Invitaciones', href: routes.adminUsersInvitations },
 ] as const
 
 export function AdminUsersSegmentTabs() {

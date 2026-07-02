@@ -33,3 +33,31 @@ export function requireUsersWriteGraphQL(context: GraphQLContext): CurrentUser {
 
   return context.currentUser
 }
+
+/**
+ * Requires `users.read` permission for user management list queries.
+ * SUPERADMIN always passes. ADMIN only passes if explicitly granted users.read.
+ *
+ * @throws GraphQLError UNAUTHENTICATED or FORBIDDEN.
+ */
+export function requireUsersReadGraphQL(context: GraphQLContext): CurrentUser {
+  if (!context.currentUser) {
+    throw new GraphQLError('Debes iniciar sesión para continuar.', {
+      extensions: { code: 'UNAUTHENTICATED' },
+    })
+  }
+
+  if (!canAccessAdmin(context.currentUser)) {
+    throw new GraphQLError('No tienes permiso para acceder a esta operación.', {
+      extensions: { code: 'FORBIDDEN' },
+    })
+  }
+
+  if (!hasPermission(context.currentUser, 'users.read')) {
+    throw new GraphQLError('No tienes permiso para ver usuarios.', {
+      extensions: { code: 'FORBIDDEN' },
+    })
+  }
+
+  return context.currentUser
+}

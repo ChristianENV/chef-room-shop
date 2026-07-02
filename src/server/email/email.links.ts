@@ -42,6 +42,14 @@ export function buildOrderClaimTransferAuthorizeUrl(token: string): string {
 }
 
 /**
+ * Absolute URL to accept a user invitation (Phase 3B public page).
+ */
+export function buildUserInvitationUrl(token: string): string {
+  const params = new URLSearchParams({ token })
+  return `${getAppBaseUrl()}${routes.acceptInvite}?${params.toString()}`
+}
+
+/**
  * Absolute URL to authenticated order detail.
  */
 export function buildAccountOrderUrl(orderNumber: string): string {

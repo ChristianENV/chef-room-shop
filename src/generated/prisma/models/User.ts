@@ -275,6 +275,9 @@ export type UserWhereInput = {
   shippingQuotes?: Prisma.ShippingQuoteListRelationFilter
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
+  invitationsSent?: Prisma.UserInvitationListRelationFilter
+  invitationsAccepted?: Prisma.UserInvitationListRelationFilter
+  invitationsRevoked?: Prisma.UserInvitationListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -306,6 +309,9 @@ export type UserOrderByWithRelationInput = {
   shippingQuotes?: Prisma.ShippingQuoteOrderByRelationAggregateInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestOrderByRelationAggregateInput
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
+  invitationsSent?: Prisma.UserInvitationOrderByRelationAggregateInput
+  invitationsAccepted?: Prisma.UserInvitationOrderByRelationAggregateInput
+  invitationsRevoked?: Prisma.UserInvitationOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -340,6 +346,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   shippingQuotes?: Prisma.ShippingQuoteListRelationFilter
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
+  invitationsSent?: Prisma.UserInvitationListRelationFilter
+  invitationsAccepted?: Prisma.UserInvitationListRelationFilter
+  invitationsRevoked?: Prisma.UserInvitationListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -413,6 +422,9 @@ export type UserCreateInput = {
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -444,6 +456,9 @@ export type UserUncheckedCreateInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserUpdateInput = {
@@ -475,6 +490,9 @@ export type UserUpdateInput = {
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -506,6 +524,9 @@ export type UserUncheckedUpdateInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -666,6 +687,52 @@ export type UserUpdateOneRequiredWithoutRolesNestedInput = {
   upsert?: Prisma.UserUpsertWithoutRolesInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutRolesInput, Prisma.UserUpdateWithoutRolesInput>, Prisma.UserUncheckedUpdateWithoutRolesInput>
+}
+
+export type UserCreateNestedOneWithoutInvitationsSentInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutInvitationsSentInput, Prisma.UserUncheckedCreateWithoutInvitationsSentInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutInvitationsSentInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutInvitationsAcceptedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutInvitationsAcceptedInput, Prisma.UserUncheckedCreateWithoutInvitationsAcceptedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutInvitationsAcceptedInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutInvitationsRevokedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutInvitationsRevokedInput, Prisma.UserUncheckedCreateWithoutInvitationsRevokedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutInvitationsRevokedInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutInvitationsSentNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutInvitationsSentInput, Prisma.UserUncheckedCreateWithoutInvitationsSentInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutInvitationsSentInput
+  upsert?: Prisma.UserUpsertWithoutInvitationsSentInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutInvitationsSentInput, Prisma.UserUpdateWithoutInvitationsSentInput>, Prisma.UserUncheckedUpdateWithoutInvitationsSentInput>
+}
+
+export type UserUpdateOneWithoutInvitationsAcceptedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutInvitationsAcceptedInput, Prisma.UserUncheckedCreateWithoutInvitationsAcceptedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutInvitationsAcceptedInput
+  upsert?: Prisma.UserUpsertWithoutInvitationsAcceptedInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutInvitationsAcceptedInput, Prisma.UserUpdateWithoutInvitationsAcceptedInput>, Prisma.UserUncheckedUpdateWithoutInvitationsAcceptedInput>
+}
+
+export type UserUpdateOneWithoutInvitationsRevokedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutInvitationsRevokedInput, Prisma.UserUncheckedCreateWithoutInvitationsRevokedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutInvitationsRevokedInput
+  upsert?: Prisma.UserUpsertWithoutInvitationsRevokedInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutInvitationsRevokedInput, Prisma.UserUpdateWithoutInvitationsRevokedInput>, Prisma.UserUncheckedUpdateWithoutInvitationsRevokedInput>
 }
 
 export type UserCreateNestedOneWithoutSessionsInput = {
@@ -882,6 +949,9 @@ export type UserCreateWithoutRolesInput = {
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserUncheckedCreateWithoutRolesInput = {
@@ -912,6 +982,9 @@ export type UserUncheckedCreateWithoutRolesInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserCreateOrConnectWithoutRolesInput = {
@@ -958,6 +1031,9 @@ export type UserUpdateWithoutRolesInput = {
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRolesInput = {
@@ -988,6 +1064,453 @@ export type UserUncheckedUpdateWithoutRolesInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedUpdateManyWithoutRevokedByNestedInput
+}
+
+export type UserCreateWithoutInvitationsSentInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  status?: $Enums.UserStatus
+  customerTier?: $Enums.CustomerTier
+  firstName?: string | null
+  lastName?: string | null
+  phone?: string | null
+  marketingOptIn?: boolean
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  roles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  loginAttempts?: Prisma.LoginAttemptCreateNestedManyWithoutUserInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
+  carts?: Prisma.CartCreateNestedManyWithoutUserInput
+  designs?: Prisma.DesignCreateNestedManyWithoutUserInput
+  orders?: Prisma.OrderCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
+  shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
+  orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  invitationsAccepted?: Prisma.UserInvitationCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationCreateNestedManyWithoutRevokedByInput
+}
+
+export type UserUncheckedCreateWithoutInvitationsSentInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  status?: $Enums.UserStatus
+  customerTier?: $Enums.CustomerTier
+  firstName?: string | null
+  lastName?: string | null
+  phone?: string | null
+  marketingOptIn?: boolean
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  roles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  loginAttempts?: Prisma.LoginAttemptUncheckedCreateNestedManyWithoutUserInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
+  carts?: Prisma.CartUncheckedCreateNestedManyWithoutUserInput
+  designs?: Prisma.DesignUncheckedCreateNestedManyWithoutUserInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
+  shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
+  orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutRevokedByInput
+}
+
+export type UserCreateOrConnectWithoutInvitationsSentInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutInvitationsSentInput, Prisma.UserUncheckedCreateWithoutInvitationsSentInput>
+}
+
+export type UserCreateWithoutInvitationsAcceptedInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  status?: $Enums.UserStatus
+  customerTier?: $Enums.CustomerTier
+  firstName?: string | null
+  lastName?: string | null
+  phone?: string | null
+  marketingOptIn?: boolean
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  roles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  loginAttempts?: Prisma.LoginAttemptCreateNestedManyWithoutUserInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
+  carts?: Prisma.CartCreateNestedManyWithoutUserInput
+  designs?: Prisma.DesignCreateNestedManyWithoutUserInput
+  orders?: Prisma.OrderCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
+  shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
+  orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationCreateNestedManyWithoutInvitedByInput
+  invitationsRevoked?: Prisma.UserInvitationCreateNestedManyWithoutRevokedByInput
+}
+
+export type UserUncheckedCreateWithoutInvitationsAcceptedInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  status?: $Enums.UserStatus
+  customerTier?: $Enums.CustomerTier
+  firstName?: string | null
+  lastName?: string | null
+  phone?: string | null
+  marketingOptIn?: boolean
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  roles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  loginAttempts?: Prisma.LoginAttemptUncheckedCreateNestedManyWithoutUserInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
+  carts?: Prisma.CartUncheckedCreateNestedManyWithoutUserInput
+  designs?: Prisma.DesignUncheckedCreateNestedManyWithoutUserInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
+  shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
+  orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutRevokedByInput
+}
+
+export type UserCreateOrConnectWithoutInvitationsAcceptedInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutInvitationsAcceptedInput, Prisma.UserUncheckedCreateWithoutInvitationsAcceptedInput>
+}
+
+export type UserCreateWithoutInvitationsRevokedInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  status?: $Enums.UserStatus
+  customerTier?: $Enums.CustomerTier
+  firstName?: string | null
+  lastName?: string | null
+  phone?: string | null
+  marketingOptIn?: boolean
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  roles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  loginAttempts?: Prisma.LoginAttemptCreateNestedManyWithoutUserInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
+  carts?: Prisma.CartCreateNestedManyWithoutUserInput
+  designs?: Prisma.DesignCreateNestedManyWithoutUserInput
+  orders?: Prisma.OrderCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
+  shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
+  orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationCreateNestedManyWithoutAcceptedByInput
+}
+
+export type UserUncheckedCreateWithoutInvitationsRevokedInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  status?: $Enums.UserStatus
+  customerTier?: $Enums.CustomerTier
+  firstName?: string | null
+  lastName?: string | null
+  phone?: string | null
+  marketingOptIn?: boolean
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  roles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  loginAttempts?: Prisma.LoginAttemptUncheckedCreateNestedManyWithoutUserInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
+  carts?: Prisma.CartUncheckedCreateNestedManyWithoutUserInput
+  designs?: Prisma.DesignUncheckedCreateNestedManyWithoutUserInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
+  shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
+  orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+}
+
+export type UserCreateOrConnectWithoutInvitationsRevokedInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutInvitationsRevokedInput, Prisma.UserUncheckedCreateWithoutInvitationsRevokedInput>
+}
+
+export type UserUpsertWithoutInvitationsSentInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutInvitationsSentInput, Prisma.UserUncheckedUpdateWithoutInvitationsSentInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutInvitationsSentInput, Prisma.UserUncheckedCreateWithoutInvitationsSentInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutInvitationsSentInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutInvitationsSentInput, Prisma.UserUncheckedUpdateWithoutInvitationsSentInput>
+}
+
+export type UserUpdateWithoutInvitationsSentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  customerTier?: Prisma.EnumCustomerTierFieldUpdateOperationsInput | $Enums.CustomerTier
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  marketingOptIn?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  roles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  loginAttempts?: Prisma.LoginAttemptUpdateManyWithoutUserNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
+  carts?: Prisma.CartUpdateManyWithoutUserNestedInput
+  designs?: Prisma.DesignUpdateManyWithoutUserNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
+  shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
+  orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUpdateManyWithoutRevokedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutInvitationsSentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  customerTier?: Prisma.EnumCustomerTierFieldUpdateOperationsInput | $Enums.CustomerTier
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  marketingOptIn?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  loginAttempts?: Prisma.LoginAttemptUncheckedUpdateManyWithoutUserNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
+  carts?: Prisma.CartUncheckedUpdateManyWithoutUserNestedInput
+  designs?: Prisma.DesignUncheckedUpdateManyWithoutUserNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
+  shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
+  orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedUpdateManyWithoutRevokedByNestedInput
+}
+
+export type UserUpsertWithoutInvitationsAcceptedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutInvitationsAcceptedInput, Prisma.UserUncheckedUpdateWithoutInvitationsAcceptedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutInvitationsAcceptedInput, Prisma.UserUncheckedCreateWithoutInvitationsAcceptedInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutInvitationsAcceptedInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutInvitationsAcceptedInput, Prisma.UserUncheckedUpdateWithoutInvitationsAcceptedInput>
+}
+
+export type UserUpdateWithoutInvitationsAcceptedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  customerTier?: Prisma.EnumCustomerTierFieldUpdateOperationsInput | $Enums.CustomerTier
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  marketingOptIn?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  roles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  loginAttempts?: Prisma.LoginAttemptUpdateManyWithoutUserNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
+  carts?: Prisma.CartUpdateManyWithoutUserNestedInput
+  designs?: Prisma.DesignUpdateManyWithoutUserNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
+  shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
+  orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUpdateManyWithoutInvitedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUpdateManyWithoutRevokedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutInvitationsAcceptedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  customerTier?: Prisma.EnumCustomerTierFieldUpdateOperationsInput | $Enums.CustomerTier
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  marketingOptIn?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  loginAttempts?: Prisma.LoginAttemptUncheckedUpdateManyWithoutUserNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
+  carts?: Prisma.CartUncheckedUpdateManyWithoutUserNestedInput
+  designs?: Prisma.DesignUncheckedUpdateManyWithoutUserNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
+  shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
+  orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedUpdateManyWithoutRevokedByNestedInput
+}
+
+export type UserUpsertWithoutInvitationsRevokedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutInvitationsRevokedInput, Prisma.UserUncheckedUpdateWithoutInvitationsRevokedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutInvitationsRevokedInput, Prisma.UserUncheckedCreateWithoutInvitationsRevokedInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutInvitationsRevokedInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutInvitationsRevokedInput, Prisma.UserUncheckedUpdateWithoutInvitationsRevokedInput>
+}
+
+export type UserUpdateWithoutInvitationsRevokedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  customerTier?: Prisma.EnumCustomerTierFieldUpdateOperationsInput | $Enums.CustomerTier
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  marketingOptIn?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  roles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  loginAttempts?: Prisma.LoginAttemptUpdateManyWithoutUserNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
+  carts?: Prisma.CartUpdateManyWithoutUserNestedInput
+  designs?: Prisma.DesignUpdateManyWithoutUserNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
+  shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
+  orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUpdateManyWithoutAcceptedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutInvitationsRevokedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  customerTier?: Prisma.EnumCustomerTierFieldUpdateOperationsInput | $Enums.CustomerTier
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  marketingOptIn?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  loginAttempts?: Prisma.LoginAttemptUncheckedUpdateManyWithoutUserNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
+  carts?: Prisma.CartUncheckedUpdateManyWithoutUserNestedInput
+  designs?: Prisma.DesignUncheckedUpdateManyWithoutUserNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
+  shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
+  orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -1018,6 +1541,9 @@ export type UserCreateWithoutSessionsInput = {
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -1048,6 +1574,9 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -1094,6 +1623,9 @@ export type UserUpdateWithoutSessionsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -1124,6 +1656,9 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -1154,6 +1689,9 @@ export type UserCreateWithoutAccountsInput = {
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -1184,6 +1722,9 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -1230,6 +1771,9 @@ export type UserUpdateWithoutAccountsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -1260,6 +1804,9 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserCreateWithoutLoginAttemptsInput = {
@@ -1290,6 +1837,9 @@ export type UserCreateWithoutLoginAttemptsInput = {
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserUncheckedCreateWithoutLoginAttemptsInput = {
@@ -1320,6 +1870,9 @@ export type UserUncheckedCreateWithoutLoginAttemptsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserCreateOrConnectWithoutLoginAttemptsInput = {
@@ -1366,6 +1919,9 @@ export type UserUpdateWithoutLoginAttemptsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutLoginAttemptsInput = {
@@ -1396,6 +1952,9 @@ export type UserUncheckedUpdateWithoutLoginAttemptsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserCreateWithoutMergedGuestSessionsInput = {
@@ -1426,6 +1985,9 @@ export type UserCreateWithoutMergedGuestSessionsInput = {
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserUncheckedCreateWithoutMergedGuestSessionsInput = {
@@ -1456,6 +2018,9 @@ export type UserUncheckedCreateWithoutMergedGuestSessionsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserCreateOrConnectWithoutMergedGuestSessionsInput = {
@@ -1502,6 +2067,9 @@ export type UserUpdateWithoutMergedGuestSessionsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMergedGuestSessionsInput = {
@@ -1532,6 +2100,9 @@ export type UserUncheckedUpdateWithoutMergedGuestSessionsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserCreateWithoutAddressesInput = {
@@ -1562,6 +2133,9 @@ export type UserCreateWithoutAddressesInput = {
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserUncheckedCreateWithoutAddressesInput = {
@@ -1592,6 +2166,9 @@ export type UserUncheckedCreateWithoutAddressesInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserCreateOrConnectWithoutAddressesInput = {
@@ -1638,6 +2215,9 @@ export type UserUpdateWithoutAddressesInput = {
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAddressesInput = {
@@ -1668,6 +2248,9 @@ export type UserUncheckedUpdateWithoutAddressesInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserCreateWithoutDesignsInput = {
@@ -1698,6 +2281,9 @@ export type UserCreateWithoutDesignsInput = {
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserUncheckedCreateWithoutDesignsInput = {
@@ -1728,6 +2314,9 @@ export type UserUncheckedCreateWithoutDesignsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserCreateOrConnectWithoutDesignsInput = {
@@ -1774,6 +2363,9 @@ export type UserUpdateWithoutDesignsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDesignsInput = {
@@ -1804,6 +2396,9 @@ export type UserUncheckedUpdateWithoutDesignsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserCreateWithoutCartsInput = {
@@ -1834,6 +2429,9 @@ export type UserCreateWithoutCartsInput = {
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserUncheckedCreateWithoutCartsInput = {
@@ -1864,6 +2462,9 @@ export type UserUncheckedCreateWithoutCartsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserCreateOrConnectWithoutCartsInput = {
@@ -1910,6 +2511,9 @@ export type UserUpdateWithoutCartsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCartsInput = {
@@ -1940,6 +2544,9 @@ export type UserUncheckedUpdateWithoutCartsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserCreateWithoutOrdersInput = {
@@ -1970,6 +2577,9 @@ export type UserCreateWithoutOrdersInput = {
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserUncheckedCreateWithoutOrdersInput = {
@@ -2000,6 +2610,9 @@ export type UserUncheckedCreateWithoutOrdersInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserCreateOrConnectWithoutOrdersInput = {
@@ -2046,6 +2659,9 @@ export type UserUpdateWithoutOrdersInput = {
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOrdersInput = {
@@ -2076,6 +2692,9 @@ export type UserUncheckedUpdateWithoutOrdersInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserCreateWithoutOrderClaimTransferRequestsInput = {
@@ -2106,6 +2725,9 @@ export type UserCreateWithoutOrderClaimTransferRequestsInput = {
   mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserUncheckedCreateWithoutOrderClaimTransferRequestsInput = {
@@ -2136,6 +2758,9 @@ export type UserUncheckedCreateWithoutOrderClaimTransferRequestsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserCreateOrConnectWithoutOrderClaimTransferRequestsInput = {
@@ -2182,6 +2807,9 @@ export type UserUpdateWithoutOrderClaimTransferRequestsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOrderClaimTransferRequestsInput = {
@@ -2212,6 +2840,9 @@ export type UserUncheckedUpdateWithoutOrderClaimTransferRequestsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserCreateWithoutShippingQuotesInput = {
@@ -2242,6 +2873,9 @@ export type UserCreateWithoutShippingQuotesInput = {
   mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserUncheckedCreateWithoutShippingQuotesInput = {
@@ -2272,6 +2906,9 @@ export type UserUncheckedCreateWithoutShippingQuotesInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserCreateOrConnectWithoutShippingQuotesInput = {
@@ -2318,6 +2955,9 @@ export type UserUpdateWithoutShippingQuotesInput = {
   mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutShippingQuotesInput = {
@@ -2348,6 +2988,9 @@ export type UserUncheckedUpdateWithoutShippingQuotesInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -2378,6 +3021,9 @@ export type UserCreateWithoutNotificationsInput = {
   mergedGuestSessions?: Prisma.GuestSessionCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
+  invitationsSent?: Prisma.UserInvitationCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -2408,6 +3054,9 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedCreateNestedManyWithoutMergedToUserInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
+  invitationsSent?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -2454,6 +3103,9 @@ export type UserUpdateWithoutNotificationsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -2484,6 +3136,9 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   mergedGuestSessions?: Prisma.GuestSessionUncheckedUpdateManyWithoutMergedToUserNestedInput
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserCreateWithoutAuditLogsInput = {
@@ -2514,6 +3169,9 @@ export type UserCreateWithoutAuditLogsInput = {
   shippingQuotes?: Prisma.ShippingQuoteCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -2544,6 +3202,9 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedCreateNestedManyWithoutUserInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedCreateNestedManyWithoutRequestedByUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  invitationsSent?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedCreateNestedManyWithoutRevokedByInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -2590,6 +3251,9 @@ export type UserUpdateWithoutAuditLogsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUpdateManyWithoutRevokedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -2620,6 +3284,9 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   shippingQuotes?: Prisma.ShippingQuoteUncheckedUpdateManyWithoutUserNestedInput
   orderClaimTransferRequests?: Prisma.OrderClaimTransferRequestUncheckedUpdateManyWithoutRequestedByUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  invitationsSent?: Prisma.UserInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  invitationsAccepted?: Prisma.UserInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
+  invitationsRevoked?: Prisma.UserInvitationUncheckedUpdateManyWithoutRevokedByNestedInput
 }
 
 
@@ -2641,6 +3308,9 @@ export type UserCountOutputType = {
   shippingQuotes: number
   orderClaimTransferRequests: number
   notifications: number
+  invitationsSent: number
+  invitationsAccepted: number
+  invitationsRevoked: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2657,6 +3327,9 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   shippingQuotes?: boolean | UserCountOutputTypeCountShippingQuotesArgs
   orderClaimTransferRequests?: boolean | UserCountOutputTypeCountOrderClaimTransferRequestsArgs
   notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
+  invitationsSent?: boolean | UserCountOutputTypeCountInvitationsSentArgs
+  invitationsAccepted?: boolean | UserCountOutputTypeCountInvitationsAcceptedArgs
+  invitationsRevoked?: boolean | UserCountOutputTypeCountInvitationsRevokedArgs
 }
 
 /**
@@ -2760,6 +3433,27 @@ export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Ty
   where?: Prisma.NotificationWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountInvitationsSentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserInvitationWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountInvitationsAcceptedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserInvitationWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountInvitationsRevokedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserInvitationWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2790,6 +3484,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   shippingQuotes?: boolean | Prisma.User$shippingQuotesArgs<ExtArgs>
   orderClaimTransferRequests?: boolean | Prisma.User$orderClaimTransferRequestsArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
+  invitationsSent?: boolean | Prisma.User$invitationsSentArgs<ExtArgs>
+  invitationsAccepted?: boolean | Prisma.User$invitationsAcceptedArgs<ExtArgs>
+  invitationsRevoked?: boolean | Prisma.User$invitationsRevokedArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -2862,6 +3559,9 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   shippingQuotes?: boolean | Prisma.User$shippingQuotesArgs<ExtArgs>
   orderClaimTransferRequests?: boolean | Prisma.User$orderClaimTransferRequestsArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
+  invitationsSent?: boolean | Prisma.User$invitationsSentArgs<ExtArgs>
+  invitationsAccepted?: boolean | Prisma.User$invitationsAcceptedArgs<ExtArgs>
+  invitationsRevoked?: boolean | Prisma.User$invitationsRevokedArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -2883,6 +3583,9 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     shippingQuotes: Prisma.$ShippingQuotePayload<ExtArgs>[]
     orderClaimTransferRequests: Prisma.$OrderClaimTransferRequestPayload<ExtArgs>[]
     notifications: Prisma.$NotificationPayload<ExtArgs>[]
+    invitationsSent: Prisma.$UserInvitationPayload<ExtArgs>[]
+    invitationsAccepted: Prisma.$UserInvitationPayload<ExtArgs>[]
+    invitationsRevoked: Prisma.$UserInvitationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3310,6 +4013,9 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   shippingQuotes<T extends Prisma.User$shippingQuotesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$shippingQuotesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ShippingQuotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   orderClaimTransferRequests<T extends Prisma.User$orderClaimTransferRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$orderClaimTransferRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderClaimTransferRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notifications<T extends Prisma.User$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  invitationsSent<T extends Prisma.User$invitationsSentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$invitationsSentArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserInvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  invitationsAccepted<T extends Prisma.User$invitationsAcceptedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$invitationsAcceptedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserInvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  invitationsRevoked<T extends Prisma.User$invitationsRevokedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$invitationsRevokedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserInvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4056,6 +4762,78 @@ export type User$notificationsArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.NotificationScalarFieldEnum | Prisma.NotificationScalarFieldEnum[]
+}
+
+/**
+ * User.invitationsSent
+ */
+export type User$invitationsSentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserInvitation
+   */
+  select?: Prisma.UserInvitationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserInvitation
+   */
+  omit?: Prisma.UserInvitationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInvitationInclude<ExtArgs> | null
+  where?: Prisma.UserInvitationWhereInput
+  orderBy?: Prisma.UserInvitationOrderByWithRelationInput | Prisma.UserInvitationOrderByWithRelationInput[]
+  cursor?: Prisma.UserInvitationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserInvitationScalarFieldEnum | Prisma.UserInvitationScalarFieldEnum[]
+}
+
+/**
+ * User.invitationsAccepted
+ */
+export type User$invitationsAcceptedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserInvitation
+   */
+  select?: Prisma.UserInvitationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserInvitation
+   */
+  omit?: Prisma.UserInvitationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInvitationInclude<ExtArgs> | null
+  where?: Prisma.UserInvitationWhereInput
+  orderBy?: Prisma.UserInvitationOrderByWithRelationInput | Prisma.UserInvitationOrderByWithRelationInput[]
+  cursor?: Prisma.UserInvitationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserInvitationScalarFieldEnum | Prisma.UserInvitationScalarFieldEnum[]
+}
+
+/**
+ * User.invitationsRevoked
+ */
+export type User$invitationsRevokedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserInvitation
+   */
+  select?: Prisma.UserInvitationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserInvitation
+   */
+  omit?: Prisma.UserInvitationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInvitationInclude<ExtArgs> | null
+  where?: Prisma.UserInvitationWhereInput
+  orderBy?: Prisma.UserInvitationOrderByWithRelationInput | Prisma.UserInvitationOrderByWithRelationInput[]
+  cursor?: Prisma.UserInvitationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserInvitationScalarFieldEnum | Prisma.UserInvitationScalarFieldEnum[]
 }
 
 /**

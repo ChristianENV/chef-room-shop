@@ -388,6 +388,7 @@ export const ModelName = {
   Role: 'Role',
   Permission: 'Permission',
   UserRole: 'UserRole',
+  UserInvitation: 'UserInvitation',
   RolePermission: 'RolePermission',
   Session: 'Session',
   Account: 'Account',
@@ -444,7 +445,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "role" | "permission" | "userRole" | "rolePermission" | "session" | "account" | "verification" | "loginAttempt" | "guestSession" | "address" | "productType" | "product" | "productImage" | "productModelAsset" | "color" | "size" | "productVariant" | "productOptionGroup" | "productOptionValue" | "customizationArea" | "customizationOption" | "productCustomizationRule" | "design" | "designAsset" | "designEvent" | "cart" | "cartItem" | "order" | "orderClaimToken" | "checkoutReturnToken" | "orderClaimTransferRequest" | "orderItem" | "orderEvent" | "payment" | "paymentAttempt" | "conektaWebhookEvent" | "shippingQuote" | "shippingRate" | "shippingWebhookEvent" | "shipment" | "shipmentEvent" | "notification" | "emailMessage" | "auditLog"
+    modelProps: "user" | "role" | "permission" | "userRole" | "userInvitation" | "rolePermission" | "session" | "account" | "verification" | "loginAttempt" | "guestSession" | "address" | "productType" | "product" | "productImage" | "productModelAsset" | "color" | "size" | "productVariant" | "productOptionGroup" | "productOptionValue" | "customizationArea" | "customizationOption" | "productCustomizationRule" | "design" | "designAsset" | "designEvent" | "cart" | "cartItem" | "order" | "orderClaimToken" | "checkoutReturnToken" | "orderClaimTransferRequest" | "orderItem" | "orderEvent" | "payment" | "paymentAttempt" | "conektaWebhookEvent" | "shippingQuote" | "shippingRate" | "shippingWebhookEvent" | "shipment" | "shipmentEvent" | "notification" | "emailMessage" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -741,6 +742,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.UserRoleCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.UserRoleCountAggregateOutputType> | number
+        }
+      }
+    }
+    UserInvitation: {
+      payload: Prisma.$UserInvitationPayload<ExtArgs>
+      fields: Prisma.UserInvitationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UserInvitationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserInvitationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UserInvitationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserInvitationPayload>
+        }
+        findFirst: {
+          args: Prisma.UserInvitationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserInvitationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UserInvitationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserInvitationPayload>
+        }
+        findMany: {
+          args: Prisma.UserInvitationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserInvitationPayload>[]
+        }
+        create: {
+          args: Prisma.UserInvitationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserInvitationPayload>
+        }
+        createMany: {
+          args: Prisma.UserInvitationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UserInvitationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserInvitationPayload>[]
+        }
+        delete: {
+          args: Prisma.UserInvitationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserInvitationPayload>
+        }
+        update: {
+          args: Prisma.UserInvitationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserInvitationPayload>
+        }
+        deleteMany: {
+          args: Prisma.UserInvitationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UserInvitationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UserInvitationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserInvitationPayload>[]
+        }
+        upsert: {
+          args: Prisma.UserInvitationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserInvitationPayload>
+        }
+        aggregate: {
+          args: Prisma.UserInvitationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUserInvitation>
+        }
+        groupBy: {
+          args: Prisma.UserInvitationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserInvitationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UserInvitationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserInvitationCountAggregateOutputType> | number
         }
       }
     }
@@ -3871,6 +3946,26 @@ export const UserRoleScalarFieldEnum = {
 export type UserRoleScalarFieldEnum = (typeof UserRoleScalarFieldEnum)[keyof typeof UserRoleScalarFieldEnum]
 
 
+export const UserInvitationScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  targetRole: 'targetRole',
+  tokenHash: 'tokenHash',
+  status: 'status',
+  invitedByUserId: 'invitedByUserId',
+  expiresAt: 'expiresAt',
+  acceptedAt: 'acceptedAt',
+  acceptedByUserId: 'acceptedByUserId',
+  revokedAt: 'revokedAt',
+  revokedByUserId: 'revokedByUserId',
+  metadataJson: 'metadataJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserInvitationScalarFieldEnum = (typeof UserInvitationScalarFieldEnum)[keyof typeof UserInvitationScalarFieldEnum]
+
+
 export const RolePermissionScalarFieldEnum = {
   roleId: 'roleId',
   permissionId: 'permissionId',
@@ -4682,6 +4777,34 @@ export type ListEnumRoleSlugFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
 
 
 /**
+ * Reference to a field of type 'UserInvitationStatus'
+ */
+export type EnumUserInvitationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserInvitationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'UserInvitationStatus[]'
+ */
+export type ListEnumUserInvitationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserInvitationStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
  * Reference to a field of type 'AddressType'
  */
 export type EnumAddressTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AddressType'>
@@ -4748,20 +4871,6 @@ export type EnumProductModelAssetStatusFieldRefInput<$PrismaModel> = FieldRefInp
  * Reference to a field of type 'ProductModelAssetStatus[]'
  */
 export type ListEnumProductModelAssetStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductModelAssetStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'Json'
- */
-export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
-    
-
-
-/**
- * Reference to a field of type 'QueryMode'
- */
-export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -5144,6 +5253,7 @@ export type GlobalOmitConfig = {
   role?: Prisma.RoleOmit
   permission?: Prisma.PermissionOmit
   userRole?: Prisma.UserRoleOmit
+  userInvitation?: Prisma.UserInvitationOmit
   rolePermission?: Prisma.RolePermissionOmit
   session?: Prisma.SessionOmit
   account?: Prisma.AccountOmit
