@@ -17,6 +17,7 @@ import { catalogResolvers } from './catalog.resolver'
 import { checkoutResolvers } from './checkout.resolver'
 import { shippingResolvers } from './shipping.resolver'
 import { orderClaimResolvers } from './order-claim.resolver'
+import { userInvitationAcceptResolvers } from './user-invitation-accept.resolver'
 import { paymentsResolvers } from './payments.resolver'
 import { uploadsResolvers } from './uploads.resolver'
 import { designsResolvers } from './designs.resolver'
@@ -46,6 +47,7 @@ export const resolvers = {
     ...shippingResolvers.Query,
     ...checkoutResolvers.Query,
     ...orderClaimResolvers.Query,
+    ...userInvitationAcceptResolvers.Query,
     ...designsResolvers.Query,
     ...notificationsResolvers.Query,
   },
@@ -56,6 +58,7 @@ export const resolvers = {
     ...checkoutResolvers.Mutation,
     ...paymentsResolvers.Mutation,
     ...orderClaimResolvers.Mutation,
+    ...userInvitationAcceptResolvers.Mutation,
     ...adminUsersResolvers.Mutation,
     ...adminInvitationsResolvers.Mutation,
     ...adminOrdersResolvers.Mutation,

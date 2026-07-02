@@ -167,7 +167,7 @@ resendUserInvitation(input: ResendUserInvitationInput!): UserInvitation!
 ### Email
 
 - Template: `user_invitation`
-- Link format: `/accept-invite?token=<raw>` (public page **not implemented yet**)
+- Link format: `/accept-invite?token=<raw>`
 
 ### Error codes
 
@@ -180,14 +180,80 @@ resendUserInvitation(input: ResendUserInvitationInput!): UserInvitation!
 
 Invitations do **not** modify Better Auth, login, register, session, or Verification tables.
 
+## Public accept-invite flow (Phase 3B — implemented)
+
+Invited users open `/accept-invite?token=<raw>` from the email link. Acceptance happens in **application code after normal signup/login** — not via Better Auth hooks.
+
+### Route
+
+| Route            | Description                              |
+| ---------------- | ---------------------------------------- |
+| `/accept-invite` | Public invitation preview and acceptance |
+
+Query: `?token=<rawToken>`
+
+### GraphQL (public)
+
+```graphql
+previewUserInvitation(token: String!): PublicUserInvitationPreview!
+acceptUserInvitation(token: String!): AcceptUserInvitationPayload!
+```
+
+- `previewUserInvitation` — no auth required; returns masked email, role label, status, `existingUserHint` (`new` | `existing`) when valid
+- `acceptUserInvitation` — requires authenticated session; email must match invitation
+
+### User flows
+
+**New user** (`existingUserHint: new`):
+
+1. Preview shows role and masked email.
+2. Scoped `AcceptInviteSignupForm` on the accept page calls existing `signUp.email` (email pre-filled and locked).
+3. After session exists (and email verified if required), `acceptUserInvitation` runs.
+4. Redirect: `CUSTOMER` → `/account`; `ADMIN` → `/admin/login` or `/admin/dashboard` if already allowed.
+
+**Existing user** (`existingUserHint: existing`):
+
+1. Preview shows login CTA.
+2. Login uses `callbackUrl` back to `/accept-invite?token=...` (global login form unchanged).
+3. After session exists, `acceptUserInvitation` runs with same redirects.
+
+**Invalid / expired / revoked / accepted**:
+
+- Generic safe error copy; no email enumeration.
+- `tokenHash` never exposed.
+
+### Role assignment (application layer)
+
+- `assignRoleIfMissing(db, userId, roleSlug)` in `roles-core.ts`
+- `CUSTOMER` invite → ensures `CUSTOMER` role
+- `ADMIN` invite → ensures `ADMIN` + `CUSTOMER` roles
+- `SUPERADMIN` invites rejected on accept (v1)
+- Idempotent — safe to call if role already exists
+
+### Security rules
+
+| Rule                         | Enforcement                                         |
+| ---------------------------- | --------------------------------------------------- |
+| Token storage                | SHA-256 hash only in DB                             |
+| Raw token                    | URL / client state only; never logged               |
+| Email match                  | Session email must equal invitation email           |
+| Blocked users                | `deletedAt` or `status = DELETED` rejected          |
+| Suspended users              | Rejected with reactivation message                  |
+| Expired / revoked / accepted | Rejected with status-specific message               |
+| Audit                        | `acceptUserInvitation` writes `AuditLog` on success |
+
+### Auth core (unchanged)
+
+Phase 3B does **not** modify:
+
+- `build-auth.ts`, Better Auth config, session/JWT payload
+- Auth guards, Verification/Session/Account models
+- Global `/login` or `/register` forms (only `callbackUrl` usage)
+- OAuth / `social-complete` flow
+
+OAuth invite acceptance is **deferred** to a future phase.
+
 ## Future Phases
-
-### Phase 3B: Public invitation acceptance
-
-- `/accept-invite?token=...` public page
-- `previewUserInvitation` / `acceptUserInvitation` operations
-- Role assignment after signup/login (application layer)
-- OAuth invite acceptance (defer)
 
 ### Phase 3C: Customer campaigns (optional)
 

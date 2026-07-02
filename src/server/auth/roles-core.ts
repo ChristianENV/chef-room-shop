@@ -1,7 +1,9 @@
 import { RoleSlug } from '@prisma/client'
-import type { PrismaClient } from '@prisma/client'
+import type { Prisma, PrismaClient } from '@prisma/client'
 
 import { ADMIN_ROLE_SLUGS } from './permissions'
+
+type DbClient = PrismaClient | Prisma.TransactionClient
 
 const userRolesInclude = {
   roles: {
@@ -20,24 +22,40 @@ const userRolesInclude = {
 /**
  * Ensures the user has the CUSTOMER role (idempotent).
  */
-export async function ensureCustomerRole(db: PrismaClient, userId: string): Promise<void> {
-  const customerRole = await db.role.findUnique({
-    where: { slug: RoleSlug.CUSTOMER },
+export async function ensureCustomerRole(db: DbClient, userId: string): Promise<void> {
+  return assignRoleIfMissing(db, userId, RoleSlug.CUSTOMER)
+}
+
+/**
+ * Assigns a role if the user does not already have it (idempotent).
+ * SUPERADMIN cannot be assigned through this helper.
+ */
+export async function assignRoleIfMissing(
+  db: DbClient,
+  userId: string,
+  roleSlug: RoleSlug,
+): Promise<void> {
+  if (roleSlug === RoleSlug.SUPERADMIN) {
+    throw new Error('SUPERADMIN role cannot be assigned via invitation helper')
+  }
+
+  const role = await db.role.findUnique({
+    where: { slug: roleSlug },
   })
 
-  if (!customerRole) {
-    throw new Error('CUSTOMER role missing — run database seed')
+  if (!role) {
+    throw new Error(`${roleSlug} role missing — run database seed`)
   }
 
   const existing = await db.userRole.findUnique({
     where: {
-      userId_roleId: { userId, roleId: customerRole.id },
+      userId_roleId: { userId, roleId: role.id },
     },
   })
 
   if (!existing) {
     await db.userRole.create({
-      data: { userId, roleId: customerRole.id },
+      data: { userId, roleId: role.id },
     })
   }
 }

@@ -1888,6 +1888,28 @@ const orderClaimTypeDefs = /* GraphQL */ `
   }
 `
 
+const userInvitationAcceptTypeDefs = /* GraphQL */ `
+  type PublicUserInvitationPreview {
+    valid: Boolean!
+    status: String
+    maskedEmail: String
+    email: String
+    targetRole: String
+    targetRoleLabel: String
+    expiresAt: String
+    isExpired: Boolean!
+    existingUserHint: String
+    message: String
+  }
+
+  type AcceptUserInvitationPayload {
+    success: Boolean!
+    message: String
+    redirectTo: String
+    targetRole: String
+  }
+`
+
 const designsTypeDefs = /* GraphQL */ `
   input CreateDesignDraftInput {
     productId: ID!
@@ -2072,6 +2094,7 @@ export const typeDefs = /* GraphQL */ `
     checkoutResultByToken(token: String!): CheckoutResult
     orderByCheckoutToken(orderNumber: String!, token: String!): CheckoutOrderDetailAccess
     orderClaimPreview(token: String!): OrderClaimPreview
+    previewUserInvitation(token: String!): PublicUserInvitationPreview!
     designById(designId: ID!): AccountDesign
     myNotifications(input: MyNotificationsInput): NotificationConnection!
     myUnreadNotificationCount(audience: NotificationAudience): Int!
@@ -2104,6 +2127,7 @@ export const typeDefs = /* GraphQL */ `
     approveOrderClaimTransfer(token: String!): ApproveOrderClaimTransferPayload!
     createConektaCheckout(input: CreateConektaCheckoutInput!): ConektaCheckoutPayload!
     claimOrder(token: String!): OrderClaimPayload!
+    acceptUserInvitation(token: String!): AcceptUserInvitationPayload!
     updateAdminOrderStatus(input: UpdateAdminOrderStatusInput!): AdminOrder!
     moveAdminOrderToProduction(orderNumber: String!): AdminOrder!
     markAdminOrderReadyToShip(orderNumber: String!): AdminOrder!
@@ -2208,6 +2232,7 @@ export const typeDefs = /* GraphQL */ `
   ${checkoutTypeDefs}
   ${shippingTypeDefs}
   ${orderClaimTypeDefs}
+  ${userInvitationAcceptTypeDefs}
   ${paymentsTypeDefs}
   ${adminDashboardTypeDefs}
   ${adminUsersTypeDefs}
