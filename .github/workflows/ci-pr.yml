@@ -104,7 +104,13 @@ jobs:
         run: pnpm db:generate
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/chef_room_ci?schema=public
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/chef_room_ci?schema=public
       - run: pnpm test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/chef_room_ci?schema=public
 
   build:
     name: build

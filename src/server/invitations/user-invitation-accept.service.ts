@@ -11,8 +11,7 @@ import { GraphQLError } from 'graphql'
 
 import { routes } from '@/src/config/routes'
 import { maskEmail } from '@/src/lib/email/mask-email'
-import { assignRoleIfMissing } from '@/src/server/auth/roles-core'
-import { userHasAdminAccess } from '@/src/server/auth/roles'
+import { assignRoleIfMissing, userHasAdminAccess as userHasAdminAccessDb } from '@/src/server/auth/roles-core'
 import type { GraphQLContext } from '@/src/server/graphql/context'
 import { INVITABLE_ROLE_SLUGS } from '@/src/server/invitations/user-invitation.constants'
 import {
@@ -278,7 +277,7 @@ export async function acceptUserInvitation(
     })
   })
 
-  const hasAdmin = await userHasAdminAccess(userId)
+  const hasAdmin = await userHasAdminAccessDb(context.prisma, userId)
   const redirectTo = resolveAcceptRedirect(invitation.targetRole, hasAdmin)
 
   return {

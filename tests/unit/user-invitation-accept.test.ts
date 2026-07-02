@@ -64,7 +64,7 @@ function buildPreviewMockPrisma(): GraphQLContext['prisma'] {
     user: {
       findUnique: async () => null,
     },
-  } as GraphQLContext['prisma']
+  } as unknown as GraphQLContext['prisma']
 }
 
 describe('previewUserInvitation', () => {
