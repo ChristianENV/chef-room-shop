@@ -11,7 +11,10 @@ import { GraphQLError } from 'graphql'
 
 import { routes } from '@/src/config/routes'
 import { maskEmail } from '@/src/lib/email/mask-email'
-import { assignRoleIfMissing, userHasAdminAccess as userHasAdminAccessDb } from '@/src/server/auth/roles-core'
+import {
+  assignRoleIfMissing,
+  userHasAdminAccess as userHasAdminAccessDb,
+} from '@/src/server/auth/roles-core'
 import type { GraphQLContext } from '@/src/server/graphql/context'
 import { INVITABLE_ROLE_SLUGS } from '@/src/server/invitations/user-invitation.constants'
 import {
