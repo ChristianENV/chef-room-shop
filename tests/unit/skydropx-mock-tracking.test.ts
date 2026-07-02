@@ -6,13 +6,7 @@ import { GraphQLError } from 'graphql'
 
 import type { CurrentUser } from '@/src/server/auth/types'
 import type { GraphQLContext } from '@/src/server/graphql/context'
-
-function canRunDbIntegrationTests(): boolean {
-  const url = process.env.DATABASE_URL?.trim()
-  if (!url) return false
-  if (url.includes('localhost:5432/chef_room')) return false
-  return true
-}
+import { canRunDbIntegrationTests } from './helpers/db-integration'
 
 const hasDatabase = canRunDbIntegrationTests()
 

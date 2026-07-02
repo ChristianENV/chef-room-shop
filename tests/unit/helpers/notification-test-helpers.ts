@@ -6,12 +6,7 @@ import type { PrismaClient } from '@prisma/client'
 
 config({ path: '.env.local' })
 
-export function canRunNotificationDbTests(): boolean {
-  const url = process.env.DATABASE_URL?.trim()
-  if (!url) return false
-  if (url.includes('localhost:5432/chef_room')) return false
-  return true
-}
+export { canRunDbIntegrationTests, canRunNotificationDbTests } from './db-integration'
 
 export async function loadPrisma(): Promise<{ prisma: PrismaClient }> {
   await import('./mock-server-only')

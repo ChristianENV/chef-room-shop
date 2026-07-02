@@ -7,15 +7,9 @@ import { GraphQLError } from 'graphql'
 
 import type { CurrentUser } from '@/src/server/auth/types'
 import type { GraphQLContext } from '@/src/server/graphql/context'
+import { canRunDbIntegrationTests } from './helpers/db-integration'
 
 config({ path: '.env.local' })
-
-function canRunDbIntegrationTests(): boolean {
-  const url = process.env.DATABASE_URL?.trim()
-  if (!url) return false
-  if (url.includes('localhost:5432/chef_room')) return false
-  return true
-}
 
 const hasDatabase = canRunDbIntegrationTests()
 
@@ -62,12 +56,22 @@ function buildContext(prisma: GraphQLContext['prisma'], user: CurrentUser | null
   }
 }
 
+function buildPreviewMockPrisma(): GraphQLContext['prisma'] {
+  return {
+    userInvitation: {
+      findUnique: async () => null,
+    },
+    user: {
+      findUnique: async () => null,
+    },
+  } as GraphQLContext['prisma']
+}
+
 describe('previewUserInvitation', () => {
   it('returns safe error for invalid token without tokenHash', async () => {
     const { previewUserInvitation } = await loadModules()
-    const { prisma } = await loadPrisma()
 
-    const preview = await previewUserInvitation(buildContext(prisma, null), '   ')
+    const preview = await previewUserInvitation(buildContext(buildPreviewMockPrisma(), null), '   ')
 
     assert.equal(preview.valid, false)
     assert.equal(preview.maskedEmail, null)
@@ -76,9 +80,11 @@ describe('previewUserInvitation', () => {
 
   it('returns generic error for unknown token', async () => {
     const { previewUserInvitation } = await loadModules()
-    const { prisma } = await loadPrisma()
 
-    const preview = await previewUserInvitation(buildContext(prisma, null), 'unknown-token-value')
+    const preview = await previewUserInvitation(
+      buildContext(buildPreviewMockPrisma(), null),
+      'unknown-token-value',
+    )
 
     assert.equal(preview.valid, false)
     assert.equal(preview.email, null)
@@ -90,10 +96,9 @@ describe('previewUserInvitation', () => {
 describe('acceptUserInvitation auth guard', () => {
   it('requires authenticated user', async () => {
     const { acceptUserInvitation } = await loadModules()
-    const { prisma } = await loadPrisma()
 
     await assert.rejects(
-      () => acceptUserInvitation(buildContext(prisma, null), 'some-token'),
+      () => acceptUserInvitation(buildContext(buildPreviewMockPrisma(), null), 'some-token'),
       (error: unknown) => {
         assert.ok(error instanceof GraphQLError)
         assert.equal((error as GraphQLError).extensions?.code, 'UNAUTHENTICATED')
@@ -106,10 +111,9 @@ describe('acceptUserInvitation auth guard', () => {
 describe('assignRoleIfMissing', () => {
   it('rejects SUPERADMIN assignment', async () => {
     const { assignRoleIfMissing } = await loadModules()
-    const { prisma } = await loadPrisma()
 
     await assert.rejects(
-      () => assignRoleIfMissing(prisma, 'user-id', RoleSlug.SUPERADMIN),
+      () => assignRoleIfMissing(buildPreviewMockPrisma(), 'user-id', RoleSlug.SUPERADMIN),
       /SUPERADMIN role cannot be assigned/,
     )
   })
