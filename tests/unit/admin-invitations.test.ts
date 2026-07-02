@@ -9,6 +9,7 @@ import {
 } from '@/src/server/invitations/user-invitation-crypto'
 import { normalizeInvitationEmail } from '@/src/server/graphql/modules/admin-invitations/admin-invitations.validation'
 import { mapUserInvitationToGql } from '@/src/server/graphql/modules/admin-invitations/admin-invitations.mappers'
+import { mapUserInvitationToTableRow } from '@/src/features/admin/users/mappers/admin-invitations-ui.mapper'
 import { RoleSlug, UserInvitationStatus } from '@prisma/client'
 
 describe('user invitation crypto', () => {
@@ -134,5 +135,50 @@ describe('user invitation duplicate and status semantics', () => {
     const superseded = pendingIds.map((id) => ({ id, status: 'REVOKED' }))
     assert.equal(superseded.length, 2)
     assert.ok(superseded.every((row) => row.status === 'REVOKED'))
+  })
+})
+
+describe('admin invitations ui mapper', () => {
+  it('adds expiration hint for pending invitations', () => {
+    const inThreeDays = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
+    const row = mapUserInvitationToTableRow({
+      id: 'inv-1',
+      email: 'chef@example.com',
+      targetRole: 'CUSTOMER',
+      status: 'PENDING',
+      expiresAt: inThreeDays,
+      acceptedAt: null,
+      revokedAt: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      invitedBy: { id: 'u-1', name: 'Admin', email: 'admin@example.com' },
+      acceptedBy: null,
+      revokedBy: null,
+    })
+
+    assert.equal(row.canRevoke, true)
+    assert.equal(row.canResend, true)
+    assert.ok(row.expiresAtHint?.includes('Expira en'))
+  })
+
+  it('disables actions for accepted invitations', () => {
+    const row = mapUserInvitationToTableRow({
+      id: 'inv-2',
+      email: 'chef@example.com',
+      targetRole: 'ADMIN',
+      status: 'ACCEPTED',
+      expiresAt: new Date().toISOString(),
+      acceptedAt: new Date().toISOString(),
+      revokedAt: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      invitedBy: null,
+      acceptedBy: null,
+      revokedBy: null,
+    })
+
+    assert.equal(row.canRevoke, false)
+    assert.equal(row.canResend, false)
+    assert.equal(row.expiresAtHint, null)
   })
 })

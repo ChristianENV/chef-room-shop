@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -20,30 +21,48 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { toast } from '@/hooks/use-toast'
 
 import { useCreateUserInvitationMutation } from '../api/use-create-user-invitation-mutation'
 import type { InvitableTargetRole } from '../types/admin-invitations.types'
+
+const ROLE_LABELS: Record<InvitableTargetRole, string> = {
+  CUSTOMER: 'Cliente',
+  ADMIN: 'Administrador',
+}
 
 type CreateUserInvitationDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   onCreated?: () => void
+  defaultTargetRole?: InvitableTargetRole
+  lockTargetRole?: boolean
 }
 
 export function CreateUserInvitationDialog({
   open,
   onOpenChange,
   onCreated,
+  defaultTargetRole = 'CUSTOMER',
+  lockTargetRole = false,
 }: CreateUserInvitationDialogProps) {
   const [email, setEmail] = useState('')
-  const [targetRole, setTargetRole] = useState<InvitableTargetRole>('CUSTOMER')
+  const [targetRole, setTargetRole] = useState<InvitableTargetRole>(defaultTargetRole)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const createMutation = useCreateUserInvitationMutation()
+
+  useEffect(() => {
+    if (open) {
+      setEmail('')
+      setTargetRole(defaultTargetRole)
+      setErrorMessage(null)
+    }
+  }, [open, defaultTargetRole])
 
   function handleOpenChange(nextOpen: boolean) {
     if (!nextOpen) {
       setEmail('')
-      setTargetRole('CUSTOMER')
+      setTargetRole(defaultTargetRole)
       setErrorMessage(null)
     }
     onOpenChange(nextOpen)
@@ -53,10 +72,16 @@ export function CreateUserInvitationDialog({
     event.preventDefault()
     setErrorMessage(null)
 
+    const normalizedEmail = email.trim()
+
     try {
       await createMutation.mutateAsync({
-        email: email.trim(),
+        email: normalizedEmail,
         targetRole,
+      })
+      toast({
+        title: 'Invitación enviada',
+        description: `Se envió una invitación a ${normalizedEmail}.`,
       })
       handleOpenChange(false)
       onCreated?.()
@@ -99,19 +124,34 @@ export function CreateUserInvitationDialog({
             <Label htmlFor="invite-role" className="font-sans text-sm">
               Rol objetivo *
             </Label>
-            <Select
-              value={targetRole}
-              onValueChange={(value) => setTargetRole(value as InvitableTargetRole)}
-              disabled={isPending}
-            >
-              <SelectTrigger id="invite-role" className="font-sans">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="CUSTOMER">Cliente</SelectItem>
-                <SelectItem value="ADMIN">Administrador</SelectItem>
-              </SelectContent>
-            </Select>
+            {lockTargetRole ? (
+              <div
+                className="rounded-md border border-border bg-muted/30 px-3 py-2"
+                data-testid="invite-role-locked"
+              >
+                <Badge variant="outline" className="font-sans text-xs">
+                  {ROLE_LABELS[targetRole]}
+                </Badge>
+              </div>
+            ) : (
+              <Select
+                value={targetRole}
+                onValueChange={(value) => setTargetRole(value as InvitableTargetRole)}
+                disabled={isPending}
+              >
+                <SelectTrigger
+                  id="invite-role"
+                  className="font-sans"
+                  data-testid="invite-role-select"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="CUSTOMER">Cliente</SelectItem>
+                  <SelectItem value="ADMIN">Administrador</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           {errorMessage ? (

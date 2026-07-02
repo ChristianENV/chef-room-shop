@@ -253,9 +253,41 @@ Phase 3B does **not** modify:
 
 OAuth invite acceptance is **deferred** to a future phase.
 
+## Admin invitation UX polish (Phase 3C — implemented)
+
+Quick-invite actions on segment pages reuse `CreateUserInvitationDialog` without changing auth or invitation security.
+
+### Quick invite CTAs
+
+| Page                       | Button                | Preselected role     | Role locked           |
+| -------------------------- | --------------------- | -------------------- | --------------------- |
+| `/admin/users/customers`   | **Invitar cliente**   | `CUSTOMER`           | Yes                   |
+| `/admin/users/admins`      | **Invitar al equipo** | `ADMIN`              | Yes                   |
+| `/admin/users/invitations` | **Nueva invitación**  | `CUSTOMER` (default) | No — admin picks role |
+
+- Requires `users.write`
+- On success: toast confirmation + invitation list query invalidation (existing email behavior unchanged)
+- `SUPERADMIN` remains unavailable in the UI
+
+### Invitations table
+
+- Status badges (Pendiente, Aceptada, Revocada, Expirada)
+- Expiration date + relative hint for pending invites (e.g. “Expira en 3 días”)
+- Invited-by column
+- Revoke / resend only for `PENDING`; accepted/revoked/expired rows show no actions
+- Empty state explains that invitations let users join via secure email link
+
+### Tabs (unchanged)
+
+**Clientes** | **Equipo / Admin** | **Invitaciones**
+
 ## Future Phases
 
-### Phase 3C: Customer campaigns (optional)
+### Phase 3D: OAuth invite acceptance (optional)
+
+- Social signup/login returning to accept link
+
+### Phase 3E: Customer campaigns (optional)
 
 - Bulk invites, tier metadata on accept
 

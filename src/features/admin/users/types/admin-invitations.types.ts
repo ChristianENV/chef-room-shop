@@ -51,6 +51,7 @@ export type AdminUserInvitationsUiTableRow = {
   invitedByName: string
   createdAtLabel: string
   expiresAtLabel: string
+  expiresAtHint: string | null
   canRevoke: boolean
   canResend: boolean
 }

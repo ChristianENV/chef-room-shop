@@ -46,6 +46,19 @@ export function buildAdminInvitationsListVariables(input: {
   }
 }
 
+function formatExpiresAtHint(status: string, expiresAt: string): string | null {
+  if (status !== 'PENDING') return null
+
+  const expires = new Date(expiresAt).getTime()
+  const diffMs = expires - Date.now()
+  if (diffMs <= 0) return 'Expirada'
+
+  const days = Math.ceil(diffMs / (24 * 60 * 60 * 1000))
+  if (days <= 1) return 'Expira hoy'
+  if (days <= 7) return `Expira en ${days} días`
+  return null
+}
+
 export function mapUserInvitationToTableRow(
   invitation: UserInvitation,
 ): AdminUserInvitationsUiTableRow {
@@ -61,6 +74,7 @@ export function mapUserInvitationToTableRow(
     invitedByName: invitation.invitedBy?.name ?? '—',
     createdAtLabel: formatAdminDate(invitation.createdAt),
     expiresAtLabel: formatAdminDate(invitation.expiresAt),
+    expiresAtHint: formatExpiresAtHint(invitation.status, invitation.expiresAt),
     canRevoke: isPending,
     canResend: isPending,
   }

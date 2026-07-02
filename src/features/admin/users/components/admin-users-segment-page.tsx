@@ -1,7 +1,9 @@
 'use client'
 
 import { useDeferredValue, useMemo, useState } from 'react'
+import { UserPlus } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
 import { AdminPageConfig } from '@/src/features/admin/layout/admin-page-config'
 import { useAdminUsersQuery } from '../api/use-admin-users-query'
 import { usePauseAdminUserMutation } from '../api/use-pause-admin-user-mutation'
@@ -12,6 +14,7 @@ import {
   mapAdminUserToTableRow,
 } from '../mappers/admin-users-ui.mapper'
 import type { AdminUserSegment, AdminUserStatusFilter, AdminUsersUiTableRow } from '../types'
+import type { InvitableTargetRole } from '../types/admin-invitations.types'
 
 import { AdminUsersToolbar } from './admin-users-toolbar'
 import { AdminUsersTable } from './admin-users-table'
@@ -19,8 +22,25 @@ import { AdminUsersError } from './admin-users-error'
 import { AdminUsersSegmentTabs } from './admin-users-segment-tabs'
 import { AdminUserEditDialog } from './admin-user-edit-dialog'
 import { AdminUserActionDialog } from './admin-user-action-dialog'
+import { CreateUserInvitationDialog } from './create-user-invitation-dialog'
 import type { AdminUserTableAction } from './admin-users-table'
 import type { AdminUserActionType } from './admin-user-action-dialog'
+
+const SEGMENT_INVITE_CTA: Record<
+  AdminUserSegment,
+  { label: string; defaultRole: InvitableTargetRole; testId: string }
+> = {
+  CUSTOMERS: {
+    label: 'Invitar cliente',
+    defaultRole: 'CUSTOMER',
+    testId: 'admin-users-invite-customer',
+  },
+  ADMINS: {
+    label: 'Invitar al equipo',
+    defaultRole: 'ADMIN',
+    testId: 'admin-users-invite-team',
+  },
+}
 
 type DialogState =
   | { type: 'edit'; row: AdminUsersUiTableRow }
@@ -51,6 +71,9 @@ export function AdminUsersSegmentPage({
   const [statusFilter, setStatusFilter] = useState<AdminUserStatusFilter>('all')
   const [dialog, setDialog] = useState<DialogState>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [inviteOpen, setInviteOpen] = useState(false)
+
+  const inviteCta = SEGMENT_INVITE_CTA[segment]
 
   const pauseMutation = usePauseAdminUserMutation()
   const blockMutation = useBlockAdminUserMutation()
@@ -114,9 +137,23 @@ export function AdminUsersSegmentPage({
   return (
     <AdminPageConfig breadcrumb={[{ label: 'Usuarios' }, { label: title }]}>
       <div className="space-y-6">
-        <div>
-          <h1 className="font-sans text-2xl font-bold tracking-tight text-foreground">Usuarios</h1>
-          <p className="mt-1 font-serif text-muted-foreground">{description}</p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="font-sans text-2xl font-bold tracking-tight text-foreground">
+              Usuarios
+            </h1>
+            <p className="mt-1 font-serif text-muted-foreground">{description}</p>
+          </div>
+          {canWrite ? (
+            <Button
+              className="font-sans"
+              onClick={() => setInviteOpen(true)}
+              data-testid={inviteCta.testId}
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              {inviteCta.label}
+            </Button>
+          ) : null}
         </div>
 
         <AdminUsersSegmentTabs />
@@ -167,6 +204,15 @@ export function AdminUsersSegmentPage({
           onConfirm={() => void handleActionConfirm()}
           isPending={actionIsPending}
           errorMessage={actionError}
+        />
+      ) : null}
+
+      {canWrite ? (
+        <CreateUserInvitationDialog
+          open={inviteOpen}
+          onOpenChange={setInviteOpen}
+          defaultTargetRole={inviteCta.defaultRole}
+          lockTargetRole
         />
       ) : null}
     </AdminPageConfig>
